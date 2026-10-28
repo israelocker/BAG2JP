@@ -1,0 +1,1658 @@
+[
+[
+10,
+"archive/system/010",
+8,
+"005.tim",
+"512/512",
+"clut(1008,71,16x15) img(768,0,0x0) bpp0 sameVRAM=True"
+],
+[
+10,
+"archive/system/010",
+8,
+"008.tim",
+"11584/3072",
+"clut(960,255,16x1) img(984,112,40x144) bpp0 sameVRAM=False"
+],
+[
+10,
+"archive/system/010",
+8,
+"009.tim",
+"3072/8704",
+"clut(912,240,16x3) img(912,72,46x32) bpp0 sameVRAM=False"
+],
+[
+10,
+"archive/system/010",
+8,
+"010.tim",
+"8704/160",
+"clut(912,255,16x1) img(896,0,60x72) bpp0 sameVRAM=False"
+],
+[
+11,
+"archive/system/011.bpe",
+9,
+"content/000.tim",
+"30784/30784",
+"clut(768,505,16x1) img(640,256,64x240) bpp0 sameVRAM=True"
+],
+[
+11,
+"archive/system/011.bpe",
+9,
+"content/001.tim",
+"30784/30784",
+"clut(768,503,16x1) img(704,256,64x240) bpp0 sameVRAM=True"
+],
+[
+11,
+"archive/system/011.bpe",
+9,
+"content/004.tim",
+"30784/30784",
+"clut(768,507,16x1) img(896,256,64x240) bpp0 sameVRAM=False"
+],
+[
+11,
+"archive/system/011.bpe",
+9,
+"content/005.tim",
+"30784/30784",
+"clut(768,508,16x1) img(960,256,64x240) bpp0 sameVRAM=False"
+],
+[
+12,
+"archive/system/012",
+10,
+"004.tim",
+"22144/22144",
+"clut(576,245,16x11) img(640,0,64x170) bpp0 sameVRAM=True"
+],
+[
+13,
+"archive/system/013",
+11,
+"002.tim",
+"376/548",
+"clut(528,328,16x2) img(672,133,5x28) bpp0 sameVRAM=False"
+],
+[
+13,
+"archive/system/013",
+11,
+"004.tim",
+"432/432",
+"clut(528,330,16x1) img(652,239,23x8) bpp0 sameVRAM=False"
+],
+[
+13,
+"archive/system/013",
+11,
+"014.tim",
+"1984/1984",
+"clut(768,246,16x1) img(768,20,48x20) bpp0 sameVRAM=True"
+],
+[
+13,
+"archive/system/013",
+11,
+"017.tim",
+"1984/1984",
+"clut(768,248,16x1) img(768,80,48x20) bpp0 sameVRAM=True"
+],
+[
+13,
+"archive/system/013",
+11,
+"018.tim",
+"1984/1984",
+"clut(768,250,16x1) img(768,100,48x20) bpp0 sameVRAM=True"
+],
+[
+13,
+"archive/system/013",
+11,
+"020.tim",
+"1984/1984",
+"clut(768,244,16x1) img(768,140,48x20) bpp0 sameVRAM=True"
+],
+[
+15,
+"archive/system/015.bpe",
+13,
+"content/001.tim",
+"9920/9920",
+"clut(512,480,16x1) img(512,256,22x224) bpp0 sameVRAM=True"
+],
+[
+15,
+"archive/system/015.bpe",
+13,
+"content/033.tim",
+"11704/11704",
+"clut(0,0,256x1) img(0,0,93x60) bpp1 sameVRAM=True"
+],
+[
+16,
+"archive/system/016",
+14,
+"002.tim",
+"4464/4464",
+"clut(528,333,16x1) img(704,120,44x50) bpp0 sameVRAM=True"
+],
+[
+16,
+"archive/system/016",
+14,
+"003.tim",
+"3464/3464",
+"clut(528,332,16x1) img(517,195,34x50) bpp0 sameVRAM=True"
+],
+[
+16,
+"archive/system/016",
+14,
+"005.tim",
+"1600/1600",
+"clut(768,506,16x1) img(896,256,64x12) bpp0 sameVRAM=True"
+],
+[
+16,
+"archive/system/016",
+14,
+"006.tim",
+"13504/13504",
+"clut(528,334,16x1) img(576,256,28x240) bpp0 sameVRAM=True"
+],
+[
+53,
+"archive/characters/bi_o/pack_a_p1",
+87,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+53,
+"archive/characters/bi_o/pack_a_p1",
+87,
+"001.dbi",
+"24076/24000",
+" sameVRAM="
+],
+[
+54,
+"archive/characters/bi_o/pack_a_p2",
+88,
+"000.dbi",
+"13448/13492",
+" sameVRAM="
+],
+[
+55,
+"archive/characters/capoeira/pack_a_p1",
+89,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+55,
+"archive/characters/capoeira/pack_a_p1",
+89,
+"001.dbi",
+"15016/14768",
+" sameVRAM="
+],
+[
+56,
+"archive/characters/capoeira/pack_a_p2",
+90,
+"000.dbi",
+"15016/14768",
+" sameVRAM="
+],
+[
+57,
+"archive/characters/comet/pack_a_p1",
+91,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+57,
+"archive/characters/comet/pack_a_p1",
+91,
+"001.dbi",
+"24288/24768",
+" sameVRAM="
+],
+[
+58,
+"archive/characters/comet/pack_a_p2",
+92,
+"000.dbi",
+"24288/24768",
+" sameVRAM="
+],
+[
+59,
+"archive/characters/heat/pack_a_p1",
+93,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+59,
+"archive/characters/heat/pack_a_p1",
+93,
+"001.dbi",
+"19556/20044",
+" sameVRAM="
+],
+[
+59,
+"archive/characters/heat/pack_a_p1",
+93,
+"005.sedt",
+"92320/92432",
+" sameVRAM="
+],
+[
+60,
+"archive/characters/heat/pack_a_p2",
+94,
+"000.dbi",
+"19556/20044",
+" sameVRAM="
+],
+[
+60,
+"archive/characters/heat/pack_a_p2",
+94,
+"004.sedt",
+"92320/92432",
+" sameVRAM="
+],
+[
+61,
+"archive/characters/hiro/pack_a_p1",
+95,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+61,
+"archive/characters/hiro/pack_a_p1",
+95,
+"001.dbi",
+"20692/20676",
+" sameVRAM="
+],
+[
+61,
+"archive/characters/hiro/pack_a_p1",
+95,
+"002.tim",
+"33248/33248",
+"clut(960,0,16x14) img(704,256,64x256) bpp0 sameVRAM=True"
+],
+[
+61,
+"archive/characters/hiro/pack_a_p1",
+95,
+"003.tim",
+"32960/32960",
+"clut(976,1,16x5) img(768,256,64x256) bpp0 sameVRAM=True"
+],
+[
+62,
+"archive/characters/hiro/pack_a_p2",
+96,
+"000.dbi",
+"20692/20676",
+" sameVRAM="
+],
+[
+62,
+"archive/characters/hiro/pack_a_p2",
+96,
+"001.tim",
+"33248/33248",
+"clut(960,0,16x14) img(704,256,64x256) bpp0 sameVRAM=True"
+],
+[
+62,
+"archive/characters/hiro/pack_a_p2",
+96,
+"002.tim",
+"32960/32960",
+"clut(976,1,16x5) img(768,256,64x256) bpp0 sameVRAM=True"
+],
+[
+63,
+"archive/characters/kelly/pack_a_p1",
+97,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+63,
+"archive/characters/kelly/pack_a_p1",
+97,
+"001.dbi",
+"24872/25080",
+" sameVRAM="
+],
+[
+64,
+"archive/characters/kelly/pack_a_p2",
+98,
+"000.dbi",
+"24872/25080",
+" sameVRAM="
+],
+[
+65,
+"archive/characters/kitty_n/pack_a_p1",
+99,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+65,
+"archive/characters/kitty_n/pack_a_p1",
+99,
+"001.dbi",
+"25492/25568",
+" sameVRAM="
+],
+[
+66,
+"archive/characters/kitty_n/pack_a_p2",
+100,
+"000.dbi",
+"16212/16352",
+" sameVRAM="
+],
+[
+67,
+"archive/characters/pander/pack_a_p1",
+101,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+67,
+"archive/characters/pander/pack_a_p1",
+101,
+"001.dbi",
+"17319/17423",
+" sameVRAM="
+],
+[
+68,
+"archive/characters/pander/pack_a_p2",
+102,
+"000.dbi",
+"17319/17423",
+" sameVRAM="
+],
+[
+69,
+"archive/characters/robo_z_gold/pack_a_p1",
+103,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+69,
+"archive/characters/robo_z_gold/pack_a_p1",
+103,
+"001.dbi",
+"23400/23164",
+" sameVRAM="
+],
+[
+70,
+"archive/characters/robo_z_gold/pack_a_p2",
+104,
+"000.dbi",
+"23400/23164",
+" sameVRAM="
+],
+[
+71,
+"archive/characters/shorty/pack_a_p1",
+105,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+71,
+"archive/characters/shorty/pack_a_p1",
+105,
+"001.dbi",
+"20904/21224",
+" sameVRAM="
+],
+[
+71,
+"archive/characters/shorty/pack_a_p1",
+105,
+"004.sedt",
+"77104/81728",
+" sameVRAM="
+],
+[
+72,
+"archive/characters/shorty/pack_a_p2",
+106,
+"000.dbi",
+"20904/21224",
+" sameVRAM="
+],
+[
+72,
+"archive/characters/shorty/pack_a_p2",
+106,
+"003.sedt",
+"77104/81728",
+" sameVRAM="
+],
+[
+73,
+"archive/characters/strike/pack_a_p1",
+107,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+73,
+"archive/characters/strike/pack_a_p1",
+107,
+"001.dbi",
+"15334/15906",
+" sameVRAM="
+],
+[
+73,
+"archive/characters/strike/pack_a_p1",
+107,
+"004.sedt",
+"88656/88752",
+" sameVRAM="
+],
+[
+74,
+"archive/characters/strike/pack_a_p2",
+108,
+"000.dbi",
+"15334/15906",
+" sameVRAM="
+],
+[
+74,
+"archive/characters/strike/pack_a_p2",
+108,
+"003.sedt",
+"88656/88752",
+" sameVRAM="
+],
+[
+75,
+"archive/characters/tsutomu/pack_a_p1",
+109,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+75,
+"archive/characters/tsutomu/pack_a_p1",
+109,
+"001.dbi",
+"23828/23904",
+" sameVRAM="
+],
+[
+75,
+"archive/characters/tsutomu/pack_a_p1",
+109,
+"004.sedt",
+"94864/94912",
+" sameVRAM="
+],
+[
+76,
+"archive/characters/tsutomu/pack_a_p2",
+110,
+"000.dbi",
+"16424/16520",
+" sameVRAM="
+],
+[
+76,
+"archive/characters/tsutomu/pack_a_p2",
+110,
+"003.sedt",
+"94864/94912",
+" sameVRAM="
+],
+[
+77,
+"archive/characters/chichi_sally/pack_a_p1",
+111,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+77,
+"archive/characters/chichi_sally/pack_a_p1",
+111,
+"001.dbi",
+"17304/17084",
+" sameVRAM="
+],
+[
+78,
+"archive/characters/chichi_sally/pack_a_p2",
+112,
+"000.dbi",
+"17304/17084",
+" sameVRAM="
+],
+[
+79,
+"archive/characters/columbo/pack_a_p1",
+113,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+79,
+"archive/characters/columbo/pack_a_p1",
+113,
+"001.dbi",
+"9208/9300",
+" sameVRAM="
+],
+[
+80,
+"archive/characters/columbo/pack_a_p2",
+114,
+"000.dbi",
+"9208/9300",
+" sameVRAM="
+],
+[
+81,
+"archive/characters/hustle_kong/pack_a_p1",
+115,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+81,
+"archive/characters/hustle_kong/pack_a_p1",
+115,
+"001.dbi",
+"14848/14840",
+" sameVRAM="
+],
+[
+82,
+"archive/characters/hustle_kong/pack_a_p2",
+116,
+"000.dbi",
+"14848/14840",
+" sameVRAM="
+],
+[
+83,
+"archive/characters/mcload/pack_a_p1",
+117,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+83,
+"archive/characters/mcload/pack_a_p1",
+117,
+"001.dbi",
+"15700/15264",
+" sameVRAM="
+],
+[
+84,
+"archive/characters/mcload/pack_a_p2",
+118,
+"000.dbi",
+"15700/15264",
+" sameVRAM="
+],
+[
+85,
+"archive/characters/michael_doi/pack_a_p1",
+119,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+85,
+"archive/characters/michael_doi/pack_a_p1",
+119,
+"001.dbi",
+"12216/12164",
+" sameVRAM="
+],
+[
+85,
+"archive/characters/michael_doi/pack_a_p1",
+119,
+"004.sedt",
+"90440/90424",
+" sameVRAM="
+],
+[
+86,
+"archive/characters/michael_doi/pack_a_p2",
+120,
+"000.dbi",
+"12216/12164",
+" sameVRAM="
+],
+[
+86,
+"archive/characters/michael_doi/pack_a_p2",
+120,
+"003.sedt",
+"90440/90424",
+" sameVRAM="
+],
+[
+87,
+"archive/characters/sushi_boy/pack_a_p1",
+121,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+87,
+"archive/characters/sushi_boy/pack_a_p1",
+121,
+"001.dbi",
+"21408/21420",
+" sameVRAM="
+],
+[
+88,
+"archive/characters/sushi_boy/pack_a_p2",
+122,
+"000.dbi",
+"21408/21420",
+" sameVRAM="
+],
+[
+97,
+"archive/characters/hiro/model_a_p1",
+131,
+"000.bin",
+"59740/59200",
+" sameVRAM="
+],
+[
+98,
+"archive/characters/hiro/model_a_p2",
+132,
+"000.bin",
+"59740/59200",
+" sameVRAM="
+],
+[
+125,
+"archive/characters/bi_o/pack_b_p1",
+159,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+125,
+"archive/characters/bi_o/pack_b_p1",
+159,
+"001.dbi",
+"24076/24000",
+" sameVRAM="
+],
+[
+126,
+"archive/characters/bi_o/pack_b_p2",
+160,
+"000.dbi",
+"13448/13492",
+" sameVRAM="
+],
+[
+127,
+"archive/characters/capoeira/pack_b_p1",
+161,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+127,
+"archive/characters/capoeira/pack_b_p1",
+161,
+"001.dbi",
+"15016/14768",
+" sameVRAM="
+],
+[
+128,
+"archive/characters/capoeira/pack_b_p2",
+162,
+"000.dbi",
+"15016/14768",
+" sameVRAM="
+],
+[
+129,
+"archive/characters/comet/pack_b_p1",
+163,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+129,
+"archive/characters/comet/pack_b_p1",
+163,
+"001.dbi",
+"24288/24768",
+" sameVRAM="
+],
+[
+129,
+"archive/characters/comet/pack_b_p1",
+163,
+"002.tim",
+"33120/33120",
+"clut(0,480,16x10) img(0,0,64x256) bpp0 sameVRAM=True"
+],
+[
+129,
+"archive/characters/comet/pack_b_p1",
+163,
+"003.tim",
+"32992/33024",
+"clut(0,480,16x6) img(0,0,64x256) bpp0 sameVRAM=False"
+],
+[
+130,
+"archive/characters/comet/pack_b_p2",
+164,
+"000.dbi",
+"24288/24768",
+" sameVRAM="
+],
+[
+130,
+"archive/characters/comet/pack_b_p2",
+164,
+"001.tim",
+"33120/33120",
+"clut(0,480,16x10) img(0,0,64x256) bpp0 sameVRAM=True"
+],
+[
+130,
+"archive/characters/comet/pack_b_p2",
+164,
+"002.tim",
+"32992/33024",
+"clut(0,480,16x6) img(0,0,64x256) bpp0 sameVRAM=False"
+],
+[
+131,
+"archive/characters/heat/pack_b_p1",
+165,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+131,
+"archive/characters/heat/pack_b_p1",
+165,
+"001.dbi",
+"19556/20044",
+" sameVRAM="
+],
+[
+131,
+"archive/characters/heat/pack_b_p1",
+165,
+"005.sedt",
+"92320/92432",
+" sameVRAM="
+],
+[
+132,
+"archive/characters/heat/pack_b_p2",
+166,
+"000.dbi",
+"19556/20044",
+" sameVRAM="
+],
+[
+132,
+"archive/characters/heat/pack_b_p2",
+166,
+"004.sedt",
+"92320/92432",
+" sameVRAM="
+],
+[
+133,
+"archive/characters/hiro/pack_b_p1",
+167,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+133,
+"archive/characters/hiro/pack_b_p1",
+167,
+"001.dbi",
+"20692/20676",
+" sameVRAM="
+],
+[
+133,
+"archive/characters/hiro/pack_b_p1",
+167,
+"002.tim",
+"33184/33184",
+"clut(0,480,16x12) img(0,0,64x256) bpp0 sameVRAM=True"
+],
+[
+133,
+"archive/characters/hiro/pack_b_p1",
+167,
+"003.tim",
+"32960/32960",
+"clut(976,1,16x5) img(768,256,64x256) bpp0 sameVRAM=True"
+],
+[
+134,
+"archive/characters/hiro/pack_b_p2",
+168,
+"000.dbi",
+"20692/20676",
+" sameVRAM="
+],
+[
+134,
+"archive/characters/hiro/pack_b_p2",
+168,
+"001.tim",
+"33184/33184",
+"clut(0,480,16x12) img(0,0,64x256) bpp0 sameVRAM=True"
+],
+[
+134,
+"archive/characters/hiro/pack_b_p2",
+168,
+"002.tim",
+"32960/32960",
+"clut(976,1,16x5) img(768,256,64x256) bpp0 sameVRAM=True"
+],
+[
+135,
+"archive/characters/kelly/pack_b_p1",
+169,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+135,
+"archive/characters/kelly/pack_b_p1",
+169,
+"001.dbi",
+"24872/25080",
+" sameVRAM="
+],
+[
+136,
+"archive/characters/kelly/pack_b_p2",
+170,
+"000.dbi",
+"24872/25080",
+" sameVRAM="
+],
+[
+137,
+"archive/characters/kitty_n/pack_b_p1",
+171,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+137,
+"archive/characters/kitty_n/pack_b_p1",
+171,
+"001.dbi",
+"25492/25568",
+" sameVRAM="
+],
+[
+138,
+"archive/characters/kitty_n/pack_b_p2",
+172,
+"000.dbi",
+"16212/16352",
+" sameVRAM="
+],
+[
+139,
+"archive/characters/pander/pack_b_p1",
+173,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+139,
+"archive/characters/pander/pack_b_p1",
+173,
+"001.dbi",
+"17319/17423",
+" sameVRAM="
+],
+[
+140,
+"archive/characters/pander/pack_b_p2",
+174,
+"000.dbi",
+"17319/17423",
+" sameVRAM="
+],
+[
+141,
+"archive/characters/robo_z_gold/pack_b_p1",
+175,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+141,
+"archive/characters/robo_z_gold/pack_b_p1",
+175,
+"001.dbi",
+"23400/23164",
+" sameVRAM="
+],
+[
+142,
+"archive/characters/robo_z_gold/pack_b_p2",
+176,
+"000.dbi",
+"23400/23164",
+" sameVRAM="
+],
+[
+143,
+"archive/characters/shorty/pack_b_p1",
+177,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+143,
+"archive/characters/shorty/pack_b_p1",
+177,
+"001.dbi",
+"20904/21224",
+" sameVRAM="
+],
+[
+143,
+"archive/characters/shorty/pack_b_p1",
+177,
+"004.sedt",
+"77104/81728",
+" sameVRAM="
+],
+[
+144,
+"archive/characters/shorty/pack_b_p2",
+178,
+"000.dbi",
+"20904/21224",
+" sameVRAM="
+],
+[
+144,
+"archive/characters/shorty/pack_b_p2",
+178,
+"003.sedt",
+"77104/81728",
+" sameVRAM="
+],
+[
+145,
+"archive/characters/strike/pack_b_p1",
+179,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+145,
+"archive/characters/strike/pack_b_p1",
+179,
+"001.dbi",
+"15334/15906",
+" sameVRAM="
+],
+[
+145,
+"archive/characters/strike/pack_b_p1",
+179,
+"004.sedt",
+"88656/88752",
+" sameVRAM="
+],
+[
+146,
+"archive/characters/strike/pack_b_p2",
+180,
+"000.dbi",
+"15334/15906",
+" sameVRAM="
+],
+[
+146,
+"archive/characters/strike/pack_b_p2",
+180,
+"003.sedt",
+"88656/88752",
+" sameVRAM="
+],
+[
+147,
+"archive/characters/tsutomu/pack_b_p1",
+181,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+147,
+"archive/characters/tsutomu/pack_b_p1",
+181,
+"001.dbi",
+"23828/23904",
+" sameVRAM="
+],
+[
+147,
+"archive/characters/tsutomu/pack_b_p1",
+181,
+"004.sedt",
+"94864/94912",
+" sameVRAM="
+],
+[
+148,
+"archive/characters/tsutomu/pack_b_p2",
+182,
+"000.dbi",
+"16424/16520",
+" sameVRAM="
+],
+[
+148,
+"archive/characters/tsutomu/pack_b_p2",
+182,
+"003.sedt",
+"94864/94912",
+" sameVRAM="
+],
+[
+149,
+"archive/characters/chichi_sally/pack_b_p1",
+183,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+149,
+"archive/characters/chichi_sally/pack_b_p1",
+183,
+"001.dbi",
+"17304/17084",
+" sameVRAM="
+],
+[
+150,
+"archive/characters/chichi_sally/pack_b_p2",
+184,
+"000.dbi",
+"17304/17084",
+" sameVRAM="
+],
+[
+151,
+"archive/characters/columbo/pack_b_p1",
+185,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+151,
+"archive/characters/columbo/pack_b_p1",
+185,
+"001.dbi",
+"9208/9300",
+" sameVRAM="
+],
+[
+152,
+"archive/characters/columbo/pack_b_p2",
+186,
+"000.dbi",
+"9208/9300",
+" sameVRAM="
+],
+[
+153,
+"archive/characters/hustle_kong/pack_b_p1",
+187,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+153,
+"archive/characters/hustle_kong/pack_b_p1",
+187,
+"001.dbi",
+"14848/14840",
+" sameVRAM="
+],
+[
+154,
+"archive/characters/hustle_kong/pack_b_p2",
+188,
+"000.dbi",
+"14848/14840",
+" sameVRAM="
+],
+[
+155,
+"archive/characters/mcload/pack_b_p1",
+189,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+155,
+"archive/characters/mcload/pack_b_p1",
+189,
+"001.dbi",
+"15700/15264",
+" sameVRAM="
+],
+[
+156,
+"archive/characters/mcload/pack_b_p2",
+190,
+"000.dbi",
+"15700/15264",
+" sameVRAM="
+],
+[
+157,
+"archive/characters/michael_doi/pack_b_p1",
+191,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+157,
+"archive/characters/michael_doi/pack_b_p1",
+191,
+"001.dbi",
+"12216/12164",
+" sameVRAM="
+],
+[
+157,
+"archive/characters/michael_doi/pack_b_p1",
+191,
+"004.sedt",
+"90440/90424",
+" sameVRAM="
+],
+[
+158,
+"archive/characters/michael_doi/pack_b_p2",
+192,
+"000.dbi",
+"12216/12164",
+" sameVRAM="
+],
+[
+158,
+"archive/characters/michael_doi/pack_b_p2",
+192,
+"003.sedt",
+"90440/90424",
+" sameVRAM="
+],
+[
+159,
+"archive/characters/sushi_boy/pack_b_p1",
+193,
+"000.tim",
+"7296/7296",
+"clut(960,197,16x3) img(960,200,64x56) bpp0 sameVRAM=True"
+],
+[
+159,
+"archive/characters/sushi_boy/pack_b_p1",
+193,
+"001.dbi",
+"21408/21420",
+" sameVRAM="
+],
+[
+160,
+"archive/characters/sushi_boy/pack_b_p2",
+194,
+"000.dbi",
+"21408/21420",
+" sameVRAM="
+],
+[
+165,
+"archive/characters/comet/model_b_p1",
+199,
+"000.bin",
+"66932/66700",
+" sameVRAM="
+],
+[
+166,
+"archive/characters/comet/model_b_p2",
+200,
+"000.bin",
+"66932/66700",
+" sameVRAM="
+],
+[
+169,
+"archive/characters/hiro/model_b_p1",
+203,
+"000.bin",
+"68048/65880",
+" sameVRAM="
+],
+[
+170,
+"archive/characters/hiro/model_b_p2",
+204,
+"000.bin",
+"68048/65880",
+" sameVRAM="
+],
+[
+197,
+"archive/stages/197_graveyard",
+231,
+"000.dbi",
+"33127/32099",
+" sameVRAM="
+],
+[
+198,
+"archive/stages/198_space_welcome",
+232,
+"000.dbi",
+"32847/32451",
+" sameVRAM="
+],
+[
+199,
+"archive/stages/199_sushi_planet",
+233,
+"000.dbi",
+"38063/37527",
+" sameVRAM="
+],
+[
+199,
+"archive/stages/199_sushi_planet",
+233,
+"002.tim",
+"33184/33184",
+"clut(992,32,16x12) img(512,0,64x256) bpp0 sameVRAM=True"
+],
+[
+200,
+"archive/stages/200_wood_workshop",
+234,
+"000.dbi",
+"45322/44178",
+" sameVRAM="
+],
+[
+200,
+"archive/stages/200_wood_workshop",
+234,
+"001.sedt",
+"145704/144344",
+" sameVRAM="
+],
+[
+201,
+"archive/stages/201_rainbow_club",
+235,
+"000.dbi",
+"37259/37919",
+" sameVRAM="
+],
+[
+201,
+"archive/stages/201_rainbow_club",
+235,
+"004.tim",
+"33312/33312",
+"clut(992,32,16x16) img(640,0,64x256) bpp0 sameVRAM=True"
+],
+[
+202,
+"archive/stages/202_neon_city",
+236,
+"000.dbi",
+"49178/48550",
+" sameVRAM="
+],
+[
+202,
+"archive/stages/202_neon_city",
+236,
+"003.tim",
+"33248/33248",
+"clut(976,32,16x14) img(576,0,64x256) bpp0 sameVRAM=True"
+],
+[
+202,
+"archive/stages/202_neon_city",
+236,
+"004.tim",
+"33216/33216",
+"clut(1008,32,16x13) img(640,0,64x256) bpp0 sameVRAM=True"
+],
+[
+202,
+"archive/stages/202_neon_city",
+236,
+"006.tim",
+"33056/33056",
+"clut(960,40,16x8) img(768,0,64x256) bpp0 sameVRAM=True"
+],
+[
+202,
+"archive/stages/202_neon_city",
+236,
+"007.tim",
+"33056/33056",
+"clut(1008,45,16x8) img(832,0,64x256) bpp0 sameVRAM=True"
+],
+[
+202,
+"archive/stages/202_neon_city",
+236,
+"008.bin",
+"38088/38088",
+" sameVRAM="
+],
+[
+203,
+"archive/stages/203_tv_studio_on_air",
+237,
+"000.dbi",
+"37128/37684",
+" sameVRAM="
+],
+[
+203,
+"archive/stages/203_tv_studio_on_air",
+237,
+"007.tim",
+"33088/33088",
+"clut(992,38,16x9) img(832,0,64x256) bpp0 sameVRAM=True"
+],
+[
+204,
+"archive/stages/204_video_wall_a",
+238,
+"000.dbi",
+"30128/30496",
+" sameVRAM="
+],
+[
+205,
+"archive/stages/205_video_wall_b",
+239,
+"000.dbi",
+"30128/30496",
+" sameVRAM="
+],
+[
+206,
+"archive/stages/206_video_wall_c",
+240,
+"000.dbi",
+"30128/30496",
+" sameVRAM="
+],
+[
+207,
+"archive/stages/207_traffic_street",
+241,
+"000.dbi",
+"47072/46112",
+" sameVRAM="
+],
+[
+208,
+"archive/stages/208_jungle_tours",
+242,
+"000.dbi",
+"37775/37303",
+" sameVRAM="
+],
+[
+209,
+"archive/stages/209_vault_factory",
+243,
+"000.dbi",
+"35112/35204",
+" sameVRAM="
+],
+[
+209,
+"archive/stages/209_vault_factory",
+243,
+"001.sedt",
+"116328/114968",
+" sameVRAM="
+],
+[
+210,
+"archive/stages/210_golden_temple",
+244,
+"000.dbi",
+"29006/29238",
+" sameVRAM="
+],
+[
+211,
+"archive/stages/211_dancing_heroes_show",
+245,
+"000.dbi",
+"54795/56575",
+" sameVRAM="
+],
+[
+218,
+"archive/endings/218",
+252,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+240,
+"archive/endings/240",
+274,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+260,
+"archive/endings/260",
+294,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+279,
+"archive/endings/279",
+313,
+"000.bin",
+"66932/66700",
+" sameVRAM="
+],
+[
+286,
+"archive/endings/286",
+320,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+310,
+"archive/endings/310",
+344,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+326,
+"archive/endings/326",
+360,
+"000.bin",
+"59740/59200",
+" sameVRAM="
+],
+[
+327,
+"archive/endings/327",
+361,
+"000.bin",
+"68048/65880",
+" sameVRAM="
+],
+[
+332,
+"archive/endings/332",
+366,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+353,
+"archive/endings/353",
+387,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+376,
+"archive/endings/376",
+410,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+381,
+"archive/endings/381",
+415,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+389,
+"archive/endings/389",
+423,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+414,
+"archive/endings/414",
+448,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+],
+[
+451,
+"archive/endings/451",
+485,
+"000.dbi",
+"22604/22424",
+" sameVRAM="
+]
+]

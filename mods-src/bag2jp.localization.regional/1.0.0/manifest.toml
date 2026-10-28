@@ -1,0 +1,1116 @@
+format_version = 11
+id = "bag2jp.localization.regional"
+version = "1.0.0"
+name = "Regional content"
+author = "BAG2JP"
+description = "Choose the Japanese or the international (Bust A Groove 2, SLUS-01159) version of each localized element."
+resolver = "declarative"
+
+[[target]]
+game_id = "SLPM-86219"
+disc_sha256 = "fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268"
+
+[[feature]]
+id = "regional"
+name = "Regional content (JP / International)"
+description = "One choice per element. Changes apply the next time the game loads that screen or stage."
+group = "Localization"
+default_enabled = true
+
+[[option]]
+feature = "regional"
+id = "title_screen"
+label = "Title screen"
+description = "Title logo, side banners and copyright line (international: Bust A Groove 2, (c)2000; also the ranking-screen logo)."
+type = "choice"
+default = "international"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International"
+
+[[option]]
+feature = "regional"
+id = "boot_logos"
+label = "Boot logos"
+description = "Enix and Frame Graphics logos at start-up (international: English Frame Graphics logo, Enix (R))."
+type = "choice"
+default = "international"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International"
+
+[[option]]
+feature = "regional"
+id = "hiro_icon"
+label = "Hiro icon"
+description = "Hiro's cigarette icon (Japanese) or the I-love-ME icon (international), in every icon strip, character select and his portraits."
+type = "choice"
+default = "international"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International"
+
+[[option]]
+feature = "regional"
+id = "stage_signs"
+label = "Stage signs"
+description = "Neon City shop signs, Sushi Planet menu, TV studio standby screen (international versions replace logos that resembled real brands)."
+type = "choice"
+default = "international"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International"
+
+[[option]]
+feature = "regional"
+id = "songs"
+label = "Songs"
+description = "Kitty-N, Kelly and Shorty themes in Japanese or in English, Comet theme original or re-recorded (international), and the song names on character select."
+type = "choice"
+default = "international"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International"
+
+[[option.choice]]
+value = "cd"
+label = "CD quality (soundtrack, Japanese vocals)"
+
+[[option]]
+feature = "regional"
+id = "announcer"
+label = "Announcer voice"
+description = "Menu narrator and title voice: DJ Dangerous (Japanese release) or DJ Mix Deadly (international)."
+type = "choice"
+default = "international"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International"
+
+[[resource]]
+feature = "regional"
+id = "music_hq"
+label = "CD-quality songs"
+description = "Folder with the in-game songs re-built from the original soundtrack CD (FLAC, 44.1 kHz). Used when Songs = CD quality."
+format = "directory"
+default = "music_hq"
+required = false
+
+[[option]]
+feature = "regional"
+id = "command_buttons"
+label = "Command buttons"
+description = "Face-button icons in the dance commands: all yellow (Japanese) or PlayStation colours, green triangle, red circle, blue cross, pink square (international)."
+type = "choice"
+default = "international"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International"
+
+[[option]]
+feature = "regional"
+id = "vs_screen"
+label = "VS loading screen"
+description = "2-player loading screen: name text (Japanese) or the arcade VS art with flames and portraits (international), rendered in HD."
+type = "choice"
+default = "international"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International (HD)"
+
+[[resource]]
+feature = "regional"
+id = "vs_hd"
+label = "VS screen layers"
+description = "HD layers of the international VS screen (PNG), built from the US disc."
+format = "directory"
+default = "vs_hd"
+required = false
+
+[[plugin]]
+feature = "regional"
+id = "bag2jp.vs_screen"
+
+[[plugin]]
+feature = "regional"
+id = "bag2jp.command_buttons"
+
+[[plugin]]
+feature = "regional"
+id = "bag2jp.hq_songs"
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 1146880
+file = "payload/001_0000560.bin"
+sha256 = "ca0ea2913b294bd23b521d05c84166a9aacdf2ec16bc2c43c7d75995066b8d07"
+expected_sha256 = "433a62819e07fa67d97c80c5be53555f67e71fd1bade3b09654680c2f7901caf"
+when = { title_screen = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 1775616
+file = "payload/002_0000867.bin"
+sha256 = "7ef882eb3f4bf132720ba62061a43fea575b1089d833184594a7a0ddf72d89dc"
+expected_sha256 = "f32d12b9ff33f7077ee9251018310ba3c90aca065565c30ce2ae04dfd39e8a42"
+when = { title_screen = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 366592
+file = "payload/003_0000179.bin"
+sha256 = "9f3fa1984dada7e1dbea7560a94f29945f78702ba40fce1b3bcd8845dabb9b38"
+expected_sha256 = "fa66eef68e26a72f9884b174ad25ba36cd0ef66449b3e76b6cc3cb809f8cde75"
+when = { boot_logos = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 1034240
+file = "payload/004_0000505.bin"
+sha256 = "a6102f75eb56f07b2568af88bd10a32b3d1048e9fa75165b714d4d3eb136aea0"
+expected_sha256 = "6521272af493856525f769a1a93668e2e306569a671615cfc32d07a198b014ad"
+when = { boot_logos = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 6246400
+file = "payload/005_0003050.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 6651904
+file = "payload/006_0003248.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 7098368
+file = "payload/007_0003466.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 7555072
+file = "payload/008_0003689.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 8024064
+file = "payload/009_0003918.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 8077312
+file = "payload/010_0003944.bin"
+sha256 = "ac56751d228ca318d3d6cbf753eea9da529cdd8c1c3ddf7cc83308fcc047ee24"
+expected_sha256 = "9a52e38d4ce6e0361e362d8ef0f3dc74032feb9830646ce4694d31032bc2b14f"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 8081408
+file = "payload/011_0003946.bin"
+sha256 = "95e649c1e4b194b71b90f384a2fe5d1fc3b1df036884b7e008776c698dbe8998"
+expected_sha256 = "c7b1cf1ecf3785cb89d0de050127550512f4fd2f19e430a56565a29cdc83c07f"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 8105984
+file = "payload/012_0003958.bin"
+sha256 = "3ccd19c261f6ea1f21b13245dde30f00b210eb5265aa271971d86979558d0631"
+expected_sha256 = "10410fc46c10f7359c1e558f3e25bbbb4fddbe7555d9642e48c403f4588b28d0"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 8306688
+file = "payload/013_0004056.bin"
+sha256 = "2082ec6519e53fcfcd8002667d024d2c74d88442a1180eb17624eb3ce6038907"
+expected_sha256 = "00c65bbfc10e1387850b8c58024920c71e303ad6d8bf96cf0205694fa37d785b"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 8337408
+file = "payload/014_0004071.bin"
+sha256 = "344042fcacf0c8bb57df9c1e0c847643a7d43f58c11e8cef4504bb1a0906b173"
+expected_sha256 = "a09f04f94cbc5e5bb686bac2bd9eca94300110650495947127dd018d061d3191"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 8478720
+file = "payload/015_0004140.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 8939520
+file = "payload/016_0004365.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 9375744
+file = "payload/017_0004578.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 9830400
+file = "payload/018_0004800.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 10311680
+file = "payload/019_0005035.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 10721280
+file = "payload/020_0005235.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 11145216
+file = "payload/021_0005442.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 11618304
+file = "payload/022_0005673.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 12048384
+file = "payload/023_0005883.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 12388352
+file = "payload/024_0006049.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 12843008
+file = "payload/025_0006271.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 13277184
+file = "payload/026_0006483.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 13701120
+file = "payload/027_0006690.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 25968640
+file = "payload/028_0012680.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 26374144
+file = "payload/029_0012878.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 26820608
+file = "payload/030_0013096.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 27277312
+file = "payload/031_0013319.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 27746304
+file = "payload/032_0013548.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 27770880
+file = "payload/033_0013560.bin"
+sha256 = "a482ab5fd24c5fc38aeecc56700a1f5deb4f4d761f6e2ff8e0848ca5c1bd44bc"
+expected_sha256 = "0d67d3d53a6e3a313078ba5024c76300e128ea715b13ed6dace3c95ba2a0104f"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 27795456
+file = "payload/034_0013572.bin"
+sha256 = "b22e04f78bf88aac58152d1b26d82b26a230d71f2a10609bd68d95a5d218a069"
+expected_sha256 = "59a32eeb51d812e8bb0ba4a4f115a785d0d2e10e23f754b03b66c3c2a98ce1c2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 27822080
+file = "payload/035_0013585.bin"
+sha256 = "4de2637343dc93250863b54efbd6486effe65e193774aaf2256207a361f494f3"
+expected_sha256 = "3ede433ae1327f4a51c95a5e01e5e63e8c605e326dffb1acb150055ac7c9e45f"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 28012544
+file = "payload/036_0013678.bin"
+sha256 = "867d0344f2a84a80a67c4b27fcf7dfe2817135727549b5b4f3d8c89cb561b359"
+expected_sha256 = "8da113d5526a8534c2249345b88caa00e49941329c7ba54ea9a9564b715e93e3"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 28037120
+file = "payload/037_0013690.bin"
+sha256 = "6cf42091bc30b86d314c0e1f7bc182cf13ef8de2922f1378f7bd77153ea4f781"
+expected_sha256 = "3775b11d80a93117589c35b91e6dd88e0f29868e6b02f5ebc92862046c18286c"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 28061696
+file = "payload/038_0013702.bin"
+sha256 = "1964c070cc3ee1a454dcaf76c541081a9cfeb6a28ad0ecf4723dcbca22263227"
+expected_sha256 = "47b5fa0cd5762e753e79ac70c66e92a8b71dad133d285cc6974cc318669bddb9"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 28221440
+file = "payload/039_0013780.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 28682240
+file = "payload/040_0014005.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 29118464
+file = "payload/041_0014218.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 29573120
+file = "payload/042_0014440.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 30054400
+file = "payload/043_0014675.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 30464000
+file = "payload/044_0014875.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 30887936
+file = "payload/045_0015082.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 31361024
+file = "payload/046_0015313.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 31791104
+file = "payload/047_0015523.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 32131072
+file = "payload/048_0015689.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 32585728
+file = "payload/049_0015911.bin"
+sha256 = "610634ba9e4cfad4007e64733914b9b02b3248cd0e485736bdb7b54bf053f311"
+expected_sha256 = "fbda3326f1f261f3d8573915276ef97694b799379851e4a9e61c2f95be613487"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 33019904
+file = "payload/050_0016123.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 33443840
+file = "payload/051_0016330.bin"
+sha256 = "3bd10370b045ee5479458746ce0be6bae97b2c97b0c297d7a42c066af22495d6"
+expected_sha256 = "dd8105c6dea871af9b681b2d4d5f42f27597ca5f85f8891b177ef2f25f2634a2"
+when = { hiro_icon = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 46770176
+file = "payload/052_0022837.bin"
+sha256 = "006fd898976f571ced4f40f5050c007e1c5ec1f445a52d0f445b3acf35aaf01c"
+expected_sha256 = "d23e5d686b0ef5e7a3bcb77efe34a2cbf8064b028435ab85e66dd6df1b1ecd3b"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 47802368
+file = "payload/053_0023341.bin"
+sha256 = "b8fd2c6c7fa95e746c23196138ab97b2422f90dbd5ff044d3f5cefc806451d59"
+expected_sha256 = "e31949be0de161eb142b895d07a12ba35e08c1daa3dc5918d4adfe9a5b8c1882"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 47820800
+file = "payload/054_0023350.bin"
+sha256 = "313366ba3b2392b578806d82732698d1b26d7a712a7923a7f3b64169ae0dfc0b"
+expected_sha256 = "707c27192b00a42eccafef05facded507f3ee69f2616e1f7c27e449ad6aa1c0c"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 48207872
+file = "payload/055_0023539.bin"
+sha256 = "733a8de355bf8b1956dd80bb15f2cd9e7569e1376e24c5c42050144d01c6f537"
+expected_sha256 = "efe39a285336d119731f643e3d3c83828c76f0a54213db7d6c0fc72d358b9637"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 48218112
+file = "payload/056_0023544.bin"
+sha256 = "a94515b6a600ecf57a975211e3fd33b51be23b97ef87270a12978961126ebcf2"
+expected_sha256 = "89704003c6b74a2a6427e6540be0f9382ff71af69df8bfe75de7af828afe037f"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 48261120
+file = "payload/057_0023565.bin"
+sha256 = "aa3895aec7c03966a6810ecaf6dea1cd03819047d219061266d7cab01e495ecf"
+expected_sha256 = "22be67b0688335149bc388b4c2ac9c86a7fcb3189c76a8c1fdf846d3fd9e2777"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 48306176
+file = "payload/058_0023587.bin"
+sha256 = "26abedfaf1596107c58301fe032b9ecb3459448221b8473a31fbeaac6aac337a"
+expected_sha256 = "0ce4598cb9e20c8e713f4a63293234cc489b9317aefb9bd656479d8be67c4b3e"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 48320512
+file = "payload/059_0023594.bin"
+sha256 = "47d552dece9d6f798cb8064638e35c5d5ce31eecd3d431e9466b8269d43fd8cb"
+expected_sha256 = "7b359a01082064429d367092f35e9afd5f361faa81fd494127b31f8d332ef2c4"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 48340992
+file = "payload/060_0023604.bin"
+sha256 = "2ee5dcc114a67d1dc43b460288034374262a4e868a6ad6a2a1ca8ebd389039e5"
+expected_sha256 = "06d82079ef05602a0080c7099f500b9b98830cd534cc900721c197bddcb0acae"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 48357376
+file = "payload/061_0023612.bin"
+sha256 = "a8b592996a894f906dc0eab89dc5dd9f070c9325d1f614fc2124e5138d7e3a41"
+expected_sha256 = "9cb1b1db93eaad0dac310bfa5e9f5b1a0e4219895bf2e23fc5d64e7ced6782e6"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 48793600
+file = "payload/062_0023825.bin"
+sha256 = "5a1e50b86f137599b8a6c0445a33c03a116154ef999c983991ccd9489d989189"
+expected_sha256 = "e298cf7c1b52604b05a3d84ed654c823b7d6962f04dbc6f91124c6da3939087e"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 48812032
+file = "payload/063_0023834.bin"
+sha256 = "2e4fc5fc0ec0fd30451cdb583ad6c226857adcecd5751e2e92ade75d7383baf0"
+expected_sha256 = "8f477bf854efe7221f0c1ee9fa67bd09e847f2a30311787c7390e7be7d2fd229"
+when = { stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 1234944
+file = "payload/064_0000603.bin"
+sha256 = "6f5f2a0f727c0870c007a431101da1f49cd9a916a379ee463f02c3c09275eb24"
+expected_sha256 = "45d409fadf74cc6db5661f0c4b979998ec2bc932247e7b9af6312cb874afe104"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 1241088
+file = "payload/065_0000606.bin"
+sha256 = "11055a91e9824ad90cd5fb8926d53cdea5a4ef11dab50cb7c18a818e58e51986"
+expected_sha256 = "457dfd856b6c8d1959e3b2bf38c8b999d9723179b5899f83c70148b8e83548a7"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 1335296
+file = "payload/066_0000652.bin"
+sha256 = "6071c92d2aaefa897d204c527d21431a32c0f44cba52fccd4e4309534fda633c"
+expected_sha256 = "73f703470e5305374e70104ee0e92c3249f7c2f454807d78a48e8e0d1629c656"
+when = { hiro_icon = "international", stage_signs = "japanese" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 1335296
+file = "payload/067_0000652.bin"
+sha256 = "346b36aad5cb27c3180004f4f2f15dfcdcf004963e2823426ad39cbd3ff5385a"
+expected_sha256 = "73f703470e5305374e70104ee0e92c3249f7c2f454807d78a48e8e0d1629c656"
+when = { hiro_icon = "japanese", stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 1335296
+file = "payload/068_0000652.bin"
+sha256 = "97fd03be7f4db5065a47dcd6c93f2e16f3934c06c9133b6639cd981b9eec3155"
+expected_sha256 = "73f703470e5305374e70104ee0e92c3249f7c2f454807d78a48e8e0d1629c656"
+when = { hiro_icon = "international", stage_signs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 151097184
+file = "payload/xa_02_0064242.bin"
+sha256 = "508e94f7a250ce50e2c38a154b01d606ac8372d4ffe96f1a0e353aef0bcb6d28"
+expected_sha256 = "f07a2b6b2e8bba89592709c0367922ee6535d3e1fbaba05e50fc4d799b5d0687"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 155914080
+file = "payload/xa_02_0066290.bin"
+sha256 = "7ab634504d1d449d1d624f53a06949150649b2e2ebb8b5a4d42005718a97a00d"
+expected_sha256 = "96aab3564a78f92234adc482a31bf77fc38ec153f18a16255ae720ce3f0844b1"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 160730976
+file = "payload/xa_02_0068338.bin"
+sha256 = "e08d33cd770ec05edbba99d75bde32bf9450aa561f8ccb90df89f162e4632de7"
+expected_sha256 = "9474750ad22ca20b17d3a0c25c89d7f926f1e3a7f55841f8e94d8270dbe709eb"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 165547872
+file = "payload/xa_02_0070386.bin"
+sha256 = "a189604a13e5ba194695b8b9abeffb25b9ee0191de5aa5f5d39bfdaecc97012d"
+expected_sha256 = "c98ee42839f88d1edf2f69b14ab39e9c94cca8ede7b99614199a4e842f6852a9"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 170364768
+file = "payload/xa_02_0072434.bin"
+sha256 = "3ad8bc86443a558a00a55d3d769c519fbae5facdf25c1a37b413db6161d5beb3"
+expected_sha256 = "7a0232607e56181a55eefe5be5eacae17902442e81c53bcbe9afcb7275557e4a"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 175181664
+file = "payload/xa_02_0074482.bin"
+sha256 = "b38de2269b4cdf983f6cc2071a98bd94c3f38a412527cd7ea23a80cfe353b00b"
+expected_sha256 = "903c43a6c2eb2ff54bcc65018442077507be6e7f4dd91a83f5919b647e0b7839"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 179998560
+file = "payload/xa_02_0076530.bin"
+sha256 = "b33ceff8d559539445130ec9dfcf8c73c59761b5eec47fde53feacd100952ded"
+expected_sha256 = "71dc350c4039c452c4a680e7e2626eeae88f3d345510891b6d8a0be991d70822"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 184815456
+file = "payload/xa_02_0078578.bin"
+sha256 = "d4d924652d7c0efa5cd65a3f18d8fe663c502dde14850e36b7a336b7bf540092"
+expected_sha256 = "f0b129f4208d7dd24cae4155cdd04c3df5fae6559a752d38614f62058d1b8320"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 189632352
+file = "payload/xa_02_0080626.bin"
+sha256 = "f05c8967c213af2b22dec6c0208b864f1aa40a15f94c24c4e645ef33feb53f28"
+expected_sha256 = "8351c4bccdd46aece8d5be698961bd6f02608746007941efce112f9f00b06a5f"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 194449248
+file = "payload/xa_02_0082674.bin"
+sha256 = "89d0cae6fccd873d61df64f1359d4015794565e2923b283f30377ec7f18e3f4d"
+expected_sha256 = "ded4965c44fc64c0c8b155543b8507216b7ca987a5a3a864bf10e4bc225088da"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 199266144
+file = "payload/xa_02_0084722.bin"
+sha256 = "c7b39f14fcc0229abf56f75c8270a8eb55e5d1aaa7c86130213c039f69a7b538"
+expected_sha256 = "ef6750153f8a32a607d2a9e82a93f3a5e9a0343dbff19a2be45a0a503d4084fb"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 204083040
+file = "payload/xa_02_0086770.bin"
+sha256 = "55d3359202572d889f30d33d27e1b68da7100ee7d2d17a8df969477b7e1c5051"
+expected_sha256 = "182ae2669c88f71b509275707e027e3d33cc260138958b5bd12b18bc3ea9a320"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 208899936
+file = "payload/xa_02_0088818.bin"
+sha256 = "db0fb566814aab92369135493cd6fbf66553603f9a131e3b6d0e8a5d9a38cf9b"
+expected_sha256 = "dea622d18d9b884c662105b48d588ad2c634039dda0eb8859b096815c150cdee"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 213716832
+file = "payload/xa_02_0090866.bin"
+sha256 = "a164b4cfee97c0831ff97a5c98d6b110b9b96f091bb6184a5263f9a5566d2748"
+expected_sha256 = "a6e59e8dfdf087e3427ac20364fc02050b503144fa08d3cb2707a62e9c635e9b"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 218533728
+file = "payload/xa_02_0092914.bin"
+sha256 = "cd8210645eb33fc8edc996dca162a4fb2a0ff8b1c142085f67a889c89bb7482c"
+expected_sha256 = "53a2f6da11c28643212384d6624b9430b5c6df127eac6c76339b9de860af4eef"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 223350624
+file = "payload/xa_02_0094962.bin"
+sha256 = "f77dba82b9136e8195c8fb5943c753637aa110e68d8169d36f20d70312ddec07"
+expected_sha256 = "1f7c1e7e0a6426371a4816b33cdf2cacec55bef098e5b88309b9b598dd60de5c"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 228167520
+file = "payload/xa_02_0097010.bin"
+sha256 = "4b3244b8d44312e81223e5661f597a7c9f0c60b0255f8356c476b5a8d2dc4874"
+expected_sha256 = "1f376d365996d3bb13a27191355b1cf20902f345c649c70e0d071983942c0189"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 232984416
+file = "payload/xa_02_0099058.bin"
+sha256 = "7a52234ec6d73e68564fc607cdcfb8ef8aec8d84ec106b5ee921ff3fabbc3784"
+expected_sha256 = "d9fb27776e51530daf712985b85c019ee7d48ff4b04c9ff96695b70847920a71"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 237801312
+file = "payload/xa_02_0101106.bin"
+sha256 = "daccaae67f30e312e84e9813479968b334a65063509de1ef7277af8c859555ce"
+expected_sha256 = "3edf3ff2a8e88a6cc1448364288dae90117a2ec27e9e4cbe210bf517a3f8db21"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 242618208
+file = "payload/xa_02_0103154.bin"
+sha256 = "8107ca826d876f6d12959acacf7fa897bb9a7caf02090e65475c2852cbae4cdb"
+expected_sha256 = "76a3bf53f5e916f61ea779acc28883f92741407cb85f5f4c71f976ee2cdf998a"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 260098272
+file = "payload/xa_04ch6_0110586.bin"
+sha256 = "037a2e0cec17f5b022f3ae9e1e7857efb01f4609612c6b9047b7b2644b505ac0"
+expected_sha256 = "b8a14b9f7376048471d35ebde8a4dacdaba35b9e53b5a39c1a348c0362470ecb"
+when = { announcer = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 87216864
+file = "payload/xa_01songs_0037082.bin"
+sha256 = "731858bf699152215161c475fd0c1cec507c545fede2bb5d4326cb0e3fd82829"
+expected_sha256 = "963d04e49727dceac2494020baf1ebc740c6cec63769942c2440125759d63302"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 92033760
+file = "payload/xa_01songs_0039130.bin"
+sha256 = "ee604801158cf5a17f3878e7328dedc20e67b20fb7044c645c6ef1de007907bf"
+expected_sha256 = "516a67ba718e55bf1fbe87ccf761a216c911e31cbe4e72283daca1ff84f61ff6"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 96850656
+file = "payload/xa_01songs_0041178.bin"
+sha256 = "96a75a58f880164cb5cbf1bb84716565d67c6b830e648c5a0b2db0bb94220eab"
+expected_sha256 = "4e9509b26b9ad7bddac757ce1eb96be076f63b4fabe52970d2ca5c18eed890ad"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 101667552
+file = "payload/xa_01songs_0043226.bin"
+sha256 = "986d283335f56534efff425bc8519d273e301a8db01f93ff0d23e6c465d6b489"
+expected_sha256 = "a48d8b643f98f851cbdb5a964c93d7e887adb14e796187874149baf1a1f39332"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 106484448
+file = "payload/xa_01songs_0045274.bin"
+sha256 = "ce745706de007820fc2f8c357d28004ec2b8b38e9da7e9446c7ac0d625d6ca04"
+expected_sha256 = "cc466ed6aea03e1b774d95777abf33ed85d1bb4422109d1f12a5b5d760d255aa"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 111301344
+file = "payload/xa_01songs_0047322.bin"
+sha256 = "4025585c20b47963ecaa73ec921323828e56ff0e4972aa2a81abe2f13136831a"
+expected_sha256 = "28617f3b0c7f7563330041bc7ceaa0911f9d501e9431a57fed9a0b91c0c45b23"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 116118240
+file = "payload/xa_01songs_0049370.bin"
+sha256 = "fd1d5d8ed0fa5aba8bacc7fb9a8afed0a79ce2eadb8ae5335a682460e770bfbb"
+expected_sha256 = "84e336a7872338ccdb22ede3b95a2299c5d8a7b35a037158a7271944165d7963"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 120935136
+file = "payload/xa_01songs_0051418.bin"
+sha256 = "b71af127ba35442188968018559693b42df10d82ab1d5541dd0aee5c68d6a3be"
+expected_sha256 = "700f70d4efc5c105f549e0e65a2bf49cf4aac2195acbcb528c2d1910347922a9"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 125752032
+file = "payload/xa_01songs_0053466.bin"
+sha256 = "2a66c93bbce427f30704e8a7fb82e9470b6c79813117605e3bf93e1786770306"
+expected_sha256 = "c041cb6092bdac270ea5ea7aef2ec33e194980c8e604d535ebca0a4343a1fde0"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 130568928
+file = "payload/xa_01songs_0055514.bin"
+sha256 = "1dc8bfcfa38ca83aafa21cd0ebfc69184bdecc70936f58ae32973e06d47abe04"
+expected_sha256 = "11322e877f6579294933264eeca2a344d3360c253080a44b913d665a442244d4"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 135385824
+file = "payload/xa_01songs_0057562.bin"
+sha256 = "63cf5a9975794e95e91fafa253ed18f8606694daa50278c2cf3606d206b6605c"
+expected_sha256 = "c163e60c54df2badcfec84bbce6b3e046d40e7e4a22fdc35bf606e39d59c6993"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 140202720
+file = "payload/xa_01songs_0059610.bin"
+sha256 = "a832280b965aad7d54679acf8e7702c499753856ad870246c6dc009d6040bf21"
+expected_sha256 = "26c97032837b04a4a7bb75986348dcafb992dbbef5a8b1068b384c4a3ca46d5a"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 145019616
+file = "payload/xa_01songs_0061658.bin"
+sha256 = "07d7d559af5d473339e7232e9ef2d16c00584928309ee5daf19ade3ab13ded2e"
+expected_sha256 = "ea0df288062eb9892b77dc6051cfab8a4d08e8764f95bbafcca83097f82f5bc7"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_raw"
+offset = 149836512
+file = "payload/xa_01songs_0063706.bin"
+sha256 = "e2e7260dd3d09cdf1061470cad4a813a82e1e17d921958fc8dcd65ef48d4233d"
+expected_sha256 = "6ed717927c84390470adafcb02f90855b13169ba12f7bb3c660fa98d0d2162e9"
+when = { songs = "international" }
+
+[[overlay]]
+feature = "regional"
+target = "disc_user"
+offset = 1007616
+file = "payload/buttons_0000492.bin"
+sha256 = "08b83bf32e7cbce050adb49b7fcba56086d97ad5edd5f6d479c0a0ca1b5d9e2f"
+expected_sha256 = "4757b892fd1d9ce2bd5ff793577bd434f71e003a61350464179066342944c3ea"
+when = { command_buttons = "international" }

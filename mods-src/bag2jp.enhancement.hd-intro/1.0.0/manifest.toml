@@ -1,0 +1,22 @@
+format_version = 5
+id = "bag2jp.enhancement.hd-intro"
+version = "1.0.0"
+name = "HD Intro"
+author = "BAG2JP"
+description = "Plays an HD version of the opening movie (movies/BUST2_OP.mpg next to the executable) instead of the 320x240 original. Without that file the original intro plays."
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "SLPM-86219"
+
+[[feature]]
+id = "hd-intro"
+name = "HD Intro"
+description = "Replaces the opening FMV with movies/BUST2_OP.mpg (MPEG-1 video + MP2 44.1 kHz audio). The game still runs its own movie underneath, so Start still skips it."
+group = "Video"
+default_enabled = true
+
+[[plugin]]
+feature = "hd-intro"
+id = "bag2jp.hd_intro"

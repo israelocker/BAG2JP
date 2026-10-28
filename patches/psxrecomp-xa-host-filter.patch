@@ -1,0 +1,46 @@
+diff --git a/runtime/include/cdrom.h b/runtime/include/cdrom.h
+index 9b7eb879..cd6d67bf 100644
+--- a/runtime/include/cdrom.h
++++ b/runtime/include/cdrom.h
+@@ -71,6 +71,14 @@ void cdrom_timing_reset(void);
+ void cdrom_timing_stats_json(char* out, int cap);
+ int cdrom_get_delivered_lba(void);
+ 
++/* BAG2JP local addition: called on the emulation thread for every real-time XA
++ * audio sector that is decoded for output, after resampling to 44.1 kHz and
++ * before the CD decode volume. The filter may overwrite pcm (frames stereo
++ * int16 frames). NULL disables. */
++typedef void (*CdromXaHostFilter)(int lba, int file, int channel, int16_t *pcm, int frames);
++extern CdromXaHostFilter g_cdrom_xa_host_filter;
++void cdrom_set_xa_host_filter(CdromXaHostFilter filter);
++
+ /* Per-record view of the same ring, for localising a single lost/skipped
+  * sector rather than summarising thousands. */
+ typedef struct CdTimingPub {
+diff --git a/runtime/src/cdrom.c b/runtime/src/cdrom.c
+index 81fa3736..7038f7aa 100644
+--- a/runtime/src/cdrom.c
++++ b/runtime/src/cdrom.c
+@@ -338,6 +338,10 @@ int cdrom_get_delivered_lba(void) { return last_sector_lba; }
+ /* Frontend XA-stream probe (FMV auto-skip / turbo-load gating in main.cpp). */
+ int cdrom_xa_stream_active(void) { return xa_stream_active; }
+ 
++/* BAG2JP local addition (see cdrom.h). */
++CdromXaHostFilter g_cdrom_xa_host_filter = 0;
++void cdrom_set_xa_host_filter(CdromXaHostFilter filter) { g_cdrom_xa_host_filter = filter; }
++
+ int cdrom_fmv_stream_pending(void)
+ {
+     if (xa_stream_active)
+@@ -1422,6 +1426,11 @@ static int maybe_deliver_xa_audio(const uint8_t* raw_data, int lba,
+     xa_zero_scan(native, native_frames, lba, 0);
+     int out_frames = xa_resample_to_44100(native, native_frames, sample_rate,
+                                           pcm_44100, XA_MAX_44100_FRAMES);
++    /* BAG2JP local addition: a title plugin may replace the decoded XA audio
++     * of this sector (same length, 44.1 kHz stereo) before the CD decode
++     * volume is applied, e.g. with a higher quality rendition of the music. */
++    if (g_cdrom_xa_host_filter)
++        g_cdrom_xa_host_filter(lba, file, channel, pcm_44100, out_frames);
+     /* Volume is applied after resampling, per PS1 hardware tests (Beetle
+      * cdc.cpp GetCDAudio comment). */
+     cd_apply_decode_volume(pcm_44100, out_frames);

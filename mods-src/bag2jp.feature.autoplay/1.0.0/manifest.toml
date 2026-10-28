@@ -1,0 +1,31 @@
+format_version = 5
+id = "bag2jp.feature.autoplay"
+version = "1.0.0"
+name = "Autoplay"
+author = "BAG2JP"
+description = "The CPU dances for player 1 in 1P matches with frame-exact timing. For testing, unlocking content and watching endings."
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "SLPM-86219"
+
+[[feature]]
+id = "autoplay"
+name = "Autoplay (P1)"
+description = "Off by default. When on, your own inputs are ignored during the dance. While playing, hold Select and press R1 (keyboard: Right Shift + W) to switch it off/on; the Active box sets how each session starts."
+group = "Gameplay"
+default_enabled = false
+
+[[plugin]]
+feature = "autoplay"
+id = "bag2jp.autoplay"
+
+[[option]]
+feature = "autoplay"
+id = "active"
+label = "Active at start"
+description = "Autoplay starts switched on. Untick to start with it paused (Select + R1 in game resumes it)."
+group = "Gameplay"
+type = "boolean"
+default = "true"

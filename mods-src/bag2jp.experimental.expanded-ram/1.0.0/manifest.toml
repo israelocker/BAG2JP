@@ -1,0 +1,30 @@
+format_version = 7
+id = "bag2jp.experimental.expanded-ram"
+version = "1.0.0"
+name = "Expanded RAM (8 MB, experimental)"
+author = "BAG2JP"
+description = "Turns on the 8 MB main RAM map and makes the game's own startup (PsyQ 2MBYTE.OBJ) size its heap and stack for 8 MB instead of 2 MB: the RAM-size word the startup reads at 0x80035E48 changes from 0x00200000 to 0x00800000. The stack moves to the top of 8 MB and InitHeap gets about 8 MB."
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "SLPM-86219"
+
+[[feature]]
+id = "expanded-ram"
+name = "Expanded RAM (8 MB)"
+description = "Experimental. Off restores the stock 2 MB layout."
+group = "Advanced"
+default_enabled = true
+
+[[requirement]]
+feature = "expanded-ram"
+package = "psx.enhancement.8mb-ram"
+requires_feature = "8mb-ram"
+
+[[patch]]
+feature = "expanded-ram"
+target = "main_exe"
+address = 0x80035E48
+expected = "00 00 20 00"
+replace = "00 00 80 00"

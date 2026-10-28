@@ -1,0 +1,18 @@
+# Heavy or generated data stays out of git (kept on disk, backed up separately)
+assets/
+releases/
+_work/
+ghidra/
+*.tar.gz
+SLPM_862.19
+# mod payloads and bundled media (rebuilt by the tools in mods-src/*/tools)
+mods-src/**/payload/
+mods-src/**/music_hq/
+mods-src/**/vs_hd/
+mods-src/**/replacements/
+mods-src/_superseded/
+*.flac
+*.mpg
+*.bin
+*.exe
+__pycache__/
