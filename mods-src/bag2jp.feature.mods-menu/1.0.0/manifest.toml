@@ -1,0 +1,31 @@
+format_version = 11
+id = "bag2jp.feature.mods-menu"
+version = "1.0.0"
+name = "In-game MODS menu"
+author = "BAG2JP"
+description = "Adds MODS to the game's OPTION MODE menu: change every BAG2JP mod choice from inside the game, with the pad."
+resolver = "declarative"
+
+[[target]]
+game_id = "SLPM-86219"
+disc_sha256 = "fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268"
+
+[[feature]]
+id = "mods-menu"
+name = "In-game MODS menu"
+description = "OPTION MODE > MODS. Choices are saved; most apply on the next start (marked *)."
+group = "Interface"
+default_enabled = true
+
+[[resource]]
+feature = "mods-menu"
+id = "menu_assets"
+label = "Menu assets"
+description = "HD font atlases used to draw the MODS screen."
+format = "directory"
+default = "menu_assets"
+required = false
+
+[[plugin]]
+feature = "mods-menu"
+id = "bag2jp.mods_menu"

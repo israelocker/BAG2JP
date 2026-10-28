@@ -256,3 +256,24 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - realesrgan-ncnn-vulkan (RTX 3090), ollama (qwen3-coder:30b, qwen3.8:27b), local-llm-mcp,
   local-vibes (bash disabled; always pass working_dir + read_only), ghidra_12.1.4 + ghidra-mcp-python,
   ghidra-scripts\DecompileExport.java (headless export). Git 2.56 at C:\Program Files\Git.
+
+## Phase 2: in-game MODS menu (bag2jp.feature.mods-menu, 2026-10-28)
+- OPTION MODE = module system/002.dbi (base 0x8008F890), FUN_80093388: labels via the text routine
+  0x8001FBFC (font 1, colour 5 / 6 selected = 000.tim CLUT rows), cursor byte 0x80191EBD, per-menu
+  cursor limit 0x8009C794[menu], cursor positions 0x8009C83C + idx*8 + menu*0x30 (x,y halves),
+  label positions 0x8009C7AC (x,y words). Pads in RAM: held 0x8005E870/78, pressed 0x8005E872/7A
+  (Circle 0x20, Cross 0x40, Up 0x1000, Down 0x4000).
+- Patch (plugin bag2jp.mods_menu, src/bag2jp_mods_menu.c): limit 2->3, cursor slot 3 = (70,170),
+  VIBRATION text `jal 0x8001FBFC` at 0x80093764 -> mod guest function 0x0F000100 that draws VIBRATION
+  and then "MODS" (y 172; string placed in unused stack 0x400 below sp for the call; the Expansion-1
+  guest allocation read back empty). Circle on MODS: instruction hooks on `andi v0,v0,0x20` at
+  0x8009355C / 0x80093570 clear the bit and open the screen. While open (and until all buttons are
+  released after closing) a pad transform feeds the game a neutral pad (SIO order bits: Up 0x10,
+  Right 0x20, Down 0x40, Left 0x80, Circle 0x2000, Cross 0x4000).
+- Screen: host HUD layer, 1280x960 canvas, text = game font 1 glyph table (0x8005E2B8[1] ->
+  0x80050F44, height 10) over the HD font atlases (resource menu_assets: font_a/b NN.png = 000/001.tim
+  rows). Items: regional options (8), HD intro / HD font (feature switches), autoplay (live).
+  Saving: psx_mod_feature_set_option / psx_mod_feature_enable + psx_mod_save_selection (the
+  emulation thread is the main thread); autoplay also psx_mod_set_option_live. Orange dot = applies
+  on next start. Verified: label, cursor wrap, open/close without the game reacting, changes written
+  to mods/state.toml and reverted.
