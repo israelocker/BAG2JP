@@ -277,3 +277,15 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   emulation thread is the main thread); autoplay also psx_mod_set_option_live. Orange dot = applies
   on next start. Verified: label, cursor wrap, open/close without the game reacting, changes written
   to mods/state.toml and reverted.
+
+## HD UI texture pack (menus and interface)
+- Tools: mods-src/bag2jp.hd-texture-pack/tools/gen_ui_pack.py (plan, prepall, finishall),
+  esr_each.ps1 (Real-ESRGAN anime x4, one process per file), validate_pack.py.
+- 589 replacements (every archive/system TIM of the JP disc plus the US files used by the regional
+  overlays, one per palette), installed in mods/texture-packs/SLPM-86219/replacements/bag2jp_ui.
+- Real-ESRGAN in one long batch hits VK_ERROR_DEVICE_LOST and leaves black, inverted or striped
+  outputs (this broke the title logo: black box). finishall now checks every upscale against the
+  source (box-downscaled mean RGB error on opaque pixels, limit 30), queues failures in in_retry2
+  for another per-file GPU pass, and uses the palette-index label upscale when it still fails.
+  Final pack: ~530 ESRGAN, ~60 label. validate_pack.py: worst error 51 (a label image), all others <40.
+- Checked in game: title screen (logo, menu items, side banners) and character select.
