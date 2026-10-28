@@ -64,3 +64,43 @@ def build_pack(out_dir, S=6, blur=0.2):
             name = f'texupload-P4-{tex}-{ph}-{w}x{h}-0-0-{w * 4}x{h}-P0-15.png'
             colorize(lab, row, ss).save(os.path.join(out_dir, name), optimize=True); n += 1
     return n
+
+# ---- v2: per-glyph cells (no bleeding between neighbouring glyphs) ----
+EXE = os.path.expanduser('~/work/vs/slpm.exe')
+FONT_TABLES = (0x80050D60, 0x80050F44, 0x80051128)   # 'SF' tables: +2 height, +4 3-byte u/v/w from ' '
+def glyph_cells():
+    d = open(EXE, 'rb').read()[0x800:]; cells = set()
+    for a in FONT_TABLES:
+        o = a - 0x80010000; h = d[o + 2]
+        for i in range(96):
+            u, v, w = d[o + 4 + 3 * i:o + 7 + 3 * i]
+            if u == 255 or w == 0 or u + w > 256 or v + h > 240: continue
+            cells.add((u, v, w, h))
+    return sorted(cells)
+
+def label_upscale_cells(idx, S, blur=0.2, ss=2):
+    lab, f = label_upscale(idx, S, blur=blur, ss=ss)
+    T = S * ss
+    for (u, v, w, h) in glyph_cells():
+        cl, _ = label_upscale(idx[v:v + h, u:u + w], S, blur=blur, ss=ss)   # isolated: edges replicate
+        lab[v * T:(v + h) * T, u * T:(u + w) * T] = cl
+    return lab, f
+
+def build_pack_v2(out_dir, S=6, blur=0.2):
+    import xxhash
+    os.makedirs(out_dir, exist_ok=True)
+    idx = load_indices()
+    d = open(TIM, 'rb').read(); ln = struct.unpack_from('<I', d, 8)[0]; q = 8 + ln
+    _, x, y, w, h = struct.unpack_from('<IHHHH', d, q)
+    tex = xxhash.xxh3_64(d[q + 12:q + 12 + w * 2 * h]).hexdigest().upper()
+    lab, ss = label_upscale_cells(idx, S, blur=blur)
+    names = {}
+    for tag, f in (('a', '000.tim'), ('b', '001.tim')):
+        rows, raw = clut_rows(os.path.expanduser(f'~/work/jpbase/archive/system/000/{f}'))
+        for r, row in enumerate(rows):
+            ph = xxhash.xxh3_64(raw[20 + r * 32:20 + r * 32 + 32]).hexdigest().upper()
+            name = f'texupload-P4-{tex}-{ph}-{w}x{h}-0-0-{w * 4}x{h}-P0-15.png'
+            if name not in names:
+                colorize(lab, row, ss).save(os.path.join(out_dir, name), optimize=True)
+            names.setdefault(name, []).append(f'font_{tag}{r:02d}.png')
+    return names
