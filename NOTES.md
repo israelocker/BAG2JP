@@ -289,3 +289,5 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   for another per-file GPU pass, and uses the palette-index label upscale when it still fails.
   Final pack: ~530 ESRGAN, ~60 label. validate_pack.py: worst error 51 (a label image), all others <40.
 - Checked in game: title screen (logo, menu items, side banners) and character select.
+- STATUS: set aside (user not happy with the look; try another upscaler later). The pack was moved
+  out of the install to _work/uipack/bag2jp_ui_removed; only bag2jp_system_font stays installed.
