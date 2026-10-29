@@ -291,3 +291,28 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - Checked in game: title screen (logo, menu items, side banners) and character select.
 - STATUS: set aside (user not happy with the look; try another upscaler later). The pack was moved
   out of the install to _work/uipack/bag2jp_ui_removed; only bag2jp_system_font stays installed.
+
+## Online play (generic PSXRecomp netplay vs BAG1-style step sync)
+- Generic netplay enabled in BAG2JP (CMakeLists: PSX_NETPLAY ON + ENABLE_NETPLAY_IF_PRESENT, lobby
+  ws://netplay.retcomm.net:8765). Launcher gets a NETPLAY button: LAN / Direct IP (no account) or
+  Online Netplay (Discord sign-in, lobby server). LAN keeps vanilla content: our mods are off in the
+  match (JP title, no HD intro / international VS). Both players need the same .cue/.bin (disc
+  fingerprint in game.toml [netplay]).
+- Tested on one PC with two copies (second copy: _work/netplay_peer2): Join Direct 127.0.0.1:7777 works
+  (joining from the LAN list did not on one PC). CLI test: --no-launcher --netplay --net-slot 0|1
+  --net-bind --net-peer (delay-sync). 2P VS: character select, stage select and the dance stayed in
+  sync, host and guest inputs both applied, no desync lines (PSX_RB_PAD_TRACE=1 logs to stderr).
+- Test helpers in D:\Dev\Tools\winshot: winshot.ps1 (PrintWindow capture of covered windows),
+  postkey.ps1 (posts key messages to a window; works when another app holds the foreground),
+  sendkey.ps1, focus.ps1, np_cli.ps1 (starts the two CLI peers), dbg.ps1.
+- BAG1 step sync (bag.netsync, colleague's port, source not public): BAG1 FUN_800207bc(player) is the
+  per-player bar update; CPU player = bits 2-3 of 0x80068704; CPU decision FUN_80020e10 returns the
+  bar result (0x46/0x3c/0x32 judged, -1 miss, 0x6e attack, 0xaa dodge); human FUN_80020a7c; apply
+  FUN_80022884 (CPU) / FUN_80022130 (human). The plugin replaces the CPU decision with results that
+  arrive from the other PC. Decompile: _work/bag1/bag1_decomp.txt.
+- BAG2 JP: the same logic is inlined in the game module system/005.dbi (base 0x8008F890), giant
+  FUN_80099e90; per-bar 2-player loop around 0x8009B000: CPU path when mode 0x8005D2C4 == 0 or
+  (== 1 and player != human 0x8005E6C8); result code at 0x8005CF1C + p*0x24 (0x6e attack, 0xaa
+  dodge), timing at 0x8005CF14 + p*0x24, per-player block 0x8005E728 + p*0x32. Decompile:
+  _work/game/jp005_decomp.txt.
+- Current BAG2JP CMakeLists.txt (with netplay on) copied to patches/BAG2JP-CMakeLists.txt.
