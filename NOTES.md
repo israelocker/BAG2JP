@@ -316,3 +316,22 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   dodge), timing at 0x8005CF14 + p*0x24, per-player block 0x8005E728 + p*0x32. Decompile:
   _work/game/jp005_decomp.txt.
 - Current BAG2JP CMakeLists.txt (with netplay on) copied to patches/BAG2JP-CMakeLists.txt.
+
+## Online step sync (bag2jp.feature.netsync) - in progress
+- Plugin src/bag2jp_netsync.c (copy in mods-src/bag2jp.feature.netsync with the manifest). MODS menu
+  item ONLINE: OFF / LOCAL NETWORK / TEST (MIRROR) (option transport = off|lan|loopback; next start).
+- Match = ordinary 2-player battle on both PCs. Discovery: UDP broadcast to port 47300 with the hash
+  of the room code (bag2jp_online.txt next to the game, default BAG2); higher random nonce = P1.
+- While linked: port 2 is a controller source (plugs a pad so 2PLAYER GAME opens) and both ports go
+  through a pad transform. From mode 2 (2PLAYER GAME) the menus route the remote player's button
+  changes (ordered, each held 2 frames); during the dance the remote side gets a neutral pad and
+  Start is stripped (no pause).
+- Per bar: gate 0x8009ABC4 (bnez v0): when the input window closes the local bar is closed with
+  FUN_800120F8(player, command) and sent; the bar waits (max 30 frames, ~20 usable before the next
+  bar) for the other result. Join 0x8009B084 writes both players' judge fields (+08,+0C,+0E,+12,+14)
+  before scoring. "Right" results map to this PC's command id.
+- Start barrier: when the match module loads both PCs wait for each other (READY), so the songs run
+  within the network delay. Link lost after 5 s silence (toast). Status line via host_osd.
+- Tested on one PC with two copies (vsync off in the test copy; with vsync on two copies ran at ~44 fps
+  and drifted): characters, difficulty, stage and every bar resolved identically on both, waits 0-8 frames.
+- Still to do: internet transport, room code entry in the MODS menu, rematch/results flow check.

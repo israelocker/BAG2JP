@@ -1,0 +1,47 @@
+format_version = 11
+id = "bag2jp.feature.netsync"
+version = "1.0.0"
+name = "Online step sync"
+author = "BAG2JP"
+description = "Online 2-player battles: each PC plays the match itself and only the result of each bar travels, so lag barely matters and every mod stays on."
+resolver = "declarative"
+
+[[target]]
+game_id = "SLPM-86219"
+disc_sha256 = "fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268"
+
+[[feature]]
+id = "online"
+name = "Online play"
+description = "Play a 2-player battle against someone on another PC. Both type the same room code."
+group = "Online"
+default_enabled = true
+
+[[option]]
+feature = "online"
+id = "transport"
+label = "Connection"
+description = "Off: normal game. Loopback test: the rival copies your own steps (one PC, for testing). Local network / Internet: play against another PC."
+group = "Online"
+type = "choice"
+default = "off"
+
+[[option.choice]]
+value = "off"
+label = "Off"
+
+[[option.choice]]
+value = "loopback"
+label = "Loopback test"
+
+[[option.choice]]
+value = "lan"
+label = "Local network"
+
+[[option.choice]]
+value = "internet"
+label = "Internet"
+
+[[plugin]]
+feature = "online"
+id = "bag2jp.netsync"

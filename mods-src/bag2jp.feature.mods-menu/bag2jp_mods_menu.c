@@ -73,6 +73,8 @@ static MmItem s_items[] = {
     {"HD INTRO",        "bag2jp.enhancement.hd-intro", "hd-intro", NULL, 2, {"false", "true"}, {"OFF", "ON"}, 1, 0},
     {"HD FONT",         "psx.enhancement.hd-textures", "hd-textures", NULL, 2, {"false", "true"}, {"OFF", "ON"}, 0, 0},
     {"AUTOPLAY",        "bag2jp.feature.autoplay", "autoplay", "active", 2, {"false", "true"}, {"OFF", "ON"}, 1, 1},
+    {"ONLINE",          "bag2jp.feature.netsync", "online", "transport", 3, {"off", "lan", "loopback"},
+                        {"OFF", "LOCAL NETWORK", "TEST (MIRROR)"}, 0, 0},
 };
 #define MM_N ((int)(sizeof s_items / sizeof s_items[0]))
 
