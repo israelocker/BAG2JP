@@ -1,0 +1,46 @@
+BUST A MOVE 2 ONLINE (BAG2JP)
+=============================
+
+ABRIR EL JUEGO
+  Doble clic en el acceso directo "Bust A Move 2 Online" (escritorio o
+  menu Inicio). La primera vez Windows puede preguntar por el firewall:
+  dale a "Permitir" (hace falta para jugar online).
+
+  "BAG2JP - Configuracion" (menu Inicio) abre el launcher: ahi se eligen
+  teclado o mando (Configure), video y otras opciones antes de jugar.
+
+JUGAR ONLINE
+  - Los dos jugadores instalan este mismo instalador.
+  - El codigo de sala viene puesto: 2GWE. Los dos deben tener el mismo.
+  - Abran el juego. Arriba aparece:
+      "ONLINE room 2GWE - looking for the other player..."
+    y cuando se encuentran:
+      "ONLINE you are P1 (o P2) - choose 2PLAYER GAME"
+  - En el titulo elijan 2PLAYER GAME y jueguen normal.
+  - No hace falta abrir puertos ni poner IPs.
+  - Si alguien cambia de ventana durante el baile, la partida se pausa
+    en las dos PCs y sigue sola cuando ambos vuelven.
+
+  Cambiar el codigo de sala: OPTIONS > MODS > ROOM CODE
+  (flechas cambian letras, Circulo guarda). Los dos deben poner el mismo.
+
+CONTROLES (teclado por defecto)
+  Flechas = cruceta    X = Cruz     S = Circulo
+  Z = Cuadrado         A = Triangulo
+  Q / W / E / R = L1 / R1 / L2 / R2
+  Enter = Start        Shift derecho = Select
+  Cambiar teclas: OPTIONS > MODS > KEYBOARD.
+  Mandos (Xbox, PlayStation, Switch Pro y la mayoria de genericos)
+  funcionan solos.
+
+OPCIONES (OPTIONS > MODS)
+  SONGS: JAPANESE (por defecto), ENGLISH o CD QUALITY.
+  ANNOUNCER: narrador japones o ingles.
+  ONLINE: INTERNET (por defecto), LOCAL NETWORK, DIRECT IP u OFF.
+  Lo marcado con un punto naranja se aplica al reiniciar el juego.
+
+SI NO CONECTA
+  - Revisen que el codigo de sala sea el mismo en los dos.
+  - Cierren y abran el juego de nuevo.
+  - Si sale "(..., slow)" igual se puede jugar; solo hay mas espera
+    entre compases.

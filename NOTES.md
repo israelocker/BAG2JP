@@ -443,3 +443,21 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   match start barrier and the focus pause on both PCs.
 - New tools: winshot\realclick.ps1 (real mouse click at window fractions), typetext.ps1 (SendKeys),
   postclick.ps1 (posted click; does not work on the launcher), bag2_vs_flow.ps1 -AD/-BD.
+
+## Windows installer (2026-10-29): releases/v7-online-portable/BAG2JP-Online-Setup.exe (451 MB)
+- NSIS 3.08 (Ubuntu debs extracted into ~/tools/nsis, no root; added to Tools/vm-setup/setup_vm.sh).
+  Sources: installer/bag2jp_online.nsi, settings.toml (disc path "disc_image/game.cue"), LEEME.txt
+  (installed-game version), build.sh (payload = the portable zip extracted to ~/work/installer).
+- Pages (Spanish): welcome (what you need) -> folder (default %LOCALAPPDATA%\Programs\Bust A Move 2
+  Online, per-user, no admin) + "desktop shortcut" checkbox -> game disc (.cue + .bin; picking the
+  .cue fills the .bin if it sits next to it; checks: files exist, .cue, single FILE line, .bin >= 100
+  MB) -> install -> finish ("Abrir el juego ahora", optional LEEME).
+- Install: game files (FLAC/MPG stored, rest zlib), .bin copied to disc_image\, game.cue written from
+  the user's .cue with its FILE line pointing at the copied .bin, disc.cfg + settings.toml point at
+  disc_image/game.cue (relative, resolved against the exe folder). Shortcuts: desktop + start menu
+  "Bust A Move 2 Online" (BAG2JP.exe --no-launcher), "BAG2JP - Configuracion" (launcher),
+  "Instrucciones", "Desinstalar"; HKCU uninstall entry. Uninstaller asks whether to delete saves.
+- Tested end to end with real clicks (winshot\bag2_setup_test.ps1, bag2_uninstall_test.ps1,
+  check_shortcuts.ps1): install into _work\installer_test, game opened from the finish page straight
+  into the intro (disc found), joined room 2GWE; uninstall removed folder, shortcuts and entry.
+- Bug found and fixed in testing: ${GetSize} is for folders; .bin size now via FileSeek END.
