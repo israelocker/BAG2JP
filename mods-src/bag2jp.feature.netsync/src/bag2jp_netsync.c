@@ -50,6 +50,7 @@
 #include "mod_plugins.h"
 #include "cpu_state.h"
 #include "host_osd.h"
+#include "host_overlay.h"
 
 int bag2jp_mods_menu_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out);
 void bag2jp_mods_menu_reattach(void);
@@ -77,7 +78,7 @@ void bag2jp_mods_menu_reattach(void);
 #define PAD_START     0x0008u
 
 enum { NS_OFF, NS_LOOPBACK, NS_LAN, NS_INTERNET, NS_DIRECT };
-enum { M_HELLO = 1, M_PAD = 3, M_STEP = 4, M_PING = 5, M_READY = 6, M_PUNCH = 7, M_PONG = 8 };
+enum { M_HELLO = 1, M_PAD = 3, M_STEP = 4, M_PING = 5, M_READY = 6, M_PUNCH = 7, M_PONG = 8, M_FOCUS = 9 };
 enum { CH_NONE, CH_UDP, CH_RELAY };
 
 typedef struct {
@@ -134,6 +135,21 @@ static int s_routing;
 static uint16_t s_match;
 static int s_was_dance;
 static int s_peer_ready = -1;
+
+/* pause: while a dance runs, either PC losing window focus pauses both (host pause: guest and
+ * audio frozen). The vblank plugin does not run during a host pause, so a timer thread keeps
+ * the link alive and ends it; s_mu serializes it with the guest-side code. */
+static SDL_Mutex* s_mu;
+static SDL_TimerID s_timer;
+static int s_lfocus = 1, s_rfocus = 1;    /* this PC's window / the other PC's, as last reported */
+static volatile int s_pause_held;         /* we hold a host pause */
+static int s_match_live;                  /* a dance is running (after the start barrier) */
+static uint32_t s_dance_frames;           /* guest frames since the dance started */
+static uint32_t s_pause_at, s_peer_pause_at; static int s_peer_pause_known;
+static uint64_t s_resume_at;              /* SDL ticks when the resume countdown ends, 0 none */
+static int s_resume_local;                /* this PC's own focus change allowed the resume */
+static int s_focus_always = -1;           /* test switch BAG2JP_NETSYNC_FOCUS=always */
+static char s_pause_msg[120];
 
 static void ns_log(const char* fmt, ...) {
     if (!s_logf) {
@@ -341,6 +357,13 @@ static void ns_send_pads(void) {
     ns_send(b, n);
 }
 
+static void ns_send_focus(void) {
+    uint8_t b[40]; int n = ns_hdr(b, M_FOCUS);
+    b[n] = (uint8_t)s_lfocus; b[n + 1] = (uint8_t)s_pause_held; memcpy(b + n + 2, &s_match, 2);
+    memcpy(b + n + 4, &s_pause_at, 4); n += 8;
+    ns_send(b, n);
+}
+
 static void ns_status_reset(void);
 static void ns_unlink(const char* why) {
     if (!s_linked) return;
@@ -356,7 +379,7 @@ static void ns_link(uint64_t nonce, int ch, const struct sockaddr_in* udp) {
     s_local = s_transport == NS_DIRECT ? (s_direct_target[0] ? 1 : 0)   /* direct: the host is P1 */
                                        : (s_nonce > nonce ? 0 : 1);
     s_in_seq = s_in_applied = 0; s_out_seq = 0; s_match = 0; s_was_dance = 0; s_peer_ready = -1;
-    s_last_rx = s_vblanks; s_desync_reported = 0;
+    s_last_rx = s_vblanks; s_desync_reported = 0; s_rfocus = 1; s_match_live = 0;
     memset(s_theirs, 0, sizeof s_theirs);
     ns_log("v%u linked (%s%s), this PC is P%d", s_vblanks, ch == CH_UDP ? "direct " : "through the broker",
            ch == CH_UDP ? ns_addr(udp) : "", s_local + 1);
@@ -428,6 +451,19 @@ static void ns_on_packet(const uint8_t* b, int n, const struct sockaddr_in* from
     case M_READY: {
         if (n < 2) return;
         uint16_t m; memcpy(&m, p, 2); s_peer_ready = m;
+        break; }
+    case M_FOCUS: {         /* u8 focused, u8 paused, u16 match, u32 dance frame of the pause */
+        if (n < 8) return;
+        uint16_t m; memcpy(&m, p + 2, 2);
+        const int f = p[0] != 0;
+        if (f != s_rfocus) {
+            s_rfocus = f;
+            if (f && s_lfocus) s_resume_local = 0;
+            ns_log("v%u other PC window %s", s_vblanks, f ? "back in focus" : "lost focus");
+        }
+        if (p[1] && m == s_match && !s_peer_pause_known) {
+            memcpy(&s_peer_pause_at, p + 4, 4); s_peer_pause_known = 1;
+        }
         break; }
     }
 }
@@ -570,6 +606,7 @@ static void ns_net_poll(void) {
             uint8_t p[32]; int n = ns_hdr(p, M_PING); const uint32_t t = (uint32_t)SDL_GetTicks();
             memcpy(p + n, &t, 4); n += 4; ns_send(p, n);
             ns_send_pads();
+            ns_send_focus();
         }
     }
 }
@@ -578,6 +615,7 @@ static void ns_net_poll(void) {
 static int s_status_shown = -1, s_status_rtt = -2;
 static void ns_status_reset(void) { s_status_shown = -1; }
 static void ns_status(void) {
+    if (s_pause_held) { s_status_shown = -1; return; }      /* the pause owns the status line */
     int want = !s_linked ? 0 : (s_routing ? 2 : 1);
     if (s_routing && psx_mod_read_word(NS_SITE) == NS_WORD) want = 3;     /* dancing: keep it quiet */
     const int rtt_bucket = s_rtt_ms < 0 ? -1 : s_rtt_ms / 20;
@@ -662,6 +700,7 @@ static void ns_pads_frame(void) {
 }
 
 /* ------------------------------------------------------------------ match */
+static uint32_t ns_timer(void* u, SDL_TimerID id, uint32_t interval);
 static void ns_activate(void) {
     char v[32] = {0};
     s_transport = NS_OFF;
@@ -673,6 +712,8 @@ static void ns_activate(void) {
     }
     ns_log("activate: transport %s (%d)", v, s_transport);
     if (s_transport >= NS_LAN && s_data == INVALID_SOCKET) ns_net_open();
+    if (s_transport >= NS_LAN && !s_mu) s_mu = SDL_CreateMutex();
+    if (s_transport >= NS_LAN && !s_timer) s_timer = SDL_AddTimer(16, ns_timer, NULL);
 }
 
 static void ns_match_start(void) {
@@ -688,6 +729,7 @@ static void ns_match_start(void) {
         ns_net_poll(); SDL_Delay(1);
     }
     for (int i = 0; i < 3; ++i) ns_send(b, n);
+    s_match_live = 1; s_dance_frames = 0; s_peer_pause_known = 0; s_pause_at = 0;
     ns_log("v%u match %u starts (waited %llu ms for the other PC%s, %d ms ping, %s)", s_vblanks, s_match,
            (unsigned long long)(SDL_GetTicks() - t0), s_peer_ready == s_match ? "" : ", gave up", s_rtt_ms,
            s_ch == CH_UDP ? "direct" : "relay");
@@ -704,16 +746,88 @@ static void ns_check_scores(int bar) {
     if (!s_desync_reported) { s_desync_reported = 1; host_osd_push("ONLINE  scores differ from the other PC (out of sync)", 6000); }
 }
 
+/* ------------------------------------------------------------------ pause */
+static void ns_pause_status(const char* m) {
+    if (!strcmp(m, s_pause_msg)) return;
+    snprintf(s_pause_msg, sizeof s_pause_msg, "%s", m);
+    host_osd_set_status(m);
+}
+
+static void ns_pause_end(const char* why) {
+    if (!s_pause_held) return;
+    psx_host_pause_pop(); s_pause_held = 0; s_resume_at = 0; s_pause_msg[0] = 0;
+    host_osd_set_status(""); ns_status_reset();
+    ns_log("v%u pause ends (%s)", s_vblanks, why);
+}
+
+/* Called every frame, and from the timer while paused (both under s_mu). */
+static void ns_pause_tick(void) {
+    if (s_focus_always < 0) {
+        const char* e = SDL_getenv("BAG2JP_NETSYNC_FOCUS");
+        s_focus_always = e && !strcmp(e, "always");
+    }
+    const int lf = s_focus_always ? 1 : SDL_GetKeyboardFocus() != NULL;
+    if (lf != s_lfocus) {
+        s_lfocus = lf;
+        if (lf && s_rfocus) s_resume_local = 1;
+        ns_log("v%u this window %s", s_vblanks, lf ? "back in focus" : "lost focus");
+        if (s_linked) ns_send_focus();
+    }
+    const int active = s_linked && s_routing && s_match_live;
+    if (!active) { ns_pause_end(s_linked ? "dance over" : "link lost"); return; }
+    if (!s_lfocus || !s_rfocus) {
+        s_resume_at = 0;
+        if (!s_pause_held && psx_host_pause_push("online")) {
+            s_pause_held = 1; s_pause_at = s_dance_frames; s_peer_pause_known = 0;
+            ns_send_focus();
+            ns_log("v%u pause at dance frame %u (%s)", s_vblanks, s_pause_at,
+                   !s_lfocus ? "this window lost focus" : "the other window lost focus");
+        }
+        if (s_pause_held)
+            ns_pause_status(!s_lfocus ? "ONLINE  PAUSED  -  come back to the game window to continue"
+                                      : "ONLINE  PAUSED  -  the other player left the game window");
+        return;
+    }
+    if (!s_pause_held) return;
+    const uint64_t now = SDL_GetTicks();
+    if (!s_resume_at) {
+        /* Both PCs count 3 s from the moment they see both windows in focus. The PC whose own window
+         * came back sees it first, so it waits half a ping longer. What drift is left (the other PC
+         * paused half a ping later) is absorbed by the bar hold like any network delay. */
+        const int half_ping = (s_resume_local && s_rtt_ms > 0) ? s_rtt_ms / 2 : 0;
+        s_resume_at = now + 3000 + (uint64_t)half_ping;
+        ns_log("v%u both windows in focus: resume in %llu ms (dance frame %u, other PC paused at %d)", s_vblanks,
+               (unsigned long long)(s_resume_at - now), s_pause_at, s_peer_pause_known ? (int)s_peer_pause_at : -1);
+    }
+    if (now >= s_resume_at) { ns_pause_end("both windows in focus"); return; }
+    char m[80]; snprintf(m, sizeof m, "ONLINE  resuming in %d...", (int)((s_resume_at - now + 999) / 1000));
+    ns_pause_status(m);
+}
+
+static uint32_t ns_timer(void* u, SDL_TimerID id, uint32_t interval) {
+    (void)u; (void)id;
+    if (!s_pause_held) return interval;
+    SDL_LockMutex(s_mu);
+    if (s_pause_held) { s_vblanks++; ns_net_poll(); ns_pause_tick(); }
+    SDL_UnlockMutex(s_mu);
+    return interval;
+}
+
 static void ns_vblank(void) {
     s_vblanks++;
     if (s_transport < NS_LAN) return;
+    SDL_LockMutex(s_mu);
     ns_net_poll();
     ns_pads_frame();
     ns_status();
     if (s_mine.valid && s_vblanks - s_step_resend < 60 && (s_vblanks - s_step_resend) % 6 == 5) ns_send_step(&s_mine);
     const int dance = ns_in_dance();
     if (dance && !s_was_dance && s_routing) ns_match_start();
+    if (!dance) s_match_live = 0;
     s_was_dance = dance;
+    if (s_match_live && !s_pause_held) s_dance_frames++;
+    ns_pause_tick();
+    SDL_UnlockMutex(s_mu);
 }
 
 static int ns_local_player(int mode) {
@@ -749,7 +863,7 @@ static void ns_write(int p, const NsStep* s) {
     psx_mod_write_half(j + 0x14, (uint16_t)result);
 }
 
-static void ns_gate(struct CPUState* cpu, uint32_t address) {
+static void ns_gate_body(struct CPUState* cpu, uint32_t address) {
     if (s_transport < NS_LAN || cpu->gpr[2] != 0) return;      /* window still open */
     const int mode = (int16_t)psx_mod_read_half(NS_MODE);
     const int local = ns_local_player(mode);
@@ -783,7 +897,7 @@ static void ns_gate(struct CPUState* cpu, uint32_t address) {
 }
 
 /* Hold the beat that would start the next bar while this bar still waits for the other PC. */
-static void ns_advance(struct CPUState* cpu, uint32_t address) {
+static void ns_advance_body(struct CPUState* cpu, uint32_t address) {
     (void)address;
     if (s_transport < NS_LAN || cpu->gpr[2] != 0 || !s_routing) return;
     if ((psx_mod_read_half(NS_BEAT) & 3) != 0 || psx_mod_read_byte(NS_BAR_DONE)) return;
@@ -797,7 +911,7 @@ static void ns_advance(struct CPUState* cpu, uint32_t address) {
     if (logged_bar != bar) { logged_bar = bar; ns_log("v%u bar %d: holding the next bar for the other PC", s_vblanks, bar); }
 }
 
-static void ns_hook(struct CPUState* cpu, uint32_t address) {
+static void ns_hook_body(struct CPUState* cpu, uint32_t address) {
     (void)address;
     const int p = (int)cpu->gpr[20];
     const int mode = (int16_t)psx_mod_read_half(NS_MODE);
@@ -815,13 +929,27 @@ static void ns_hook(struct CPUState* cpu, uint32_t address) {
     else {
         const NsStep* t = &s_theirs[(bar / 4) & 63];
         if (t->valid && t->bar == bar) ns_write(p, t);
-        else { NsStep miss; memset(&miss, 0, sizeof miss); miss.state = -1; ns_write(p, &miss); }
+        else {                    /* no step in time: a miss, or nothing when this bar has no steps */
+            NsStep miss; memset(&miss, 0, sizeof miss); miss.state = -1;
+            if (s_mine.bar == bar && s_mine.result == -1) miss.result = -1;
+            ns_write(p, &miss);
+        }
     }
     if (p == 1) {
         NsStep a, b; ns_read(0, &a, bar); ns_read(1, &b, bar);
         ns_log("v%u bar %d resolve: P1 result 0x%x timing %d / P2 result 0x%x timing %d", s_vblanks, bar,
                (uint16_t)a.result, a.timing, (uint16_t)b.result, b.timing);
     }
+}
+
+static void ns_gate(struct CPUState* cpu, uint32_t address) {
+    SDL_LockMutex(s_mu); ns_gate_body(cpu, address); SDL_UnlockMutex(s_mu);
+}
+static void ns_advance(struct CPUState* cpu, uint32_t address) {
+    SDL_LockMutex(s_mu); ns_advance_body(cpu, address); SDL_UnlockMutex(s_mu);
+}
+static void ns_hook(struct CPUState* cpu, uint32_t address) {
+    SDL_LockMutex(s_mu); ns_hook_body(cpu, address); SDL_UnlockMutex(s_mu);
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_netsync) {

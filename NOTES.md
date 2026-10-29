@@ -347,3 +347,27 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - Not tested yet: two real PCs on different networks (hole punching through real NATs), rematch/results.
 - Tools: D:\Dev\Tools\winshot (bag2_two.ps1 [-RelayOnly] [-BArgs], bag2_vs_flow.ps1 [-FromTitle],
   winshot.ps1 [-Screen], postkey.ps1, focus.ps1).
+
+### Auto pause when a window loses focus (online dance)
+- During an online dance (after the start barrier), if either PC's game window loses keyboard focus
+  (`SDL_GetKeyboardFocus() == NULL`: alt-tab, minimize, another app), BOTH PCs pause with the runtime
+  host pause (`psx_host_pause_push("online")`: guest and audio frozen, last frame kept on screen).
+- Message `M_FOCUS` (9): u8 focused, u8 paused, u16 match, u32 dance frame of the pause. Sent on every
+  focus change and every 20 frames with the ping.
+- OSD: "ONLINE  PAUSED - come back to the game window to continue" (this PC) or "... - the other player
+  left the game window"; when both are back, "ONLINE  resuming in 3..." and both resume. The PC whose own
+  window came back waits half a ping more so both resume together; leftover drift (half a ping) is
+  absorbed by the bar hold.
+- The vblank plugin does not run during a host pause, so an SDL timer (16 ms) keeps the link alive
+  (net poll, pings, focus) and pops the pause. `s_mu` (SDL mutex) serializes the timer with the vblank
+  plugin and the three instruction hooks. If the link drops or the dance ends, the pause is released.
+- A first version compensated the "dance frames ahead" between PCs; removed: hold frames make that
+  count run ahead without the song being ahead (it made one PC wait 2 s more).
+- No-step-in-time on a bar where this PC has no steps either (result 0xFFFF) now writes "no bar" for
+  the rival instead of a miss (result 0).
+- Test switch `BAG2JP_NETSYNC_FOCUS=always` (this PC counts as always focused);
+  `bag2_two.ps1 -BFocusAlways` sets it for copy B. `focus.ps1` now attaches to the foreground thread and
+  falls back to minimize/restore (Windows foreground lock). New `keys_shot.ps1 -Ids "a,b" -Keys ... -Wait`.
+- Tested on one PC (LAN): pause at dance start, mid-dance pause from either side, countdown in step on
+  both, bar results identical through two pauses. Same-PC caveat: the background copy runs ~35-45 fps,
+  so long songs pile up bar holds and the faster copy can leave the bar section before the slow one.
