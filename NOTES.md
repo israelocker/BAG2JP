@@ -395,3 +395,18 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   180 ms hid it; with less buffer it is a short audio gap at the start of each song.
 - Set to 90 in the exp install and in the project game.toml (patches/BAG2JP-game.toml). Next: find
   and remove the song-start stall; then 50 (about 75 ms total) should be safe.
+
+## In-game keyboard rebinding (MODS > KEYBOARD)
+- New last row KEYBOARD in the MODS screen (kind 2) opens a second page: two columns with UP, DOWN,
+  LEFT, RIGHT, CROSS, CIRCLE, SQUARE, TRIANGLE | L1, R1, L2, R2, START, SELECT, DEFAULT KEYS.
+- O on a row: "PRESS A KEY"; the first keyboard key that goes down (SDL_GetKeyboardState, compared
+  with a snapshot taken when the wait starts) becomes the binding. Esc or 10 s cancel. Esc, Tab and
+  F1-F12 are refused (runtime hotkeys). After a bind, input is ignored until every key is released.
+- Uses the runtime rebind API (psx_keybinds_set_button / _reset_player / _save, player 1): the change
+  applies at once and is saved to keybinds.ini, the same file the launcher's Controls page edits.
+  A key already used by another listed button swaps (that button gets the old key). D-pad rebinds
+  also move the matching left-stick direction (ls_*), like the default map.
+- The MODS rows shrink to fit the panel when there are more than fit at the natural size.
+- SONGS / ANNOUNCER defaults in the menu model now match the package (Japanese).
+- Tested by posting keys: bind Circle to D (live: D then opened menus), Circle to X (Cross swapped
+  to D), DEFAULT KEYS restored the original map. Tool: winshot\bag2_kb_page.ps1.

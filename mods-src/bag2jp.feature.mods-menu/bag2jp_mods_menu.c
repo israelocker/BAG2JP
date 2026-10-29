@@ -4,7 +4,8 @@
  * FUN_80093388) and opens an HD, game-styled screen where every BAG2JP mod choice can be changed
  * with the pad. Choices are saved to mods/state.toml (psx_mod_feature_set_option / _enable +
  * psx_mod_save_selection, main = emulation thread); live-capable ones apply at once, the others on
- * the next start (marked '*').
+ * the next start (marked '*'). The KEYBOARD row opens a second page that rebinds player 1's keyboard
+ * keys (same keybinds.ini and rebind API as the launcher's Controls page).
  *
  * Game side (all guarded by the expected instruction words of module 002):
  *  - cursor limit of menu 0: byte 0x8009C794 2 -> 3; cursor position slot 3 of menu 0
@@ -23,6 +24,7 @@
 #include "cpu_state.h"
 #include "gpu_gl_renderer.h"
 #include "bag2jp_hud.h"
+#include "psx_keybinds.h"
 #include "../psxrecomp/runtime/third_party/stb_image.h"
 #include <SDL3/SDL.h>
 #include <stdatomic.h>
@@ -57,7 +59,7 @@ typedef struct {
     int nvals; const char* vals[5]; const char* names[5];
     int def; int live;
     int cur, boot;
-    int kind;                                             /* 0 choice, 1 room code (text file) */
+    int kind;                                             /* 0 choice, 1 room code (text file), 2 keyboard page */
 } MmItem;
 
 #define REG "bag2jp.localization.regional", "regional"
@@ -67,8 +69,8 @@ static MmItem s_items[] = {
     {"BOOT LOGOS",      REG, "boot_logos",      JPI, 1, 0},
     {"HIRO ICON",       REG, "hiro_icon",       JPI, 1, 0},
     {"STAGE SIGNS",     REG, "stage_signs",     JPI, 1, 0},
-    {"SONGS",           REG, "songs", 3, {"japanese", "international", "cd"}, {"JAPANESE", "ENGLISH", "CD QUALITY"}, 1, 0},
-    {"ANNOUNCER",       REG, "announcer",       JPI, 1, 0},
+    {"SONGS",           REG, "songs", 3, {"japanese", "international", "cd"}, {"JAPANESE", "ENGLISH", "CD QUALITY"}, 0, 0},
+    {"ANNOUNCER",       REG, "announcer",       JPI, 0, 0},
     {"COMMAND BUTTONS", REG, "command_buttons", JPI, 1, 0},
     {"VS SCREEN",       REG, "vs_screen",       JPI, 1, 0},
     {"HD INTRO",        "bag2jp.enhancement.hd-intro", "hd-intro", NULL, 2, {"false", "true"}, {"OFF", "ON"}, 1, 0},
@@ -78,6 +80,7 @@ static MmItem s_items[] = {
                         {"off", "lan", "internet", "direct", "loopback"},
                         {"OFF", "LOCAL NETWORK", "INTERNET", "DIRECT IP", "TEST (MIRROR)"}, 0, 0},
     {"ROOM CODE",       "", "", NULL, 1, {""}, {""}, 0, 1, 0, 0, 1},
+    {"KEYBOARD",        "", "", NULL, 1, {""}, {""}, 0, 1, 0, 0, 2},
 };
 #define MM_N ((int)(sizeof s_items / sizeof s_items[0]))
 
@@ -163,6 +166,76 @@ static void mm_code_save(void) {
     f = fopen(p, "w"); if (!f) return;
     fprintf(f, "%s\n%s", s_code, rest); fclose(f);
     mm_log("room code %s saved", s_code);
+}
+
+/* ------------------------------------------------------------------ keyboard page (keybinds.ini, player 1)
+ * Same bindings as the launcher's Controls page (psx_keybinds rebind API): a change applies at once
+ * and is saved to keybinds.ini. Two columns; the last row restores the default keys. */
+typedef struct { int button; const char* label; } KbRow;
+static const KbRow s_kb_rows[] = {
+    {PSX_KB_UP, "UP"}, {PSX_KB_DOWN, "DOWN"}, {PSX_KB_LEFT, "LEFT"}, {PSX_KB_RIGHT, "RIGHT"},
+    {PSX_KB_CROSS, "CROSS"}, {PSX_KB_CIRCLE, "CIRCLE"}, {PSX_KB_SQUARE, "SQUARE"}, {PSX_KB_TRIANGLE, "TRIANGLE"},
+    {PSX_KB_L1, "L1"}, {PSX_KB_R1, "R1"}, {PSX_KB_L2, "L2"}, {PSX_KB_R2, "R2"},
+    {PSX_KB_START, "START"}, {PSX_KB_SELECT, "SELECT"}, {-1, "DEFAULT KEYS"},
+};
+#define KB_N ((int)(sizeof s_kb_rows / sizeof s_kb_rows[0]))
+#define KB_LEFT 8                                   /* rows 0..7 left column, 8.. right column */
+static int s_page, s_kb_sel, s_kb_wait, s_kb_hold;
+static uint64_t s_kb_wait_t;
+static uint8_t s_kb_prev[SDL_SCANCODE_COUNT];
+static char s_kb_note[40];                           /* short message in the footer */
+
+/* The left stick follows the d-pad keys, as in the default map. */
+static int kb_stick_of(int b) {
+    return b == PSX_KB_UP ? PSX_KB_LS_UP : b == PSX_KB_DOWN ? PSX_KB_LS_DOWN :
+           b == PSX_KB_LEFT ? PSX_KB_LS_LEFT : b == PSX_KB_RIGHT ? PSX_KB_LS_RIGHT : -1;
+}
+static void kb_key_name(SDL_Scancode sc, char* out, size_t n) {
+    if (sc == SDL_SCANCODE_UNKNOWN) { snprintf(out, n, "NONE"); return; }
+    if (sc == SDL_SCANCODE_RETURN) { snprintf(out, n, "ENTER"); return; }
+    const char* nm = PSXKB_IS_MOUSE_SC(sc) ? "MOUSE" : SDL_GetScancodeName(sc);
+    size_t k = 0;
+    for (; nm && *nm && k + 1 < n; ++nm) out[k++] = (char)((*nm >= 'a' && *nm <= 'z') ? *nm - 32 : *nm);
+    out[k] = 0;
+    if (!k) snprintf(out, n, "KEY %d", (int)sc);
+}
+static int kb_reserved(SDL_Scancode sc) {          /* host hotkeys and the cancel key */
+    return sc == SDL_SCANCODE_ESCAPE || sc == SDL_SCANCODE_TAB || (sc >= SDL_SCANCODE_F1 && sc <= SDL_SCANCODE_F12);
+}
+static void kb_set(int button, SDL_Scancode sc) {
+    const SDL_Scancode old = psx_keybinds_get_button(1, button);
+    for (int r = 0; r < KB_N; ++r) {                 /* key already used: the two buttons swap keys */
+        const int b = s_kb_rows[r].button;
+        if (b < 0 || b == button || psx_keybinds_get_button(1, b) != sc) continue;
+        psx_keybinds_set_button(1, b, old);
+        if (kb_stick_of(b) >= 0) psx_keybinds_set_button(1, kb_stick_of(b), old);
+        mm_log("keyboard: %s now %d (swapped)", psx_keybinds_button_name(b), (int)old);
+    }
+    psx_keybinds_set_button(1, button, sc);
+    if (kb_stick_of(button) >= 0) psx_keybinds_set_button(1, kb_stick_of(button), sc);
+    psx_keybinds_save();
+    mm_log("keyboard: %s = %s (was %d)", psx_keybinds_button_name(button), SDL_GetScancodeName(sc), (int)old);
+}
+static void kb_start_wait(void) {
+    const uint8_t* ks = (const uint8_t*)SDL_GetKeyboardState(NULL);
+    for (int i = 0; i < SDL_SCANCODE_COUNT; ++i) s_kb_prev[i] = ks && ks[i];
+    s_kb_wait = 1; s_kb_wait_t = SDL_GetTicks(); s_kb_note[0] = 0;
+}
+/* While waiting: the first key that goes down binds; Esc or 10 s cancel. Called every pad frame. */
+static void kb_poll_wait(void) {
+    const uint8_t* ks = (const uint8_t*)SDL_GetKeyboardState(NULL);
+    if (!ks) return;
+    for (int i = 1; i < SDL_SCANCODE_COUNT; ++i) {
+        const int now = ks[i] ? 1 : 0, was = s_kb_prev[i]; s_kb_prev[i] = (uint8_t)now;
+        if (!now || was) continue;
+        const SDL_Scancode sc = (SDL_Scancode)i;
+        s_kb_wait = 0; s_kb_hold = 1;
+        if (sc == SDL_SCANCODE_ESCAPE) { snprintf(s_kb_note, sizeof s_kb_note, "CANCELLED"); return; }
+        if (kb_reserved(sc)) { snprintf(s_kb_note, sizeof s_kb_note, "THAT KEY IS RESERVED"); return; }
+        kb_set(s_kb_rows[s_kb_sel].button, sc);
+        return;
+    }
+    if (SDL_GetTicks() - s_kb_wait_t > 10000) { s_kb_wait = 0; snprintf(s_kb_note, sizeof s_kb_note, "CANCELLED"); }
 }
 
 static void mm_apply(MmItem* it) {
@@ -284,6 +357,26 @@ static void cv_text(const char* s, double x, double y, int set, int row, double 
     }
 }
 
+static void mm_compose_keyboard(void) {
+    cv_text("KEYBOARD", 28, 8, 0, 6, 1.6);
+    const double k = 0.72, row_h = (200.0 - 50) / KB_LEFT;
+    for (int r = 0; r < KB_N; ++r) {
+        const int col = r >= KB_LEFT, i = col ? r - KB_LEFT : r;
+        const double x0 = col ? 262 : 34, x1 = col ? 476 : 242, y = 50 + i * row_h;
+        const int sel = r == s_kb_sel, row = sel ? 6 : 5;
+        if (sel) cv_dot(x0 - 4, y + s_glyph_h * k * 0.5, 8.5, 0xFFD85840u);
+        cv_text(s_kb_rows[r].label, x0 + 6, y, 0, row, k);
+        if (s_kb_rows[r].button < 0) continue;
+        char v[40];
+        if (sel && s_kb_wait) snprintf(v, sizeof v, "PRESS A KEY");
+        else kb_key_name(psx_keybinds_get_button(1, s_kb_rows[r].button), v, sizeof v);
+        cv_text(v, x1 - cv_text_w(v, k), y, 0, row, k);
+    }
+    const char* foot = s_kb_wait ? "PRESS THE NEW KEY   ESC CANCEL"
+                     : s_kb_note[0] ? s_kb_note : "ARROWS MOVE   O CHANGE   X BACK";
+    cv_text(foot, 24, 218, 0, 5, 0.66);
+}
+
 static void mm_compose(void) {
     if (!s_canvas) s_canvas = (uint32_t*)malloc((size_t)CV_W * CV_H * 4);
     if (!s_canvas) return;
@@ -294,8 +387,12 @@ static void mm_compose(void) {
     }
     cv_round_rect(26, 44, 494, 212, 8, 0xFF9AA4B4u);     /* shadow */
     cv_round_rect(20, 38, 488, 206, 8, 0xFFF0F0F0u);
+    if (s_page == 1) { mm_compose_keyboard(); return; }
     cv_text("MODS", 28, 8, 0, 6, 1.6);
-    const double k = 0.72, row_h = s_glyph_h * k + 2.4, top = 46;
+    /* rows fill the panel: the natural size (0.72) when they fit, smaller otherwise */
+    const double top = 45, avail = 200 - top;
+    double k = 0.72, row_h = s_glyph_h * k + 2.4;
+    if (row_h * MM_N > avail) { row_h = avail / MM_N; k = (row_h - 1.6) / s_glyph_h; }
     for (int i = 0; i < MM_N; ++i) {
         const MmItem* it = &s_items[i];
         const int sel = i == s_sel, row = sel ? 6 : 5;
@@ -303,10 +400,10 @@ static void mm_compose(void) {
         const double cy = y + s_glyph_h * k * 0.5;
         if (sel) cv_dot(33, cy, 8.5, 0xFFD85840u);           /* the game's cursor dot */
         cv_text(it->label, 42, y, 0, row, k);
-        const char* v = it->kind ? s_code : it->names[it->cur];
+        const char* v = it->kind == 1 ? s_code : it->kind == 2 ? "CHANGE KEYS" : it->names[it->cur];
         const double vw = cv_text_w(v, k);
         cv_text(v, 470 - vw, y, 0, row, k);
-        if (it->kind && s_edit && sel) {                     /* underline the letter being changed */
+        if (it->kind == 1 && s_edit && sel) {                     /* underline the letter being changed */
             char pre[CODE_LEN + 1]; memcpy(pre, s_code, (size_t)s_edit_pos); pre[s_edit_pos] = 0;
             char one[2] = { s_code[s_edit_pos], 0 };
             const double x0 = 470 - vw + cv_text_w(pre, k), w = cv_text_w(one, k);
@@ -316,7 +413,8 @@ static void mm_compose(void) {
         if (!it->live && it->cur != it->boot) cv_dot(478, cy, 6.5, 0xFFE8A030u);   /* pending: next start */
     }
     cv_text(s_edit ? "UP DOWN LETTER   LEFT RIGHT MOVE   O OK"
-                   : (s_items[s_sel].kind ? "O EDIT   X EXIT" : "LEFT RIGHT CHANGE   X EXIT"), 24, 218, 0, 5, 0.66);
+                   : (s_items[s_sel].kind == 1 ? "O EDIT   X EXIT" : s_items[s_sel].kind == 2 ? "O OPEN   X EXIT"
+                                                                                      : "LEFT RIGHT CHANGE   X EXIT"), 24, 218, 0, 5, 0.66);
     if (!s_edit) {
         const double nw = cv_text_w("APPLIES ON NEXT START", 0.66);
         cv_dot(488 - nw - 8, 218 + s_glyph_h * 0.33, 6.5, 0xFFE8A030u);
@@ -350,7 +448,7 @@ static void mm_open(void) {
     mm_load_selection();
     if (!boot_known) { for (int i = 0; i < MM_N; ++i) s_items[i].boot = s_items[i].cur; boot_known = 1; }
     mm_read_glyphs();
-    mm_code_load(); s_edit = 0;
+    mm_code_load(); s_edit = 0; s_page = 0; s_kb_wait = 0;
     s_open = 1; s_sel = 0; s_swallow = 1;
     atomic_store(&s_dirty, 1); atomic_store(&s_visible, 1);
     mm_log("open");
@@ -364,8 +462,29 @@ static void mm_close(void) {
 static int mm_pad(const PSXModPadFrame* in, PSXModPadOutput* out) {
     if (!s_open && !s_swallow) { s_prev_buttons = in->buttons; return 0; }
     const uint32_t down = ~in->buttons & 0xFFFFu, prev = ~s_prev_buttons & 0xFFFFu;
-    const uint32_t press = down & ~prev;
+    uint32_t press = down & ~prev;
     s_prev_buttons = in->buttons;
+    if (s_open && s_page == 1) {
+        if (s_kb_wait) { kb_poll_wait(); press = 0; atomic_store(&s_dirty, 1); }
+        if (s_kb_hold) { press = 0; if (!down) s_kb_hold = 0; }    /* the bound key is still held */
+        if (press) {
+            const int col = s_kb_sel >= KB_LEFT, i = col ? s_kb_sel - KB_LEFT : s_kb_sel;
+            const int n = col ? KB_N - KB_LEFT : KB_LEFT;
+            s_kb_note[0] = 0;
+            if (press & 0x0010u) s_kb_sel = (col ? KB_LEFT : 0) + (i + n - 1) % n;
+            else if (press & 0x0040u) s_kb_sel = (col ? KB_LEFT : 0) + (i + 1) % n;
+            else if (press & (0x0020u | 0x0080u)) {
+                const int on = col ? KB_LEFT : KB_N - KB_LEFT, ni = i < on ? i : on - 1;
+                s_kb_sel = col ? ni : KB_LEFT + ni;
+            } else if (press & 0x2000u) {
+                if (s_kb_rows[s_kb_sel].button >= 0) kb_start_wait();
+                else { psx_keybinds_reset_player(1); psx_keybinds_save(); s_kb_hold = 1;
+                       snprintf(s_kb_note, sizeof s_kb_note, "DEFAULT KEYS RESTORED"); mm_log("keyboard: defaults"); }
+            } else if (press & 0x4000u) { s_page = 0; }
+            atomic_store(&s_dirty, 1);
+        }
+        press = 0;
+    }
     if (s_open && press && s_edit) {
         const int n = (int)sizeof CODE_CHARS - 1;
         int ci = (int)(strchr(CODE_CHARS, s_code[s_edit_pos]) - CODE_CHARS);
@@ -377,7 +496,8 @@ static int mm_pad(const PSXModPadFrame* in, PSXModPadOutput* out) {
         atomic_store(&s_dirty, 1);
     } else if (s_open && press) {
         MmItem* it = &s_items[s_sel];
-        if (it->kind && (press & 0x2000u)) { s_edit = 1; s_edit_pos = 0; }
+        if (it->kind == 1 && (press & 0x2000u)) { s_edit = 1; s_edit_pos = 0; }
+        else if (it->kind == 2 && (press & 0x2000u)) { s_page = 1; s_kb_sel = 0; s_kb_wait = s_kb_hold = 0; s_kb_note[0] = 0; }
         else if (it->kind && (press & (0x0020u | 0x0080u))) { /* text item: no left/right */ }
         else if (press & 0x0010u) s_sel = (s_sel + MM_N - 1) % MM_N;
         else if (press & 0x0040u) s_sel = (s_sel + 1) % MM_N;
