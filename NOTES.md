@@ -429,3 +429,17 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   (largest: Kelly last ~12 s, Robo-Z last ~26 s partly, Capoeira 0.5-13.7 s and 135-141 s, Bi-o
   0-10 s, Strike 0-5 s); previews in _work/hq_v3_preview. Shorty keeps its 11.4 s game intro (CD
   has none).
+
+## Release v7: online portable (2026-10-29)
+- releases/v7-online-portable/BAG2JP-online(.zip, 457 MB, 537 MB unpacked): exe + configs + mods
+  (CD songs included), no personal paths (game.toml disc line removed, settings.toml [disc] empty,
+  no disc.cfg), no logs/saves/test files. Defaults: ONLINE = INTERNET, room code 2GWE, autoplay off,
+  songs/announcer Japanese, [audio] buffer_ms 90, player_name "Player". LEEME.txt (Spanish how-to).
+- First run with no disc: the launcher shows "No disc selected"; PLAY answers "Select a valid Disc
+  first"; "Browse For Disc / SBI" opens the file dialog, then "Disc verified" and PLAY saves the
+  path to settings.toml and disc.cfg (not asked again).
+- Tested from the extracted zip (_work/portable_test): launcher > Browse > PLAY, joined room 2GWE
+  on broker.hivemq.com, linked with netplay_peer2 (direct after the broker), both into 2PLAYER GAME,
+  match start barrier and the focus pause on both PCs.
+- New tools: winshot\realclick.ps1 (real mouse click at window fractions), typetext.ps1 (SendKeys),
+  postclick.ps1 (posted click; does not work on the launcher), bag2_vs_flow.ps1 -AD/-BD.
