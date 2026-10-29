@@ -1,0 +1,95 @@
+# Autofilled by tools/new_project_layout/probe_disc.py from your legal dump.
+# Review before shipping. Runtime quirks / overlay seeds still need hand work.
+
+[game]
+name = "BAG2JP"
+id = "SLPM-86219"
+players = 2
+exe = "disc/SLPM_862.19"
+disc = "/sessions/rcw-01dqypkmdcqawmgypjuqnq31/mnt/Bust A Groove 2 (Japan)/ISO/Bust A Move 2 - Dance Tengoku Mix (Japan).cue"
+load_address = "0x80010000"
+entry_pc = "0x80035D98"
+text_size = "0x0004D000"
+stack_base = "0x801FFFF0"
+
+# Digests are for data Track 01 (first BINARY FILE / TRACK 01).
+[prepare_disc]
+out_dir = "disc"
+bin_name = "Bust A Move 2 - Dance Tengoku Mix (Japan).bin"
+cue_name = "Bust A Move 2 - Dance Tengoku Mix (Japan).cue"
+boot_exe = "SLPM_862.19"
+known_sizes = [559035120]
+known_md5 = [
+  "e66918a9a2e5102464c60eab26e39169",
+]
+known_sha1 = [
+  "bb569316816b0e765adde10657e0cc7e89ade964",
+]
+known_crc32 = [
+  "5cdade58",
+]
+
+[recompiler]
+seeds = "seeds/ghidra_funcs.txt"
+out_dir = "generated"
+strict = true
+
+[runtime]
+window_title = "BAG2JP Recompiled"
+memcard_dir = "saves"
+overlay_cache = true
+
+[video]
+renderer = "opengl"
+aspect_ratio = "4:3"          # widescreen is mod-owned (bag2jp.enhancement.widescreen)
+# --- Sharpness: 9x internal (2160 lines). On a 4K panel it is native 4K; on a
+# 1080p window it is area-resolved = 2x2 ordered-grid supersampling.
+internal_resolution = "4k"
+resolution_reference_lines = 240
+render_thread = true          # GL on its own thread: driver stalls leave the guest frame
+# --- PGXP (needs the PGXP hook build, see CMakeLists): no vertex wobble,
+# perspective-correct textures. Depth buffer off (low compatibility).
+geometry_correction = true
+perspective_texturing = true
+pgxp_depth_buffer = false
+# --- Textures: xBR smooths diagonal staircases of magnified texels while
+# keeping flat areas crisp; mip-mapped minification + 8 taps kills floor shimmer.
+texture_filtering = "xbr"
+texture_lod = "mipmap"
+anisotropic_filtering = 8
+# --- Colour: 24-bit output without the PS1 4x4 dither pattern.
+dithering = "off"
+# --- Post: no FXAA (9x already resolves edges; FXAA would blur text/HUD).
+antialiasing_mode = "off"
+# --- FMV (intro, endings): linear present + bicubic upscale + 4:2:0 chroma fix.
+antialiasing = true
+fmv_filter = "bicubic"
+fmv_chroma_smoothing = true
+
+# Native-wide 16:9 when the widescreen mod is on (inert otherwise).
+[widescreen]
+# Squash mode (the DuckStation/Beetle widescreen hack): the GTE projection is
+# compressed horizontally and presented wide, so the game's own 4:3 screen
+# culls land on the 16:9 edges. Native-wide (true) left floor polygons missing
+# at the left edge because the stage renderers reject x < 0.
+native_wide = false
+gte_game_mode = true          # any frame with GTE projection = gameplay; 2D menus/FMV stay 4:3
+hud_sprt_squash = false       # 2D HUD/step bars stretch with the frame (like DuckStation); thirds pivot split the step bars
+auto_ui_squash = false
+auto_ui_anchor = "in_place"   # each HUD run squashes about its own centre (edges split the step bars)
+auto_ui_size = "original"
+clear_reveal = true           # clear side bands on scene changes (no stale VRAM)
+
+[controller]
+default_mode = "digital"
+
+# Online mount gate: digests + track count + optional TOC fingerprint
+# (see docs/NETPLAY.md).
+multitap_analog = true
+[netplay]
+require_cue = true
+required_tracks = 1
+required_disc_fp = "40ad17afa68eed98be76728e23b9558229989bce72a2be7f7db469771ff626a8"
+
+[audio]
+buffer_ms = 90                # output buffer: how far the sound heard lags the game (default 180)

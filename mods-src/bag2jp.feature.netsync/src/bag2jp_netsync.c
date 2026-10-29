@@ -813,8 +813,38 @@ static uint32_t ns_timer(void* u, SDL_TimerID id, uint32_t interval) {
     return interval;
 }
 
+/* Test switch BAG2JP_AUDIO_PROBE=1: once a second, log the audio output buffer (how far the sound
+ * heard lags the game) to bag2jp_audio_probe.log. Used to tune game.toml [audio] buffer_ms. */
+extern int psx_audio_out_stats(double* fill_ms, double* target_ms, uint64_t* underruns,
+                               uint64_t* overflow_drops, double* correction, int* legacy, int* host_rate);
+static void ns_audio_probe(void) {
+    static int on = -1; static FILE* f;
+    if (on < 0) {
+        on = SDL_getenv("BAG2JP_AUDIO_PROBE") != NULL;
+        if (on) { const char* b = SDL_GetBasePath(); char p[1024];
+                  snprintf(p, sizeof p, "%sbag2jp_audio_probe.log", b ? b : ""); f = fopen(p, "w"); }
+    }
+    if (!on || !f) return;
+    static uint64_t last; const uint64_t now = SDL_GetTicks();
+    if (last && now - last > 40) {
+        double fl = 0, tg = 0, cr = 0; uint64_t un = 0, ov = 0; int lg = 0, rt = 0;
+        psx_audio_out_stats(&fl, &tg, &un, &ov, &cr, &lg, &rt);
+        fprintf(f, "v%u stall %llu ms (fill now %.1f ms, underruns %llu, dance %d)\n", s_vblanks,
+                (unsigned long long)(now - last), fl, (unsigned long long)un, ns_in_dance());
+    }
+    last = now;
+    if (s_vblanks % 60) return;
+    double fill = 0, target = 0, corr = 0; uint64_t under = 0, over = 0; int legacy = 0, rate = 0;
+    psx_audio_out_stats(&fill, &target, &under, &over, &corr, &legacy, &rate);
+    fprintf(f, "v%u t%llu fill %.1f ms target %.1f underruns %llu overflow %llu corr %.4f legacy %d rate %d dance %d\n",
+            s_vblanks, (unsigned long long)SDL_GetTicks(), fill, target, (unsigned long long)under,
+            (unsigned long long)over, corr, legacy, rate, ns_in_dance());
+    fflush(f);
+}
+
 static void ns_vblank(void) {
     s_vblanks++;
+    ns_audio_probe();
     if (s_transport < NS_LAN) return;
     SDL_LockMutex(s_mu);
     ns_net_poll();

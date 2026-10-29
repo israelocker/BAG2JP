@@ -371,3 +371,27 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - Tested on one PC (LAN): pause at dance start, mid-dance pause from either side, countdown in step on
   both, bar results identical through two pauses. Same-PC caveat: the background copy runs ~35-45 fps,
   so long songs pile up bar holds and the faster copy can leave the bar section before the slow one.
+
+## Defaults: Japanese songs and announcer (2026-10-29)
+- Package bag2jp.localization.regional: options `songs` and `announcer` now default to "japanese"
+  (were "international"). Changed in mods-src and in the installed copies (exp install, netplay_peer2).
+  A state.toml with an explicit value keeps it (the exp install has songs = "cd", Japanese vocals).
+
+## Audio latency (game.toml [audio] buffer_ms)
+- The runtime keeps an output buffer (DRC ring, target `buffer_ms`, default 180, allowed 30..500)
+  plus the SDL device buffer (1024 samples = 23 ms at 44.1 kHz) plus Windows. The game's judge runs
+  on its own clock, so the music heard lags the game by roughly fill + 23 ms + the OS.
+- Probe: `BAG2JP_AUDIO_PROBE=1` (in bag2jp_netsync.c) writes bag2jp_audio_probe.log next to the exe:
+  once a second fill/target/underruns, plus every frame gap > 40 ms ("stall"). `bag2_1p.ps1 -SetEnv`.
+  Logs: _work/np_logs/audio_probe_*.log.
+- Results, 1P autoplay, window focused:
+  | buffer_ms | fill while dancing | underruns while dancing |
+  | 180 | avg 164 ms (124..174) | none |
+  | 90  | avg ~80 ms | one burst at song start (~6 s into the stage) |
+  | 50  | avg 42 ms (26..92) | one burst at song start |
+- The burst comes from a frame stall at song start: ~50 ms with the HD texture pack off, ~220 ms with
+  it on (the pack holds only the HD system font, 31 images, preloaded at boot in 119 ms, so the stall
+  is not PNG decode; likely the first upload/composition when that text appears). FLAC open is 0.2 ms.
+  180 ms hid it; with less buffer it is a short audio gap at the start of each song.
+- Set to 90 in the exp install and in the project game.toml (patches/BAG2JP-game.toml). Next: find
+  and remove the song-start stall; then 50 (about 75 ms total) should be safe.

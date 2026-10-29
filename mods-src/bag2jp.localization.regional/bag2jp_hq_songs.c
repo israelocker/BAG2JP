@@ -61,6 +61,7 @@ static int hq_open(int f, int ch) {
     hq_cur_file = f; hq_cur_ch = ch; hq_cursor = 0;
     if (hq_missing[f][ch]) return 0;
     char p[1200];
+    const uint64_t t0 = SDL_GetPerformanceCounter();
     snprintf(p, sizeof p, "%s/%s_ch%d.flac", hq_dir, hq_xa_name[f], ch);
     hq_fp = fopen(p, "rb");
     hq_flac = hq_fp ? drflac_open(hq_rd, hq_sk, hq_tl, hq_fp, NULL) : NULL;
@@ -69,7 +70,8 @@ static int hq_open(int f, int ch) {
         if (hq_fp) { fclose(hq_fp); hq_fp = NULL; }
         hq_missing[f][ch] = 1; hq_log("missing or unsupported: %s", p); return 0;
     }
-    hq_log("song %s ch%d", hq_xa_name[f], ch);
+    hq_log("song %s ch%d (open %.1f ms)", hq_xa_name[f], ch,
+           (double)(SDL_GetPerformanceCounter() - t0) * 1000.0 / (double)SDL_GetPerformanceFrequency());
     return 1;
 }
 
@@ -88,8 +90,9 @@ static void hq_filter(int lba, int file, int channel, int16_t* pcm, int frames) 
             const uint64_t from = hq_cursor;
             if (!drflac_seek_to_pcm_frame(hq_flac, pos)) { hq_log("seek FAILED to sector %u", rel >> 3); return; }
             hq_cursor = pos;
-            hq_log("jump sector %llu -> %u (%+.3f s)", (unsigned long long)(from / HQ_FRAMES_PER_SECTOR), rel >> 3,
-                   ((double)pos - (double)from) / 44100.0);
+            hq_log("jump sector %llu -> %u (%+.3f s, %.1f ms)", (unsigned long long)(from / HQ_FRAMES_PER_SECTOR), rel >> 3,
+                   ((double)pos - (double)from) / 44100.0,
+                   (double)(SDL_GetPerformanceCounter() - t0) * 1000.0 / (double)SDL_GetPerformanceFrequency());
         }
         const drflac_uint64 got = drflac_read_pcm_frames_s16(hq_flac, (drflac_uint64)frames, hq_tmp);
         hq_cursor += got;

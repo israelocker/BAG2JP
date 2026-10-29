@@ -87,7 +87,7 @@ id = "songs"
 label = "Songs"
 description = "Kitty-N, Kelly and Shorty themes in Japanese or in English, Comet theme original or re-recorded (international), and the song names on character select."
 type = "choice"
-default = "international"
+default = "japanese"
 
 [[option.choice]]
 value = "japanese"
@@ -107,7 +107,7 @@ id = "announcer"
 label = "Announcer voice"
 description = "Menu narrator and title voice: DJ Dangerous (Japanese release) or DJ Mix Deadly (international)."
 type = "choice"
-default = "international"
+default = "japanese"
 
 [[option.choice]]
 value = "japanese"
