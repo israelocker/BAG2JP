@@ -471,3 +471,23 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   by itself. So shipping the card = everything unlocked, and both online players get the same grid.
   The CodeBreaker plugin attempt was therefore not needed; source kept in _work/bag2jp_unlock_all_wip.c
   (untested on an empty card). LEEME now says the save comes fully unlocked and loads by itself.
+
+## BAG1 import (started 2026-10-29): Heat first
+- BAG1 disc: D:\Games\Bust A Groove (USA)\ISO (SCUS-94263, ISO9660 files, not one archive):
+  PLAYER1x/P_HEATA1.DFS (pack: TIMs, 003.dbi char code 8908 B, 2 SEDT), PLAYER2/P_HEATA2.DFS (model:
+  000.bin 54044 + 001.bin 261224), PLAYER3x/PLAYER4 = player-2 copies, STAGEx/ST_HEAT.DFS (stage:
+  000.dbi 12933 B code, SEDT, 6 TIMs, 2 bins), XA/DANCEXA1-5.XA (songs), BIN1/*.DBI (game modules),
+  x = E/F/G/I/S language. Extracted Heat files: _work/bag1_assets/heat/ (psx-asset-tools works as is).
+- BAG2 Heat (assets/archive/characters/heat): pack_a/b_p1/p2 (TIMs, 001.dbi char code 19556 B,
+  SEDT), model_a/b_p1/p2 (000.bin 60308 + 001.bin 280484), choreography_a/b (BAG2-only split).
+- Same engine family: model 000.bin = bone table (u32 count 38, then per-bone links) and 001.bin
+  animation header ("35 00 02 13", 0x13 = 19...) have the same layout in both games, but Heat's
+  skeleton links differ (BAG2 adds child bones) and BAG2 moved dance moves to choreography files.
+- Test 1 (mod bag2jp.test.bag1-heat-model, now disabled in state.toml): BAG1 000+001 in place of
+  BAG2 Heat outfit A -> crash at dance load (frame ~2146, PC 0, REGIMM at 0x801CFC1C). Mesh only
+  (BAG1 000, BAG2 001) -> same crash. So the BAG2 character code/choreography need BAG2's skeleton;
+  a straight file swap does not work. Note: in-place repack keeps the DFS entry sizes (60308) with
+  BAG1 data at the start of the slot.
+- Character packs and stages carry their own DBI code compiled for each engine (BAG1 vs BAG2
+  functions), so BAG1 code cannot be loaded as is; data must go through BAG2's code (converter or
+  loader changes). Next: RE model/animation/choreography formats and what the BAG2 Heat DBI reads.
