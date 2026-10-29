@@ -25,8 +25,8 @@ JUGAR ONLINE
   (flechas cambian letras, Circulo guarda). Los dos deben poner el mismo.
 
 TU PARTIDA (MEMORY CARD)
-  Viene una partida guardada en la memory card 1. Si el juego no la toma
-  al iniciar, cargala en OPTIONS > MEMORY CARD > LOAD DATA > YES.
+  Viene una partida guardada con todo desbloqueado (todos los personajes
+  y DANCE VIEW). El juego la carga solo al iniciar.
 
 CONTROLES (teclado por defecto)
   Flechas = cruceta    X = Cruz     S = Circulo

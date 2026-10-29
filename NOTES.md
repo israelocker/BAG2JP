@@ -465,10 +465,9 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   the DexDrive save). The installer writes it with SetOverwrite off (a reinstall never replaces a
   player's card). LEEME: if the game does not pick it up, OPTIONS > MEMORY CARD > LOAD DATA > YES
   (tested: "LOAD OK").
-- Character select with and without that save shows the same grid: 12 characters and 6 "?" cells.
-  The save does not unlock those 6. Tried the JP CodeBreaker unlock codes (bytes 0x8004E2EF..F6
-  characters, 0x8004E2F8..0x8004E308 DANCE VIEW) as a vblank plugin: the bytes stayed 1 (logged) but
-  the grid did not change. Only module 002 reads 0x8004E2EF/F0 directly (gating ids 6 and 11 in its
-  12-entry list at 0x8009C8D8, likely DANCE VIEW); the character select reads its unlocks elsewhere.
-  Plugin removed from the build; source kept in _work/bag2jp_unlock_all_wip.c. Next: find the
-  character-select module (log 0x8005F7CC there) and the table it checks.
+- Correction (user): the save IS fully unlocked. The "?" cells are the real icons of the hidden
+  characters; on an empty card those cells and DANCE VIEW do not appear at all. All my char-select
+  tests had card1.mcd in place (copied before the first test), and the game loads the card at boot
+  by itself. So shipping the card = everything unlocked, and both online players get the same grid.
+  The CodeBreaker plugin attempt was therefore not needed; source kept in _work/bag2jp_unlock_all_wip.c
+  (untested on an empty card). LEEME now says the save comes fully unlocked and loads by itself.
