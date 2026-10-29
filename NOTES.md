@@ -317,21 +317,33 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   _work/game/jp005_decomp.txt.
 - Current BAG2JP CMakeLists.txt (with netplay on) copied to patches/BAG2JP-CMakeLists.txt.
 
-## Online step sync (bag2jp.feature.netsync) - in progress
-- Plugin src/bag2jp_netsync.c (copy in mods-src/bag2jp.feature.netsync with the manifest). MODS menu
-  item ONLINE: OFF / LOCAL NETWORK / TEST (MIRROR) (option transport = off|lan|loopback; next start).
-- Match = ordinary 2-player battle on both PCs. Discovery: UDP broadcast to port 47300 with the hash
-  of the room code (bag2jp_online.txt next to the game, default BAG2); higher random nonce = P1.
-- While linked: port 2 is a controller source (plugs a pad so 2PLAYER GAME opens) and both ports go
-  through a pad transform. From mode 2 (2PLAYER GAME) the menus route the remote player's button
-  changes (ordered, each held 2 frames); during the dance the remote side gets a neutral pad and
-  Start is stripped (no pause).
-- Per bar: gate 0x8009ABC4 (bnez v0): when the input window closes the local bar is closed with
-  FUN_800120F8(player, command) and sent; the bar waits (max 30 frames, ~20 usable before the next
-  bar) for the other result. Join 0x8009B084 writes both players' judge fields (+08,+0C,+0E,+12,+14)
-  before scoring. "Right" results map to this PC's command id.
-- Start barrier: when the match module loads both PCs wait for each other (READY), so the songs run
-  within the network delay. Link lost after 5 s silence (toast). Status line via host_osd.
-- Tested on one PC with two copies (vsync off in the test copy; with vsync on two copies ran at ~44 fps
-  and drifted): characters, difficulty, stage and every bar resolved identically on both, waits 0-8 frames.
-- Still to do: internet transport, room code entry in the MODS menu, rematch/results flow check.
+## Online step sync (bag2jp.feature.netsync)
+- Plugin src/bag2jp_netsync.c (copy + manifest + default server list in mods-src/bag2jp.feature.netsync).
+  Same model as StepMania/SMOnline: each PC plays against its own music; only bar results travel.
+- MODS menu: ONLINE = OFF / LOCAL NETWORK / INTERNET / DIRECT IP / TEST (MIRROR) (option transport,
+  next start) and ROOM CODE (4 letters/digits, pad editor: Circle edit, Up/Down letter, Left/Right move,
+  Circle/Cross save; stored in line 1 of bag2jp_online.txt; re-read live while not linked).
+- LAN: UDP broadcast on 47300 with the room code hash. P1 = higher random id.
+- INTERNET: MQTT 3.1.1 (QoS 0, plain TCP 1883) meeting point, topic bag2jp/v1/<room hash>; servers in
+  bag2jp_online_servers.txt (written with defaults on first run: HiveMQ, EMQX, Mosquitto; STUN Google,
+  Cloudflare), tried in order on a worker thread. HELLO carries the STUN public address and the LAN
+  address; both sides punch UDP holes for 10 s; until a UDP packet arrives everything goes through the
+  broker (relay). Test switch BAG2JP_NETSYNC_RELAY_ONLY=1.
+- DIRECT IP: host (line 2 of bag2jp_online.txt empty) listens on UDP 47100 and shows its public address;
+  join = line 2 "ip:port". Host is P1. Needs the port forwarded on the host's router.
+- Menus routed as before (port 2 = controller source + transform; MODS screen still works through the
+  netsync transform via bag2jp_mods_menu_pad_filter / _reattach).
+- Per bar: gate 0x8009ABC4 closes the local bar (FUN_800120F8) and sends it; the bar waits (max 180
+  frames) for the other result. NEW: 0x8009A0C0 (bnez v0, beat advance) holds the beat that starts the
+  next bar until the waiting bar is resolved (before this, a late result dropped the bar on one PC).
+  Hold even when the result arrives that frame (the advance runs before the resolve).
+- Out-of-sync check: STEP carries COOL/right-bar counts (0x8005E798 / 0x8005E7A8, P1/P2) at the close;
+  a difference shows a toast. (Scores 0x8005E6F8 count up over time, so they differ by timing: log only.)
+- Start barrier (READY) when the match module loads; ping/pong RTT on the status line ("slow" > 250 ms).
+- Tests on one PC with two copies (keep both windows in the background: the copy behind the foreground
+  game window was throttled to ~35 fps): LAN, internet with direct path (HiveMQ meeting, STUN, punch),
+  internet relay-only (~400 ms RTT through HiveMQ from Lima): 40 bars, all identical on both PCs, waits up
+  to 34 frames held correctly. Direct IP link OK (127.0.0.1:47100).
+- Not tested yet: two real PCs on different networks (hole punching through real NATs), rematch/results.
+- Tools: D:\Dev\Tools\winshot (bag2_two.ps1 [-RelayOnly] [-BArgs], bag2_vs_flow.ps1 [-FromTitle],
+  winshot.ps1 [-Screen], postkey.ps1, focus.ps1).

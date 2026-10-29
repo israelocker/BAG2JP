@@ -21,7 +21,7 @@ default_enabled = true
 feature = "online"
 id = "transport"
 label = "Connection"
-description = "Off: normal game. Loopback test: the rival copies your own steps (one PC, for testing). Local network / Internet: play against another PC."
+description = "Off: normal game. Local network: the other PC is on the same network. Internet: both type the same room code (MODS > ROOM CODE). Direct IP: the host opens UDP port 47100 on the router; the other player writes the host's address in bag2jp_online.txt. Loopback test: the rival copies your own steps (one PC)."
 group = "Online"
 type = "choice"
 default = "off"
@@ -41,6 +41,10 @@ label = "Local network"
 [[option.choice]]
 value = "internet"
 label = "Internet"
+
+[[option.choice]]
+value = "direct"
+label = "Direct IP"
 
 [[plugin]]
 feature = "online"

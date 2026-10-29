@@ -54,9 +54,10 @@
 typedef struct {
     const char* label;
     const char* pkg; const char* feat; const char* opt;   /* opt NULL = feature switch */
-    int nvals; const char* vals[3]; const char* names[3];
+    int nvals; const char* vals[5]; const char* names[5];
     int def; int live;
     int cur, boot;
+    int kind;                                             /* 0 choice, 1 room code (text file) */
 } MmItem;
 
 #define REG "bag2jp.localization.regional", "regional"
@@ -73,8 +74,10 @@ static MmItem s_items[] = {
     {"HD INTRO",        "bag2jp.enhancement.hd-intro", "hd-intro", NULL, 2, {"false", "true"}, {"OFF", "ON"}, 1, 0},
     {"HD FONT",         "psx.enhancement.hd-textures", "hd-textures", NULL, 2, {"false", "true"}, {"OFF", "ON"}, 0, 0},
     {"AUTOPLAY",        "bag2jp.feature.autoplay", "autoplay", "active", 2, {"false", "true"}, {"OFF", "ON"}, 1, 1},
-    {"ONLINE",          "bag2jp.feature.netsync", "online", "transport", 3, {"off", "lan", "loopback"},
-                        {"OFF", "LOCAL NETWORK", "TEST (MIRROR)"}, 0, 0},
+    {"ONLINE",          "bag2jp.feature.netsync", "online", "transport", 5,
+                        {"off", "lan", "internet", "direct", "loopback"},
+                        {"OFF", "LOCAL NETWORK", "INTERNET", "DIRECT IP", "TEST (MIRROR)"}, 0, 0},
+    {"ROOM CODE",       "", "", NULL, 1, {""}, {""}, 0, 1, 0, 0, 1},
 };
 #define MM_N ((int)(sizeof s_items / sizeof s_items[0]))
 
@@ -116,7 +119,7 @@ static void mm_load_selection(void) {
         if (!in_values && !strcmp(key, "id")) { snprintf(feat, sizeof feat, "%s", val); continue; }
         for (int i = 0; i < MM_N; ++i) {
             MmItem* it = &s_items[i];
-            if (strcmp(it->pkg, pkg) || strcmp(it->feat, feat)) continue;
+            if (it->kind || strcmp(it->pkg, pkg) || strcmp(it->feat, feat)) continue;
             const char* want = it->opt ? (in_values ? it->opt : NULL) : (!in_values ? "enabled" : NULL);
             if (!want || strcmp(key, want)) continue;
             for (int k = 0; k < it->nvals; ++k) if (!strcmp(val, it->vals[k])) it->cur = k;
@@ -125,7 +128,45 @@ static void mm_load_selection(void) {
     fclose(f);
 }
 
+/* ------------------------------------------------------------------ room code (bag2jp_online.txt) */
+#define CODE_LEN 4
+static char s_code[CODE_LEN + 1] = "BAG2";
+static int s_edit, s_edit_pos;
+static const char CODE_CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+static void mm_code_path(char* p, size_t n) {
+    const char* b = SDL_GetBasePath(); snprintf(p, n, "%sbag2jp_online.txt", b ? b : "");
+}
+static void mm_code_load(void) {
+    char p[1100], line[64]; mm_code_path(p, sizeof p);
+    strcpy(s_code, "BAG2");
+    FILE* f = fopen(p, "r"); if (!f) return;
+    if (fgets(line, sizeof line, f)) {
+        int k = 0;
+        for (char* c = line; *c && k < CODE_LEN; ++c) {
+            const char u = (char)((*c >= 'a' && *c <= 'z') ? *c - 32 : *c);
+            if (strchr(CODE_CHARS, u) && u) s_code[k++] = u;
+        }
+        for (; k < CODE_LEN; ++k) s_code[k] = 'A';
+        s_code[CODE_LEN] = 0;
+    }
+    fclose(f);
+}
+/* Keeps every line after the first (direct IP settings). */
+static void mm_code_save(void) {
+    char p[1100], rest[2048] = ""; mm_code_path(p, sizeof p);
+    FILE* f = fopen(p, "r");
+    if (f) { char line[512]; int first = 1;
+             while (fgets(line, sizeof line, f)) { if (first) { first = 0; continue; }
+                                                   strncat(rest, line, sizeof rest - strlen(rest) - 1); }
+             fclose(f); }
+    f = fopen(p, "w"); if (!f) return;
+    fprintf(f, "%s\n%s", s_code, rest); fclose(f);
+    mm_log("room code %s saved", s_code);
+}
+
 static void mm_apply(MmItem* it) {
+    if (it->kind) return;
     const char* v = it->vals[it->cur];
     int ok, live = 0;
     if (it->opt) {
@@ -262,15 +303,25 @@ static void mm_compose(void) {
         const double cy = y + s_glyph_h * k * 0.5;
         if (sel) cv_dot(33, cy, 8.5, 0xFFD85840u);           /* the game's cursor dot */
         cv_text(it->label, 42, y, 0, row, k);
-        const char* v = it->names[it->cur];
+        const char* v = it->kind ? s_code : it->names[it->cur];
         const double vw = cv_text_w(v, k);
         cv_text(v, 470 - vw, y, 0, row, k);
+        if (it->kind && s_edit && sel) {                     /* underline the letter being changed */
+            char pre[CODE_LEN + 1]; memcpy(pre, s_code, (size_t)s_edit_pos); pre[s_edit_pos] = 0;
+            char one[2] = { s_code[s_edit_pos], 0 };
+            const double x0 = 470 - vw + cv_text_w(pre, k), w = cv_text_w(one, k);
+            const double uy = y + s_glyph_h * k + 0.4;
+            cv_fill((int)(x0 * CV_SX), (int)(uy * CV_SY), (int)((x0 + w) * CV_SX), (int)((uy + 0.8) * CV_SY), 0xFFD85840u);
+        }
         if (!it->live && it->cur != it->boot) cv_dot(478, cy, 6.5, 0xFFE8A030u);   /* pending: next start */
     }
-    cv_text("LEFT RIGHT CHANGE   X EXIT", 24, 218, 0, 5, 0.66);
-    const double nw = cv_text_w("APPLIES ON NEXT START", 0.66);
-    cv_dot(488 - nw - 8, 218 + s_glyph_h * 0.33, 6.5, 0xFFE8A030u);
-    cv_text("APPLIES ON NEXT START", 488 - nw, 218, 0, 5, 0.66);
+    cv_text(s_edit ? "UP DOWN LETTER   LEFT RIGHT MOVE   O OK"
+                   : (s_items[s_sel].kind ? "O EDIT   X EXIT" : "LEFT RIGHT CHANGE   X EXIT"), 24, 218, 0, 5, 0.66);
+    if (!s_edit) {
+        const double nw = cv_text_w("APPLIES ON NEXT START", 0.66);
+        cv_dot(488 - nw - 8, 218 + s_glyph_h * 0.33, 6.5, 0xFFE8A030u);
+        cv_text("APPLIES ON NEXT START", 488 - nw, 218, 0, 5, 0.66);
+    }
 }
 
 static void mm_draw(int width, int height, void* ctx) {
@@ -299,6 +350,7 @@ static void mm_open(void) {
     mm_load_selection();
     if (!boot_known) { for (int i = 0; i < MM_N; ++i) s_items[i].boot = s_items[i].cur; boot_known = 1; }
     mm_read_glyphs();
+    mm_code_load(); s_edit = 0;
     s_open = 1; s_sel = 0; s_swallow = 1;
     atomic_store(&s_dirty, 1); atomic_store(&s_visible, 1);
     mm_log("open");
@@ -314,9 +366,20 @@ static int mm_pad(const PSXModPadFrame* in, PSXModPadOutput* out) {
     const uint32_t down = ~in->buttons & 0xFFFFu, prev = ~s_prev_buttons & 0xFFFFu;
     const uint32_t press = down & ~prev;
     s_prev_buttons = in->buttons;
-    if (s_open && press) {
+    if (s_open && press && s_edit) {
+        const int n = (int)sizeof CODE_CHARS - 1;
+        int ci = (int)(strchr(CODE_CHARS, s_code[s_edit_pos]) - CODE_CHARS);
+        if (press & 0x0010u) s_code[s_edit_pos] = CODE_CHARS[(ci + 1) % n];
+        else if (press & 0x0040u) s_code[s_edit_pos] = CODE_CHARS[(ci + n - 1) % n];
+        else if (press & 0x0020u) s_edit_pos = (s_edit_pos + 1) % CODE_LEN;
+        else if (press & 0x0080u) s_edit_pos = (s_edit_pos + CODE_LEN - 1) % CODE_LEN;
+        else if (press & (0x2000u | 0x4000u)) { s_edit = 0; mm_code_save(); }
+        atomic_store(&s_dirty, 1);
+    } else if (s_open && press) {
         MmItem* it = &s_items[s_sel];
-        if (press & 0x0010u) s_sel = (s_sel + MM_N - 1) % MM_N;
+        if (it->kind && (press & 0x2000u)) { s_edit = 1; s_edit_pos = 0; }
+        else if (it->kind && (press & (0x0020u | 0x0080u))) { /* text item: no left/right */ }
+        else if (press & 0x0010u) s_sel = (s_sel + MM_N - 1) % MM_N;
         else if (press & 0x0040u) s_sel = (s_sel + 1) % MM_N;
         else if (press & (0x0020u | 0x0080u | 0x2000u)) {
             const int step = (press & 0x0080u) ? it->nvals - 1 : 1;
@@ -381,6 +444,17 @@ static void mm_vblank(void) {
         psx_mod_write_half(MM_CURSOR_POS3 + 4u, MM_MODS_Y - 2);
         mm_log("option menu patched");
     }
+}
+
+/* Online play (bag2jp_netsync.c) owns port 1's transform while two PCs are linked; it runs this
+ * menu first and puts the menu's transform back when the link ends. */
+int bag2jp_mods_menu_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out) {
+    return s_enabled ? mm_pad(in, out) : 0;
+}
+void bag2jp_mods_menu_reattach(void) {
+    static const PSXModPadTransform tr = { sizeof(PSXModPadTransform), PSX_MOD_PAD_TYPE_BIT(PSX_MOD_PAD_DIGITAL) |
+                                           PSX_MOD_PAD_TYPE_BIT(PSX_MOD_PAD_DUALSHOCK), PSX_MOD_PAD_DIGITAL, mm_pad };
+    if (s_enabled) (void)psx_mod_set_pad_transform(0, &tr);
 }
 
 static void mm_activate(void) {

@@ -1,0 +1,8 @@
+# Online play meeting points. One per line, tried in order.
+# mqtt host:port = where two games with the same room code find each other.
+# stun host:port = tells each game its public address for a direct connection.
+mqtt broker.hivemq.com:1883
+mqtt broker.emqx.io:1883
+mqtt test.mosquitto.org:1883
+stun stun.l.google.com:19302
+stun stun.cloudflare.com:3478
