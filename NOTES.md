@@ -491,3 +491,27 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - Character packs and stages carry their own DBI code compiled for each engine (BAG1 vs BAG2
   functions), so BAG1 code cannot be loaded as is; data must go through BAG2's code (converter or
   loader changes). Next: RE model/animation/choreography formats and what the BAG2 Heat DBI reads.
+
+### BAG1 Heat: model format solved, Heat renders and dances (2026-10-29)
+- Main exe decompiled: _work/mainexe/slpm_decomp.txt (headless Ghidra on Windows:
+  D:\Dev\Tools\ghidra-scripts\run_headless.ps1 -Bin -Base -ProjDir -Out). BAG1: _work/bag1/bag1_decomp.txt.
+- Dancer setup BAG2 FUN_80031d3c (char id low 5 bits, player 0/1; per-character handler tables with
+  stride 0x4c = 19 chars: init 0x800535DC, 0x80053544, per-frame 0x80053674 (jalr at 0x80032694),
+  0x8005369C, 0x800536AC). Model: FUN_80022410 (bone links -> 0xB0-byte bone structs), FUN_80022518
+  (record per bone, tree order: roots via link[3], recursion link[1] then link[2]), FUN_800220B8 (mesh
+  header sizes). Animations: FUN_800125FC = list of {u32 size, data}, ends with size 0 (same in BAG1:
+  FUN_800159C4). BAG1 equivalents: FUN_800298DC / FUN_800299A4 / FUN_80029624 (bone struct 0x100).
+- Only difference in the model file: the type-1 mesh header (BAG1 0x3C words, BAG2 0x48 words: 8 more
+  runtime pointer slots, 4 more count words for new primitive kinds). Converter:
+  tools/bag1import/model_bag1_to_bag2.py (also check_bag2() walks a BAG2 model; stock BAG2 Heat and
+  Strike and the converted BAG1 Heat all parse to the exact end). Heat: 24 meshes + 14 type-4 nodes.
+- Textures: BAG2 relocates the pack TIMs; mapping BAG1 pack 004/005/006 -> BAG2 slots 002/003/004 (p2:
+  001/002/003), at the BAG2 TIM coordinates; BAG1 CLUT rows + BAG2's extra rows
+  (tools/bag1import/tim_retarget.py). BAG2's HUD name label lives in slot 003 at x54-124 y165-177:
+  pasted back over the BAG1 page.
+- Result (mod bag2jp.test.bag1-heat-model, enabled in the exp install; rebuild with
+  tools/bag1import/build_heat_test.sh): BAG1 Heat (white suit, red flames, F beanie) in a BAG2 match,
+  BAG1 001 animations, BAG2 choreography, no crash, label OK. Screenshots _work/bag1_heat_test_*.png.
+- Still BAG2: choreography (dance moves are anim files too: choreography_a/b 000.bin start like an
+  anim list; 001.bin = move table), character code DBI (BAG2 Heat effects), sounds, outfit B.
+  Next: map BAG1 dance moves (BAG1 001 anims + BAG1 move tables) into BAG2 choreography files.
