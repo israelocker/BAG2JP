@@ -24,6 +24,10 @@ JUGAR ONLINE
   Cambiar el codigo de sala: OPTIONS > MODS > ROOM CODE
   (flechas cambian letras, Circulo guarda). Los dos deben poner el mismo.
 
+TU PARTIDA (MEMORY CARD)
+  Viene una partida guardada en la memory card 1. Si el juego no la toma
+  al iniciar, cargala en OPTIONS > MEMORY CARD > LOAD DATA > YES.
+
 CONTROLES (teclado por defecto)
   Flechas = cruceta    X = Cruz     S = Circulo
   Z = Cuadrado         A = Triangulo

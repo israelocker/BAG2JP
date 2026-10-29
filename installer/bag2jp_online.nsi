@@ -284,13 +284,18 @@ Section "Juego" SecGame
   SetOutPath "$INSTDIR"
   DetailPrint "Copiando el juego..."
   SetCompress auto
-  File /r /x "*.flac" /x "*.mpg" /x "LEEME.txt" /x "settings.toml" "${PAYLOAD}/*.*"
+  File /r /x "*.flac" /x "*.mpg" /x "LEEME.txt" /x "settings.toml" /x "card1.mcd" "${PAYLOAD}/*.*"
   SetCompress off
   File /r "${PAYLOAD}/*.flac"
   File /r "${PAYLOAD}/*.mpg"
   SetCompress auto
   File "/oname=$INSTDIR\settings.toml" "settings.toml"
   File "/oname=$INSTDIR\LEEME.txt" "LEEME.txt"
+  ; memory card with saved progress: never replace one the player already has (reinstall/update)
+  CreateDirectory "$INSTDIR\saves"
+  SetOverwrite off
+  File "/oname=$INSTDIR\saves\card1.mcd" "${PAYLOAD}/saves/card1.mcd"
+  SetOverwrite on
 
   DetailPrint "Copiando el disco del juego (puede tardar un poco)..."
   CreateDirectory "$INSTDIR\disc_image"
