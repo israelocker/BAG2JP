@@ -410,3 +410,15 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - SONGS / ANNOUNCER defaults in the menu model now match the package (Japanese).
 - Tested by posting keys: bind Circle to D (live: D then opened menus), Circle to X (Cross swapped
   to D), DEFAULT KEYS restored the original map. Tool: winshot\bag2_kb_page.ps1.
+
+## CD songs v3: CD audio only (2026-10-29, tools/hq/render3.py)
+- User asked to drop the parts that blended in the game's own XA audio. v3 never plays game audio:
+  unmapped blocks continue the CD from the previous offset; before the first reliable match (30-block
+  window with 20 agreeing raw matches) blocks take that offset; no "game-only" spans; game-silent
+  unmapped blocks stay silent. Only exception: a game intro before the CD track starts (pos < 0).
+- Rendered and installed in the exp install for Heat (BUST2_01_ch0), Comet (ch2), Shorty (ch5) and
+  Hiro (BUST2_02_ch0); v2 files kept in _work/music_hq_v2_backup. Game audio removed: Heat 5.5 s in
+  9 pieces, Comet 3.1 s / 2, Hiro 3.4 s / 2. Shorty keeps its first 11.4 s from the game: the CD track
+  has no such intro (CD starts at game 11.39 s; xcorr of the intro vs the whole CD < 0.03).
+- Runtime: a full Comet song in 1P played with no seeks or slow reads. Previews (v2 then v3):
+  _work/hq_v3_preview/*.mp3. Other 9 songs still v2: run `python3 render3.py <name>` and copy.
