@@ -422,3 +422,10 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   has no such intro (CD starts at game 11.39 s; xcorr of the intro vs the whole CD < 0.03).
 - Runtime: a full Comet song in 1P played with no seeks or slow reads. Previews (v2 then v3):
   _work/hq_v3_preview/*.mp3. Other 9 songs still v2: run `python3 render3.py <name>` and copy.
+- 2026-10-29 (later): user approved v3 by ear ("mucho mejor el after"). All 13 songs rendered with v3
+  and installed in the exp install (all v2 files in _work/music_hq_v2_backup). Added: in unmapped
+  blocks the CD follows the game's level (gain = min(median, game rms / CD rms)), so game fades and
+  endings fade the CD too. Songs with game-only intros/endings now play the CD's continuation there
+  (largest: Kelly last ~12 s, Robo-Z last ~26 s partly, Capoeira 0.5-13.7 s and 135-141 s, Bi-o
+  0-10 s, Strike 0-5 s); previews in _work/hq_v3_preview. Shorty keeps its 11.4 s game intro (CD
+  has none).

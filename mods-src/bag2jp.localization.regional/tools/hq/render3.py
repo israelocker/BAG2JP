@@ -78,8 +78,12 @@ def render(name, G):
     g = np.array([gg if (t is not None and gg > 0) else np.nan for t, gg in blocks], dtype=float)
     med = np.nanmedian(g)
     rms = np.array([np.sqrt(np.mean(G[b * BS:(b + 1) * BS] ** 2)) if b * BS < N else 0 for b in range(n)])
+    # unmapped: follow the game's level (its fades and endings) at the CD's own level there
+    raw = r2.synth(G, C, np.where(pos < 0, np.nan, pos), np.ones(N), X)
     for b in range(n):
-        if np.isnan(g[b]): g[b] = 0.0 if rms[b] < 0.004 else med
+        if not np.isnan(g[b]): continue
+        rc = np.sqrt(np.mean(raw[b * BS:(b + 1) * BS] ** 2)) if b * BS < N else 0
+        g[b] = 0.0 if rms[b] < 0.004 else (min(med, rms[b] / rc) if rc > 1e-4 else med)
     gl = np.minimum(1.0, g / med)
     k = 10; gs = np.array([np.median(gl[max(0, b - k):b + k + 1]) for b in range(n)]) * med
     # a silent game block stays silent even inside the median window (song edges)
