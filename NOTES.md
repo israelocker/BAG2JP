@@ -618,4 +618,18 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   double 29+(7-v). In both games the normal anim follows the same level and the alternate follows a
   level-up. Each BAG2 row maps to a BAG1 path (bar + offset so it ends on the BAG1 double, level
   min(L, bar)), so consecutive moves are designed BAG1 transitions.
+- BAG1 song (2026-10-30): Heat's BAG1 song is "2Bad" (CD track 02), not Chemical Love (Gas-O).
+  BAG1 song index = character id (Heat 0): audio XA/DANCEXA<1+id/8>.XA channel id%8 (JP disc has
+  DANCEXA1-4; the +16 variant when 0x8006157C != 0), chart = main exe table 0x800513DC[id] (+12 variant):
+  start frame, frames, beats, sections u16 (mode<<8|beats), -1; BAG1 mode 0 = both players, 1/2 = solo,
+  after -1 both play to the end; time = vblank frames from XA start (0x80097A68). Heat: 816, 6565, 256
+  (140 BPM), 0x40,0x108,0x208,0x110,0x210,0x108,0x208. JP/US audio identical (US +3.6 dB).
+  BAG2 chart (stage DBI tail, 0x8004DF08[stage]): start, frames, beats, intro beats, sections
+  (mode 0 = no commands, 1/2 solo, 3 both). port_bag1_stage.bag1_chart() converts (32 intro beats from
+  the pre-roll, start -5): [-5, 7386, 288, 32, 32, 0x340, 0x108, 0x208, 0x110, 0x210, 0x108, 0x208,
+  0x340, 0x340, -1] (same 15 halfwords as stock). Verified 2P autoplay: intro, both, solos, fever, result.
+  Audio: plugin bag2jp.bag1_stage wraps the XA host filter (after bag2jp.hq_songs) and replaces
+  BUST2_01 ch0 sectors with <bag1_music>/heat_2bad_<cd|game>.flac while the B1ST stage is loaded
+  (option bag1_song_audio, default cd; log bag2jp_bag1_content.log). CD version re-aligned with the hq
+  tools (mods-src/bag2jp.feature.bag1-content/tools/hq_bag1, coverage 90 %, score 0.74).
 - Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.

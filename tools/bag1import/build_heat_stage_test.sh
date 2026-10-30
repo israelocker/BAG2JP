@@ -30,7 +30,9 @@ if os.environ.get('STAGE_TEX', '1') == '1':
 # stage code: the BAG1 stage program ported to BAG2 (port_bag1_stage.py): relocated to 0x801DAF10,
 # BAG1 calls/globals mapped to BAG2, trampolines at the 4 callback addresses BAG2 uses for stage id 0
 import port_bag1_stage
-d, st, n, unk = port_bag1_stage.build(es[0], open('$B/000.dbi', 'rb').read()); assert not unk, unk
+# song: BAG1 Heat chart (2Bad) in the DBI tail; the audio is swapped by the bag1-content plugin
+chart = port_bag1_stage.bag1_chart(open('$P/_work/bag1/scus.bin', 'rb').read(), 0); print('chart', chart)
+d, st, n, unk = port_bag1_stage.build(es[0], open('$B/000.dbi', 'rb').read(), chart); assert not unk, unk
 open('$A/000.dbi', 'wb').write(d)
 print('stage files written')
 PY

@@ -135,7 +135,33 @@ def patch_struct_sites(p):
                     n += 1; break
     return n
 
-def build(dbi_in, bag2_dbi):
+def bag1_chart(scus, char_id):
+    """BAG1 song chart (main exe table 0x800513DC[id]: start frame, frames, beats, sections
+    u16 (mode << 8 | beats), -1; mode 0 = both players, 1/2 = solo; after -1 both play to the end)
+    -> BAG2 chart (start, frames, beats, intro beats, sections with mode 0 = no commands,
+    1/2 = solo, 3 = both, -1). BAG1 has no intro section: its pre-roll becomes 32 BAG2 intro beats."""
+    B = 0x80010000
+    p = struct.unpack_from('<I', scus, 0x800513DC + 4 * char_id - B)[0] - B
+    start, frames, beats = struct.unpack_from('<3h', scus, p)
+    secs = []; o = p + 6
+    while True:
+        v = struct.unpack_from('<h', scus, o)[0]; o += 2
+        if v == -1: break
+        secs.append(v)
+    used = sum(v & 0xFF for v in secs)
+    if used < beats: secs.append(beats - used)              # tail: both players to the end
+    intro = 32
+    tf, tb = round(frames * (beats + intro) / beats), beats + intro
+    st = start - (intro * tf + tb // 2) // tb
+    out = [intro]
+    for v in secs:
+        mode, n = v >> 8, v & 0xFF
+        mode = 3 if mode == 0 else mode
+        while n > 64: out.append(3 << 8 | 64 if mode == 3 else mode << 8 | 64); n -= 64
+        out.append(mode << 8 | n)
+    return [st, tf, tb, intro] + out + [-1]
+
+def build(dbi_in, bag2_dbi, chart=None):
     # bag2_dbi: the stock BAG2 stage-0 DBI. Everything from 0x801E5410 on is song data the main exe
     # points at (chart/beat table 0x8004DF08[0] and tables 0x80051AC8.. for id 0), so it is kept as is.
     p, bss, stats, unknown = port(dbi_in)
@@ -152,7 +178,11 @@ def build(dbi_in, bag2_dbi):
                         (0x801E53E4, (j(0x801E4698 + DELTA), 0))):          # setup(heap) -> BAG1 setup
         for i, w in enumerate(words): struct.pack_into('<I', img, addr - B2_BASE + 4 * i, w)
     b2size, b2bss = struct.unpack_from('<II', bag2_dbi, 4)
-    img += bag2_dbi[12 + end:12 + b2size]
+    tail = bytearray(bag2_dbi[12 + end:12 + b2size])
+    if chart:                                     # BAG2 header 4 + 11 sections -> same 15 halfwords
+        assert len(chart) <= 15, chart
+        struct.pack_into('<%dh' % len(chart), tail, 0, *chart)
+    img += tail
     out = struct.pack('<4sII', b'DBI_', len(img), b2bss) + bytes(img)
     return out, stats, n, unknown
 

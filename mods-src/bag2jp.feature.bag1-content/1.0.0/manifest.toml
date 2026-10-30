@@ -20,3 +20,28 @@ default_enabled = true
 [[plugin]]
 feature = "bag1-stage"
 id = "bag2jp.bag1_stage"
+
+[[option]]
+feature = "bag1-stage"
+id = "bag1_song_audio"
+label = "BAG1 song audio"
+description = "Audio for songs imported from Bust A Groove 1: the soundtrack CD re-aligned to the game's edit, or the game's own XA audio."
+type = "choice"
+default = "cd"
+
+[[option.choice]]
+value = "cd"
+label = "CD quality"
+
+[[option.choice]]
+value = "game"
+label = "Original (game XA)"
+
+[[resource]]
+feature = "bag1-stage"
+id = "bag1_music"
+label = "BAG1 songs"
+description = "Folder with the BAG1 songs as FLAC (44.1 kHz stereo), named <song>_cd.flac / <song>_game.flac."
+format = "directory"
+default = "bag1_music"
+required = false
