@@ -34,6 +34,27 @@ import port_bag1_stage
 chart = port_bag1_stage.bag1_chart(open('$P/_work/bag1/scus.bin', 'rb').read(), 0); print('chart', chart)
 d, st, n, unk = port_bag1_stage.build(es[0], open('$B/000.dbi', 'rb').read(), chart); assert not unk, unk
 open('$A/000.dbi', 'wb').write(d)
+# camera list (both games: blocks [u32 size][u32 flags|keys][keys: s16 pos xyz, target xyz], u32 0):
+# BAG1 ST_HEAT has only the intro fly-in (track 0); BAG2's dance tracks 1.. follow the dancers.
+if os.environ.get('STAGE_CAMERA', '1') == '1':
+  c2 = open('$B/012.bin', 'rb').read(); n0 = struct.unpack_from('<I', c2, 0)[0]
+  assert es[9][-4:] == bytes(4) and struct.unpack_from('<I', es[9], 0)[0] + 8 == len(es[9])
+  open('$A/012.bin', 'wb').write(es[9][:-4] + c2[4 + n0:])
+# stage sounds: SEDT = 5 banks x [VAB head][VAB body][cue table]; BAG2 loads bank 0 (stage sounds)
+# + a random bank 1-4 (cue 0x4000, fever start). Bank 0 <- BAG1 bank 0 (fire burst, cue -> 0x5000).
+if os.environ.get('STAGE_SOUND', '1') == '1':
+  def sects(s):
+    n = struct.unpack_from('<I', s, 4)[0]; o = list(struct.unpack_from('<%dI' % n, s, 8)) + [len(s)]
+    return [s[o[k]:o[k + 1]] for k in range(n)]
+  s1, s2 = sects(es[1]), sects(open('$B/001.sedt', 'rb').read())
+  cue = bytearray(s1[10]); assert struct.unpack_from('<IH', cue, 0) == (1, 0x4000)
+  struct.pack_into('<H', cue, 4, 0x5000)
+  s2[0], s2[5], s2[10] = s1[0], s1[5], bytes(cue)
+  hdr = 8 + 4 * 15; offs = []; o = hdr
+  for x in s2:
+    offs.append(o); o += len(x)
+  out = b'SEDT' + struct.pack('<I', 15) + struct.pack('<15I', *offs) + b''.join(s2)
+  open('$A/001.sedt', 'wb').write(out)
 print('stage files written')
 PY
 E="$HOME/mnt/Bust A Groove 2 (Japan)/BAG2JP-exp-8mb"

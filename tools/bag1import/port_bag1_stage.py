@@ -166,6 +166,14 @@ def build(dbi_in, bag2_dbi, chart=None):
     # points at (chart/beat table 0x8004DF08[0] and tables 0x80051AC8.. for id 0), so it is kept as is.
     p, bss, stats, unknown = port(dbi_in)
     n = patch_struct_sites(p)
+    # fire-burst sound: BAG1 plays cue 0x4000 on voice slot 20 (BAG2 has 14 slots, and its 0x4000 is
+    # the fever cue of stage banks 1-4) -> BAG2 FUN_8002E478(cue 0x5000, -1, -1, -1) picks a free slot;
+    # the stage SEDT bank 0 is BAG1's with its cue renumbered 0x4000 -> 0x5000 (build_heat_stage_test.sh)
+    for a, old, new in ((0x801E2230, 0x24040014, 0x24045000), (0x801E2234, 0x24054000, 0x2405FFFF)):
+        assert struct.unpack_from('<I', p, a - B1_BASE)[0] == old, hex(a)
+        struct.pack_into('<I', p, a - B1_BASE, new)
+    assert struct.unpack_from('<I', p, 0x801E224C - B1_BASE)[0] >> 26 == 3
+    struct.pack_into('<I', p, 0x801E224C - B1_BASE, 0x0C000000 | (0x8002E478 >> 2 & 0x3FFFFFF))
     # full image: payload + bss, extended to the trampolines; shim block
     end = 0x801E5410 - B2_BASE
     img = bytearray(end); img[:len(p)] = p
