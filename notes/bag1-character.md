@@ -109,8 +109,7 @@
   gets costume ^ 1 (`sb v0,0x1c(a2)` at 0x80091B6C). Results copied to 0x8005E6A0/A4, 0x8005E668/69.
 - Plugin bag2jp.charsel_popup (src/bag2jp_charsel_popup.c, feature select-popup of bag1-content):
   pad transforms on both ports (port 1 chains the MODS menu; mods menu's own transform chains the
-  popup, so install order does not matter; netsync reattaches it after an online link and the popup
-  is off while linked). Circle/Triangle on a selectable character in state 1 opens the popup and is
+  popup, so install order does not matter; netsync reattaches it after an online link). Circle/Triangle on a selectable character in state 1 opens the popup and is
   kept from the game; Up/Down rows, Left/Right values (GAME BAG 1/BAG 2 for characters with a BAG1
   version, COSTUME A/B; Triangle starts on B); Circle confirms: version -> bag2jp_bag1_set_version,
   then 4 neutral + 6 pressed polls of Circle (A) or Triangle (B) replay the pick; Cross cancels.
@@ -160,3 +159,12 @@
 - Rebuild order for a BAG1 character version: build_heat_test.sh + build_heat_stage_test.sh (test mods,
   left disabled) -> make_alt_entries.py (payload + index header + overlay block) -> manifest overlay
   sha256 -> build the exe.
+- Online (2026-10-30, src/bag2jp_netsync.c): menus are not lockstep (each PC sends button changes),
+  so the popup cannot be replayed from the other PC's buttons. Instead each PC runs the popup for its
+  own side on its own pad inside ns_pad_transform (bag2jp_charsel_filter_side, before the buttons are
+  sent); the costume travels as the replayed Circle/Triangle; the version is sent as M_PICK (u8 side,
+  char, version, seq; repeated with every ping, latest seq wins). On link every version resets to BAG2
+  (launcher defaults may differ); unpicked sides stay BAG2. M_CONTENT (FNV hash of the alt-entry
+  index, repeated with pings): different content on the two PCs -> BAG2 versions only on both + toast.
+  Verified with two copies on one PC (bag2_two.ps1 -BFocusAlways, LAN): picks sent/received, same
+  entry switches and mirror decision on both, identical dance screens (P1 BAG2 B vs P2 BAG1 B).

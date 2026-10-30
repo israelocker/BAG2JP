@@ -13,6 +13,8 @@
  * Cross closes it. After closing, buttons stay hidden from the game until released.
  * The game's mirror rule (same character + costume -> the later pick switches costume) is skipped
  * when the two players picked different game versions (instruction hook at 0x80091B6C).
+ * Online (bag2jp_netsync.c): each PC runs the popup for its own side on its own pad before the buttons
+ * are sent; the version pick is sent as a message (the costume travels as the replayed button).
  * Drawn on the host HUD as an alpha overlay over the 4:3 picture, with the game's font 1 glyph table
  * over the HD font atlases (resource popup_assets: font_a05/a06.png). */
 #include "mod_plugins.h"
@@ -52,6 +54,7 @@ int bag2jp_bag1_get_version(int chr, int side);
 void bag2jp_bag1_set_version(int chr, int side, int v);
 int bag2jp_mods_menu_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out);
 int bag2jp_netsync_linked(void);
+void bag2jp_netsync_send_pick(int side, int chr, int version);
 
 enum { P_IDLE, P_OPEN, P_REPLAY, P_SWALLOW };
 typedef struct {
@@ -240,24 +243,15 @@ static void cs_neutral(PSXModPadOutput* out, uint32_t buttons) {
     out->lx = out->ly = out->rx = out->ry = 0x80;
 }
 
-/* the state block this port drives: 2P = its own side; 1P = the human's side on port 1 */
-static uint32_t cs_block(int port) {
-    const int mode = (int16_t)psx_mod_read_half(CS_MODE);
-    int side = port;
-    if (mode != 2) { if (port != 0) return 0; side = (int8_t)psx_mod_read_byte(CS_HUMAN) & 1; }
-    const uint32_t b = CS_PLAYER + 0x20u * (uint32_t)side;
-    return (int8_t)psx_mod_read_byte(b + 0x19u) == side ? b : 0;
-}
-
-static int cs_filter(int port, const PSXModPadFrame* in, PSXModPadOutput* out) {
-    if (!s_enabled || port < 0 || port > 1 || bag2jp_netsync_linked()) return 0;
-    CsPopup* p = &s_pop[port];
+/* side = the player block this pad drives (0/1); state is kept per side */
+static int cs_run(int side, const PSXModPadFrame* in, PSXModPadOutput* out) {
+    CsPopup* p = &s_pop[side];
     const uint32_t down = ~in->buttons & 0xFFFFu, press = down & ~p->prev;
     p->prev = down;
     if (p->phase == P_IDLE) {
         if (!(press & (B_CIRCLE | B_TRI)) || !cs_screen_active()) return 0;
-        const uint32_t b = cs_block(port);
-        if (!b || psx_mod_read_byte(b + 0x1Eu) != 1) return 0;
+        const uint32_t b = CS_PLAYER + 0x20u * (uint32_t)side;
+        if ((int8_t)psx_mod_read_byte(b + 0x19u) != side || psx_mod_read_byte(b + 0x1Eu) != 1) return 0;
         const int idx = (int8_t)psx_mod_read_byte(b + 0x1Au);
         if (idx < 0 || idx > 31 || !(psx_mod_read_word(CS_SELECTABLE) & (1u << idx))) return 0;
         if (!s_have_glyphs) cs_read_glyphs();
@@ -268,7 +262,7 @@ static int cs_filter(int port, const PSXModPadFrame* in, PSXModPadOutput* out) {
         /* Triangle (or Select/Start + Circle) is the game's own costume B shortcut: start there */
         p->costume = (press & B_TRI) || (down & 0x0009u) ? 1 : 0;
         p->row = 0; p->phase = P_OPEN;
-        cs_log("open: port %d side %d char %d (bag1 version %d, current %d)", port, p->side, idx, p->has_version, p->version);
+        cs_log("open: side %d char %d (bag1 version %d, current %d)", p->side, idx, p->has_version, p->version);
         cs_publish();
         cs_neutral(out, 0xFFFFu); return 1;
     }
@@ -279,7 +273,10 @@ static int cs_filter(int port, const PSXModPadFrame* in, PSXModPadOutput* out) {
         else if (press & (B_LEFT | B_RIGHT)) {
             if (p->has_version && p->row == 0) p->version ^= 1; else p->costume ^= 1;
         } else if (press & B_CIRCLE) {
-            if (p->has_version) bag2jp_bag1_set_version(p->chr, p->side, p->version);
+            if (p->has_version) {
+                bag2jp_bag1_set_version(p->chr, p->side, p->version);
+                bag2jp_netsync_send_pick(p->side, p->chr, p->version);   /* online: the other PC too */
+            }
             p->replay_btn = p->costume ? B_TRI : B_CIRCLE;
             p->replay_t = 0; p->phase = P_REPLAY;
             cs_log("confirm: side %d char %d version %s costume %c", p->side, p->chr,
@@ -301,8 +298,22 @@ static int cs_filter(int port, const PSXModPadFrame* in, PSXModPadOutput* out) {
     cs_neutral(out, 0xFFFFu); return 1;
 }
 
+/* offline: port -> side (2P: same; 1P: port 1 drives the human's side) */
+static int cs_filter(int port, const PSXModPadFrame* in, PSXModPadOutput* out) {
+    if (!s_enabled || port < 0 || port > 1 || bag2jp_netsync_linked()) return 0;
+    const int mode = (int16_t)psx_mod_read_half(CS_MODE);
+    int side = port;
+    if (mode != 2) { if (port != 0) return 0; side = (int8_t)psx_mod_read_byte(CS_HUMAN) & 1; }
+    return cs_run(side, in, out);
+}
 int bag2jp_charsel_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out) {
     return cs_filter((int)in->player, in, out);
+}
+/* online (bag2jp_netsync.c): this PC's own pad drives its own side only, before the buttons are
+ * sent; the other player's buttons arrive already resolved by their PC's popup */
+int bag2jp_charsel_filter_side(int side, const PSXModPadFrame* in, PSXModPadOutput* out) {
+    if (!s_enabled || side < 0 || side > 1) return 0;
+    return cs_run(side, in, out);
 }
 static int cs_port0(const PSXModPadFrame* in, PSXModPadOutput* out) {
     if (bag2jp_mods_menu_pad_filter(in, out)) return 1;      /* MODS screen first */

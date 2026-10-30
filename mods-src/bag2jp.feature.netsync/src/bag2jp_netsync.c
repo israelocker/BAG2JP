@@ -56,6 +56,11 @@ int bag2jp_mods_menu_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out);
 void bag2jp_mods_menu_reattach(void);
 void bag2jp_charsel_reattach(void);
 int bag2jp_charsel_enabled(void);
+int bag2jp_charsel_filter_side(int side, const PSXModPadFrame* in, PSXModPadOutput* out);
+uint32_t bag2jp_bag1_content_id(void);
+void bag2jp_bag1_online(int linked);
+void bag2jp_bag1_force_stock(int on);
+void bag2jp_bag1_set_version(int chr, int side, int v);
 
 #define NS_SITE       0x8009B084u   /* sw $s1, 0x20($v0) */
 #define NS_WORD       0xAC510020u
@@ -80,7 +85,8 @@ int bag2jp_charsel_enabled(void);
 #define PAD_START     0x0008u
 
 enum { NS_OFF, NS_LOOPBACK, NS_LAN, NS_INTERNET, NS_DIRECT };
-enum { M_HELLO = 1, M_PAD = 3, M_STEP = 4, M_PING = 5, M_READY = 6, M_PUNCH = 7, M_PONG = 8, M_FOCUS = 9 };
+enum { M_HELLO = 1, M_PAD = 3, M_STEP = 4, M_PING = 5, M_READY = 6, M_PUNCH = 7, M_PONG = 8, M_FOCUS = 9,
+       M_PICK = 10, M_CONTENT = 11 };
 enum { CH_NONE, CH_UDP, CH_RELAY };
 
 typedef struct {
@@ -366,12 +372,44 @@ static void ns_send_focus(void) {
     ns_send(b, n);
 }
 
+/* Character select popup (bag2jp_charsel_popup.c): the version a player picks for a character with
+ * a BAG1 version is sent to the other PC (M_PICK: u8 side, chr, version, seq), repeated with every
+ * ping (idempotent, the latest seq wins). M_CONTENT (u32 id of the BAG1 content index) is repeated
+ * too: if the two PCs have different BAG1 content both use BAG2 versions only. */
+static uint8_t s_pick[2][4], s_pick_have[2], s_pick_seq[2], s_pick_rseq[2], s_pick_rhave[2];
+static int s_content_state;                         /* 0 unknown, 1 same, 2 different */
+static void ns_send_picks(void) {
+    for (int s = 0; s < 2; ++s) {
+        if (!s_pick_have[s]) continue;
+        uint8_t b[32]; int n = ns_hdr(b, M_PICK);
+        memcpy(b + n, s_pick[s], 4); n += 4;
+        ns_send(b, n);
+    }
+}
+static void ns_send_content(void) {
+    uint8_t b[32]; int n = ns_hdr(b, M_CONTENT);
+    const uint32_t id = bag2jp_bag1_content_id();
+    memcpy(b + n, &id, 4); n += 4;
+    ns_send(b, n);
+}
+void bag2jp_netsync_send_pick(int side, int chr, int version) {
+    if (!s_linked || side < 0 || side > 1) return;
+    if (s_mu) SDL_LockMutex(s_mu);
+    s_pick[side][0] = (uint8_t)side; s_pick[side][1] = (uint8_t)chr; s_pick[side][2] = (uint8_t)(version ? 1 : 0);
+    s_pick[side][3] = ++s_pick_seq[side];
+    s_pick_have[side] = 1;
+    ns_log("v%u pick sent: P%d char %d %s", s_vblanks, side + 1, chr, version ? "BAG1" : "BAG2");
+    ns_send_picks();
+    if (s_mu) SDL_UnlockMutex(s_mu);
+}
+
 static void ns_status_reset(void);
 static void ns_unlink(const char* why) {
     if (!s_linked) return;
     ns_log("v%u link lost: %s", s_vblanks, why);
     host_osd_push("ONLINE  the other player left", 4000);
     s_linked = 0; s_peer_nonce = 0; s_ch = CH_NONE; s_rtt_ms = -1;
+    bag2jp_bag1_online(0);
     ns_status_reset();
 }
 
@@ -383,6 +421,8 @@ static void ns_link(uint64_t nonce, int ch, const struct sockaddr_in* udp) {
     s_in_seq = s_in_applied = 0; s_out_seq = 0; s_match = 0; s_was_dance = 0; s_peer_ready = -1;
     s_last_rx = s_vblanks; s_desync_reported = 0; s_rfocus = 1; s_match_live = 0;
     memset(s_theirs, 0, sizeof s_theirs);
+    memset(s_pick_have, 0, sizeof s_pick_have); memset(s_pick_rhave, 0, sizeof s_pick_rhave);
+    s_content_state = 0; bag2jp_bag1_online(1); bag2jp_bag1_force_stock(0);
     ns_log("v%u linked (%s%s), this PC is P%d", s_vblanks, ch == CH_UDP ? "direct " : "through the broker",
            ch == CH_UDP ? ns_addr(udp) : "", s_local + 1);
 }
@@ -453,6 +493,25 @@ static void ns_on_packet(const uint8_t* b, int n, const struct sockaddr_in* from
     case M_READY: {
         if (n < 2) return;
         uint16_t m; memcpy(&m, p, 2); s_peer_ready = m;
+        break; }
+    case M_PICK: {          /* u8 side, u8 char, u8 version, u8 seq */
+        if (n < 4 || p[0] > 1) return;
+        const int s = p[0];
+        if (s_pick_rhave[s] && s_pick_rseq[s] == p[3]) break;
+        s_pick_rhave[s] = 1; s_pick_rseq[s] = p[3];
+        bag2jp_bag1_set_version(p[1], s, p[2]);
+        ns_log("v%u pick received: P%d char %d %s", s_vblanks, s + 1, p[1], p[2] ? "BAG1" : "BAG2");
+        break; }
+    case M_CONTENT: {
+        if (n < 4) return;
+        uint32_t id; memcpy(&id, p, 4);
+        const int st = id == bag2jp_bag1_content_id() ? 1 : 2;
+        if (st != s_content_state) {
+            s_content_state = st;
+            bag2jp_bag1_force_stock(st == 2);
+            ns_log("v%u BAG1 content %s (theirs %08x)", s_vblanks, st == 1 ? "same" : "DIFFERENT", id);
+            if (st == 2) host_osd_push("ONLINE  Bust A Groove 1 content differs from the other PC: BAG2 versions only", 6000);
+        }
         break; }
     case M_FOCUS: {         /* u8 focused, u8 paused, u16 match, u32 dance frame of the pause */
         if (n < 8) return;
@@ -609,6 +668,8 @@ static void ns_net_poll(void) {
             memcpy(p + n, &t, 4); n += 4; ns_send(p, n);
             ns_send_pads();
             ns_send_focus();
+            ns_send_picks();
+            ns_send_content();
         }
     }
 }
@@ -655,7 +716,12 @@ static int ns_pad_transform(const PSXModPadFrame* f, PSXModPadOutput* out) {
     }
     if (bag2jp_mods_menu_pad_filter(f, out)) { s_local_btn = 0xFFFF; return 1; }   /* MODS screen */
     if (!s_routing) return 0;
-    s_local_btn = (uint16_t)(f->buttons | (ns_in_dance() ? PAD_START : 0));
+    uint32_t mine = f->buttons;
+    {   /* character select popup for this PC's own side: resolved here, before the buttons are sent */
+        PSXModPadOutput po; memset(&po, 0, sizeof po); po.struct_size = sizeof po;
+        if (s_local >= 0 && bag2jp_charsel_filter_side(s_local, f, &po)) mine = po.buttons;
+    }
+    s_local_btn = (uint16_t)(mine | (ns_in_dance() ? PAD_START : 0));
     out->buttons = s_local == 0 ? s_local_btn : s_remote_btn;
     return 1;
 }

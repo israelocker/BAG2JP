@@ -31,6 +31,7 @@
 #define B1V_CHARS    18
 
 static uint8_t b1v_version[B1V_CHARS][2];   /* 0 = BAG2 (stock), 1 = BAG1 */
+static int b1v_force_stock;                  /* online with different BAG1 content: BAG2 only */
 static FILE* b1v_logf;
 static void b1v_log(const char* fmt, ...) {
     if (!b1v_logf) {
@@ -58,6 +59,7 @@ static int b1v_side_of(uint32_t chr) {      /* side playing chr, player 1 first;
 
 static int b1v_wanted(const B1AltEntry* e) {
     const uint32_t c = e->chr;
+    if (b1v_force_stock) return 0;
     switch (e->kind) {
     case 0: case 1: return b1v_version[c][e->kind];
     case 2: {
@@ -99,7 +101,7 @@ static void b1v_reset(void) { b1v_active = 0; }
 /* Select-screen popup (bag2jp_charsel_popup.c): which characters have a BAG1 version, and the
  * version each player picked (0 BAG2, 1 BAG1). The pick lasts until the next start/option change. */
 int bag2jp_bag1_has_version(int chr) {
-    if (!b1v_active || chr < 0 || chr >= B1V_CHARS) return 0;
+    if (!b1v_active || b1v_force_stock || chr < 0 || chr >= B1V_CHARS) return 0;
     for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i)
         if (b1_alt_entries[i].chr == chr) return 1;
     return 0;
@@ -114,6 +116,26 @@ void bag2jp_bag1_set_version(int chr, int side, int v) {
 }
 static int b1v_option_changed(const char* option_id, const char* value) {
     (void)option_id; (void)value; b1v_read_options(); return 1;
+}
+
+/* Online play (bag2jp_netsync.c). Both PCs must load the same files, so while linked:
+ *  - every version starts as BAG2 (local launcher defaults may differ) and only picks made in the
+ *    select popup change it (the picking PC sends them, see bag2jp_netsync_send_pick);
+ *  - content id = hash of the alternate-entry index; if the PCs differ, both use BAG2 only. */
+uint32_t bag2jp_bag1_content_id(void) {
+    if (!b1v_active) return 0;
+    uint32_t h = 2166136261u;
+    const uint8_t* d = (const uint8_t*)b1_alt_entries;
+    for (unsigned i = 0; i < sizeof b1_alt_entries; ++i) { h ^= d[i]; h *= 16777619u; }
+    return h ? h : 1;
+}
+void bag2jp_bag1_online(int linked) {
+    if (linked) { memset(b1v_version, 0, sizeof b1v_version); b1v_log("online: all versions BAG2 until picked"); }
+    else { b1v_force_stock = 0; if (b1v_active) b1v_read_options(); }
+}
+void bag2jp_bag1_force_stock(int on) {
+    if (b1v_force_stock != on) b1v_log("online: BAG1 versions %s", on ? "OFF (the other PC has different content)" : "on");
+    b1v_force_stock = on;
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_bag1_versions) {

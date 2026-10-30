@@ -41,6 +41,8 @@
   join = line 2 "ip:port". Host is P1. Needs the port forwarded on the host's router.
 - Menus routed as before (port 2 = controller source + transform; MODS screen still works through the
   netsync transform via bag2jp_mods_menu_pad_filter / _reattach).
+- Character select popup (BAG1/BAG2 version + costume) online: messages M_PICK / M_CONTENT, see
+  notes/bag1-character.md (Character select popup).
 - Per bar: gate 0x8009ABC4 closes the local bar (FUN_800120F8) and sends it; the bar waits (max 180
   frames) for the other result. NEW: 0x8009A0C0 (bnez v0, beat advance) holds the beat that starts the
   next bar until the waiting bar is resolved (before this, a late result dropped the bar on one PC).
