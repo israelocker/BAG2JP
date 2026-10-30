@@ -8,9 +8,8 @@ dance moves (requests 1-48) are matched by length (single bar / double) in diffi
 
 Anim events (info block after the channel data, records of u16 type, frame, value):
 type 2/3 = sound cue, 1 = character effect (BAG2 character code), 16 = attack launch.
-BAG1 sound cues 0x1000+ point into BAG1 voice banks, which BAG2 does not load yet: 0x1006 (BAG1 step
-sound in dance moves) becomes the BAG2 step pair 0x1000/0x1001, other 0x10xx cues are dropped.
-Effect values 3 and 6 are dropped (BAG2 Heat's code only knows 1/2/4/5 there).
+Sound cues are kept: the BAG1 voice banks replace BAG2 Heat's (pack SEDTs, see build_heat_test.sh).
+Effect values 1-6 are hand-mesh swaps; BAG2 Heat's handler uses the same hand bones as BAG1 Heat.
 usage: anim_remap.py <bag1 001.bin> <out model 001.bin> <bag2 choreography_a 000.bin> <out choreography 000.bin>
 """
 import struct, sys, os
@@ -51,19 +50,12 @@ B1_ALT = {5: 6, 9: 10, 11: 12, 15: 16, 17: 18, 19: 20, 23: 24, 25: 26, 27: 28, 2
           37: 38, 39: 40, 41: 42}
 
 def fix_events(d, attack=False):
-    """Rewrite the event list in place (same record count, dropped records become type 2 cue 0xFFFF)."""
+    """Attack launch (type 16) uses BAG2 Heat's handler: value 0, mid-swing frame."""
     d = bytearray(d)
     hb, ev, o, end = info(bytes(d))
-    p = o + len(hb); step = 0
+    p = o + len(hb)
     for t, f, v in ev:
-        if t in (2, 3) and v >= 0x1000:
-            if v == 0x1006 and t == 2:
-                v = 0x1000 + (step & 1); step += 1
-            else:
-                v = 0xFFFF
-        elif t == 1 and v in (3, 6):
-            t, v = 2, 0xFFFF
-        elif t == 16:
+        if t == 16:
             v = 0
             if attack: f = 29          # BAG2 Heat launches the fire mid-swing (frame 38 of 66)
         struct.pack_into('<HHH', d, p, t, f, v); p += 6

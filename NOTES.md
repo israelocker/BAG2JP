@@ -542,3 +542,13 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   Heat DBI decompiled: _work/heatdbi/heat_p1_decomp.txt (base 0x801CC090).
 - Verified in game (autoplay, 2 stages): intro pose, dances, beanie on the head, attack given and
   received (counter exchange), win pose, solo fever time completes and the next stage loads.
+- Sounds (2026-10-30): SEDT = 'SEDT', u32 3, offsets [VAB head, VAB body, cue table]; cue table =
+  u32 count + {u16 cue id, u16 flags, u32 params}. Loader FUN_8002DE5C (VAB head pool 0x116C1 bytes,
+  max 110 cues). Pack bank 1 (BAG2 Heat 005 / BAG1 Heat 007, cues 0x1000+) = voices + SE fired by
+  anim events and the char DBI (0x1008-0x100A, fire). Pack bank 3 (BAG2 006, p2 005: 0x3000 name call,
+  0x3130 "VS" in p1 only) is the announcer for the stage intro FUN_800342DC, which waits for the cue
+  slot to free: a missing cue returns -1 and the intro hangs on NOW LOADING (seen when BAG1 008 =
+  bank 2 replaced it). So only bank 1 is swapped (BAG1 English 007), bank 3 stays BAG2.
+  BAG1 anim cue ids are now kept as is; hand-swap effects 1-6 work (same hand bones 15/16/20/21,
+  18/19/22/23 in BAG2 Heat A and BAG1 Heat). psx-asset-tools: a "_force_layout" file in an unpacked
+  archive dir forces a full re-layout (exact entry sizes).

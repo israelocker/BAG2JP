@@ -15,6 +15,11 @@ cp $A/model_a_p1/001.bin $A/model_a_p2/001.bin
 # character code: BAG2 Heat outfit-A bone->slot table adjusted to the BAG1 skeleton (head 12, beanie 13)
 python3 $T/patch_heat_dbi.py $B/pack_a_p1/001.dbi $A/pack_a_p1/001.dbi
 python3 $T/patch_heat_dbi.py $B/pack_a_p2/000.dbi $A/pack_a_p2/000.dbi
+# sounds: bank 1 (cues 0x1000+, voice + SE fired by the anim events) from BAG1 (English). Bank 3 (BAG2
+# 006/005: announcer name + VS calls, waited on by the stage intro) stays BAG2's: a missing cue there hangs.
+cp $S/PLAYER1E_P_HEATA1/007.sedt $A/pack_a_p1/005.sedt
+cp $S/PLAYER3E_P_HEATA3/007.sedt $A/pack_a_p2/004.sedt
+touch $A/pack_a_p1/_force_layout $A/pack_a_p2/_force_layout   # exact entry sizes for the shrunk SEDTs
 # textures: BAG1 pages 004/005/006 -> BAG2 slots in order, at the BAG2 VRAM spots; BAG2 name label kept
 python3 - <<PY
 import sys; sys.path.insert(0, '$T'); import tim_retarget as t
