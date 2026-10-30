@@ -571,9 +571,16 @@ static void mm_vblank(void) {
 int bag2jp_mods_menu_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out) {
     return s_enabled ? mm_pad(in, out) : 0;
 }
+/* Port 1's transform also runs the character-select popup (bag2jp_charsel_popup.c), whichever of
+ * the two plugins installed its transform last. */
+int bag2jp_charsel_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out);
+static int mm_transform(const PSXModPadFrame* in, PSXModPadOutput* out) {
+    if (mm_pad(in, out)) return 1;
+    return bag2jp_charsel_pad_filter(in, out);
+}
 void bag2jp_mods_menu_reattach(void) {
     static const PSXModPadTransform tr = { sizeof(PSXModPadTransform), PSX_MOD_PAD_TYPE_BIT(PSX_MOD_PAD_DIGITAL) |
-                                           PSX_MOD_PAD_TYPE_BIT(PSX_MOD_PAD_DUALSHOCK), PSX_MOD_PAD_DIGITAL, mm_pad };
+                                           PSX_MOD_PAD_TYPE_BIT(PSX_MOD_PAD_DUALSHOCK), PSX_MOD_PAD_DIGITAL, mm_transform };
     if (s_enabled) (void)psx_mod_set_pad_transform(0, &tr);
 }
 
@@ -581,7 +588,7 @@ static void mm_activate(void) {
     s_enabled = 0; s_open = 0; atomic_store(&s_visible, 0);
     s_have_assets = psx_mod_current_resource_path("menu_assets", s_dir, sizeof s_dir) > 0;
     static const PSXModPadTransform tr = { sizeof(PSXModPadTransform), PSX_MOD_PAD_TYPE_BIT(PSX_MOD_PAD_DIGITAL) |
-                                           PSX_MOD_PAD_TYPE_BIT(PSX_MOD_PAD_DUALSHOCK), PSX_MOD_PAD_DIGITAL, mm_pad };
+                                           PSX_MOD_PAD_TYPE_BIT(PSX_MOD_PAD_DUALSHOCK), PSX_MOD_PAD_DIGITAL, mm_transform };
     const int pad_ok = psx_mod_set_pad_transform(0, &tr);
     bag2jp_hud_add(mm_draw, NULL);
     s_enabled = 1;

@@ -13,8 +13,8 @@
  *   kind 3 (the character's stage): the version of the player using that character (player 1 first).
  * The ported BAG1 stage is recognised by the bag1-stage plugin through its 'B1ST' shim, so the song
  * swap and song length follow automatically.
- * Version per player comes from options heat_p1/heat_p2 for now (the select-screen popup will set
- * b1v_version directly). */
+ * Version per player: options heat_p1/heat_p2 are the defaults; the select-screen popup
+ * (bag2jp_charsel_popup.c) sets it per pick through bag2jp_bag1_set_version(). */
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -92,7 +92,26 @@ static void b1v_vblank(void) {
     }
 }
 
-static void b1v_activate(void) { b1v_read_options(); }
+static int b1v_active;
+static void b1v_activate(void) { b1v_active = 1; b1v_read_options(); }
+static void b1v_reset(void) { b1v_active = 0; }
+
+/* Select-screen popup (bag2jp_charsel_popup.c): which characters have a BAG1 version, and the
+ * version each player picked (0 BAG2, 1 BAG1). The pick lasts until the next start/option change. */
+int bag2jp_bag1_has_version(int chr) {
+    if (!b1v_active || chr < 0 || chr >= B1V_CHARS) return 0;
+    for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i)
+        if (b1_alt_entries[i].chr == chr) return 1;
+    return 0;
+}
+int bag2jp_bag1_get_version(int chr, int side) {
+    return chr >= 0 && chr < B1V_CHARS && side >= 0 && side < 2 ? b1v_version[chr][side] : 0;
+}
+void bag2jp_bag1_set_version(int chr, int side, int v) {
+    if (chr < 0 || chr >= B1V_CHARS || side < 0 || side > 1) return;
+    b1v_version[chr][side] = (uint8_t)(v ? 1 : 0);
+    b1v_log("popup: char %d player %d -> %s", chr, side + 1, v ? "BAG1" : "BAG2");
+}
 static int b1v_option_changed(const char* option_id, const char* value) {
     (void)option_id; (void)value; b1v_read_options(); return 1;
 }
@@ -100,5 +119,6 @@ static int b1v_option_changed(const char* option_id, const char* value) {
 PSX_MOD_CONSTRUCTOR(bag2jp_register_bag1_versions) {
     (void)psx_mod_register_vblank_plugin("bag2jp.bag1_versions", b1v_vblank);
     (void)psx_mod_register_activation_plugin("bag2jp.bag1_versions", b1v_activate);
+    (void)psx_mod_register_session_reset_plugin("bag2jp.bag1_versions", b1v_reset);
     (void)psx_mod_register_option_changed_plugin("bag2jp.bag1_versions", b1v_option_changed);
 }

@@ -1,44 +1,53 @@
 diff --git a/runtime/include/gpu_gl_renderer.h b/runtime/include/gpu_gl_renderer.h
-index 4d66891a..520db56b 100644
+index 4d66891a..f352dc23 100644
 --- a/runtime/include/gpu_gl_renderer.h
 +++ b/runtime/include/gpu_gl_renderer.h
-@@ -637,6 +637,10 @@ int  gl_renderer_fbo_peek_deferred(int x, int y, int w, int h, uint16_t *out);
+@@ -637,6 +637,14 @@ int  gl_renderer_fbo_peek_deferred(int x, int y, int w, int h, uint16_t *out);
  void gl_renderer_ring_capture(uint32_t frame, int wide, int base_x, int disp_y, int disp_h,
                                int cx, int cy, int cw, int ch);
  
 +/* BAG2JP local addition: full-window movie frame for title HUD callbacks. */
 +void gl_renderer_draw_host_movie(const uint32_t *bgra, int w, int h,
 +                                 int upload, int ww, int wh);
++/* BAG2JP local addition: alpha-blended BGRA layer over the presented frame,
++ * fitted to the centred 4:3 area of the window (no clear). */
++void gl_renderer_draw_host_overlay(const uint32_t *bgra, int w, int h,
++                                   int upload, int ww, int wh);
 +
  #ifdef __cplusplus
  }
  #endif
 diff --git a/runtime/src/gpu_gl_renderer.c b/runtime/src/gpu_gl_renderer.c
-index 44223c83..f603f52d 100644
+index 44223c83..dfcbeb58 100644
 --- a/runtime/src/gpu_gl_renderer.c
 +++ b/runtime/src/gpu_gl_renderer.c
-@@ -615,6 +615,10 @@ static GLuint        s_present_tex = 0;    /* CPU-readout present path (24bpp) *
+@@ -615,6 +615,12 @@ static GLuint        s_present_tex = 0;    /* CPU-readout present path (24bpp) *
  static int           s_present_w = 0, s_present_h = 0;
  static GLuint        s_osd_tex = 0;
  static int           s_osd_tw = 0, s_osd_th = 0;
 +/* Host movie layer (gl_renderer_draw_host_movie): its own texture so a
 + * full-size movie frame never fights the OSD texture's size. */
 +static GLuint        s_movie_tex = 0;
++static GLuint        s_overlay_tex = 0;   /* BAG2JP host overlay layer */
++static int           s_overlay_tw = 0, s_overlay_th = 0;
 +static int           s_movie_tw = 0, s_movie_th = 0;
  static GLuint        s_present_prog = 0, s_present_vao = 0;
  static GLuint        s_xr_color_prog = 0, s_xr_native_tex = 0;
  static GLuint s_xr_surface_program,s_xr_surface_vao,s_xr_surface_vbo,s_xr_surface_tex[2];
-@@ -6702,6 +6706,9 @@ void gl_renderer_shutdown(void) {
+@@ -6702,6 +6708,12 @@ void gl_renderer_shutdown(void) {
      s_osd_tex = 0;
      s_osd_tw = 0;
      s_osd_th = 0;
 +    s_movie_tex = 0;
 +    s_movie_tw = 0;
 +    s_movie_th = 0;
++    s_overlay_tex = 0;
++    s_overlay_tw = 0;
++    s_overlay_th = 0;
      s_depth24_skip_up = 0;
      rect_clear(&s_d24_skip_fb);
      hold_invalidate();
-@@ -9634,6 +9641,58 @@ static void gl_draw_osd_image(const uint32_t *px, int ow, int oh,
+@@ -9634,6 +9646,106 @@ static void gl_draw_osd_image(const uint32_t *px, int ow, int oh,
      p_glUseProgram(0);
  }
  
@@ -91,6 +100,54 @@ index 44223c83..f603f52d 100644
 +    glDrawArrays(GL_TRIANGLES, 0, 3);
 +    p_glBindVertexArray(0);
 +    p_glUseProgram(0);
++    glViewport(0, 0, ww, wh);
++}
++
++/* Host overlay layer (BAG2JP local addition): like the movie layer but drawn
++ * over the frame already in the window, alpha blended, into the centred 4:3
++ * area (where 4:3 game screens such as menus are shown). */
++void gl_renderer_draw_host_overlay(const uint32_t *bgra, int w, int h,
++                                   int upload, int ww, int wh) {
++    if (!s_present_prog || ww <= 0 || wh <= 0 || !bgra || w <= 0 || h <= 0) return;
++    p_glBindFramebuffer(PSXGL_DRAW_FRAMEBUFFER, 0);
++    glDisable(GL_SCISSOR_TEST);
++    glDisable(GL_STENCIL_TEST);
++    glDisable(GL_DEPTH_TEST);
++    if (!s_overlay_tex) glGenTextures(1, &s_overlay_tex);
++    p_glActiveTexture(PSXGL_TEXTURE0);
++    glBindTexture(GL_TEXTURE_2D, s_overlay_tex);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
++    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
++    if (s_overlay_tw != w || s_overlay_th != h) {
++        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0,
++                     GL_BGRA, GL_UNSIGNED_BYTE, bgra);
++        s_overlay_tw = w;
++        s_overlay_th = h;
++    } else if (upload) {
++        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h,
++                        GL_BGRA, GL_UNSIGNED_BYTE, bgra);
++    }
++    int dw = ww, dh = (int)((long long)ww * 3 / 4);
++    if (dh > wh) { dh = wh; dw = (int)((long long)wh * 4 / 3); }
++    const int vx = (ww - dw) / 2, vy = (wh - dh) / 2;
++    glEnable(GL_BLEND);
++    if (p_glBlendEquationSeparate)
++        p_glBlendEquationSeparate(PSXGL_FUNC_ADD, PSXGL_FUNC_ADD);
++    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
++    glViewport(vx, wh - vy - dh, dw, dh);
++    p_glUseProgram(s_present_prog);
++    p_glUniform1i(s_present_uTex, 0);
++    present_set_gamma(s_present_uGamma, 0);
++    present_set_sharp(0, 0, 0, 0, 0);
++    PRESENT_SCANLINE(0, 0, 0);
++    p_glUniform4f(s_present_uUvRect, 0.f, 0.f, 1.f, 1.f);
++    p_glBindVertexArray(s_present_vao);
++    glDrawArrays(GL_TRIANGLES, 0, 3);
++    p_glBindVertexArray(0);
++    p_glUseProgram(0);
++    glDisable(GL_BLEND);
 +    glViewport(0, 0, ww, wh);
 +}
 +

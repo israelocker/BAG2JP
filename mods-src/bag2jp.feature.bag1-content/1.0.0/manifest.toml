@@ -48,6 +48,26 @@ default = "bag1_music"
 required = false
 
 [[feature]]
+id = "select-popup"
+name = "Character select popup"
+description = "When a player picks a character, a small window asks for the costume (A/B) and, for characters imported from Bust A Groove 1, which game's version to use."
+group = "Gameplay"
+default_enabled = true
+
+[[plugin]]
+feature = "select-popup"
+id = "bag2jp.charsel_popup"
+
+[[resource]]
+feature = "select-popup"
+id = "popup_assets"
+label = "Popup assets"
+description = "HD font atlases used to draw the popup."
+format = "directory"
+default = "popup_assets"
+required = false
+
+[[feature]]
 id = "bag1-heat"
 name = "Heat (Bust A Groove 1)"
 description = "Adds BAG1 Heat (model, moves, voices, stage and song 2Bad) next to BAG2 Heat. Each player can use either version."

@@ -54,6 +54,8 @@
 
 int bag2jp_mods_menu_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out);
 void bag2jp_mods_menu_reattach(void);
+void bag2jp_charsel_reattach(void);
+int bag2jp_charsel_enabled(void);
 
 #define NS_SITE       0x8009B084u   /* sw $s1, 0x20($v0) */
 #define NS_WORD       0xAC510020u
@@ -678,6 +680,7 @@ static void ns_pads_frame(void) {
         if (s_linked) a = psx_mod_set_pad_transform(0, &t); else bag2jp_mods_menu_reattach();
         b = psx_mod_set_controller_source(1, s_linked ? ns_port2_source : NULL) +
             2 * psx_mod_set_pad_transform(1, s_linked ? &t : NULL);
+        if (!s_linked && bag2jp_charsel_enabled()) bag2jp_charsel_reattach();   /* select-screen popup */
         ns_log("v%u pad transforms %s %d %d", s_vblanks, s_linked ? "on" : "off", a, b);
     }
     const int want = s_linked && mode == 2;
@@ -989,3 +992,6 @@ PSX_MOD_CONSTRUCTOR(bag2jp_register_netsync) {
     (void)psx_mod_register_instruction_plugin("bag2jp.netsync", NS_GATE, NS_GATE_WORD, ns_gate);
     (void)psx_mod_register_instruction_plugin("bag2jp.netsync", NS_ADVANCE, NS_ADVANCE_WORD, ns_advance);
 }
+
+/* The character-select popup stays off while two PCs are linked (choices are not synced). */
+int bag2jp_netsync_linked(void) { return s_linked; }

@@ -98,11 +98,30 @@
   No attacks (the CPU attack choice only runs in modes 0/1). Verified: BAG1 Heat vs BAG1 Heat, both
   dancing with combos, specials, win/lose poses, solo fever, results screen.
 
-## Planned: selection popups in character select
-- BAG1/BAG2 version popup for shared characters (Heat, Strike), like the difficulty popup.
-- Costume popup (user request 2026-10-30): BAG2 never lets the player choose the costume (P2 gets
-  costume B only in a mirror match; costume = char id >> 5). Add a popup to pick costume A/B (and with
-  BAG1 Heat: 1P colours / 2P colours). Needs RE of how character select builds the char id.
+## Character select popup: version + costume (2026-10-30)
+- Character select = system/007.dbi (base 0x8008F890; decomp ~/work/charsel/007_decomp.txt, Ghidra
+  headless on the payload). Per-player block 0x800971D4 + side*0x20: +0x18 timer, +0x19 side (= pad
+  index), +0x1A cursor index (= char id, Heat 0), +0x1B previous index, +0x1C costume, +0x1E state
+  (1 choosing, 2 difficulty popup, 3 done), +0x1F difficulty (-> 0x8005E6CC[side]). Main update
+  FUN_80090258; state 1 input FUN_80091DB0: Circle = costume A, Triangle or Select/Start + Circle =
+  costume B (BAG2's hidden costume choice), only if mask 0x80096FA8 has the index; state 2 =
+  FUN_80091B78 (difficulty). Mirror rule FUN_80091AE8: same character + costume -> the later pick
+  gets costume ^ 1 (`sb v0,0x1c(a2)` at 0x80091B6C). Results copied to 0x8005E6A0/A4, 0x8005E668/69.
+- Plugin bag2jp.charsel_popup (src/bag2jp_charsel_popup.c, feature select-popup of bag1-content):
+  pad transforms on both ports (port 1 chains the MODS menu; mods menu's own transform chains the
+  popup, so install order does not matter; netsync reattaches it after an online link and the popup
+  is off while linked). Circle/Triangle on a selectable character in state 1 opens the popup and is
+  kept from the game; Up/Down rows, Left/Right values (GAME BAG 1/BAG 2 for characters with a BAG1
+  version, COSTUME A/B; Triangle starts on B); Circle confirms: version -> bag2jp_bag1_set_version,
+  then 4 neutral + 6 pressed polls of Circle (A) or Triangle (B) replay the pick; Cross cancels.
+  Mirror hook keeps the costume when the two players picked different versions.
+- Drawing: new framework call gl_renderer_draw_host_overlay (alpha-blended BGRA over the frame, 4:3
+  area; patches/psxrecomp-host-movie-layer.patch), canvas 1280x960, font 1 glyphs from RAM + HD
+  atlas rows 5/6 (resource popup_assets = font_a05/a06.png copied from the mods menu assets).
+- Test driver: bag2_2p_pick.ps1 -Popup 1 (default) presses one more Circle to confirm the popups;
+  the popup starts on the launcher's version (heat_p1/heat_p2) and costume A.
+- Verified: both popups open together, values change, P1 BAG1 + P2 BAG2 both costume B -> P2 keeps B
+  (BAG2 Heat red jacket) on the BAG1 stage; full automated 2P match back to select.
 
 ## BAG1 and BAG2 versions side by side (2026-10-30)
 - All archive reads go through FUN_8001F874(entry, dest) (also FUN_8001F94C sync wrapper, FUN_8001F9AC
