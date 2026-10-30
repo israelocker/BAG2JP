@@ -515,3 +515,30 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - Still BAG2: choreography (dance moves are anim files too: choreography_a/b 000.bin start like an
   anim list; 001.bin = move table), character code DBI (BAG2 Heat effects), sounds, outfit B.
   Next: map BAG1 dance moves (BAG1 001 anims + BAG1 move tables) into BAG2 choreography files.
+
+### BAG1 Heat: animation slots, beanie, fever (2026-10-30)
+- Dancer anim list (model 001.bin) is indexed by "motion request" tables in the main exe:
+  BAG2 FUN_8002a090 (tables 0x8005180C / 0x8005182E / 0x8005181C / 0x800518E4, alternates 0x80051838),
+  BAG1 FUN_80030090 (0x80055830 / 0x80055838 / 0x80055850..5E / 0x800558EC, alternates 0x80055854).
+  tools/bag1import/reqmap.py prints request -> slot for both. Codes 100+ mean the same in both games:
+  106 stand, 103/104 intro appeal, 110 attack, 170-172 attack variants/counter, 123/124-129 miss,
+  130-135 + 200-210 hit by attack, 140-142 win, 150-152 lose, 160-164 fever (BAG2: slots 101+ =
+  choreography_a/000 appended after the model list; duet fever type 2 pads to 126 and appends
+  choreography_b). Fever type 0x8005E6C0 (1 solo, 2 duet) is set by the match module (jp005 ~0x80098C00).
+  BAG1 Heat (84 anims) in BAG2's 101 slots shifted every index -> intro played a hit reaction, fever
+  read past the list (hang). Fixed by tools/bag1import/anim_remap.py (101 slots in BAG2 order, BAG1
+  fever dances 82/83 into choreography_a). Dance moves matched by length in difficulty order.
+- Anim format: u32 0x1C, u16 frames, u8 interp, u8 channels (19), channel->slot bytes; info block at
+  0x1C + u32[0x1C]: u16 ?, u16 beat count, beat frames, then events (u16 type, frame, value) until 0:
+  type 2/3 sound cue (0x1000+ = character bank), 1 = character effect (char DBI handler table
+  0x80054FE4), 16 = attack launch (table 0x8005507C). Byte 5 of the info = hold (1) / loop (0).
+  BAG1 cue 0x1006 (step sound) became a Japanese voice in BAG2's bank: remapped to 0x1000/0x1001,
+  other BAG1 0x10xx cues dropped until the BAG1 voice banks are ported.
+- Floating beanie: char DBI init (Heat p1 0x801CEDA8, outfit A) fills dancer+0x7CC[bone] = anim slot.
+  BAG2 Heat A has an extra chest bone 12 and the head at 13; BAG1 has head 12 + beanie 13. Patch
+  tools/bag1import/patch_heat_dbi.py (sb v0,0xd(t8) -> sb v0,0xc(t8)) in both pack DBIs.
+- Debug plugin src/bag2jp_anim_trace.c (package bag2jp.debug.anim-trace): env BAG2JP_ANIM_TRACE=1
+  logs anim index / request per dancer; BAG2JP_CPU_SKILL=200 makes CPUs (and autoplay) attack.
+  Heat DBI decompiled: _work/heatdbi/heat_p1_decomp.txt (base 0x801CC090).
+- Verified in game (autoplay, 2 stages): intro pose, dances, beanie on the head, attack given and
+  received (counter exchange), win pose, solo fever time completes and the next stage loads.

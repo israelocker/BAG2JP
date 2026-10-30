@@ -1,0 +1,22 @@
+format_version = 5
+id = "bag2jp.debug.anim-trace"
+version = "1.0.0"
+name = "Debug: animation trace"
+author = "BAG2JP"
+description = "Developer tool. Logs dancer animation indices to bag2jp_anim_trace.log when BAG2JP_ANIM_TRACE=1 is set."
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "SLPM-86219"
+
+[[feature]]
+id = "anim-trace"
+name = "Animation trace (debug)"
+description = "Needs the environment variable BAG2JP_ANIM_TRACE=1."
+group = "Debug"
+default_enabled = false
+
+[[plugin]]
+feature = "anim-trace"
+id = "bag2jp.anim_trace"
