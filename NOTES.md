@@ -658,4 +658,11 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   match ends ~25-30k). Verified: panels break, city visible behind.
 - Fever voices: BAG1 anims 82/83 (requests 160/161) fire Heat voice cue 0x1006 8x; BAG2 fever has none.
   anim_remap.mute_voices() points bank-1 cues of the fever anims at missing cue 0x1FFF.
+- Broken-window flicker (2026-10-30): the night-city backdrop behind broken panels (stage update, tiles
+  $fp -4..1, clut/tpage from texture table entries 4/5) used tpage 0x0FF3 on odd tiles: the pair
+  `lui v0,0x8006` in the delay slot of `bnez` at 0x801E3A0C + `addiu s3,v0,-0x7F6C` at the branch
+  target 0x801E3F64 was never relocated (the porter paired lui only along linear flow), so those tiles
+  sampled the framebuffer (live dancers / stale frames flickering in the windows). port() now carries a
+  delay-slot lui to its branch target (shared entry). Also: tiles widened to -8..5 and the update
+  helper adds a black TILE at OT[0xFFF] (sky above the city strip, never stale). Verified stable.
 - Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.

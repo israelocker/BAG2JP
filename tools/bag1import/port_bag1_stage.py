@@ -67,8 +67,19 @@ def port(dbi):
     stats = {'jal': 0, 'pairs': 0, 'data': 0}; unknown = []
     lui = {}                                  # reg -> (offset of lui, imm, new hi or None)
     code_n = (CODE_END - B1_BASE) // 4
+    # a lui in a branch delay slot also reaches the branch target (e.g. 0x801E3A0C -> 0x801E3F64,
+    # texture table entry 5 for the night-city backdrop): carry it there, sharing the same entry
+    entries = {}; pending = {}
+    for k in range(1, code_n - 1):
+        w, nw = W(4 * k), W(4 * k + 4); op = w >> 26
+        if nw >> 26 != 0x0F or not (op == 1 or 4 <= op <= 7 or 0x14 <= op <= 0x17): continue
+        sim = w & 0xFFFF; sim = sim - 0x10000 if sim & 0x8000 else sim
+        t = 4 * k + 4 + (sim << 2)
+        e = entries.setdefault(4 * k + 4, [4 * k + 4, nw & 0xFFFF, None])
+        pending.setdefault(t, []).append(((nw >> 16) & 31, e))
     for k in range(1, code_n):                # word 0 is data (0x26)
         off = 4 * k; w = W(off); op = w >> 26
+        for reg, e in pending.get(off, ()): lui[reg] = e
         if op in (2, 3):                      # j / jal
             t = ((B1_BASE + off) & 0xF0000000) | ((w & 0x3FFFFFF) << 2)
             if B1_BASE <= t < B1_BASE + img: nt = t + DELTA
@@ -76,7 +87,7 @@ def port(dbi):
             else: unknown.append(('call', hex(B1_BASE + off), hex(t))); continue
             put(off, (w & 0xFC000000) | ((nt >> 2) & 0x3FFFFFF)); stats['jal'] += 1; continue
         if op == 0x0F:                        # lui rt
-            lui[(w >> 16) & 31] = [off, w & 0xFFFF, None]; continue
+            lui[(w >> 16) & 31] = entries.get(off) or [off, w & 0xFFFF, None]; continue
         rs, rt, imm = (w >> 21) & 31, (w >> 16) & 31, w & 0xFFFF
         lo_kind = None
         if op in (0x08, 0x09) and rs in lui: lo_kind = 'addiu'
@@ -172,6 +183,12 @@ def build(dbi_in, bag2_dbi, chart=None):
     for a, old, new in ((0x801E2230, 0x24040014, 0x24045000), (0x801E2234, 0x24054000, 0x2405FFFF)):
         assert struct.unpack_from('<I', p, a - B1_BASE)[0] == old, hex(a)
         struct.pack_into('<I', p, a - B1_BASE, new)
+    # night-city backdrop behind broken windows (update FUN_801E358C): tiles $fp = -4..1 around the
+    # camera yaw, sized for BAG1's field of view; BAG2's camera sees wider, so the right side had no
+    # backdrop and showed stale frame content. Draw -8..5 (off-screen tiles are culled by the code).
+    for a, old, new in ((0x801E383C, 0x241EFFFC, 0x241EFFF8), (0x801E4324, 0x2BC20002, 0x2BC20006)):
+        assert struct.unpack_from('<I', p, a - B1_BASE)[0] == old, hex(a)
+        struct.pack_into('<I', p, a - B1_BASE, new)
     assert struct.unpack_from('<I', p, 0x801E224C - B1_BASE)[0] >> 26 == 3
     struct.pack_into('<I', p, 0x801E224C - B1_BASE, 0x0C000000 | (0x8002E478 >> 2 & 0x3FFFFFF))
     # full image: payload + bss, extended to the trampolines; shim block
@@ -183,9 +200,28 @@ def build(dbi_in, bag2_dbi, chart=None):
     # 0x800979D0 = 0x80068714 after the stage update), so the level-change test sees each change once
     jal = lambda t: 0x0C000000 | ((t >> 2) & 0x3FFFFFF)
     hi = SHIM >> 16; lo = SHIM & 0xFFFF
+    # It also adds a black TILE at the back of the OT (entry 0xFFF, linked last = drawn first): the
+    # broken windows show the night city strip, but with BAG2's cameras their upper part is above the
+    # strip, where nothing was drawn and the previous frames' pixels flickered through.
+    R = dict(zero=0, t0=8, t1=9, t2=10, t3=11, t4=12, t5=13, t6=14, t7=15, t8=24, t9=25)
+    I = lambda op, rs, rt, imm: (op << 26) | (R[rs] << 21) | (R[rt] << 16) | (imm & 0xFFFF)
+    RR = lambda rs, rt, rd, fn: (R[rs] << 21) | (R[rt] << 16) | (R[rd] << 11) | fn
+    lui = lambda rt, imm: I(0x0F, 'zero', rt, imm)
+    black = [lui('t0', 0x8005), I(0x23, 't0', 't1', 0x1A88), 0,         # t1 = prim pointer 0x80051A88
+             I(0x09, 't1', 't2', 16), I(0x2B, 't0', 't2', 0x1A88),       # allocate 4 words
+             lui('t3', 0x6000), I(0x2B, 't1', 't3', 4),                  # TILE, rgb 0
+             I(0x2B, 't1', 'zero', 8),                                   # x 0, y 0
+             lui('t3', 0x01FF), I(0x0D, 't3', 't3', 0x03FF), I(0x2B, 't1', 't3', 12),  # 1023 x 511
+             lui('t4', 0x8007), I(0x23, 't4', 't4', 0x10000 - 0x2670), 0,  # t4 = OT (0x8006D990)
+             I(0x23, 't4', 't5', 0x3FFC),                                # t5 = OT[0xFFF]
+             lui('t6', 0x00FF), I(0x0D, 't6', 't6', 0xFFFF),             # t6 = 0x00FFFFFF
+             RR('t5', 't6', 't7', 0x24), lui('t8', 0x0300), RR('t7', 't8', 't7', 0x25),
+             I(0x2B, 't1', 't7', 0),                                     # tag = 3 words | next
+             RR('t1', 't6', 't9', 0x24), lui('t8', 0xFF00), RR('t5', 't8', 't5', 0x24),
+             RR('t5', 't9', 't5', 0x25), I(0x2B, 't4', 't5', 0x3FFC)]   # OT[0xFFF] -> tile
     helper = [0x27BDFFF8, 0xAFBF0000, jal(0x801E358C + DELTA), 0,
-              0x3C080000 | hi, 0x91090000 | (lo + 8), 0xA1090000 | (lo + 9),
-              0x8FBF0000, 0x27BD0008, 0x03E00008, 0]
+              0x3C080000 | hi, 0x91090000 | (lo + 8), 0, 0xA1090000 | (lo + 9)] + black + \
+             [0x8FBF0000, 0x27BD0008, 0x03E00008, 0]
     for i, w in enumerate(helper): struct.pack_into('<I', img, SHIM + 0x10 - B2_BASE + 4 * i, w)
     j = lambda t: 0x08000000 | ((t >> 2) & 0x3FFFFFF)
     for addr, words in ((0x801E537C, (0x03E00008, 0x24020001)),             # init: return 1
