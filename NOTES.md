@@ -641,4 +641,12 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   played by the stage code on voice slot 20 (BAG2 has 14 slots, table 0x8006D9F0). Port: bank 0 <- BAG1
   bank 0 with the cue renumbered 0x5000, call site 0x801E2230.. patched to BAG2 FUN_8002E478(0x5000,-1,
   -1,-1) (free slot). Full 2P match OK.
+- Song end (2026-10-30): BAG2 stops a song when play time (0x800892EC frames / 60) reaches the main
+  exe table 0x800555A8[song] (u16 s: 152,136,164,...; FUN_80035BF8); phase 5 (FUN_80098E58) waits for
+  0x800892E8 == -1 before fever. BAG1 2Bad's dance ends at 123 s but BAG2 Heat's slot says 152 s -> ~25 s
+  of silence before fever. The BAG1 edit cuts the song at 123.37 s (short gap, soft tail); the CD render
+  kept playing the CD there and stopped hard at 132 s. Fix: tools/bag1import/song_ending.py (CD render
+  switches to the level-matched game tail at the cut, both versions fade to 0 by 129 s) and the plugin
+  sets 0x800555A8[0] = 129 while the BAG1 stage is loaded (restored after). Verified (game and cd):
+  dance end f10635, song stop f10994, fever f11132 (was f12401).
 - Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.

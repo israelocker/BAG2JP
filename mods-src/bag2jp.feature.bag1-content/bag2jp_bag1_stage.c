@@ -14,7 +14,11 @@
  * chart in the DBI tail; the audio is swapped here through the XA host filter (wrapping whatever
  * filter is installed, e.g. bag2jp.hq_songs): every sector of that channel gets the same span of
  * <bag1_music>/<song>_<audio>.flac (sector k = frames k*2352 at 44.1 kHz, silence past the end).
- * audio option: "cd" = soundtrack CD re-aligned to the BAG1 in-game edit, "game" = BAG1's own XA. */
+ * audio option: "cd" = soundtrack CD re-aligned to the BAG1 in-game edit, "game" = BAG1's own XA.
+ * The game stops a song when its play time reaches the main exe table 0x800555A8[song] (u16 s); BAG2
+ * Heat's slot says 152 s, BAG1 2Bad (dance ends 123 s) is faded out by 129 s, so while the BAG1 stage
+ * is loaded that entry is set to 129 (restored afterwards). Otherwise the result/fever phase waits
+ * ~25 s of silence for BAG2's length (tools/bag1import/song_ending.py makes the matching fade). */
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -121,8 +125,26 @@ static void b1m_activate(void) {
     b1m_log("activate: dir '%s', audio %s, BUST2_01 lba %u..%u", b1m_dir, b1m_audio, b1m_lba, b1m_end);
 }
 
+#define B1M_SONG_LEN_TABLE 0x800555A8u   /* u16 seconds per XA song; Heat's BAG2 slot = entry 0 */
+#define B1M_HEAT_SONG_LEN  129u
+static int b1m_len_saved = -1;
+static void b1m_song_length(void) {
+    const uint32_t cur = psx_mod_read_half(B1M_SONG_LEN_TABLE);
+    if (b1m_stage_active()) {
+        if (cur != B1M_HEAT_SONG_LEN) {
+            if (b1m_len_saved < 0) b1m_len_saved = (int)cur;
+            psx_mod_write_half(B1M_SONG_LEN_TABLE, B1M_HEAT_SONG_LEN);
+            b1m_log("song length %u -> %u s", cur, B1M_HEAT_SONG_LEN);
+        }
+    } else if (b1m_len_saved >= 0) {
+        if (cur == B1M_HEAT_SONG_LEN) psx_mod_write_half(B1M_SONG_LEN_TABLE, (uint16_t)b1m_len_saved);
+        b1m_len_saved = -1;
+    }
+}
+
 static void b1s_vblank_all(void) {
     b1s_vblank();
+    b1m_song_length();
     if (g_cdrom_xa_host_filter != b1m_filter) {         /* (re)wrap after other plugins set theirs */
         b1m_prev = g_cdrom_xa_host_filter;
         cdrom_set_xa_host_filter(b1m_filter);
