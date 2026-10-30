@@ -14,7 +14,9 @@ from animlib import dfs_entries
 import model_bag1_to_bag2 as m, tim_retarget as t
 es = dfs_entries(open('$S', 'rb').read())
 # model
-out, stats, tail = m.convert(es[8]); assert tail == 0 and m.check_bag2(out) == 0
+# BAG1 draws stages at world scale 3/8 (its stage code places effects at point*0x600>>12), BAG2 at 1/4
+# (stage node matrices 0x400): nodes are scaled by 1.5 so geometry and BAG1 effects line up.
+out, stats, tail = m.convert(es[8], scale=(3, 2)); assert tail == 0 and m.check_bag2(out) == 0
 import os
 if os.environ.get('STAGE_MODEL', '1') == '1': open('$A/011.bin', 'wb').write(out)
 # textures: BAG1 TIM k -> slot k (entries 002..007); slots 6-8 (008..010) re-upload BAG1 CLUTs so the

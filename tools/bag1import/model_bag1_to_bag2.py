@@ -36,7 +36,8 @@ def mesh_len_bag1(w, i):
         p += sh(k, False) * lo + sh(k, True) * hi
     return p
 
-def convert(data):
+def convert(data, scale=None):
+    """scale (num, den): multiply every node's scale and translation (stage world-scale fix)."""
     w = list(struct.unpack('<%di' % (len(data) // 4), data[:len(data) // 4 * 4]))
     n = w[0]
     links = [w[1 + 4 * b: 5 + 4 * b] for b in range(n)]
@@ -64,7 +65,11 @@ def convert(data):
             out += new + w[i + 0x3C:i + ln]; i += ln
         else:
             raise ValueError(f'bone {b}: unknown type {t} at word {i}')
-        out += w[i:i + 10]; i += 10
+        xf = w[i:i + 10]
+        if scale:
+            xf = xf[:2] + [v * scale[0] // scale[1] for v in xf[2:5]] + xf[5:6] + \
+                 [v * scale[0] // scale[1] for v in xf[6:9]] + xf[9:]
+        out += xf; i += 10
     tail = data[i * 4:]
     return struct.pack('<%di' % len(out), *out) + tail, stats, len(tail)
 

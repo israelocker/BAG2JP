@@ -4,7 +4,7 @@
 Slot roles come from the motion request tables of both main executables (tools/bag1import/reqmap.py)
 and an in-game trace of stock BAG2 (src/bag2jp_anim_trace.c). Request codes 100+ keep their meaning
 in both games (106 stand, 110 attack, 124 miss, 130-135 hit, 140-142 win, 150-152 lose, 160+ fever);
-dance moves (requests 1-48) are matched by length (single bar / double) in difficulty order.
+dance moves (requests 1-48): see the grid notes below.
 
 Anim events (info block after the channel data, records of u16 type, frame, value):
 type 2/3 = sound cue, 1 = character effect (BAG2 character code), 16 = attack launch.
@@ -38,16 +38,46 @@ ROLES = {
     94: 77, 95: 78, 96: 79,    # r140-142 win
     98: 80, 99: 81, 100: 80,   # r150-152 lose
 }
-# BAG2 dance-move slots in request order (primary, then the alternate played after a given move)
-B2_SINGLE = [6, 11, 21, 5, 10, 19, 26, 36, 4, 9, 17, 25, 34, 3, 8, 15, 24, 32, 2, 7, 13, 23, 30, 39, 45,
-             12, 22, 28, 38, 43, 27, 37, 41, 40]
-B2_DOUBLE = [53, 52, 51, 50, 49, 48, 47, 46]
-B2_ALT = {20: 19, 18: 17, 16: 15, 14: 13, 35: 34, 33: 32, 31: 30, 29: 28, 44: 43, 42: 41}  # alt <- primary
-B1_SINGLE = [1, 2, 3, 4, 5, 7, 8, 9, 11, 13, 14, 15, 17, 19, 21, 22, 23, 25, 27, 29, 31, 32, 33, 35, 37,
-             39, 41, 43]
-B1_DOUBLE = [44, 45, 46, 47, 48, 49, 50]
+# Dance moves. Both games pick a move per bar from a grid, but the grids differ:
+#  BAG2: request = row base[level] + bar (main exe 0x8004DA14 = 1,5,11,17,23; levels 5-7 start at
+#        bar 2/4/6). A row is one choreography played bar after bar; its last bar is a double.
+#        Level-up (only into even bars) plays the row's alternate slot (table 0x80051838).
+#  BAG1: cell (bar s 0..6, level v <= s), request s(s+1)/2 + (s - v) + 1 (command length grows with
+#        v, constant along it); bar 7 = double, request 29 + (7 - v). The normal anim of (s, v) follows
+#        (s-1, v); its alternate (table 0x80055854) follows a level-up from (s-1, v-1). Same rule as BAG2.
+# Each BAG2 row (level L, bar s) maps to BAG1 bar s + (7 - last bar of the row), so every row ends on a
+# BAG1 double, at BAG1 level min(L, bar): consecutive cells are always a designed BAG1 transition.
+B2_ROWS = {0: (0, [6, 11, 21, 53]), 1: (0, [5, 10, 19, 26, 36, 52]), 2: (0, [4, 9, 17, 25, 34, 51]),
+           3: (0, [3, 8, 15, 24, 32, 50]), 4: (0, [2, 7, 13, 23, 30, 39, 45, 49]),
+           5: (2, [12, 22, 28, 38, 43, 48]), 6: (4, [27, 37, 41, 47]), 7: (6, [40, 46])}
+B2_ALT = {19: 20, 17: 18, 15: 16, 13: 14, 34: 35, 32: 33, 30: 31, 28: 29, 43: 44, 41: 42}  # slot -> alt
+def b1_path(L):
+    s0, row = B2_ROWS[L]; k = 7 - (s0 + len(row) - 1)
+    return [(s + k, min(L, s + k)) for s in range(s0, s0 + len(row))]
+B1_PATHS = {L: b1_path(L) for L in B2_ROWS}
+B1_REQ_ANIM = [None, 1, 2, 3, 4, 5, 7, 8, 9, 11, 13, 14, 15, 17, 19, 21, 22, 23, 25, 27, 29, 31, 32, 33,
+               35, 37, 39, 41, 43, 44, 45, 46, 47, 48, 49, 50]     # BAG1 table 0x80055830
 B1_ALT = {5: 6, 9: 10, 11: 12, 15: 16, 17: 18, 19: 20, 23: 24, 25: 26, 27: 28, 29: 30, 33: 34, 35: 36,
           37: 38, 39: 40, 41: 42}
+
+def b1_anim(cell, prev):
+    s, v = cell
+    if s == 7: return B1_REQ_ANIM[29 + 7 - max(v, 1)]           # doubles: level 1..7
+    a = B1_REQ_ANIM[s * (s + 1) // 2 + (s - v) + 1]
+    if prev and prev[1] == v - 1: a = B1_ALT.get(a, a)          # entered by a level-up
+    return a
+
+def dance_slots():
+    slots = {}
+    for L, (s0, row) in B2_ROWS.items():
+        path = B1_PATHS[L]
+        for i, slot in enumerate(row):
+            slots[slot] = b1_anim(path[i], path[i - 1] if i else None)
+            s = s0 + i
+            if slot in B2_ALT:                                 # entered by level-up from (L-1, s-1)
+                ps0, prow = B2_ROWS[L - 1]
+                slots[B2_ALT[slot]] = b1_anim(path[i], B1_PATHS[L - 1][s - 1 - ps0])
+    return slots
 
 def fix_events(d, attack=False):
     """Attack launch (type 16) uses BAG2 Heat's handler: value 0, mid-swing frame."""
@@ -62,14 +92,7 @@ def fix_events(d, attack=False):
     return bytes(d)
 
 def build(b1):
-    slots = {}
-    singles = B1_SINGLE + B1_SINGLE[::-1]
-    for i, s in enumerate(B2_SINGLE):
-        slots[s] = singles[i]
-    for i, s in enumerate(B2_DOUBLE):
-        slots[s] = B1_DOUBLE[i % len(B1_DOUBLE)]
-    for alt, prim in B2_ALT.items():
-        slots[alt] = B1_ALT.get(slots[prim], slots[prim])
+    slots = dance_slots()
     slots.update(ROLES)
     out = bytearray(); used = {}
     for i in range(101):
