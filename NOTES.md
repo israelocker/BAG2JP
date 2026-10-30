@@ -632,4 +632,13 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   BUST2_01 ch0 sectors with <bag1_music>/heat_2bad_<cd|game>.flac while the B1ST stage is loaded
   (option bag1_song_audio, default cd; log bag2jp_bag1_content.log). CD version re-aligned with the hq
   tools (mods-src/bag2jp.feature.bag1-content/tools/hq_bag1, coverage 90 %, score 0.74).
+- Stage camera list (both games): blocks [u32 size][u32 flags 0x4000|keys][keys: s16 pos xyz, target
+  xyz], u32 0. BAG1 ST_HEAT entry 9 = only the intro fly-in (180 keys); BAG2 has ~28 tracks (0 = intro,
+  rest follow the dancers). Ported: BAG1 track 0 + BAG2 tracks 1.. (same world units; verified in game).
+- Stage SEDT = 'SEDT', 15 sections = 5 banks x [VAB head][VAB body][cue table]. BAG2 loader (main exe
+  ~0x8003xxxx, FUN_8002E08C(sedt, bank)) loads bank 0 (stage sounds; stage ids in mask 0xFBF) + a random
+  bank 1-4 whose cue 0x4000 jp005 plays before fever. BAG1 ST_HEAT bank 0 = cue 0x4000 fire burst,
+  played by the stage code on voice slot 20 (BAG2 has 14 slots, table 0x8006D9F0). Port: bank 0 <- BAG1
+  bank 0 with the cue renumbered 0x5000, call site 0x801E2230.. patched to BAG2 FUN_8002E478(0x5000,-1,
+  -1,-1) (free slot). Full 2P match OK.
 - Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.
