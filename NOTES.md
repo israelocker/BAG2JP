@@ -575,3 +575,26 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - Costume popup (user request 2026-10-30): BAG2 never lets the player choose the costume (P2 gets
   costume B only in a mirror match; costume = char id >> 5). Add a popup to pick costume A/B (and with
   BAG1 Heat: 1P colours / 2P colours). Needs RE of how character select builds the char id.
+
+## BAG1 stage import: findings (2026-10-30)
+- Heat's BAG2 stage is archive stages/200 (asset folder label "wood_workshop" is wrong), stage id 0.
+  Stage id -> archive: 0=200, 1=209, 2=199, 3=210, 4=202, 5=208, 6=204/205/206, 7=203, 8=201,
+  9=197, 10=198, 11=207, 12=211 (matched via the callback tables below).
+- Stage DBI loads at 0x801DAF10 (BAG1: 0x801E17B0). Stage struct pointer BAG2 0x80089200 (BAG1
+  0x800979D4): [0] id, [1]/[2] node counts, +0x20 bone list (0xB0 structs), +0x28 node transforms
+  (0x20 each), +0x2C/+0x30 base pos/scale, +0xA0/+0xA4 camera list, +0xA8.. anim list (ids 1-2 only).
+- Loader FUN_8003398C: DFS entry 0 DBI, 1 SEDT, TIM slots (table PTR 0x80054BDC[id], 0x30-byte
+  entries, coordinate overrides all -1 for id 0/1: TIMs upload at header coords, meshes use slot
+  index), then FUN_80032A40: model, camera list, [anims]. BAG1 ST_HEAT has the same order (DBI, SEDT,
+  6 TIMs, model, 1 camera track); its model converts with model_bag1_to_bag2.py (13 meshes + 1 type 3).
+- Per-stage callbacks (main exe tables, 13 ids): 0x80051B88 init, 0x80051BBC update (before the
+  generic node draw in FUN_80030458), 0x80051BF0 draw (after), 0x80054C10 setup(heap) -> end ptr.
+  BAG1 has 2: 0x80056D7C update (FUN_800379D8), 0x80058FC4 setup.
+- Test mod bag2jp.test.bag1-heat-stage (tools/bag1import/build_heat_stage_test.sh, DISABLED): BAG2
+  Heat-stage callbacks stubbed + BAG1 model/textures -> everything black, even with the BAG2 model
+  (STAGE_MODEL=0 STAGE_TEX=0): BAG2's Heat stage code (moving cage, lights, node setup) is required.
+- Plan: run BAG1's own stage code: relocate the 12.9 KB BAG1 DBI to 0x801DAF10, map its ~15 main
+  exe calls (mostly PsyQ GTE/GPU: 0x8004xxxx) and ~16 globals to BAG2, adapt the BAG1 stage struct /
+  bone struct (0x100 vs 0xB0) layout with a mirror struct, and wire BAG2's 4 callbacks for id 0.
+  Decomps: _work/stagedbi/{bag1_st_heat,bag2_200,bag2_209}_decomp.txt.
+- Debug: BAG2JP_RAM_DUMP=n (anim_trace plugin) dumps 2 MB RAM at trace frame n.
