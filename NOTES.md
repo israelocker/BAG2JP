@@ -672,4 +672,9 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   danced BAG2 Heat's fever, whose cues 0x1000/0x1001 played BAG1 hit shouts from the swapped voice
   bank. Now: solo = BAG1 82/83/82 with every char-bank cue muted, duet = BAG2 duet with 0x10xx muted.
   Verified with a cue watch (slot table 0x8006D9F6 + 8*slot): no 0x10xx during fever, both types.
+- Audio analysis (2026-10-30): BAG2JP_AUDIO_DUMP=1 (debug plugin bag2jp.anim_trace, PCM hook on the
+  final mix) -> bag2jp_audio.wav + bag2jp_audio_sync.log (vblank frame -> sample). D:\Dev\Tools\
+  audio-probe extracts SEDT cues to WAV templates and finds them in the recording. Validated against
+  the cue-slot watch (0x8006D9F6 + 8*slot): voices 0x1001/0x1003/0x1007 found 1-2 frames after the
+  request; BAG1 Heat fever (frames 11121-11999) has no Heat voice, no 0x10xx requests.
 - Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.
