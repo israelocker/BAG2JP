@@ -590,7 +590,7 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - Per-stage callbacks (main exe tables, 13 ids): 0x80051B88 init, 0x80051BBC update (before the
   generic node draw in FUN_80030458), 0x80051BF0 draw (after), 0x80054C10 setup(heap) -> end ptr.
   BAG1 has 2: 0x80056D7C update (FUN_800379D8), 0x80058FC4 setup.
-- Test mod bag2jp.test.bag1-heat-stage (tools/bag1import/build_heat_stage_test.sh, DISABLED): BAG2
+- Test mod bag2jp.test.bag1-heat-stage (tools/bag1import/build_heat_stage_test.sh): first try, BAG2
   Heat-stage callbacks stubbed + BAG1 model/textures -> everything black, even with the BAG2 model
   (STAGE_MODEL=0 STAGE_TEX=0): BAG2's Heat stage code (moving cage, lights, node setup) is required.
 - Plan: run BAG1's own stage code: relocate the 12.9 KB BAG1 DBI to 0x801DAF10, map its ~15 main
@@ -598,3 +598,15 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   bone struct (0x100 vs 0xB0) layout with a mirror struct, and wire BAG2's 4 callbacks for id 0.
   Decomps: _work/stagedbi/{bag1_st_heat,bag2_200,bag2_209}_decomp.txt.
 - Debug: BAG2JP_RAM_DUMP=n (anim_trace plugin) dumps 2 MB RAM at trace frame n.
+- DONE (milestone 1, verified 2P autoplay): tools/bag1import/port_bag1_stage.py relocates the BAG1
+  ST_HEAT DBI (delta 0x801DAF10-0x801E17B0), maps 17 main-exe calls (incl. lights setup/update
+  0x80023724/0x80022FF4) and globals, aliases lui pairs through register copies/base+index adds,
+  patches 2 stage-struct sites, and puts trampolines at BAG2's 4 id-0 callbacks. BAG1 beat flags /
+  level live in a shim (0x801E0100 'B1ST', +4 flags, +8 level, +9 prev) fed each vblank by
+  src/bag2jp_bag1_stage.c (package bag2jp.feature.bag1-content).
+- IMPORTANT: the song chart for each stage lives at the END of its stage DBI, not in the main exe:
+  0x8004DF08[stage id] -> chart (id 0: 0x801E5410), plus tables 0x80051AC8.. (4 x 12 ids) pointing
+  into it. A replacement stage DBI must keep that tail (and the stock bss). Without it the beat table
+  0x8005E2F0 is garbage: beat 0x8005E2D0 sticks at 1, beats-left 0x8005E658 = 0 and the match jumps
+  to the result (phase 1/5/6) with both dancers standing. The BAG1 song import will replace this tail.
+- Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.

@@ -1,0 +1,22 @@
+format_version = 5
+id = "bag2jp.feature.bag1-content"
+version = "1.0.0"
+name = "Bust A Groove 1 content"
+author = "BAG2JP"
+description = "Runtime support for content imported from Bust A Groove 1 (characters, stages)."
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "SLPM-86219"
+
+[[feature]]
+id = "bag1-stage"
+name = "BAG1 stage support"
+description = "Beat and score signals for BAG1 stage programs ported to BAG2. Needed by the BAG1 stage mods."
+group = "Gameplay"
+default_enabled = true
+
+[[plugin]]
+feature = "bag1-stage"
+id = "bag2jp.bag1_stage"

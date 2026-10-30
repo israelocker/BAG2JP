@@ -1,6 +1,6 @@
 #!/bin/bash
 # Test mod bag2jp.test.bag1-heat-stage: BAG1 ST_HEAT geometry + textures in BAG2 stage id 0 (Heat's
-# BAG2 stage = archive stages/200, the asset folder label "wood_workshop" is wrong). Milestone 1: BAG2 cameras, BAG2 stage effects switched off.
+# BAG2 stage = archive stages/200, the asset folder label "wood_workshop" is wrong). Milestone 1: BAG2 cameras and stage sounds, BAG1 stage program (ported).
 # Stage DFS (both games): DBI, SEDT, TIM slots (table PTR 0x80054BDC[id], no coordinate overrides:
 # TIMs upload at their header coords, meshes use the slot index), model, camera list, [anims].
 set -e
@@ -25,19 +25,10 @@ if os.environ.get('STAGE_TEX', '1') == '1':
   for slot, src in ((8, 7), (9, 6), (10, 2)):
     f, c, i = t.parse(es[src])
     open(f'$A/{slot:03d}.tim', 'wb').write(t.build(f, c, dict(i, w=0, h=0, data=b'')))
-# stage code: BAG2 Heat-stage effects off (they index BAG2's 69 nodes). Callbacks for id 0 (main exe
-# tables 0x80051B88/BBC/BF0, 0x80054C10): init 0x801E537C -> return 1, update 0x801E539C kept
-# (only gameplay flags for attack effects),
-# draw 0x801E53BC -> tail call main 0x80022FF4 (generic part it already called), setup 0x801E53E4 ->
-# return a0 (no effect memory used)
-d = bytearray(open('$B/000.dbi', 'rb').read()); base = 0x801DAF10
-def put(addr, *words):
-    for n, wd in enumerate(words): struct.pack_into('<I', d, addr - base + 12 + 4 * n, wd)
-for a in (0x801E537C, 0x801E53BC, 0x801E53E4):
-    assert struct.unpack_from('<I', d, a - base + 12)[0] == 0x27BDFFE8, hex(a)
-put(0x801E537C, 0x03E00008, 0x24020001)   # return 1 (callbacks return 1)
-put(0x801E53BC, 0x08000000 | ((0x80022FF4 >> 2) & 0x3FFFFFF), 0)
-put(0x801E53E4, 0x03E00008, 0x00801021)
+# stage code: the BAG1 stage program ported to BAG2 (port_bag1_stage.py): relocated to 0x801DAF10,
+# BAG1 calls/globals mapped to BAG2, trampolines at the 4 callback addresses BAG2 uses for stage id 0
+import port_bag1_stage
+d, st, n, unk = port_bag1_stage.build(es[0], open('$B/000.dbi', 'rb').read()); assert not unk, unk
 open('$A/000.dbi', 'wb').write(d)
 print('stage files written')
 PY

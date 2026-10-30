@@ -1,0 +1,163 @@
+"""Port the BAG1 Heat stage program (ST_HEAT.DFS entry 0, a MIPS overlay for BAG1 at 0x801E17B0) to a
+BAG2 stage DBI for stage id 0 (Heat), loaded by BAG2 at 0x801DAF10.
+
+- relocation: every absolute reference into the BAG1 image (jal/j, lui+lo pairs, data words) moves by
+  0x801DAF10 - 0x801E17B0;
+- BAG1 main-exe calls -> BAG2 equivalents (FUNCS, found with funcmatch.py and decomp comparison);
+- BAG1 globals -> BAG2 globals (GLOBALS ranges) or the shim block filled by the bag2jp.bag1_stage
+  plugin (beat flags, score level);
+- struct offsets: BAG1 stage struct +0x0C (bone list) = BAG2 +0x20; BAG1 bone +0xDC (mesh record)
+  with 0x100-byte bones = BAG2 +0x8C with 0xB0-byte bones;
+- BAG2 calls the 4 stage callbacks of id 0 at fixed addresses (main exe tables 0x80051B88/BBC/BF0,
+  0x80054C10): trampolines there (init / draw return 1, update -> BAG1 update, setup -> BAG1 setup).
+usage: port_bag1_stage.py <bag1 dbi> <out bag2 dbi>"""
+import struct, sys
+import capstone
+
+B1_BASE, B2_BASE = 0x801E17B0, 0x801DAF10
+DELTA = B2_BASE - B1_BASE
+CODE_END = 0x801E48F0                       # first data word after the last function
+SHIM = 0x801E0100                           # 'B1ST', beat flags u32, level u8, prev level u8
+FUNCS = {
+    0x8004FB0C: 0x80049824,  # SetPolyFT4
+    0x8004A86C: 0x80043784, 0x8004B08C: 0x80044334, 0x8004AFFC: 0x800442A4, 0x8004A5BC: 0x800434D4,
+    0x8004C45C: 0x80046334, 0x8004B47C: 0x80044A04, 0x8004FA0C: 0x80049754, 0x8004B56C: 0x80044AF4,
+    0x8004B4AC: 0x80044A34, 0x8004B02C: 0x800442D4,
+    0x800500FC: 0x80049F24,  # rand
+    0x80036AE8: 0x8002F824, 0x80035A30: 0x8002EE10,  # sprite drawers
+    0x80034F40: 0x8002E2D0,  # play sound cue on a slot
+    0x8002ACA0: 0x80023724, 0x8002A2B8: 0x80022FF4,  # stage lights setup / update
+    0x8001E1A4: 0x8001F384,
+}
+GLOBALS = [  # (BAG1 start, length, BAG2 start)
+    (0x80051B74, 0x2000, 0x8004E488),   # sin table
+    (0x80056D48, 4, 0x80051A88),        # GPU primitive pointer
+    (0x80057FA4, 9 * 0x30, 0x8005370C), # stage texture slot table (id 0)
+    (0x800613B8, 0x20, 0x8005D0F0),     # camera matrix (current)
+    (0x800613E8, 0x20, 0x8005D120),     # camera matrix (base)
+    (0x80061410, 0x14, 0x8005D150),     # camera angles / position
+    (0x800674A4, 1, 0x8005D3E4),        # pause flag
+    (0x80068704, 4, SHIM + 4),          # beat flags (shim)
+    (0x80068714, 1, SHIM + 8),          # score level (shim)
+    (0x800979D0, 1, SHIM + 9),          # previous score level (shim)
+    (0x800691B0, 0x180, 0x8005F268),    # stage light block (BAG1 0x800691B0.. = BAG2 - 0x9F48)
+    (0x80069368, 4, 0x8008F88C),        # light matrix pointer
+    (0x800774DC, 4, 0x8006D980),        # frame accumulator
+    (0x800774E4, 4, 0x8006D990),        # ordering table
+    (0x800774E8, 4, 0x8006D994),        # frame delta
+    (0x800774EC, 4, 0x8006D998),        # buffer index
+    (0x800979D4, 4, 0x80089200),        # stage struct pointer
+]
+LOADS = {'lw', 'sw', 'lh', 'sh', 'lb', 'lbu', 'lhu', 'sb', 'lwl', 'lwr', 'swl', 'swr', 'lwc2', 'swc2'}
+
+def map_addr(a, size1):
+    if B1_BASE <= a < B1_BASE + size1: return a + DELTA, 'reloc'
+    for s, n, d in GLOBALS:
+        if s <= a < s + n: return d + (a - s), 'global'
+    return None, None
+
+def port(dbi):
+    magic, size, bss = struct.unpack_from('<4sII', dbi, 0)
+    assert magic == b'DBI_'
+    p = bytearray(dbi[12:12 + size]); img = size + bss
+    md = capstone.Cs(capstone.CS_ARCH_MIPS, capstone.CS_MODE_MIPS32 + capstone.CS_MODE_LITTLE_ENDIAN)
+    md.detail = True
+    W = lambda i: struct.unpack_from('<I', p, i)[0]
+    def put(i, w): struct.pack_into('<I', p, i, w)
+    stats = {'jal': 0, 'pairs': 0, 'data': 0}; unknown = []
+    lui = {}                                  # reg -> (offset of lui, imm, new hi or None)
+    code_n = (CODE_END - B1_BASE) // 4
+    for k in range(1, code_n):                # word 0 is data (0x26)
+        off = 4 * k; w = W(off); op = w >> 26
+        if op in (2, 3):                      # j / jal
+            t = ((B1_BASE + off) & 0xF0000000) | ((w & 0x3FFFFFF) << 2)
+            if B1_BASE <= t < B1_BASE + img: nt = t + DELTA
+            elif t in FUNCS: nt = FUNCS[t]
+            else: unknown.append(('call', hex(B1_BASE + off), hex(t))); continue
+            put(off, (w & 0xFC000000) | ((nt >> 2) & 0x3FFFFFF)); stats['jal'] += 1; continue
+        if op == 0x0F:                        # lui rt
+            lui[(w >> 16) & 31] = [off, w & 0xFFFF, None]; continue
+        rs, rt, imm = (w >> 21) & 31, (w >> 16) & 31, w & 0xFFFF
+        lo_kind = None
+        if op in (0x08, 0x09) and rs in lui: lo_kind = 'addiu'
+        elif op in (0x20, 0x21, 0x23, 0x24, 0x25, 0x28, 0x29, 0x2B, 0x22, 0x26, 0x2A, 0x2E, 0x32, 0x3A) and rs in lui: lo_kind = 'mem'
+        elif op == 0x0D and rs in lui: lo_kind = 'ori'
+        if lo_kind:
+            lo_off, hi, newhi = lui[rs]
+            sim = imm - 0x10000 if (imm & 0x8000 and lo_kind != 'ori') else imm
+            a = ((hi << 16) + sim) & 0xFFFFFFFF
+            na, kind = map_addr(a, img)
+            if na is not None:
+                if newhi is None:
+                    newhi = ((na + 0x8000) >> 16) & 0xFFFF if lo_kind != 'ori' else na >> 16
+                    lui[rs][2] = newhi
+                    lw = W(lo_off); put(lo_off, (lw & 0xFFFF0000) | newhi)
+                nlo = (na - (newhi << 16)) & 0xFFFFFFFF
+                if lo_kind == 'ori': assert nlo < 0x10000
+                else:
+                    nlo = nlo - 0x100000000 if nlo & 0x80000000 else nlo
+                    assert -0x8000 <= nlo < 0x8000, (hex(B1_BASE + off), hex(a), hex(na))
+                put(off, (w & 0xFFFF0000) | (nlo & 0xFFFF)); stats['pairs'] += 1
+            elif 0x80000000 <= a < 0x801E0000 and not (0x1F800000 <= a < 0x1F801000):
+                unknown.append(('global', hex(B1_BASE + off), hex(a)))
+        # a write to a register ends its lui pairing; a register copy (addu/or rd, rs, $zero) shares it
+        dst = None; src = None
+        if op == 0:
+            fn = w & 0x3F
+            if fn not in (0x08, 0x09, 0x18, 0x19, 0x1A, 0x1B, 0x11, 0x13): dst = (w >> 11) & 31
+            if fn in (0x21, 0x25, 0x20) and dst:          # move, or base + index (array access)
+                if rs in lui and rt not in lui: src = rs
+                elif rt in lui and rs not in lui: src = rt
+        elif op in (0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x20, 0x21, 0x23, 0x24, 0x25, 0x22, 0x26): dst = rt
+        if dst:
+            if src is not None: lui[dst] = lui[src]
+            elif dst in lui: del lui[dst]
+    # data words that point into the image
+    for off in range(CODE_END - B1_BASE, size - 3, 4):
+        w = W(off)
+        if B1_BASE <= w < B1_BASE + img:
+            put(off, w + DELTA); stats['data'] += 1
+    return p, bss, stats, unknown
+
+STRUCT_PATCHES = []  # filled by find_struct_sites
+
+def patch_struct_sites(p):
+    """BAG1: lw rA, -0x862C(rX)  (stage ptr 0x800979D4, already remapped) ; lw rB, 0xC(rA) ; lw rC, 0x4DC(rB)"""
+    n = 0
+    for off in range(0, (CODE_END - B1_BASE), 4):
+        w = struct.unpack_from('<I', p, off)[0]
+        if (w >> 26) == 0x23 and (w & 0xFFFF) == 0x000C:              # lw ?, 0xc(?)
+            for k in range(1, 6):
+                w2 = struct.unpack_from('<I', p, off + 4 * k)[0]
+                if (w2 >> 26) == 0x23 and (w2 & 0xFFFF) == 0x04DC and ((w2 >> 21) & 31) == ((w >> 16) & 31):
+                    struct.pack_into('<I', p, off, (w & 0xFFFF0000) | 0x0020)
+                    struct.pack_into('<I', p, off + 4 * k, (w2 & 0xFFFF0000) | (4 * 0xB0 + 0x8C))
+                    n += 1; break
+    return n
+
+def build(dbi_in, bag2_dbi):
+    # bag2_dbi: the stock BAG2 stage-0 DBI. Everything from 0x801E5410 on is song data the main exe
+    # points at (chart/beat table 0x8004DF08[0] and tables 0x80051AC8.. for id 0), so it is kept as is.
+    p, bss, stats, unknown = port(dbi_in)
+    n = patch_struct_sites(p)
+    # full image: payload + bss, extended to the trampolines; shim block
+    end = 0x801E5410 - B2_BASE
+    img = bytearray(end); img[:len(p)] = p
+    assert len(p) + bss <= SHIM - B2_BASE
+    struct.pack_into('<4s', img, SHIM - B2_BASE, b'B1ST')
+    j = lambda t: 0x08000000 | ((t >> 2) & 0x3FFFFFF)
+    for addr, words in ((0x801E537C, (0x03E00008, 0x24020001)),             # init: return 1
+                        (0x801E539C, (j(0x801E358C + DELTA), 0)),           # update -> BAG1 update
+                        (0x801E53BC, (0x03E00008, 0x24020001)),             # draw: return 1
+                        (0x801E53E4, (j(0x801E4698 + DELTA), 0))):          # setup(heap) -> BAG1 setup
+        for i, w in enumerate(words): struct.pack_into('<I', img, addr - B2_BASE + 4 * i, w)
+    b2size, b2bss = struct.unpack_from('<II', bag2_dbi, 4)
+    img += bag2_dbi[12 + end:12 + b2size]
+    out = struct.pack('<4sII', b'DBI_', len(img), b2bss) + bytes(img)
+    return out, stats, n, unknown
+
+if __name__ == '__main__':
+    out, stats, n, unknown = build(open(sys.argv[1], 'rb').read(), open(sys.argv[3], 'rb').read())
+    open(sys.argv[2], 'wb').write(out)
+    print('ported:', stats, 'struct sites', n, 'size', len(out))
+    for u in unknown: print('UNMAPPED', *u)
