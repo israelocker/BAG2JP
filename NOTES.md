@@ -649,4 +649,13 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   switches to the level-matched game tail at the cut, both versions fade to 0 by 129 s) and the plugin
   sets 0x800555A8[0] = 129 while the BAG1 stage is loaded (restored after). Verified (game and cd):
   dance end f10635, song stop f10994, fever f11132 (was f12401).
+- Stage destruction (2026-10-30): BAG1 stage update breaks window panels (fire -> night city) when its
+  level (BAG1 0x80068714: 1 at 15000, 2 at 45000 BAG1 points) differs from the previous one (0x800979D0,
+  copied by BAG1 main after the stage update): +32 panels at level 1, +64 at level 2. Bug: the plugin
+  copied prev every vblank, so the update never saw the change. Now a helper at SHIM+0x10 (the update
+  callback jumps there) calls the BAG1 update and then copies level -> prev. Thresholds use BAG2's
+  dance-level table (0x8005141C x play beats 0x8005E2E8 / 256): level 1 at 9300, level 2 at 18900 (a BAG2
+  match ends ~25-30k). Verified: panels break, city visible behind.
+- Fever voices: BAG1 anims 82/83 (requests 160/161) fire Heat voice cue 0x1006 8x; BAG2 fever has none.
+  anim_remap.mute_voices() points bank-1 cues of the fever anims at missing cue 0x1FFF.
 - Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.

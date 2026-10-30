@@ -179,9 +179,17 @@ def build(dbi_in, bag2_dbi, chart=None):
     img = bytearray(end); img[:len(p)] = p
     assert len(p) + bss <= SHIM - B2_BASE
     struct.pack_into('<4s', img, SHIM - B2_BASE, b'B1ST')
+    # update helper: run the BAG1 update, then previous level = level (BAG1 main does
+    # 0x800979D0 = 0x80068714 after the stage update), so the level-change test sees each change once
+    jal = lambda t: 0x0C000000 | ((t >> 2) & 0x3FFFFFF)
+    hi = SHIM >> 16; lo = SHIM & 0xFFFF
+    helper = [0x27BDFFF8, 0xAFBF0000, jal(0x801E358C + DELTA), 0,
+              0x3C080000 | hi, 0x91090000 | (lo + 8), 0xA1090000 | (lo + 9),
+              0x8FBF0000, 0x27BD0008, 0x03E00008, 0]
+    for i, w in enumerate(helper): struct.pack_into('<I', img, SHIM + 0x10 - B2_BASE + 4 * i, w)
     j = lambda t: 0x08000000 | ((t >> 2) & 0x3FFFFFF)
     for addr, words in ((0x801E537C, (0x03E00008, 0x24020001)),             # init: return 1
-                        (0x801E539C, (j(0x801E358C + DELTA), 0)),           # update -> BAG1 update
+                        (0x801E539C, (j(SHIM + 0x10), 0)),                  # update -> helper below
                         (0x801E53BC, (0x03E00008, 0x24020001)),             # draw: return 1
                         (0x801E53E4, (j(0x801E4698 + DELTA), 0))):          # setup(heap) -> BAG1 setup
         for i, w in enumerate(words): struct.pack_into('<I', img, addr - B2_BASE + 4 * i, w)

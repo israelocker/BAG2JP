@@ -91,6 +91,17 @@ def fix_events(d, attack=False):
         struct.pack_into('<HHH', d, p, t, f, v); p += 6
     return bytes(d)
 
+def mute_voices(d):
+    """Fever: BAG1 anims 82/83 (requests 160/161) fire Heat voice cue 0x1006 eight times; BAG2's fever
+    has no voices (only 0x1C04/05). Point them at a missing cue (play returns -1, no sound)."""
+    d = bytearray(d)
+    hb, ev, o, end = info(bytes(d))
+    p = o + len(hb)
+    for t, f, v in ev:
+        if t in (2, 3) and 0x1000 <= v < 0x2000: v = 0x1FFF
+        struct.pack_into('<HHH', d, p, t, f, v); p += 6
+    return bytes(d)
+
 def build(b1):
     slots = dance_slots()
     slots.update(ROLES)
@@ -114,7 +125,7 @@ if __name__ == '__main__':
     print(f'model 001: {len(data)} bytes (BAG2 stock 280484), slots missing: {missing}')
     print('map:', ' '.join(f'{k}<{v}' for k, v in sorted(used.items())))
     ch = anim_list(open(sys.argv[3], 'rb').read())
-    fever = [fix_events(b1[82]), fix_events(b1[83]), fix_events(b1[82])] + [EMPTY] * (len(ch) - 3)
+    fever = [mute_voices(fix_events(b1[82])), mute_voices(fix_events(b1[83])), mute_voices(fix_events(b1[82]))] + [EMPTY] * (len(ch) - 3)
     out = b''.join(struct.pack('<I', len(x)) + x for x in fever) + b'\x00' * 4
     open(sys.argv[4], 'wb').write(out)
     print(f'choreography 000: {len(out)} bytes (stock {os.path.getsize(sys.argv[3])}), {len(ch)} slots')

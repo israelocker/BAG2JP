@@ -7,8 +7,8 @@
  *   beat flags (BAG1 0x80068704): bit 0 = a beat happened this frame (BAG2 beat counter 0x8005E2D0
  *   changed), bit 4 = it is the first beat of a bar (= bar start 0x8005E684), bit 6 = song over
  *   (beats left 0x8005E658 reached 0);
- *   score level (BAG1 0x80068714): 1 from 15000 points, 2 from 45000 (best of 0x8005E6F8/FC);
- *   previous level (BAG1 0x800979D0, set by BAG1 after each stage update): last frame's level.
+ *   score level (BAG1 0x80068714): 0/1/2 from the best score (see b1s_vblank);
+ *   previous level (BAG1 0x800979D0): written by a helper in the DBI right after each stage update.
  *
  * Song: the ported stage keeps BAG2's song slot (stage 0 = XA/BUST2_01.XA channel 0) with a BAG1
  * chart in the DBI tail; the audio is swapped here through the XA host filter (wrapping whatever
@@ -44,12 +44,17 @@ static void b1s_vblank(void) {
     }
     if (beat != 0 && psx_mod_read_half(0x8005E658u) == 0) flags |= 0x40u;
     last_beat = beat;
+    /* BAG1 uses 15000/45000 on its own score scale (a BAG2 match ends around 25-30k, so 45000 would
+     * never happen); BAG2's dance-level thresholds (0x8005141C: 4500/9300/14100/18900 x play beats
+     * 0x8005E2E8 / 256) are used instead: level 1 from dance level 2, level 2 from dance level 4. */
     const int32_t s0 = (int32_t)psx_mod_read_word(0x8005E6F8u), s1 = (int32_t)psx_mod_read_word(0x8005E6FCu);
     const int32_t best = s0 > s1 ? s0 : s1;
-    const uint8_t level = best >= 45000 ? 2 : best >= 15000 ? 1 : 0;
+    const int32_t beats = (int16_t)psx_mod_read_half(0x8005E2E8u);
+    const int32_t t1 = 9300 * beats / 256, t2 = 18900 * beats / 256;
+    uint8_t level = psx_mod_read_byte(B1S_SHIM + 8u);           /* never goes down, as in BAG1 */
+    if (beats > 0) { if (best >= t2) level = 2; else if (best >= t1 && level < 1) level = 1; }
     psx_mod_write_word(B1S_SHIM + 4u, flags);
-    psx_mod_write_byte(B1S_SHIM + 9u, psx_mod_read_byte(B1S_SHIM + 8u));
-    psx_mod_write_byte(B1S_SHIM + 8u, level);
+    psx_mod_write_byte(B1S_SHIM + 8u, level);   /* previous level (+9) is set by the DBI update helper */
 }
 
 /* ---- song audio ---- */
