@@ -1,14 +1,15 @@
-format_version = 5
+format_version = 11
 id = "bag2jp.feature.bag1-content"
 version = "1.0.0"
 name = "Bust A Groove 1 content"
 author = "BAG2JP"
-description = "Runtime support for content imported from Bust A Groove 1 (characters, stages)."
+description = "Content imported from Bust A Groove 1 (characters, stages, songs), selectable next to the BAG2 versions."
 resolver = "declarative"
 save_compatibility = "shared"
 
 [[target]]
 game_id = "SLPM-86219"
+disc_sha256 = "fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268"
 
 [[feature]]
 id = "bag1-stage"
@@ -45,3 +46,55 @@ description = "Folder with the BAG1 songs as FLAC (44.1 kHz stereo), named <song
 format = "directory"
 default = "bag1_music"
 required = false
+
+[[feature]]
+id = "bag1-heat"
+name = "Heat (Bust A Groove 1)"
+description = "Adds BAG1 Heat (model, moves, voices, stage and song 2Bad) next to BAG2 Heat. Each player can use either version."
+group = "Gameplay"
+default_enabled = true
+
+[[plugin]]
+feature = "bag1-heat"
+id = "bag2jp.bag1_versions"
+
+[[option]]
+feature = "bag1-heat"
+id = "heat_p1"
+label = "Heat version, player 1"
+description = "Which Heat player 1 gets. His stage follows the version of the player using Heat (player 1 first)."
+type = "choice"
+default = "bag1"
+
+[[option.choice]]
+value = "bag1"
+label = "Bust A Groove 1"
+
+[[option.choice]]
+value = "bag2"
+label = "Bust A Groove 2"
+
+[[option]]
+feature = "bag1-heat"
+id = "heat_p2"
+label = "Heat version, player 2"
+description = "Which Heat player 2 (or the CPU) gets."
+type = "choice"
+default = "bag1"
+
+[[option.choice]]
+value = "bag1"
+label = "Bust A Groove 1"
+
+[[option.choice]]
+value = "bag2"
+label = "Bust A Groove 2"
+
+[[overlay]]
+feature = "bag1-heat"
+target = "disc_user"
+offset = 458823680
+file = "payload/bag1_alt.bin"
+sha256 = "00d1f2211f5a52cb2ee88590b30645208f1ab25f65d9256a4e5b2063d7e8d64b"
+expected_sha256 = "c9f38b5727de35577ac94caded4441f23bcae129df65e9a7723e8eef826eff3c"
+

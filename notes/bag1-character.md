@@ -103,3 +103,28 @@
 - Costume popup (user request 2026-10-30): BAG2 never lets the player choose the costume (P2 gets
   costume B only in a mirror match; costume = char id >> 5). Add a popup to pick costume A/B (and with
   BAG1 Heat: 1P colours / 2P colours). Needs RE of how character select builds the char id.
+
+## BAG1 and BAG2 versions side by side (2026-10-30)
+- All archive reads go through FUN_8001F874(entry, dest) (also FUN_8001F94C sync wrapper, FUN_8001F9AC
+  seek): offset/size come from the RAM copy of the DF2_ header at 0x8005D418 ('DF2_', count, then
+  {offset rel. to BUST2.BIN, size} per entry; copied at boot from LBA 179, 0xEA0 bytes).
+- DUMMY.BIN (LBA 224035, 13500 Mode-2 Form-1 sectors, all zero) is never read: alternate (BAG1)
+  copies of archive entries live there (package overlay, feature bag1-heat). Heat set = 11 entries,
+  1468 sectors (about 9 characters fit). Built by tools/bag1import/make_alt_entries.py from the old
+  test mods (reconstructs each touched entry = stock + overlay sectors; sizes stay stock), which also
+  writes src/bag2jp_bag1_alt_index.h and prints the [[overlay]] block for the manifest.
+- Per-player tables in the main exe (halfword entry ids, [costume A p1 x18 | A p2 | B p1 | B p2]):
+  packs 0x80055180, models 0x80055258, fever 0x8005510C[char*2 + type-1], stage 0x80055360[stage id].
+  Heat = BAG2 char id 0: packs 59/60/131/132, models 95/96/167/168, fever 22/40, stage 200.
+  Selection: char per side u32 0x8005E6A0/0x8005E6A4, costume B flag u8 0x8005E668/0x8005E669,
+  stage id u16 0x8005E666. Loader bytes 0x80089250/51 = char | costume<<5. Mode 5 uses other tables
+  (0x80055318, 0x80055210) - not covered.
+- Plugin bag2jp.bag1_versions (src/bag2jp_bag1_versions.c) rewrites those RAM table entries every
+  vblank: player-side entries follow that player's version; the stage follows the player using the
+  character (P1 first); fever choreography follows the fever dancer: jp005 sets the winner pointer
+  0x80089254 (= *(0x8005F808 + side*8)) and calls FUN_800326D4(0), the load happens in
+  FUN_800326D4(1) on the next game frame, so a vblank always runs in between (log: flip at f12739,
+  load after). Options heat_p1/heat_p2 (bag1/bag2) until the select-screen popup exists.
+- Verified (2P autoplay): P1 BAG1 + P2 BAG2 Heat on the BAG1 stage with 2Bad, duet fever, back to
+  select; P1 BAG2 + P2 BAG1 on the BAG2 stage, BAG2 song, P2 wins solo fever with BAG1 fever (req 161).
+- The old test mods (bag2jp.test.bag1-heat-model/-stage) stay installed but disabled.
