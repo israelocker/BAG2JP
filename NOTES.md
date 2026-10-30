@@ -552,3 +552,11 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   BAG1 anim cue ids are now kept as is; hand-swap effects 1-6 work (same hand bones 15/16/20/21,
   18/19/22/23 in BAG2 Heat A and BAG1 Heat). psx-asset-tools: a "_force_layout" file in an unpacked
   archive dir forces a full re-layout (exact entry sizes).
+- Costume B + player 2 (2026-10-30): BAG1 has no second costume (P_HEATB* = same model and pages,
+  only the select icon and the DBI load address differ); BAG1's P2-side pack (PLAYER3) has different
+  colours on page 004 (red suit). BAG2 gives P2 costume B in a mirror match, so costume B = BAG1 2P
+  colours, costume A = BAG1 1P colours, both sides (build_heat_test.sh builds all 4 slots).
+  patch_heat_dbi.py --outfit-b also nops the costume branches (init 0x801CEDC8, setup 0x801CFC10) so
+  the B packs use the A tables (same BAG1 skeleton). Verified: 2P Heat vs Heat (A p1 + B p2) loads,
+  both BAG1 models, intro anims 73/72. Test driver: D:\Dev\Tools\winshot\bag2_2p_pick.ps1 (needs
+  settings p2_device = "keyboard" and player2 J/L + K extra binds; restore afterwards).
