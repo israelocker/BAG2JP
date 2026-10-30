@@ -609,4 +609,13 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   into it. A replacement stage DBI must keep that tail (and the stock bss). Without it the beat table
   0x8005E2F0 is garbage: beat 0x8005E2D0 sticks at 1, beats-left 0x8005E658 = 0 and the match jumps
   to the result (phase 1/5/6) with both dancers standing. The BAG1 song import will replace this tail.
+- Stage world scale: BAG1 draws stages at 3/8 (stage code and main exe place effects at
+  point*0x600>>12), BAG2 at 1/4 (stage node matrices diag 0x400). The ported model gets node scale
+  and translation x1.5 (model_bag1_to_bag2.convert(scale=(3, 2))); then barrel flames (type-3 node 4
+  points 64-75), windows (points 0-63) and lava line up. Type-3 data stays raw.
+- Dance moves (anim_remap.py): BAG2 request = row base[level] + bar (rows 1/5/11/17/23, levels 5-7
+  from bar 2/4/6, last bar = double); BAG1 cell (bar s, level v<=s) = request s(s+1)/2+(s-v)+1, bar 7
+  double 29+(7-v). In both games the normal anim follows the same level and the alternate follows a
+  level-up. Each BAG2 row maps to a BAG1 path (bar + offset so it ends on the BAG1 double, level
+  min(L, bar)), so consecutive moves are designed BAG1 transitions.
 - Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.
