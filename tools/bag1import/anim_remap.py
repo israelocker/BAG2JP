@@ -8,13 +8,17 @@ dance moves (requests 1-48): see the grid notes below.
 
 Anim events (info block after the channel data, records of u16 type, frame, value):
 type 2/3 = sound cue, 1 = character effect (BAG2 character code), 16 = attack launch.
-Sound cues are kept: the BAG1 voice banks replace BAG2 Heat's (pack SEDTs, see build_heat_test.sh).
+Sound cues 0x1000+ move to the BAG1 version's own range (rebase_cues.py) together with its voice bank,
+so BAG1 and BAG2 Heat can share a match (one global cue table, first id match wins).
 Effect values 1-6 are hand-mesh swaps; BAG2 Heat's handler uses the same hand bones as BAG1 Heat.
 usage: anim_remap.py <bag1 001.bin> <out model 001.bin> <bag2 choreography_a 000.bin> <out choreography 000.bin>
 """
 import struct, sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from animlib import anim_list, frames, info
+from rebase_cues import rebase_events, b1_cue_base
+
+CHAR_ID = 0                 # BAG2 char id (Heat): BAG1 cue ids 0x1000+ -> b1_cue_base(CHAR_ID)
 
 EMPTY = b'\x00\x00\x00\x00'
 
@@ -112,7 +116,7 @@ def build(b1):
             data = EMPTY
         else:
             src = slots[i]; used[i] = src
-            data = fix_events(b1[src], attack=(i == 74))
+            data = rebase_events(fix_events(b1[src], attack=(i == 74)), 0x1000, b1_cue_base(CHAR_ID), 0x100)
         out += struct.pack('<I', len(data)) + data
     out += b'\x00' * 4
     return bytes(out), used

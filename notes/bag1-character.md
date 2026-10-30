@@ -128,3 +128,16 @@
 - Verified (2P autoplay): P1 BAG1 + P2 BAG2 Heat on the BAG1 stage with 2Bad, duet fever, back to
   select; P1 BAG2 + P2 BAG1 on the BAG2 stage, BAG2 song, P2 wins solo fever with BAG1 fever (req 161).
 - The old test mods (bag2jp.test.bag1-heat-model/-stage) stay installed but disabled.
+- Sound ids (2026-10-30): all loaded banks share one cue table (0x8007F180, 12-byte records, count
+  0x8006D9A0) and FUN_8002E2D0 plays the FIRST record with the id. Each character owns 0x1000 + n*0x100
+  (Heat 0x1000, Strike 0x1100, ... Hustle Kong 0x2100; 0x22xx endings, 0x3xxx announcer, 0x4000 fever,
+  0x5xxx stage banks). Anim events type 2 play the id as is (FUN_8002E478), type 3 on slot 0x11+side.
+  Mixed Heat match bug: both voice banks had 0x1000-0x1007, P1's bank won, so P2's BAG2 Heat shouts
+  (0x1000/0x1001, ~20 each per dance) played BAG1's 0.5 s / 1 s phrases (heard as phrase spam). Fix:
+  BAG1 versions use 0x6000 + BAG2 char id*0x100 (tools/bag1import/rebase_cues.py: bank ids + anim
+  events, applied in anim_remap.py and build_heat_test.sh). Fever lists keep their muted 0x1FFF.
+  Verified with -Cues/-Audio: BAG1 Heat fires 0x6006 steps, BAG2 Heat 0x1000/0x1001 from its own bank,
+  no BAG1 phrase hits (was 9 per dance).
+- Rebuild order for a BAG1 character version: build_heat_test.sh + build_heat_stage_test.sh (test mods,
+  left disabled) -> make_alt_entries.py (payload + index header + overlay block) -> manifest overlay
+  sha256 -> build the exe.

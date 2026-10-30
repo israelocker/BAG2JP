@@ -23,8 +23,9 @@ for o in a b; do
   python3 $T/patch_heat_dbi.py $B/pack_${o}_p2/000.dbi $A/pack_${o}_p2/000.dbi $F
   # sounds: bank 1 (cues 0x1000+, voice + SE fired by the anim events) from BAG1 (English). Bank 3 (BAG2
   # 006/005: announcer name + VS calls, waited on by the stage intro) stays BAG2's: a missing cue hangs.
-  cp $S/PLAYER1E_P_HEATA1/007.sedt $A/pack_${o}_p1/005.sedt
-  cp $S/PLAYER1E_P_HEATA1/007.sedt $A/pack_${o}_p2/004.sedt
+  # Its cue ids move from 0x1000 to the BAG1 range 0x6000 (rebase_cues.py; the anims are rebased too).
+  python3 $T/rebase_cues.py $S/PLAYER1E_P_HEATA1/007.sedt $A/pack_${o}_p1/005.sedt 1000 6000
+  python3 $T/rebase_cues.py $S/PLAYER1E_P_HEATA1/007.sedt $A/pack_${o}_p2/004.sedt 1000 6000
   touch $A/pack_${o}_p1/_force_layout $A/pack_${o}_p2/_force_layout   # exact entry sizes for the shrunk SEDTs
 done
 # textures: BAG1 pages 004/005/006 -> BAG2 slots in order, at the BAG2 VRAM spots; BAG2 name label kept
