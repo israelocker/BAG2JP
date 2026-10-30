@@ -6,6 +6,7 @@
  * Env BAG2JP_AUDIO_DUMP=1 records the final audio mix (44.1 kHz stereo, after XA/CD/SPU mixing and
  * the other PCM plugins) to bag2jp_audio.wav, plus bag2jp_audio_sync.log ("frame sample" per vblank,
  * same frame numbering as the trace / watch logs) so sounds can be located against game events.
+ * With the trace on, bag2jp_frame.txt holds the current frame and phase (rewritten every 6 frames).
  * Used to map BAG2 anim slots to game states for the BAG1 character import. */
 #include <stdint.h>
 #include <stdio.h>
@@ -90,6 +91,15 @@ static void at_vblank(void) {
     }
     if (!s_on) return;
     ++frame;
+    {   /* bag2jp_frame.txt: "frame phase a/b/c", every 6 frames, for scripted frame-exact screenshots */
+        static FILE* ff;
+        if (!ff) { const char* b = SDL_GetBasePath(); char p[1024]; snprintf(p, sizeof p, "%sbag2jp_frame.txt", b ? b : ""); ff = fopen(p, "w"); }
+        if (ff && frame % 6 == 0) {
+            rewind(ff);
+            fprintf(ff, "%07u %u/%u/%u          \n", frame, psx_mod_read_word(0x8005D3D8u), psx_mod_read_word(0x8005D3DCu), psx_mod_read_word(0x8005D3E0u));
+            fflush(ff);
+        }
+    }
     if (s_dump_at > 0 && frame == (uint32_t)s_dump_at) {
         const char* b = SDL_GetBasePath(); char p[1024];
         snprintf(p, sizeof p, "%sbag2jp_ram_%u.bin", b ? b : "", frame);
