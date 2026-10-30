@@ -665,4 +665,11 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   sampled the framebuffer (live dancers / stale frames flickering in the windows). port() now carries a
   delay-slot lui to its branch target (shared entry). Also: tiles widened to -8..5 and the update
   helper adds a black TILE at OT[0xFFF] (sky above the city strip, never stale). Verified stable.
+- Fever choreography entries (2026-10-30): BAG2 loads them by main exe table 0x8005510C[char id*2 +
+  fever type-1] (archive entry index). The asset folders of entries 17-52 were named by order and are
+  NOT the character: Heat (char id 0) uses 22/40 = folders "kelly/choreography_a|b"
+  (tools/bag1import/fever_entries.py). Before this fix the BAG1 fever dances were never used: Heat
+  danced BAG2 Heat's fever, whose cues 0x1000/0x1001 played BAG1 hit shouts from the swapped voice
+  bank. Now: solo = BAG1 82/83/82 with every char-bank cue muted, duet = BAG2 duet with 0x10xx muted.
+  Verified with a cue watch (slot table 0x8006D9F6 + 8*slot): no 0x10xx during fever, both types.
 - Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.

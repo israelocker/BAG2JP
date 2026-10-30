@@ -9,7 +9,9 @@ P=~/mnt/Dev/Recomp/BAG2JP; T=$P/tools/bag1import; S=$P/_work/bag1_assets/heat
 W=~/work/bag1import/assets; rm -rf "$W/archive"; mkdir -p "$W"; cp -r "$P/assets/archive" "$W/"
 A=$W/archive/characters/heat; B=$P/assets/archive/characters/heat
 # animations: BAG1 anims rebuilt into BAG2's 101-slot order (+ BAG1 fever dances in choreography_a)
-python3 $T/anim_remap.py $S/PLAYER2_P_HEATA2/001.bin $A/model_a_p1/001.bin $B/choreography_a/000.bin $A/choreography_a/000.bin
+read CA CB < <(python3 $T/fever_entries.py $P 0); echo "fever choreography: $CA $CB"
+python3 $T/anim_remap.py $S/PLAYER2_P_HEATA2/001.bin $A/model_a_p1/001.bin $P/assets/archive/$CA/000.bin $W/archive/$CA/000.bin \
+  $P/assets/archive/$CB/000.bin $W/archive/$CB/000.bin
 for o in a b; do
   # model: BAG1 mesh converted to the BAG2 layout (p1 / p2 files) + the remapped animations
   python3 $T/model_bag1_to_bag2.py $S/PLAYER2_P_HEATA2/000.bin $A/model_${o}_p1/000.bin
