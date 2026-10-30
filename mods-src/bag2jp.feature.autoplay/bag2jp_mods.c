@@ -62,11 +62,18 @@ static const uint32_t ap_guard[][2] = {
 #define AP_PACKAGE "bag2jp.feature.autoplay"
 #define AP_FEATURE "autoplay"
 static volatile int ap_active = 1;
+/* Two-player mode (testing): bit 0 = P1, bit 1 = P2 dance by themselves (options p1_2p / p2_2p). */
+static volatile unsigned ap_2p_mask = 0;
 
-static void ap_read_option(void) {
+static int ap_bool_option(const char* id, int fallback) {
     char value[16] = {0};
-    if (psx_mod_option_value(AP_PACKAGE, AP_FEATURE, "active", value, sizeof value) > 0)
-        ap_active = !(value[0] == 'f' || value[0] == '0');
+    if (psx_mod_option_value(AP_PACKAGE, AP_FEATURE, id, value, sizeof value) > 0)
+        return !(value[0] == 'f' || value[0] == '0');
+    return fallback;
+}
+static void ap_read_option(void) {
+    ap_active = ap_bool_option("active", ap_active);
+    ap_2p_mask = (ap_bool_option("p1_2p", 0) ? 1u : 0u) | (ap_bool_option("p2_2p", 0) ? 2u : 0u);
 }
 static void bag2jp_autoplay_activate(void) { ap_read_option(); }
 static int bag2jp_autoplay_option_changed(const char* option_id, const char* value) {
@@ -128,17 +135,64 @@ static void bag2jp_autoplay_vblank(void) {
 #define AP_HUMAN_ADDR   0x8005E6C8u
 static void bag2jp_autoplay_no_fumble(struct CPUState* cpu, uint32_t address) {
     (void)address;
-    if (!ap_active) return;
-    if ((int16_t)psx_mod_read_half(AP_MODE_ADDR) != 1) return;
-    const uint32_t human = psx_mod_read_byte(AP_HUMAN_ADDR) & 1u;
-    if (cpu->gpr[19] != AP_CPU_BASE + human * AP_CPU_STRIDE) return;  /* $s3 */
+    const int16_t mode = (int16_t)psx_mod_read_half(AP_MODE_ADDR);
+    uint32_t p;
+    if (mode == 1) {
+        if (!ap_active) return;
+        p = psx_mod_read_byte(AP_HUMAN_ADDR) & 1u;
+        if (cpu->gpr[19] != AP_CPU_BASE + p * AP_CPU_STRIDE) return;  /* $s3 */
+    } else if (mode == 2) {
+        p = (cpu->gpr[19] - AP_CPU_BASE) / AP_CPU_STRIDE;
+        if (p > 1 || !(ap_2p_mask & (1u << p))) return;
+    } else {
+        return;
+    }
     if ((int32_t)cpu->gpr[3] <= 0) {                                   /* $v1 */
         cpu->gpr[3] = 1;
         psx_mod_counter_add("bag2jp.autoplay.fumble_blocked", 1);
     }
 }
 
+/* ------------------------------------------------ two-player autoplay (testing)
+ * Mode 2 takes its own branches, so it is done with register hooks (the module code is shared by
+ * all modes and a word patch would also change one-player games with P2 as the human):
+ * - 0x8009A9DC (after the "who reads the pad" flags, reached in mode 2): clear $s1 (P1) / $s2 (P2)
+ *   for autoplayed players and keep $a2 = $s2 like the stock code.
+ * - 0x8009ADB4 bne $v0(mode),$s1(1): per-measure CPU setup is skipped for every player in mode 2;
+ *   for an autoplayed player ($s4 = player) make it fall through ($v0 = 1) ...
+ * - 0x8009ADC8 beq $s4,$v0(human): ... and not match the human byte ($v0 = $s4 ^ 1).
+ * The CPU attack choice only runs in modes 0/1, so autoplayed 2P dancers never attack. */
+#define AP2_PAD_SITE   0x8009A9DCu
+#define AP2_PAD_WORD   0x3C038006u   /* lui $v1, 0x8006 */
+#define AP2_SETUP_SITE 0x8009ADB4u
+#define AP2_SETUP_WORD 0x145100B3u
+#define AP2_HUMAN_SITE 0x8009ADC8u
+#define AP2_HUMAN_WORD 0x128200AEu
+static int ap2_on(void) { return ap_2p_mask && (int16_t)psx_mod_read_half(AP_MODE_ADDR) == 2; }
+static void ap2_pad_hook(struct CPUState* cpu, uint32_t address) {
+    (void)address;
+    if (!ap2_on()) return;
+    if (ap_2p_mask & 1u) cpu->gpr[17] = 0;   /* $s1 */
+    if (ap_2p_mask & 2u) cpu->gpr[18] = 0;   /* $s2 */
+    cpu->gpr[6] = cpu->gpr[18];              /* $a2 = $s2 */
+}
+static void ap2_setup_hook(struct CPUState* cpu, uint32_t address) {
+    (void)address;
+    if (!ap2_on()) return;
+    const uint32_t p = cpu->gpr[20] & 1u;    /* $s4 */
+    if (ap_2p_mask & (1u << p)) cpu->gpr[2] = cpu->gpr[17];   /* $v0 = $s1 -> fall through */
+}
+static void ap2_human_hook(struct CPUState* cpu, uint32_t address) {
+    (void)address;
+    if (!ap2_on()) return;
+    const uint32_t p = cpu->gpr[20] & 1u;
+    if (ap_2p_mask & (1u << p)) cpu->gpr[2] = p ^ 1u;
+}
+
 PSX_MOD_CONSTRUCTOR(bag2jp_register_autoplay) {
+    (void)psx_mod_register_instruction_plugin("bag2jp.autoplay", AP2_PAD_SITE, AP2_PAD_WORD, ap2_pad_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.autoplay", AP2_SETUP_SITE, AP2_SETUP_WORD, ap2_setup_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.autoplay", AP2_HUMAN_SITE, AP2_HUMAN_WORD, ap2_human_hook);
     (void)psx_mod_register_activation_plugin("bag2jp.autoplay", bag2jp_autoplay_activate);
     (void)psx_mod_register_option_changed_plugin("bag2jp.autoplay", bag2jp_autoplay_option_changed);
     (void)psx_mod_register_vblank_plugin("bag2jp.autoplay", bag2jp_autoplay_vblank);

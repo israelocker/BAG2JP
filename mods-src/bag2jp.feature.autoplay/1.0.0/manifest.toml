@@ -29,3 +29,21 @@ description = "Autoplay starts switched on. Untick to start with it paused (Sele
 group = "Gameplay"
 type = "boolean"
 default = "true"
+
+[[option]]
+feature = "autoplay"
+id = "p1_2p"
+label = "P1 dances by itself in 2-player"
+description = "Testing: in a 2-player game player 1 is danced by the CPU timing (no attacks)."
+group = "Gameplay"
+type = "boolean"
+default = "false"
+
+[[option]]
+feature = "autoplay"
+id = "p2_2p"
+label = "P2 dances by itself in 2-player"
+description = "Testing: in a 2-player game player 2 is danced by the CPU timing (no attacks)."
+group = "Gameplay"
+type = "boolean"
+default = "false"

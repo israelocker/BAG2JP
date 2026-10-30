@@ -560,3 +560,18 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   the B packs use the A tables (same BAG1 skeleton). Verified: 2P Heat vs Heat (A p1 + B p2) loads,
   both BAG1 models, intro anims 73/72. Test driver: D:\Dev\Tools\winshot\bag2_2p_pick.ps1 (needs
   settings p2_device = "keyboard" and player2 J/L + K extra binds; restore afterwards).
+
+## Two-player autoplay (testing, 2026-10-30)
+- Autoplay package options p1_2p / p2_2p (default off; exp install: p2_2p on): in a 2-player game the
+  chosen players are danced by the CPU timing. Mode 2 takes its own branches in the match module, so
+  it uses register hooks (src/bag2jp_mods.c): 0x8009A9DC clears $s1/$s2 (pad readers) and keeps
+  $a2 = $s2; 0x8009ADB4 (bne mode,1) falls through and 0x8009ADC8 (beq player,human) misses for the
+  autoplayed player, so it gets the CPU per-measure setup; the fumble hook covers mode 2 too.
+  No attacks (the CPU attack choice only runs in modes 0/1). Verified: BAG1 Heat vs BAG1 Heat, both
+  dancing with combos, specials, win/lose poses, solo fever, results screen.
+
+## Planned: selection popups in character select
+- BAG1/BAG2 version popup for shared characters (Heat, Strike), like the difficulty popup.
+- Costume popup (user request 2026-10-30): BAG2 never lets the player choose the costume (P2 gets
+  costume B only in a mirror match; costume = char id >> 5). Add a popup to pick costume A/B (and with
+  BAG1 Heat: 1P colours / 2P colours). Needs RE of how character select builds the char id.
