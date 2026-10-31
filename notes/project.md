@@ -145,3 +145,11 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   (`--crop x0,y0,x1,y1` fractions to zoom into a region).
 - Debug plugin env vars (bag2jp.anim_trace): BAG2JP_ANIM_TRACE, BAG2JP_WATCH, BAG2JP_RAM_DUMP, BAG2JP_AUDIO_DUMP,
   BAG2JP_CPU_SKILL; sound cue slots 0x8006D9F6 + 8*slot. Audio analysis: D:\Dev\Tools\audio-probe (README).
+
+## Codex build/test environment (2026-10-30)
+- Recovered build tree: D:\Dev\Recomp\BAG2JP-codex-build\BAG2JP; build-win-codex.
+- Build: wsl.exe -d Ubuntu --exec bash /mnt/d/Dev/Tools/codex-integrations/build_bag2jp.sh (llvm-mingw 20261020, -j 2).
+- Reports also run directly with Windows Python + Pillow: python D:\Dev\Recomp\BAG2JP\tools\test\bag2_report.py --tag <tag> --timeout 0.
+  The report now resolves the Windows game/shot paths; legacy Claude VM defaults remain for Linux.
+- Wait for the test game process to exit before copying BAG2JP.exe; verify the deployed SHA256.
+- Independent Heat BAG1/BAG2 stage picker: see the latest section of notes/bag1-stage-song.md.

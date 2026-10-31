@@ -102,3 +102,36 @@
   the cue-slot watch (0x8006D9F6 + 8*slot): voices 0x1001/0x1003/0x1007 found 1-2 frames after the
   request; BAG1 Heat fever (frames 11121-11999) has no Heat voice, no 0x10xx requests.
 - Debug: BAG2JP_WATCH=addr:size,... logs value changes to bag2jp_watch.log.
+
+## Independent Heat stage selection (2026-10-30)
+- Current behavior supersedes the earlier character-driven stage rule in selectable modes:
+  Stage Select has HEAT BAG2 followed by HEAT BAG1, with distinct original thumbnails.
+  Characters/versions/costumes are independent; story mode keeps its automatic character-based default.
+- Implementation: bag2jp_charsel_popup.c includes bag2jp_stage_select.inc and the guarded
+  bag2jp_stage_select_patches.h. sys/007 at 0x8008F890: order 0x800963D0, inverse 0x800963E0;
+  14 cursor rows = 13 choices + RANDOM (index 13). Both Heat rows still map to character/stage id 0.
+  The second Heat row is index 1; existing other-stage ids and gameplay tables are unchanged.
+- 23 original-word-checked patches widen cursor bounds and change random selection from %12 to %13.
+  Random's native label comparison hook is 0x80093DB0; it keeps the arrow size constant 12.
+  Hook 0x800917A8 records the random row. Hook 0x80093E38 hides only Heat's old native caption;
+  the host HUD draws the chosen Heat thumbnail and caption at the native preview coordinates.
+- bag2jp_bag1_set_stage_version(-1/0/1) selects automatic/BAG2/BAG1 for entry 200 only.
+  Per-player character packs, costume and fever routing remain separate. The choice survives loading
+  and resets on character selection/session/online-link transitions.
+- Thumbnails: BAG1 DFS1/ST_SEL.BPE entry 23 (154x64, fitted to 186x60); BAG2 system/015.bpe entry 029.
+  Rebuild: python tools/bag1import/build_stage_previews.py. Files heat_bag1.png / heat_bag2.png live
+  in the select-popup resource popup_assets. The active experimental resource is under mods/bundled.
+- The expanded-menu capability contributes STG1 to the existing online content identity. Peers with
+  different capability fall back to stock content and the 13-row menu. Identity checks are unit-tested;
+  the new selector has not yet been retested between two PCs.
+- Fresh tests: Practice with BAG1 Heat on BAG2 stage; native carousel forward/back, Comet and RANDOM wrap.
+  2P P1 BAG2 A + P2 BAG1 B on BAG1 stage: CD 2Bad opened, song length 129 s, dance/fever/return to select
+  (fever f19092..20136, return f20138). Same session, both BAG1 A/B on BAG2 stage: stock stage restored,
+  CD BUST2_01 ch0 used, dance/fever/return (f38342..39386, return f39388). Both runs were fever type 1.
+- Evidence: _work/shots/stage_select_bag1{,_sheet.png}, stage_select_bag2{,_sheet.png}.
+  Unit command (WSL): bash /mnt/d/Dev/Recomp/BAG2JP/tools/test/stage_select/run.sh.
+  Checks real version-routing C, online menu identity, original MIPS words, all row mappings and random
+  arithmetic for all 0..32767 values plus large int boundaries. Both tests failed on stock behavior first.
+- Tests used copied memory cards; settings, keybinds and mod state restored byte-for-byte, original
+  cards verified unchanged by SHA256. With both pads sharing keyboard arrows, J/L move P2 alone
+  by one stage; shared arrows can produce two native moves in 2P.

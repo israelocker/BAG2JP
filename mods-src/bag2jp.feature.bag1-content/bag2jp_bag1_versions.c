@@ -10,7 +10,8 @@
  *   kind 2 (fever choreography, one file for the fever dancer): the version of the player in the
  *          fever (winner pointer 0x80089254 vs dancers 0x8005F808/0x8005F810), else the side
  *          playing that character;
- *   kind 3 (the character's stage): the version of the player using that character (player 1 first).
+ *   kind 3 (the character's stage): the independent stage-menu choice; when no stage picker is
+ *          used (story mode), the version of the player using that character (player 1 first).
  * The ported BAG1 stage is recognised by the bag1-stage plugin through its 'B1ST' shim, so the song
  * swap and song length follow automatically.
  * Version per player: options heat_p1/heat_p2 are the defaults; the select-screen popup
@@ -31,6 +32,7 @@
 #define B1V_CHARS    18
 
 static uint8_t b1v_version[B1V_CHARS][2];   /* 0 = BAG2 (stock), 1 = BAG1 */
+static int b1v_stage_version = -1;          /* -1 automatic, 0 BAG2, 1 BAG1: independent stage pick */
 static int b1v_force_stock;                  /* online with different BAG1 content: BAG2 only */
 static FILE* b1v_logf;
 static void b1v_log(const char* fmt, ...) {
@@ -70,6 +72,9 @@ static int b1v_wanted(const B1AltEntry* e) {
         const int s = b1v_side_of(c);
         return b1v_version[c][s < 0 ? 0 : s];
     }
+    case 3: if (c == 0 && b1v_stage_version >= 0) return b1v_stage_version;
+        /* Story mode has no stage picker: retain its character-based default. */
+        /* fall through */
     default: { const int s = b1v_side_of(c); return b1v_version[c][s < 0 ? 0 : s]; }
     }
 }
@@ -95,8 +100,11 @@ static void b1v_vblank(void) {
 }
 
 static int b1v_active;
-static void b1v_activate(void) { b1v_active = 1; b1v_read_options(); }
-static void b1v_reset(void) { b1v_active = 0; }
+static void b1v_activate(void) { b1v_active = 1; b1v_stage_version = -1; b1v_read_options(); }
+static void b1v_reset(void) { b1v_active = 0; b1v_stage_version = -1; }
+void bag2jp_bag1_set_stage_version(int version) {
+    b1v_stage_version = version == 0 || version == 1 ? version : -1;
+}
 
 /* Select-screen popup (bag2jp_charsel_popup.c): which characters have a BAG1 version, and the
  * version each player picked (0 BAG2, 1 BAG1). The pick lasts until the next start/option change. */
@@ -122,14 +130,18 @@ static int b1v_option_changed(const char* option_id, const char* value) {
  *  - every version starts as BAG2 (local launcher defaults may differ) and only picks made in the
  *    select popup change it (the picking PC sends them, see bag2jp_netsync_send_pick);
  *  - content id = hash of the alternate-entry index; if the PCs differ, both use BAG2 only. */
+int bag2jp_stage_select_enabled(void);
 uint32_t bag2jp_bag1_content_id(void) {
     if (!b1v_active) return 0;
     uint32_t h = 2166136261u;
     const uint8_t* d = (const uint8_t*)b1_alt_entries;
     for (unsigned i = 0; i < sizeof b1_alt_entries; ++i) { h ^= d[i]; h *= 16777619u; }
+    /* Menus relay pad changes: peers must agree on the expanded stage order too. */
+    if (bag2jp_stage_select_enabled()) { h ^= 0x53544731u; h *= 16777619u; }
     return h ? h : 1;
 }
 void bag2jp_bag1_online(int linked) {
+    b1v_stage_version = -1;
     if (linked) { memset(b1v_version, 0, sizeof b1v_version); b1v_log("online: all versions BAG2 until picked"); }
     else { b1v_force_stock = 0; if (b1v_active) b1v_read_options(); }
 }

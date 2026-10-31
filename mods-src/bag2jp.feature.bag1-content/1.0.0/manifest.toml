@@ -49,8 +49,8 @@ required = false
 
 [[feature]]
 id = "select-popup"
-name = "Character select popup"
-description = "When a player picks a character, a small window asks for the costume (A/B) and, for characters imported from Bust A Groove 1, which game's version to use."
+name = "Character and stage selection"
+description = "Choose character version and costume per player, then choose the Heat BAG1 or Heat BAG2 stage independently in the stage carousel."
 group = "Gameplay"
 default_enabled = true
 
@@ -62,7 +62,7 @@ id = "bag2jp.charsel_popup"
 feature = "select-popup"
 id = "popup_assets"
 label = "Popup assets"
-description = "HD font atlases used to draw the popup."
+description = "HD font atlases and original Heat stage thumbnails used by the selection screens."
 format = "directory"
 default = "popup_assets"
 required = false
@@ -82,7 +82,7 @@ id = "bag2jp.bag1_versions"
 feature = "bag1-heat"
 id = "heat_p1"
 label = "Heat version, player 1"
-description = "Which Heat player 1 gets. His stage follows the version of the player using Heat (player 1 first)."
+description = "Default Heat version for player 1. The stage is selected separately in 2P and Practice; story mode keeps the character-based stage default."
 type = "choice"
 default = "bag1"
 

@@ -9,6 +9,10 @@ import argparse, collections, glob, json, os, re, subprocess, sys, time
 E = os.path.expanduser('~/mnt/Bust A Groove 2 (Japan)/BAG2JP-exp-8mb')
 SHOTS = os.path.expanduser('~/mnt/Dev/Recomp/BAG2JP/_work/shots')
 PROBE = os.path.expanduser('~/mnt/Dev/Tools/audio-probe/audio_probe.py')
+if os.name == 'nt':
+    E = 'D:/Games/Bust A Groove 2 (Japan)/BAG2JP-exp-8mb'
+    SHOTS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), '_work', 'shots')
+    PROBE = 'D:/Dev/Tools/audio-probe/audio_probe.py'
 p = argparse.ArgumentParser()
 p.add_argument('--tag', default='run'); p.add_argument('--frame', type=int); p.add_argument('--until')
 p.add_argument('--timeout', type=float, default=160); p.add_argument('--find', nargs='*')

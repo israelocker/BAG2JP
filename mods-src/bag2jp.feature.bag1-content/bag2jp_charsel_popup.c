@@ -93,7 +93,9 @@ static int cs_load_png(const char* name, CsImg* im) {
     char p[1200]; snprintf(p, sizeof p, "%s/%s", s_dir, name);
     im->px = NULL;
     FILE* f = fopen(p, "rb"); if (!f) return 0;
-    fseek(f, 0, SEEK_END); long n = ftell(f); fseek(f, 0, SEEK_SET);
+    if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return 0; }
+    long n = ftell(f);
+    if (n <= 0 || n > 2 * 1024 * 1024 || fseek(f, 0, SEEK_SET) != 0) { fclose(f); return 0; }
     unsigned char* buf = (unsigned char*)malloc((size_t)n);
     if (!buf || fread(buf, 1, (size_t)n, f) != (size_t)n) { fclose(f); free(buf); return 0; }
     fclose(f);
@@ -207,15 +209,18 @@ static void cs_compose_one(const CsPopup* p) {
     }
     cv_text("O OK  X BACK", x0 + 9, y1 - 14, 0, 0.58);
 }
+#include "bag2jp_stage_select.inc"
+
 static void cs_compose(void) {
     if (!s_canvas) s_canvas = (uint32_t*)malloc((size_t)CV_W * CV_H * 4);
     if (!s_canvas) return;
     memset(s_canvas, 0, (size_t)CV_W * CV_H * 4);
     for (int i = 0; i < 2; ++i) if (s_draw[i].phase == P_OPEN) cs_compose_one(&s_draw[i]);
+    cs_stage_compose();
 }
 static void cs_draw(int width, int height, void* ctx) {
     (void)ctx;
-    if (!atomic_load(&s_visible)) return;
+    if (!atomic_load(&s_visible) && !atomic_load(&cs_stage_visible)) return;
     const int upload = atomic_exchange(&s_dirty, 0);
     if (upload) cs_compose();
     if (s_canvas) gl_renderer_draw_host_overlay(s_canvas, CV_W, CV_H, upload, width, height);
@@ -349,6 +354,7 @@ static void cs_mirror_hook(struct CPUState* cpu, uint32_t address) {
 }
 
 static void cs_vblank(void) {
+    cs_stage_vblank();
     /* close any popup left open when the screen goes away */
     if (!s_enabled || (s_pop[0].phase != P_OPEN && s_pop[1].phase != P_OPEN) || cs_screen_active()) return;
     for (int i = 0; i < 2; ++i) if (s_pop[i].phase == P_OPEN) s_pop[i].phase = P_SWALLOW;
@@ -358,16 +364,20 @@ static void cs_activate(void) {
     memset(s_pop, 0, sizeof s_pop);
     if (psx_mod_current_resource_path("popup_assets", s_dir, sizeof s_dir) <= 0) s_dir[0] = 0;
     s_enabled = 1;
+    cs_stage_activate();
     const int a = psx_mod_set_pad_transform(0, &s_tr0), b = psx_mod_set_pad_transform(1, &s_tr1);
     bag2jp_hud_add(cs_draw, NULL);
     cs_publish();
     cs_log("activate: assets '%s', pad transforms %d %d", s_dir, a, b);
 }
-static void cs_reset(void) { s_enabled = 0; atomic_store(&s_visible, 0); }
+static void cs_reset(void) { s_enabled = 0; atomic_store(&s_visible, 0); cs_stage_publish((CsStageView){0}); }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_charsel_popup) {
     (void)psx_mod_register_activation_plugin("bag2jp.charsel_popup", cs_activate);
     (void)psx_mod_register_session_reset_plugin("bag2jp.charsel_popup", cs_reset);
     (void)psx_mod_register_vblank_plugin("bag2jp.charsel_popup", cs_vblank);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", CS_MIRROR_SB, CS_MIRROR_W, cs_mirror_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x800917A8u, 0x00531021u, cs_stage_random_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x80093DB0u, 0x145E0002u, cs_stage_name_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x80093E38u, 0x0C007EFFu, cs_stage_heat_label_hook);
 }
