@@ -1,10 +1,10 @@
 """Rebuild a BAG2 model animation list (model_*/001.bin, 101 slots in BAG2 order) from a BAG1 list
 (84 anims), plus the fever-time list (choreography_a/000.bin) from BAG1's fever anims.
 
-Slot roles come from the motion request tables of both main executables (tools/bag1import/reqmap.py)
-and an in-game trace of stock BAG2 (src/bag2jp_anim_trace.c). Request codes 100+ keep their meaning
-in both games (106 stand, 110 attack, 124 miss, 130-135 hit, 140-142 win, 150-152 lose, 160+ fever);
-dance moves (requests 1-48): see the grid notes below.
+Request codes and role names differ between games. audit_animation_roles.py compares both
+Dance View tables with the installed animation bytes. ROLES below still contains documented legacy
+substitutions (including TIRED/GUARD/REFLECT); see notes/bag1-character.md before regenerating assets.
+Dance moves (requests 1-42): see the grid notes below.
 
 Anim events (info block after the channel data, records of u16 type, frame, value):
 type 2/3 = sound cue, 1 = character effect (BAG2 character code), 16 = attack launch.
