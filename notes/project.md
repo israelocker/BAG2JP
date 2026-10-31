@@ -153,3 +153,14 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   The report now resolves the Windows game/shot paths; legacy Claude VM defaults remain for Linux.
 - Wait for the test game process to exit before copying BAG2JP.exe; verify the deployed SHA256.
 - Independent Heat BAG1/BAG2 stage picker: see the latest section of notes/bag1-stage-song.md.
+
+## Local workflow helper (2026-10-30)
+- Windows command: `D:\Dev\Tools\ghidra-mcp-python\python.exe D:\Dev\Recomp\BAG2JP\tools\workflow\bag2_workflow.py <action> --tag <tag>`.
+- Actions: `preflight` (default), `test-stage-select`, `build`, `report` (existing game report, timeout 0).
+- Every action checks recorded paths, CMake source tree, pinned dependencies and Git status. Source/resource/executable drift is reported without overwriting files.
+- Logs and `metrics.json` live under `_work/workflow/<UTC timestamp>-<tag>/`; stdout is compact JSON. A command failure returns a nonzero exit and at most 12 tail lines; successful build/test commands show at most two; the compact game report selects state/phase/fever/run-report/sheet lines (up to 12), retaining full cue output in its log.
+- Build and tests reuse the verified WSL commands; subprocess output goes to disk, so retain the process PID until completion. This helper does not deploy, launch/close games or alter settings/cards.
+- The helper records local phase durations and exit status, not cloud-token usage or billing. It preserves dirty working files.
+- Regression checks: `python tools/workflow/test_bag2_workflow.py`. The embedded Python needs an explicit script-directory import path; the test runner supplies it.
+- Image reports use the installed Microsoft Store Python 3.13 (`py -3.13`, Pillow 12.2.0); the helper routes `report` there explicitly. Python 3.14/3.12 and the Ghidra embedded Python do not currently provide Pillow.
+- Skill validation uses WSL Ubuntu Python (PyYAML is available there): `wsl.exe -d Ubuntu --exec python3 /mnt/c/Users/israe/.codex/skills/.system/skill-creator/scripts/quick_validate.py /mnt/c/Users/israe/.codex/skills/bag2jp-build-deploy-test`.

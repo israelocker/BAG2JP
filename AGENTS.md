@@ -26,4 +26,10 @@ The owner chose on 2026-10-30 to continue Claude's existing project workflow and
 - The main project currently has no remote. A commit is a local checkpoint; uploading or publishing is separate work.
 - After code/content work, refresh BAG2JP-project-snapshot.tar.gz from the build tree, excluding build directories; snapshots and heavy assets are outside Git.
 - Build release folders/installers when requested. Retain rejected or disabled experiments as such.
-- Evaluate workflow, token or tooling optimizations later with the owner; do not change the adopted method as part of ordinary feature work.
+
+## Local efficiency (owner authorized 2026-10-30)
+- Prefer verified local scripts and installed tools; use local models for bounded, reviewable bulk work, one GPU model at a time. Keep game-test GPU use separate.
+- Start a BAG2JP task with `python tools/workflow/bag2_workflow.py preflight`: compact Git/pins/path/source/resource diagnostics. Read detailed files only for the current change or reported drift.
+- The same helper provides `build`, `test-stage-select` and `report --tag <tag>` with full logs and per-phase timings in `_work/workflow/`. Source/resource drift is diagnostic, not automatic synchronization.
+- Reuse a running process and its log. Do not repeat successful checks or reviews without relevant changes or new evidence; satisfy required hooks with the focused evidence already obtained.
+- Build reusable automation when it removes a demonstrated repeated step. Preserve the local Git, experimental deployment and in-game acceptance workflow above; measure improvements before claiming savings.
