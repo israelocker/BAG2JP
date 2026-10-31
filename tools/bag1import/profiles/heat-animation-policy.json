@@ -1,0 +1,262 @@
+{
+  "schema": 1,
+  "character": "heat",
+  "status": "experimental",
+  "roles": [
+    {
+      "target": 67,
+      "source": 64,
+      "name": "POSE1",
+      "classification": "adaptation",
+      "reason": "Hold the original attack-2 finishing posture; no attack launch event.",
+      "hold": true
+    },
+    {
+      "target": 68,
+      "source": 60,
+      "name": "POSE2",
+      "classification": "adaptation",
+      "reason": "Hold the original standing posture instead of walking.",
+      "hold": true
+    },
+    {
+      "target": 76,
+      "source": 65,
+      "name": "GUARD",
+      "classification": "adaptation",
+      "reason": "Use original evasive defense, preserving the BAG2 guard-state event.",
+      "required_events": [
+        [
+          1,
+          1,
+          902
+        ]
+      ]
+    },
+    {
+      "target": 77,
+      "source": 64,
+      "name": "REFLECT",
+      "classification": "adaptation",
+      "reason": "Use the original counter-swing without launching an attack; retain reflection event.",
+      "required_events": [
+        [
+          1,
+          1,
+          903
+        ]
+      ]
+    },
+    {
+      "target": 78,
+      "source": 69,
+      "name": "TIRED",
+      "classification": "equivalent",
+      "reason": "Original BAG1 TIRED; request IDs differ between games."
+    },
+    {
+      "target": 79,
+      "source": 66,
+      "name": "MISS1",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 80,
+      "source": 67,
+      "name": "MISS2",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 81,
+      "source": 68,
+      "name": "MISS3",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 82,
+      "source": 66,
+      "name": "MISS4",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 83,
+      "source": 67,
+      "name": "MISS5",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 84,
+      "source": 68,
+      "name": "MISS6",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    }
+  ],
+  "native_transitions": [
+    [
+      5,
+      6,
+      3,
+      3
+    ],
+    [
+      9,
+      10,
+      5,
+      6
+    ],
+    [
+      11,
+      12,
+      7,
+      7
+    ],
+    [
+      15,
+      16,
+      9,
+      10
+    ],
+    [
+      17,
+      18,
+      11,
+      12
+    ],
+    [
+      19,
+      20,
+      13,
+      13
+    ],
+    [
+      23,
+      24,
+      15,
+      16
+    ],
+    [
+      25,
+      26,
+      17,
+      18
+    ],
+    [
+      27,
+      28,
+      19,
+      20
+    ],
+    [
+      29,
+      30,
+      21,
+      21
+    ],
+    [
+      33,
+      34,
+      23,
+      24
+    ],
+    [
+      35,
+      36,
+      25,
+      26
+    ],
+    [
+      37,
+      38,
+      27,
+      28
+    ],
+    [
+      39,
+      40,
+      29,
+      30
+    ],
+    [
+      41,
+      42,
+      31,
+      31
+    ]
+  ],
+  "alternate_edges": [
+    {
+      "normal_slot": 19,
+      "slot": 20,
+      "previous_slot": 11
+    },
+    {
+      "normal_slot": 17,
+      "slot": 18,
+      "previous_slot": 10
+    },
+    {
+      "normal_slot": 15,
+      "slot": 16,
+      "previous_slot": 9
+    },
+    {
+      "normal_slot": 13,
+      "slot": 14,
+      "previous_slot": 8
+    },
+    {
+      "normal_slot": 34,
+      "slot": 35,
+      "previous_slot": 26
+    },
+    {
+      "normal_slot": 32,
+      "slot": 33,
+      "previous_slot": 25
+    },
+    {
+      "normal_slot": 30,
+      "slot": 31,
+      "previous_slot": 24
+    },
+    {
+      "normal_slot": 28,
+      "slot": 29,
+      "previous_slot": 23
+    },
+    {
+      "normal_slot": 43,
+      "slot": 44,
+      "previous_slot": 39
+    },
+    {
+      "normal_slot": 41,
+      "slot": 42,
+      "previous_slot": 38
+    }
+  ],
+  "input_evidence": [
+    {
+      "file": "_work/bag1/scus.bin",
+      "sha256": "46cf25699eccd91057c61fe3c68ccd708e2c2c6ea348593e6c7b3ce3171b61c9"
+    },
+    {
+      "file": "_work/mainexe/slpm.bin",
+      "sha256": "143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b"
+    },
+    {
+      "file": "_work/bag1_assets/heat/PLAYER2_P_HEATA2/001.bin",
+      "sha256": "1edf074381ffd6e878037ae28c987e4c33bd42ec470499c2702dea47803bdc9e"
+    },
+    {
+      "file": "assets/archive/characters/heat/model_a_p1/001.bin",
+      "sha256": "0bb2e3b35b551cfdaaf49b3a637310b7af56b9ab8cdf260dc95325ab950698ad"
+    }
+  ]
+}

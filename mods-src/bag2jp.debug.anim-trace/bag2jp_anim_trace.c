@@ -1,6 +1,8 @@
 /* Animation trace (debug only, env BAG2JP_ANIM_TRACE=1): logs each dancer's current model anim index
  * (dancer + 0x154C), the last motion request code (0x8005CF22 + p*0x24) and the match phase
  * (0x8005D3D8/DC/E0, fever type 0x8005E6C0) to bag2jp_anim_trace.log whenever one changes.
+ * Env BAG2JP_TEST_DANCE_VIEW_CHAR=0..13 temporarily enables that character in Dance View
+ * (requires BAG2JP_ANIM_TRACE=1; use isolated test cards, never save test unlocks).
  * Env BAG2JP_RAM_DUMP=n writes main RAM (2 MB) at trace frame n.
  * Env BAG2JP_CPU_SKILL=n keeps the CPU skill byte at n (n >= 140: the CPU attacks whenever it can).
  * Env BAG2JP_AUDIO_DUMP=1 records the final audio mix (44.1 kHz stereo, after XA/CD/SPU mixing and
@@ -65,6 +67,17 @@ static void at_vblank(void) {
             if (!s_log) s_on = 0;
         }
     }
+    /* Test-only native viewer access; never active during a normal launch. */
+    static int view_char = -2;
+    if (view_char == -2) {
+        const char* value = getenv("BAG2JP_TEST_DANCE_VIEW_CHAR"); char* end = NULL;
+        long parsed = value && *value ? strtol(value, &end, 10) : -1;
+        view_char = (value && *value && end && !*end && parsed >= 0 && parsed < 14) ? (int)parsed : -1;
+    }
+    if (s_on && view_char >= 0 && psx_mod_read_word(0x8004E2D8u) == 0x54535542u &&
+        psx_mod_read_word(0x8004E2DCu) == 0x4D5F415Fu &&
+        psx_mod_read_byte(0x8004E2F7u + (uint32_t)view_char) == 0)
+        psx_mod_write_byte(0x8004E2F7u + (uint32_t)view_char, 1);
     if (s_skill == -1) { const char* k = getenv("BAG2JP_CPU_SKILL"); s_skill = (k && *k) ? atoi(k) : -2; }
     if (s_skill >= 0 && psx_mod_read_byte(0x8005E661u) != (uint32_t)s_skill) psx_mod_write_byte(0x8005E661u, (uint8_t)s_skill);
     if (s_dump_at == -1) { const char* k = getenv("BAG2JP_RAM_DUMP"); s_dump_at = (k && *k) ? atol(k) : -2; }

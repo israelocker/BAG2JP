@@ -136,6 +136,8 @@ uint32_t bag2jp_bag1_content_id(void) {
     uint32_t h = 2166136261u;
     const uint8_t* d = (const uint8_t*)b1_alt_entries;
     for (unsigned i = 0; i < sizeof b1_alt_entries; ++i) { h ^= d[i]; h *= 16777619u; }
+    /* Animation/content bytes must agree even when archive sizes remain equal. */
+    h ^= B1_ALT_CONTENT_TAG; h *= 16777619u;
     /* WIN1: BAG1 Heat now retains the stock victory-name cue; its wait affects result timing. */
     h ^= 0x57494E31u; h *= 16777619u;
     /* Menus relay pad changes: peers must agree on the expanded stage order too. */

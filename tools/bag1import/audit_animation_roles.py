@@ -18,7 +18,9 @@ args = parser.parse_args()
 root = args.project
 sys.path.insert(0, str(root / "tools/bag1import"))
 from animlib import anim_list, dfs_entries, frames, info
-from anim_remap import fix_events, mute_voices, build, EMPTY
+from anim_remap import fix_events, mute_voices, build, EMPTY, POLICY
+from animation_policy import adapt_events
+policy_roles = {row["target"]: row for row in POLICY["roles"]}
 from rebase_cues import rebase_events, b1_cue_base
 
 def sha(data):
@@ -121,7 +123,7 @@ for attack in converted:
 slots = []
 for slot, animation in enumerate(models[95]):
     matches = [index for index, original in enumerate(converted[slot == 74])
-               if original == animation]
+               if (adapt_events(original, policy_roles[slot]) if slot in policy_roles else original) == animation]
     row = {"slot": slot, "bag1_indices": matches,
            "bag1_labels": [name for i in matches for name in source_names[i]],
            "all_four_identical": all(model[slot] == animation for model in models.values()),
@@ -183,6 +185,9 @@ for label in b2labels:
         row["status"] = "wrong_role" if "TIRED" in actual else "adaptation"
     else:
         row["status"] = "adapted_grid"
+    if slot in policy_roles:
+        row["adaptation"] = policy_roles[slot]
+        if policy_roles[slot]["classification"] == "adaptation": row["status"] = "documented_adaptation"
     stock = stock_model[slot] if slot < 101 else stock_solo[slot-101]
     row["stock"] = metadata(stock)
     if row["empty"] and stock == EMPTY:

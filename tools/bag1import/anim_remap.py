@@ -2,8 +2,8 @@
 (84 anims), plus the fever-time list (choreography_a/000.bin) from BAG1's fever anims.
 
 Request codes and role names differ between games. audit_animation_roles.py compares both
-Dance View tables with the installed animation bytes. ROLES below still contains documented legacy
-substitutions (including TIRED/GUARD/REFLECT); see notes/bag1-character.md before regenerating assets.
+Dance View tables with the installed animation bytes. The data policy in profiles/heat-animation-policy.json overrides legacy ROLES entries
+with documented exact matches/adaptations and required target events.
 Dance moves (requests 1-42): see the grid notes below.
 
 Anim events (info block after the channel data, records of u16 type, frame, value):
@@ -14,6 +14,9 @@ Effect values 1-6 are hand-mesh swaps; BAG2 Heat's handler uses the same hand bo
 usage: anim_remap.py <bag1 001.bin> <out model 001.bin> <bag2 choreography_a 000.bin> <out choreography 000.bin>
 """
 import struct, sys, os
+from pathlib import Path
+from animation_policy import load_policy, native_variant, adapt_events
+POLICY = load_policy(Path(__file__).with_name("profiles") / "heat-animation-policy.json", Path(__file__).resolve().parents[2])
 sys.path.insert(0, os.path.dirname(__file__))
 from animlib import anim_list, frames, info
 from rebase_cues import rebase_events, b1_cue_base
@@ -81,6 +84,8 @@ def dance_slots():
             if slot in B2_ALT:                                 # entered by level-up from (L-1, s-1)
                 ps0, prow = B2_ROWS[L - 1]
                 slots[B2_ALT[slot]] = b1_anim(path[i], B1_PATHS[L - 1][s - 1 - ps0])
+    for edge in POLICY["alternate_edges"]:
+        slots[edge["slot"]] = native_variant(slots[edge["normal_slot"]], slots[edge["previous_slot"]], POLICY["native_transitions"])
     return slots
 
 def fix_events(d, attack=False):
@@ -110,6 +115,10 @@ def mute_voices(d, lo=0x1000, hi=0x2000):
 def build(b1):
     slots = dance_slots()
     slots.update(ROLES)
+    if any(not 0 <= row["target"] < 101 or not 0 <= row["source"] < len(b1) for row in POLICY["roles"]):
+        raise ValueError("Animation role outside source/target list")
+    rules = {row["target"]: row for row in POLICY["roles"]}
+    slots.update({slot: row["source"] for slot, row in rules.items()})
     out = bytearray(); used = {}
     for i in range(101):
         if i in (1, 97):
@@ -117,6 +126,7 @@ def build(b1):
         else:
             src = slots[i]; used[i] = src
             data = rebase_events(fix_events(b1[src], attack=(i == 74)), 0x1000, b1_cue_base(CHAR_ID), 0x100)
+            if i in rules: data = adapt_events(data, rules[i])
         out += struct.pack('<I', len(data)) + data
     out += b'\x00' * 4
     return bytes(out), used
