@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "character": "heat",
-  "status": "experimental",
+  "status": "accepted_local",
   "roles": [
     {
       "target": 67,
@@ -258,5 +258,14 @@
       "file": "assets/archive/characters/heat/model_a_p1/001.bin",
       "sha256": "0bb2e3b35b551cfdaaf49b3a637310b7af56b9ab8cdf260dc95325ab950698ad"
     }
-  ]
+  ],
+  "acceptance": {
+    "date": "2026-10-31",
+    "visual": "owner_approved",
+    "combat": "real_inputs_verified",
+    "local_mixed_vs": "full_match_and_solo_fever_verified",
+    "remote_online": "pending",
+    "evidence": "_work/mixed-defense-test/proof/combat.json",
+    "evidence_sha256": "f9b24581a38ea16f4de387d6fb4b8730db5e9b7c171e6a9ab1410f786f8575eb"
+  }
 }
