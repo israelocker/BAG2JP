@@ -168,3 +168,13 @@
   index, repeated with pings): different content on the two PCs -> BAG2 versions only on both + toast.
   Verified with two copies on one PC (bag2_two.ps1 -BFocusAlways, LAN): picks sent/received, same
   entry switches and mirror decision on both, identical dance screens (P1 BAG2 B vs P2 BAG1 B).
+
+## Heat victory announcer and popup feedback (2026-10-31)
+- Victory names: JP main-exe table 0x80051424, Heat cue 0x1007. Match sys/005 phase 1/4 calls it on slot 14, then generic 0x100 (win). BAG1 voices had been rebased to 0x6000..6007, leaving the name absent.
+- Character SEDT loading calls FUN_8002E08C with bank index 0; a second bank is not loaded. preserve_announcer.py merges just the stock name program/tones/ADPCM sample into the existing VAB, preserving BAG1 cues. This is opt-in for Heat in build_heat_test.sh; characters without a shared BAG2 name keep the generic announcement.
+- restore_heat_winner.py audits the four current alternate voice packs (entries 59/60/131/132), requires the manifest payload hash, and can rebuild with --apply. Payload fits its existing slots; manifest line endings are preserved.
+- WIN1 contributes to the online content identity because a newly present name changes result timing. Older peers use the existing stock fallback; no fresh two-PC test yet.
+- Popup: original sys/007 confirm sound 0x201, navigation 0x200, cancel 0x202. Queue from pad filters; drain at guarded function entry 0x80090258 (word 0x27BDFFD8), calling 0x8002E478 through psx_mod_call_guest. Guest calls are not made from instruction callbacks.
+- Opening uses the difficulty menu's eight-frame vertical unfold and a short +/-2-pixel horizontal shake. Captured both players; cue callbacks returned valid slots, cancel/reopen and selection worked. Captures: outputs/heat-popup-opening.gif in the Codex work folder.
+- Unit command: py -3.13 tools/test/test_heat_announcer.py (five tests; same bank 0, original voices and original victory clip, all costumes/sides). Selector regression also checks the changed content identity.
+- Fresh 2P test after bank-0 merge: both Heat BAG1 A/B, BAG1 stage/CD 2Bad. P2 wins; slot 14 requests 0x1007 at f12322 with a valid VAB handle, followed by generic 0x100. Dance f5642..12238; fever type 1 f12755..13799; return to selection f13801. The separate-bank attempt was rejected because it did not load the name. Settings/keybinds/mod state restored; personal cards verified unchanged.

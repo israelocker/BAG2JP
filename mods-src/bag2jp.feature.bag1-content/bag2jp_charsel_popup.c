@@ -58,13 +58,14 @@ void bag2jp_netsync_send_pick(int side, int chr, int version);
 
 enum { P_IDLE, P_OPEN, P_REPLAY, P_SWALLOW };
 typedef struct {
-    int phase, chr, side, row, version, costume, has_version, replay_t;
+    int phase, chr, side, row, version, costume, has_version, replay_t, open_t;
     uint32_t replay_btn, prev;
 } CsPopup;
 static CsPopup s_pop[2];
 static int s_enabled;
 static char s_dir[1024];
 static atomic_int s_dirty, s_visible;
+static atomic_uint s_pending_sfx;
 
 static FILE* s_logf;
 static void cs_log(const char* fmt, ...) {
@@ -88,6 +89,8 @@ static uint8_t s_glyph[96][3], s_glyph_h;
 static int s_have_glyphs;
 static uint32_t* s_canvas;
 static CsPopup s_draw[2];                   /* snapshot for the render thread */
+static int s_popup_transform, s_popup_dx;
+static double s_popup_scale, s_popup_center; /* render-thread-only opening transform */
 
 static int cs_load_png(const char* name, CsImg* im) {
     char p[1200]; snprintf(p, sizeof p, "%s/%s", s_dir, name);
@@ -108,6 +111,13 @@ static CsImg* cs_font(int selected) {
     return im->px ? im : NULL;
 }
 static void cv_blend(uint32_t* o, unsigned r, unsigned g, unsigned b, double a) {
+    if (s_popup_transform) {
+        const size_t pos = (size_t)(o - s_canvas);
+        const int x = (int)(pos % CV_W) + s_popup_dx;
+        const int y = (int)(s_popup_center + ((int)(pos / CV_W) - s_popup_center) * s_popup_scale + 0.5);
+        if (x < 0 || x >= CV_W || y < 0 || y >= CV_H) return;
+        o = &s_canvas[y * CV_W + x];
+    }
     const double oa = ((*o >> 24) & 255) / 255.0, na = a + oa * (1 - a);
     if (na <= 0) return;
     const unsigned orr = (*o >> 16) & 255, og = (*o >> 8) & 255, ob = *o & 255;
@@ -193,6 +203,12 @@ static void cs_compose_one(const CsPopup* p) {
     const double w = 150, x0 = p->side ? 512 - 6 - w : 6, x1 = x0 + w, k = 0.6;
     const int rows = p->has_version ? 2 : 1;
     const double row_h = s_glyph_h * k + 8, top = 92, y0 = top - 26, y1 = top + rows * row_h + 20;
+    /* Difficulty unfolds vertically over eight game frames; add the short metal-impact shake. */
+    static const int shake[8] = {0, -2, 2, -1, 1, -1, 1, 0};
+    s_popup_transform = p->open_t < 8;
+    s_popup_scale = (p->open_t + 1) / 8.0;
+    s_popup_center = (y0 + y1) * 0.5 * CV_SY;
+    s_popup_dx = s_popup_transform ? (int)(shake[p->open_t] * CV_SX) : 0;
     cv_round_rect(x0 + 3, y0 + 3, x1 + 3, y1 + 3, 6, 0x90303848u);       /* shadow */
     cv_round_rect(x0, y0, x1, y1, 6, 0xFFF2F2F2u);
     cv_text(p->side ? "PLAYER 2" : "PLAYER 1", x0 + 9, y0 + 6, 1, 0.85);
@@ -208,6 +224,7 @@ static void cs_compose_one(const CsPopup* p) {
         if (sel) { cv_tri(vc - vw / 2 - 7, cy, 2.6, 0, 0xFFD85840u); cv_tri(vc + vw / 2 + 7, cy, 2.6, 1, 0xFFD85840u); }
     }
     cv_text("O OK  X BACK", x0 + 9, y1 - 14, 0, 0.58);
+    s_popup_transform = 0;
 }
 #include "bag2jp_stage_select.inc"
 
@@ -243,6 +260,18 @@ static void cs_publish(void) {
     atomic_store(&s_visible, s_pop[0].phase == P_OPEN || s_pop[1].phase == P_OPEN);
     atomic_store(&s_dirty, 1);
 }
+static void cs_queue_sfx(unsigned cue) {
+    if (cue >= 0x200u && cue <= 0x202u) atomic_fetch_or(&s_pending_sfx, 1u << (cue - 0x200u));
+}
+/* Function-entry callback: guest calls are forbidden from instruction/pad callbacks. */
+static void cs_feedback_hook(struct CPUState* cpu, uint32_t address) {
+    const unsigned pending = atomic_exchange(&s_pending_sfx, 0);
+    if (!s_enabled || !cs_screen_active() || psx_mod_read_word(address) != 0x27BDFFD8u) return;
+    for (unsigned i = 0; i < 3; ++i) if (pending & (1u << i)) {
+        const uint32_t slot = psx_mod_call_guest(cpu, 0x8002E478u, address, 0x200u + i, ~0u, ~0u, ~0u);
+        cs_log("feedback: cue %04x slot %d", 0x200u + i, (int32_t)slot);
+    }
+}
 static void cs_neutral(PSXModPadOutput* out, uint32_t buttons) {
     out->buttons = buttons; out->type = PSX_MOD_PAD_DIGITAL;
     out->lx = out->ly = out->rx = out->ry = 0x80;
@@ -266,7 +295,8 @@ static int cs_run(int side, const PSXModPadFrame* in, PSXModPadOutput* out) {
         p->version = bag2jp_bag1_get_version(idx, p->side);
         /* Triangle (or Select/Start + Circle) is the game's own costume B shortcut: start there */
         p->costume = (press & B_TRI) || (down & 0x0009u) ? 1 : 0;
-        p->row = 0; p->phase = P_OPEN;
+        p->row = 0; p->open_t = 0; p->phase = P_OPEN;
+        cs_queue_sfx(0x201u);
         cs_log("open: side %d char %d (bag1 version %d, current %d)", p->side, idx, p->has_version, p->version);
         cs_publish();
         cs_neutral(out, 0xFFFFu); return 1;
@@ -274,9 +304,10 @@ static int cs_run(int side, const PSXModPadFrame* in, PSXModPadOutput* out) {
     if (p->phase == P_OPEN) {
         const int rows = p->has_version ? 2 : 1;
         if (!cs_screen_active()) { p->phase = P_SWALLOW; cs_publish(); }
-        else if (press & (B_UP | B_DOWN)) p->row = (p->row + 1) % rows;
+        else if (press & (B_UP | B_DOWN)) { p->row = (p->row + 1) % rows; cs_queue_sfx(0x200u); }
         else if (press & (B_LEFT | B_RIGHT)) {
             if (p->has_version && p->row == 0) p->version ^= 1; else p->costume ^= 1;
+            cs_queue_sfx(0x200u);
         } else if (press & B_CIRCLE) {
             if (p->has_version) {
                 bag2jp_bag1_set_version(p->chr, p->side, p->version);
@@ -286,7 +317,7 @@ static int cs_run(int side, const PSXModPadFrame* in, PSXModPadOutput* out) {
             p->replay_t = 0; p->phase = P_REPLAY;
             cs_log("confirm: side %d char %d version %s costume %c", p->side, p->chr,
                    p->has_version ? (p->version ? "BAG1" : "BAG2") : "-", p->costume ? 'B' : 'A');
-        } else if (press & B_CROSS) { p->phase = P_SWALLOW; cs_log("cancel: side %d", p->side); }
+        } else if (press & B_CROSS) { p->phase = P_SWALLOW; cs_queue_sfx(0x202u); cs_log("cancel: side %d", p->side); }
         if (press) cs_publish();
         cs_neutral(out, 0xFFFFu); return 1;
     }
@@ -355,6 +386,9 @@ static void cs_mirror_hook(struct CPUState* cpu, uint32_t address) {
 
 static void cs_vblank(void) {
     cs_stage_vblank();
+    for (int i = 0; i < 2; ++i) if (s_pop[i].phase == P_OPEN && s_pop[i].open_t < 8) {
+        ++s_pop[i].open_t; cs_publish();
+    }
     /* close any popup left open when the screen goes away */
     if (!s_enabled || (s_pop[0].phase != P_OPEN && s_pop[1].phase != P_OPEN) || cs_screen_active()) return;
     for (int i = 0; i < 2; ++i) if (s_pop[i].phase == P_OPEN) s_pop[i].phase = P_SWALLOW;
@@ -362,6 +396,7 @@ static void cs_vblank(void) {
 }
 static void cs_activate(void) {
     memset(s_pop, 0, sizeof s_pop);
+    atomic_store(&s_pending_sfx, 0);
     if (psx_mod_current_resource_path("popup_assets", s_dir, sizeof s_dir) <= 0) s_dir[0] = 0;
     s_enabled = 1;
     cs_stage_activate();
@@ -370,12 +405,13 @@ static void cs_activate(void) {
     cs_publish();
     cs_log("activate: assets '%s', pad transforms %d %d", s_dir, a, b);
 }
-static void cs_reset(void) { s_enabled = 0; atomic_store(&s_visible, 0); cs_stage_publish((CsStageView){0}); }
+static void cs_reset(void) { atomic_store(&s_pending_sfx, 0); s_enabled = 0; atomic_store(&s_visible, 0); cs_stage_publish((CsStageView){0}); }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_charsel_popup) {
     (void)psx_mod_register_activation_plugin("bag2jp.charsel_popup", cs_activate);
     (void)psx_mod_register_session_reset_plugin("bag2jp.charsel_popup", cs_reset);
     (void)psx_mod_register_vblank_plugin("bag2jp.charsel_popup", cs_vblank);
+    (void)psx_mod_register_function_entry_plugin("bag2jp.charsel_popup", 0x80090258u, cs_feedback_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", CS_MIRROR_SB, CS_MIRROR_W, cs_mirror_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x800917A8u, 0x00531021u, cs_stage_random_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x80093DB0u, 0x145E0002u, cs_stage_name_hook);

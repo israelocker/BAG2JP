@@ -136,6 +136,8 @@ uint32_t bag2jp_bag1_content_id(void) {
     uint32_t h = 2166136261u;
     const uint8_t* d = (const uint8_t*)b1_alt_entries;
     for (unsigned i = 0; i < sizeof b1_alt_entries; ++i) { h ^= d[i]; h *= 16777619u; }
+    /* WIN1: BAG1 Heat now retains the stock victory-name cue; its wait affects result timing. */
+    h ^= 0x57494E31u; h *= 16777619u;
     /* Menus relay pad changes: peers must agree on the expanded stage order too. */
     if (bag2jp_stage_select_enabled()) { h ^= 0x53544731u; h *= 16777619u; }
     return h ? h : 1;

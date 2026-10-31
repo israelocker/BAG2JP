@@ -26,6 +26,9 @@ for o in a b; do
   # Its cue ids move from 0x1000 to the BAG1 range 0x6000 (rebase_cues.py; the anims are rebased too).
   python3 $T/rebase_cues.py $S/PLAYER1E_P_HEATA1/007.sedt $A/pack_${o}_p1/005.sedt 1000 6000
   python3 $T/rebase_cues.py $S/PLAYER1E_P_HEATA1/007.sedt $A/pack_${o}_p2/004.sedt 1000 6000
+  # Heat exists in both games: retain BAG2's victory name cue alongside rebased BAG1 voices.
+  python3 $T/preserve_announcer.py $A/pack_${o}_p1/005.sedt $B/pack_${o}_p1/005.sedt $A/pack_${o}_p1/005.sedt --cue 1007
+  python3 $T/preserve_announcer.py $A/pack_${o}_p2/004.sedt $B/pack_${o}_p2/004.sedt $A/pack_${o}_p2/004.sedt --cue 1007
   touch $A/pack_${o}_p1/_force_layout $A/pack_${o}_p2/_force_layout   # exact entry sizes for the shrunk SEDTs
 done
 # textures: BAG1 pages 004/005/006 -> BAG2 slots in order, at the BAG2 VRAM spots; BAG2 name label kept

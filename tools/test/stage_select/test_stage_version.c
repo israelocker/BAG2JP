@@ -20,6 +20,9 @@ int main(void) {
  b1v_force_stock=0;stage_version(-1);assert(b1v_wanted(&stage)==0);
  b1v_version[0][0]=1;assert(b1v_wanted(&stage)==1);
  b1v_active=1;stage_select_enabled=0;uint32_t legacy=bag2jp_bag1_content_id();
+ uint32_t old_id=2166136261u;const uint8_t* old_data=(const uint8_t*)b1_alt_entries;
+ for(unsigned i=0;i<sizeof b1_alt_entries;++i){old_id^=old_data[i];old_id*=16777619u;}
+ assert(legacy!=old_id); /* changed voice payload must reject older peers even with the same index */
  stage_select_enabled=1;assert(bag2jp_bag1_content_id()!=legacy);
  b1v_force_stock=1;assert(bag2jp_bag1_content_id()!=legacy);
  puts("PASS: independent stage choice, character unchanged, stock fallback, legacy auto and online menu identity");

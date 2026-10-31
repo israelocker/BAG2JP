@@ -115,6 +115,6 @@ feature = "bag1-heat"
 target = "disc_user"
 offset = 458823680
 file = "payload/bag1_alt.bin"
-sha256 = "d22d26e298abad6f16442aae99bc906ec24cfa51a47508c2523c47e0936cb398"
+sha256 = "1f4c72991a69465e005b106bbbbc630ce9d0a735e68c6ff74778495bdf865f50"
 expected_sha256 = "c9f38b5727de35577ac94caded4441f23bcae129df65e9a7723e8eef826eff3c"
 
