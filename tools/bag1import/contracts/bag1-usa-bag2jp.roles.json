@@ -1,0 +1,804 @@
+{
+  "schema": 1,
+  "scope": "nominal base dispatch; character-dependent branches require verification",
+  "games": {
+    "bag1-usa": {
+      "inputs": [
+        {
+          "file": "_work/bag1/scus.bin",
+          "sha256": "46cf25699eccd91057c61fe3c68ccd708e2c2c6ea348593e6c7b3ce3171b61c9"
+        },
+        {
+          "file": "_work/bag1_disc/BIN1/VIEW.DBI",
+          "sha256": "51c49bf2135c9ed672ad412cc6a7aed8bfaed22c85e6bf594a1ec48cef608d9f"
+        }
+      ],
+      "roles": [
+        {
+          "name": "NEUTRAL",
+          "request": 0,
+          "nominal_slot": 0
+        },
+        {
+          "name": "A",
+          "request": 1,
+          "nominal_slot": 1
+        },
+        {
+          "name": "B",
+          "request": 2,
+          "nominal_slot": 2
+        },
+        {
+          "name": "C",
+          "request": 3,
+          "nominal_slot": 3
+        },
+        {
+          "name": "D",
+          "request": 4,
+          "nominal_slot": 4
+        },
+        {
+          "name": "E",
+          "request": 5,
+          "nominal_slot": 5
+        },
+        {
+          "name": "F",
+          "request": 6,
+          "nominal_slot": 7
+        },
+        {
+          "name": "G",
+          "request": 7,
+          "nominal_slot": 8
+        },
+        {
+          "name": "H",
+          "request": 8,
+          "nominal_slot": 9
+        },
+        {
+          "name": "I",
+          "request": 9,
+          "nominal_slot": 11
+        },
+        {
+          "name": "J",
+          "request": 10,
+          "nominal_slot": 13
+        },
+        {
+          "name": "K",
+          "request": 11,
+          "nominal_slot": 14
+        },
+        {
+          "name": "L",
+          "request": 12,
+          "nominal_slot": 15
+        },
+        {
+          "name": "M",
+          "request": 13,
+          "nominal_slot": 17
+        },
+        {
+          "name": "N",
+          "request": 14,
+          "nominal_slot": 19
+        },
+        {
+          "name": "O",
+          "request": 15,
+          "nominal_slot": 21
+        },
+        {
+          "name": "P",
+          "request": 16,
+          "nominal_slot": 22
+        },
+        {
+          "name": "Q",
+          "request": 17,
+          "nominal_slot": 23
+        },
+        {
+          "name": "R",
+          "request": 18,
+          "nominal_slot": 25
+        },
+        {
+          "name": "S",
+          "request": 19,
+          "nominal_slot": 27
+        },
+        {
+          "name": "T",
+          "request": 20,
+          "nominal_slot": 29
+        },
+        {
+          "name": "U",
+          "request": 21,
+          "nominal_slot": 31
+        },
+        {
+          "name": "V",
+          "request": 22,
+          "nominal_slot": 32
+        },
+        {
+          "name": "W",
+          "request": 23,
+          "nominal_slot": 33
+        },
+        {
+          "name": "X",
+          "request": 24,
+          "nominal_slot": 35
+        },
+        {
+          "name": "Y",
+          "request": 25,
+          "nominal_slot": 37
+        },
+        {
+          "name": "Z",
+          "request": 26,
+          "nominal_slot": 39
+        },
+        {
+          "name": "ZZ",
+          "request": 27,
+          "nominal_slot": 41
+        },
+        {
+          "name": "ZZZ",
+          "request": 28,
+          "nominal_slot": 43
+        },
+        {
+          "name": "FINISH1",
+          "request": 29,
+          "nominal_slot": 44
+        },
+        {
+          "name": "FINISH2",
+          "request": 30,
+          "nominal_slot": 45
+        },
+        {
+          "name": "FINISH3",
+          "request": 31,
+          "nominal_slot": 46
+        },
+        {
+          "name": "FINISH4",
+          "request": 32,
+          "nominal_slot": 47
+        },
+        {
+          "name": "FINISH5",
+          "request": 33,
+          "nominal_slot": 48
+        },
+        {
+          "name": "FINISH6",
+          "request": 34,
+          "nominal_slot": 49
+        },
+        {
+          "name": "FINISH7",
+          "request": 35,
+          "nominal_slot": 50
+        },
+        {
+          "name": "SOLO_4_A",
+          "request": 50,
+          "nominal_slot": 51
+        },
+        {
+          "name": "SOLO_4_B",
+          "request": 60,
+          "nominal_slot": 52
+        },
+        {
+          "name": "SOLO_4_C",
+          "request": 70,
+          "nominal_slot": 53
+        },
+        {
+          "name": "SOLO_8_A",
+          "request": 51,
+          "nominal_slot": 54
+        },
+        {
+          "name": "SOLO_8_B",
+          "request": 61,
+          "nominal_slot": 55
+        },
+        {
+          "name": "SOLO_8_C",
+          "request": 71,
+          "nominal_slot": 56
+        },
+        {
+          "name": "SOLO_16_A",
+          "request": 52,
+          "nominal_slot": 57
+        },
+        {
+          "name": "SOLO_16_B",
+          "request": 62,
+          "nominal_slot": 58
+        },
+        {
+          "name": "SOLO_16_C",
+          "request": 72,
+          "nominal_slot": 59
+        },
+        {
+          "name": "WAIT",
+          "request": 106,
+          "nominal_slot": 60
+        },
+        {
+          "name": "WALK",
+          "request": 100,
+          "nominal_slot": 61
+        },
+        {
+          "name": "INDIVIDUAL",
+          "request": 105,
+          "nominal_slot": 62
+        },
+        {
+          "name": "ATTACK1",
+          "request": 110,
+          "nominal_slot": 63
+        },
+        {
+          "name": "ATTACK2",
+          "request": 111,
+          "nominal_slot": 64
+        },
+        {
+          "name": "DODGE",
+          "request": 170,
+          "nominal_slot": 65
+        },
+        {
+          "name": "HIT1",
+          "request": 120,
+          "nominal_slot": 66
+        },
+        {
+          "name": "HIT2",
+          "request": 121,
+          "nominal_slot": 67
+        },
+        {
+          "name": "HIT3",
+          "request": 122,
+          "nominal_slot": 68
+        },
+        {
+          "name": "TIRED",
+          "request": 124,
+          "nominal_slot": 69
+        },
+        {
+          "name": "CAUGHT",
+          "request": 123,
+          "nominal_slot": 70
+        },
+        {
+          "name": "DOWN1",
+          "request": 200,
+          "nominal_slot": 71
+        },
+        {
+          "name": "DOWN2",
+          "request": 201,
+          "nominal_slot": 73
+        },
+        {
+          "name": "DOWN3",
+          "request": 202,
+          "nominal_slot": 75
+        },
+        {
+          "name": "WIN1",
+          "request": 140,
+          "nominal_slot": 77
+        },
+        {
+          "name": "WIN2",
+          "request": 141,
+          "nominal_slot": 78
+        },
+        {
+          "name": "WIN3",
+          "request": 142,
+          "nominal_slot": 79
+        },
+        {
+          "name": "LOSE1",
+          "request": 150,
+          "nominal_slot": 80
+        },
+        {
+          "name": "LOSE2",
+          "request": 151,
+          "nominal_slot": 81
+        },
+        {
+          "name": "FEVER1",
+          "request": 160,
+          "nominal_slot": 82
+        },
+        {
+          "name": "FEVER2",
+          "request": 161,
+          "nominal_slot": 83
+        }
+      ]
+    },
+    "bag2-jp": {
+      "inputs": [
+        {
+          "file": "_work/mainexe/slpm.bin",
+          "sha256": "143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b"
+        },
+        {
+          "file": "assets/archive/system/008.dbi",
+          "sha256": "6a4015d389aae7e72f741f6e07865e989923613d4035cd81ac2178421d7d61ad"
+        }
+      ],
+      "roles": [
+        {
+          "name": "NEUTRAL",
+          "request": 0,
+          "nominal_slot": 0
+        },
+        {
+          "name": "A",
+          "request": 23,
+          "nominal_slot": 2
+        },
+        {
+          "name": "B",
+          "request": 17,
+          "nominal_slot": 3
+        },
+        {
+          "name": "C",
+          "request": 11,
+          "nominal_slot": 4
+        },
+        {
+          "name": "D",
+          "request": 5,
+          "nominal_slot": 5
+        },
+        {
+          "name": "E",
+          "request": 1,
+          "nominal_slot": 6
+        },
+        {
+          "name": "F",
+          "request": 24,
+          "nominal_slot": 7
+        },
+        {
+          "name": "G",
+          "request": 18,
+          "nominal_slot": 8
+        },
+        {
+          "name": "H",
+          "request": 12,
+          "nominal_slot": 9
+        },
+        {
+          "name": "I",
+          "request": 6,
+          "nominal_slot": 10
+        },
+        {
+          "name": "J",
+          "request": 2,
+          "nominal_slot": 11
+        },
+        {
+          "name": "K",
+          "request": 31,
+          "nominal_slot": 12
+        },
+        {
+          "name": "L",
+          "request": 25,
+          "nominal_slot": 13
+        },
+        {
+          "name": "M",
+          "request": 19,
+          "nominal_slot": 15
+        },
+        {
+          "name": "N",
+          "request": 13,
+          "nominal_slot": 17
+        },
+        {
+          "name": "O",
+          "request": 7,
+          "nominal_slot": 19
+        },
+        {
+          "name": "P",
+          "request": 3,
+          "nominal_slot": 21
+        },
+        {
+          "name": "Q",
+          "request": 32,
+          "nominal_slot": 22
+        },
+        {
+          "name": "R",
+          "request": 26,
+          "nominal_slot": 23
+        },
+        {
+          "name": "S",
+          "request": 20,
+          "nominal_slot": 24
+        },
+        {
+          "name": "T",
+          "request": 14,
+          "nominal_slot": 25
+        },
+        {
+          "name": "U",
+          "request": 8,
+          "nominal_slot": 26
+        },
+        {
+          "name": "V",
+          "request": 37,
+          "nominal_slot": 27
+        },
+        {
+          "name": "W",
+          "request": 33,
+          "nominal_slot": 28
+        },
+        {
+          "name": "X",
+          "request": 27,
+          "nominal_slot": 30
+        },
+        {
+          "name": "Y",
+          "request": 21,
+          "nominal_slot": 32
+        },
+        {
+          "name": "Z",
+          "request": 15,
+          "nominal_slot": 34
+        },
+        {
+          "name": "AA",
+          "request": 9,
+          "nominal_slot": 36
+        },
+        {
+          "name": "BB",
+          "request": 38,
+          "nominal_slot": 37
+        },
+        {
+          "name": "CC",
+          "request": 34,
+          "nominal_slot": 38
+        },
+        {
+          "name": "DD",
+          "request": 28,
+          "nominal_slot": 39
+        },
+        {
+          "name": "EE",
+          "request": 41,
+          "nominal_slot": 40
+        },
+        {
+          "name": "FF",
+          "request": 39,
+          "nominal_slot": 41
+        },
+        {
+          "name": "GG",
+          "request": 35,
+          "nominal_slot": 43
+        },
+        {
+          "name": "HH",
+          "request": 29,
+          "nominal_slot": 45
+        },
+        {
+          "name": "FINISH1",
+          "request": 42,
+          "nominal_slot": 46
+        },
+        {
+          "name": "FINISH2",
+          "request": 40,
+          "nominal_slot": 47
+        },
+        {
+          "name": "FINISH3",
+          "request": 36,
+          "nominal_slot": 48
+        },
+        {
+          "name": "FINISH4",
+          "request": 30,
+          "nominal_slot": 49
+        },
+        {
+          "name": "FINISH5",
+          "request": 22,
+          "nominal_slot": 50
+        },
+        {
+          "name": "FINISH6",
+          "request": 16,
+          "nominal_slot": 51
+        },
+        {
+          "name": "FINISH7",
+          "request": 10,
+          "nominal_slot": 52
+        },
+        {
+          "name": "FINISH8",
+          "request": 4,
+          "nominal_slot": 53
+        },
+        {
+          "name": "SOLO_4_A",
+          "request": 50,
+          "nominal_slot": 54
+        },
+        {
+          "name": "SOLO_4_B",
+          "request": 51,
+          "nominal_slot": 55
+        },
+        {
+          "name": "SOLO_4_C",
+          "request": 52,
+          "nominal_slot": 56
+        },
+        {
+          "name": "SOLO_8_A",
+          "request": 60,
+          "nominal_slot": 57
+        },
+        {
+          "name": "SOLO_8_B",
+          "request": 61,
+          "nominal_slot": 58
+        },
+        {
+          "name": "SOLO_8_C",
+          "request": 62,
+          "nominal_slot": 59
+        },
+        {
+          "name": "SOLO_8_D",
+          "request": 63,
+          "nominal_slot": 60
+        },
+        {
+          "name": "SOLO_8_E",
+          "request": 64,
+          "nominal_slot": 61
+        },
+        {
+          "name": "SOLO_8_F",
+          "request": 65,
+          "nominal_slot": 62
+        },
+        {
+          "name": "SOLO_16_A",
+          "request": 70,
+          "nominal_slot": 63
+        },
+        {
+          "name": "SOLO_16_B",
+          "request": 71,
+          "nominal_slot": 64
+        },
+        {
+          "name": "SOLO_16_C",
+          "request": 72,
+          "nominal_slot": 65
+        },
+        {
+          "name": "SOLO_16_D",
+          "request": 73,
+          "nominal_slot": 66
+        },
+        {
+          "name": "POSE1",
+          "request": 101,
+          "nominal_slot": 67
+        },
+        {
+          "name": "POSE2",
+          "request": 102,
+          "nominal_slot": 68
+        },
+        {
+          "name": "MISS1",
+          "request": 124,
+          "nominal_slot": 79
+        },
+        {
+          "name": "MISS2",
+          "request": 125,
+          "nominal_slot": 80
+        },
+        {
+          "name": "MISS3",
+          "request": 126,
+          "nominal_slot": 81
+        },
+        {
+          "name": "MISS4",
+          "request": 127,
+          "nominal_slot": 82
+        },
+        {
+          "name": "MISS5",
+          "request": 128,
+          "nominal_slot": 83
+        },
+        {
+          "name": "MISS6",
+          "request": 129,
+          "nominal_slot": 84
+        },
+        {
+          "name": "WAIT",
+          "request": 106,
+          "nominal_slot": 71
+        },
+        {
+          "name": "INDIVIDUAL1",
+          "request": 103,
+          "nominal_slot": 72
+        },
+        {
+          "name": "INDIVIDUAL2",
+          "request": 104,
+          "nominal_slot": 73
+        },
+        {
+          "name": "ATTACK",
+          "request": 110,
+          "nominal_slot": 74
+        },
+        {
+          "name": "DODGE",
+          "request": 170,
+          "nominal_slot": 75
+        },
+        {
+          "name": "GUARD",
+          "request": 171,
+          "nominal_slot": 76
+        },
+        {
+          "name": "REFLECT",
+          "request": 172,
+          "nominal_slot": 77
+        },
+        {
+          "name": "TIRED",
+          "request": 123,
+          "nominal_slot": 78
+        },
+        {
+          "name": "DOWN1",
+          "request": 200,
+          "nominal_slot": 85
+        },
+        {
+          "name": "DOWN2",
+          "request": 201,
+          "nominal_slot": 87
+        },
+        {
+          "name": "DOWN3",
+          "request": 202,
+          "nominal_slot": 89
+        },
+        {
+          "name": "WIN1",
+          "request": 140,
+          "nominal_slot": 94
+        },
+        {
+          "name": "WIN2",
+          "request": 141,
+          "nominal_slot": 95
+        },
+        {
+          "name": "WIN3",
+          "request": 142,
+          "nominal_slot": 96
+        },
+        {
+          "name": "WIN4",
+          "request": 143,
+          "nominal_slot": 97
+        },
+        {
+          "name": "LOSE1",
+          "request": 150,
+          "nominal_slot": 98
+        },
+        {
+          "name": "LOSE2",
+          "request": 151,
+          "nominal_slot": 99
+        },
+        {
+          "name": "LOSE3",
+          "request": 152,
+          "nominal_slot": 100
+        },
+        {
+          "name": "FEVER1",
+          "request": 160,
+          "nominal_slot": 101
+        },
+        {
+          "name": "FEVER2",
+          "request": 161,
+          "nominal_slot": 102
+        },
+        {
+          "name": "FEVER3",
+          "request": 162,
+          "nominal_slot": 103
+        },
+        {
+          "name": "FEVER4",
+          "request": 163,
+          "nominal_slot": 104
+        },
+        {
+          "name": "FEVER5",
+          "request": 164,
+          "nominal_slot": 105
+        }
+      ]
+    }
+  },
+  "role_aliases": {
+    "ATTACK": "ATTACK1",
+    "INDIVIDUAL1": "INDIVIDUAL",
+    "INDIVIDUAL2": "INDIVIDUAL"
+  }
+}

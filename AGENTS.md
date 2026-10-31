@@ -33,3 +33,10 @@ The owner chose on 2026-10-30 to continue Claude's existing project workflow and
 - The same helper provides `build`, `test-stage-select` and `report --tag <tag>` with full logs and per-phase timings in `_work/workflow/`. Source/resource drift is diagnostic, not automatic synchronization.
 - Reuse a running process and its log. Do not repeat successful checks or reviews without relevant changes or new evidence; satisfy required hooks with the focused evidence already obtained.
 - Build reusable automation when it removes a demonstrated repeated step. Preserve the local Git, experimental deployment and in-game acceptance workflow above; measure improvements before claiming savings.
+
+## Shared character standard (owner requested 2026-10-31)
+- Follow notes/character-pipeline.md for every character. Route to bag-character-pipeline, bag-animation-matching and bag-reference-cache.
+- Keep engines and orchestration shared. Character profiles carry data/capabilities; only demonstrated, scoped exceptions may introduce an adapter. Never clone Heat's pipeline for another character.
+- Match meaning, beat timing, required events and predecessor transitions; unknown mappings remain unresolved. Track all source/target coverage and stock-empty/reused entries.
+- Reuse visual evidence only when motion, catalog, profile, runtime and evidence hashes match. Re-audit changed packages. Preserve the single-GPU schedule.
+- Distinguish configured rules, implemented tools, legacy Heat adapters and unimplemented general matching/graph optimization. Do not claim cross-character support without exercising a second profile.

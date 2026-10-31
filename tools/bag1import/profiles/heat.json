@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "character": "heat",
+  "source_character_id": 0,
+  "target_character_id": 0,
+  "stage": "inventory",
+  "source_animation_list": "_work/bag1_assets/heat/PLAYER2_P_HEATA2/001.bin",
+  "game_catalog": "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
+  "reference_runtime": "D:\\Dev\\Scratch\\bag1-native-reference\\BustAGroove_Recompiled.exe",
+  "capabilities": {
+    "shared_announcer_name": true
+  },
+  "exceptions": [
+    {
+      "id": "head-bone-binding",
+      "character": "heat",
+      "reason": "BAG1 Heat head/beanie binding differs from BAG2 Heat; preserve existing guarded legacy adapter.",
+      "status": "verified",
+      "evidence": {
+        "file": "tools/bag1import/patch_heat_dbi.py",
+        "sha256": "d14c1f013deec40350512da1378e908b950b6b796e49a8927da7bb4a38a2ef74"
+      }
+    }
+  ],
+  "validation_evidence": []
+}

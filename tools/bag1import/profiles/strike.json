@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "character": "strike",
+  "source_character_id": 1,
+  "target_character_id": null,
+  "stage": "inventory",
+  "source_animation_list": "_work/character_inventory/strike/001.bin",
+  "game_catalog": "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
+  "reference_runtime": "D:\\Dev\\Scratch\\bag1-native-reference\\BustAGroove_Recompiled.exe",
+  "capabilities": {},
+  "exceptions": [],
+  "validation_evidence": [],
+  "exception_assessment": "pending"
+}

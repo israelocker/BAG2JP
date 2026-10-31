@@ -7,6 +7,7 @@ Notes are split by topic in notes/ (read only the file you need; grep across the
 - notes/assets.md — Asset toolkit, archive layout, extracted data
 - notes/ui-mods.md — HD fonts/UI packs, in-game MODS menu, keyboard rebinding
 - notes/online.md — Online play, netsync, audio latency, v7 release and installer
+- notes/character-pipeline.md - Shared character workflow, profiles, role contracts, reference cache and implementation boundaries
 - notes/bag1-character.md — BAG1 import: Heat character (model, anims, dance grid, fever, voices), 2P autoplay, planned popups
 - notes/bag1-stage-song.md — BAG1 import: stage port, song chart and audio, camera, sounds, destruction, testing/debug tools
 
