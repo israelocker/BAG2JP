@@ -65,34 +65,27 @@ The owner chose on 2026-10-30 to continue Claude's existing project workflow and
 
 ## Coding Standards (applies to all new and modified code)
 
-### C (plugins in mods-src/)
-- **No magic constants**: Replace numeric literals with `#define` or `enum` with descriptive names. Addresses, ports, buffer sizes, frame limits must be named constants.
-- **Validate input early**: Check pointers, ranges, and return values at the start of every function.
-- **One purpose per function**: Functions should do one thing; split functions longer than 30 lines.
-- **Comment the "why", not the "what"**: Code explains what; comments explain why a decision was made.
-- **Group related `#define`**: Place constants near the top of the file, before their first use, with inline comments explaining their purpose.
+See `docs/coding-standards.md` for the complete standards (C, Python, TOML, documentation, testing).
 
-### Python (scripts in tools/)
-- **Type hints**: All public functions must have parameter and return type annotations.
-- **Logging over print**: Use `logging` module with levels (INFO, WARNING, ERROR) instead of `print`.
-- **pathlib over strings**: Use `Path` for all file path manipulation.
-- **Specific exception handling**: Catch concrete exceptions (e.g., `FileNotFoundError`, `json.JSONDecodeError`), never bare `except Exception`.
-- **Docstrings**: Document all public functions with purpose, parameters, and return value.
+**Quick summary:**
+- **C**: No magic constants, validate input early, one purpose per function, comment the "why", group related `#define`.
+- **Python**: Type hints, logging over print, pathlib over strings, specific exceptions, docstrings.
+- **TOML**: Validate on load, document defaults, no secrets or personal paths.
+- **Documentation**: Frontmatter required (`id`, `title`, `tags`, `summary`, `related`, `created`, `updated`), update `edited` on change, no test/debug noise, digests for files >10 KB.
+- **Testing**: Descriptive names, edge cases, one assertion per test, in-game acceptance required.
 
-### TOML configuration
-- **Validate on load**: Numeric values must be within documented ranges (e.g., `buffer_ms` 30-500).
-- **Document defaults**: Comment what each option does and its default value.
-- **No secrets or personal paths**: Configuration files must not contain user-specific paths or credentials.
+### Model Routing (Token Usage)
 
-### Documentation (notes/)
-- **Frontmatter required**: Every note must have `id`, `title`, `tags`, `summary`, `related`, `created`, `updated`.
-- **Update `updated` on change**: Any note modification must refresh the `updated` timestamp.
-- **No test/debug noise**: Notes should not contain frame numbers, PIDs, pilot results, or personal file paths.
-- **Digests for large files**: Source files >10 KB must have a corresponding digest in `notes/digests/`.
+Use the cheapest model that can do the job well.
 
-### Testing
-- **Descriptive test names**: `test_buffer_ms_rejects_out_of_range` not `test1`.
-- **Edge cases**: Test boundary values (min, max, zero, empty).
-- **One assertion per test**: When possible, each test verifies one behavior.
-- **In-game acceptance**: A code change is complete only after the relevant in-game flow passes, not just after compilation.
+| Task Type | Model | Examples | Max Context |
+|-----------|-------|----------|-------------|
+| Light | Small/fast | Search, summarize, format, count | < 5 KB |
+| Standard | General | Write code, fix bugs, docs, review | < 15 KB |
+| Reasoning | Large | Architecture, design, complex debugging | < 25 KB |
 
+**Minimal context rule:** If NOTES.md frontmatter + `_work/current-state.json` `gaps` answers the question, STOP. Don't open the full note.
+
+**Session rotation:** New conversation when changing task, character, or when context exceeds 20 KB with irrelevant info.
+
+**Measurement:** `py tools/workflow/measure_context.py --detailed` and `py tools/workflow/token-report.py`.
