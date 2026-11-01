@@ -52,7 +52,7 @@ No new character is claimed imported by installing these skills.
 - MIPS listing: installed Capstone; bulk decompilation: installed Ghidra headless with a separate read-only project when the GUI project is open.
 - Native video/capture validation: existing FFmpeg/ffprobe and test harness; source-version cache prevents unnecessary recapture.
 - Bounded, reviewable bulk annotation: existing local-vibes/local-llm; one RTX 3090 model at a time, no competition with game tests.
-- Consult pinned framework source first. Context7 was tested in Codex with public Capstone documentation, but is not configured among the current OpenCode MCP servers; only use it if availability is independently verified. External docs are not authority over a pinned local fork.
+- Consult pinned framework source first. Context7 is configured for this OpenCode project and answered a public Capstone lookup; use it for external library documentation of the matching version, not as authority over a pinned local fork.
 - Keep one focused code review per changed version. Reuse evidence for unchanged hook-listed files. Full logs remain on disk; do not repeatedly dump notes, catalogs or disassembly.
 
 ## Measurements
