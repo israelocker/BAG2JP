@@ -14,7 +14,9 @@
   "assets": {
     "source_model": {"file": "_work/character_inventory/strike/000.bin", "sha256": "c3ce195e0a6645df464ece290cd0cdfa0a81b81a107fc9d36b810d050569f917", "required": true},
     "source_animation_list": {"file": "_work/character_inventory/strike/001.bin", "sha256": "1daabe66ceb8756ff93b0bd56aef536dc11c63c2a9fcec4169ea82d3a948cd70", "required": true},
-    "converted_model": {"file": "_work/character-import/strike/candidate/000_strike_converted.bin", "sha256": "6420aabc06b1bda4234bd2c3f2d61c046f0fa77ae9afb1bb3f073ea978644418", "method": "model_bag1_to_bag2.py", "deployed": false}
+    "converted_model": {"file": "_work/character-import/strike/candidate/000_strike_converted.bin", "sha256": "6420aabc06b1bda4234bd2c3f2d61c046f0fa77ae9afb1bb3f073ea978644418", "method": "model_bag1_to_bag2.py", "deployed": false},
+    "converted_animations": {"file": "_work/character-import/strike/candidate/001_strike_converted.bin", "sha256": "570bb2e26cc846e6a8c02196e0fd8cd2e5e5d0efbf9e2fa3e21b8515ce994af3", "method": "anim_remap_strike.py + strike-animation-policy.json", "deployed": false},
+    "source_dbi": {"file": "_work/character_inventory/strike/pack_a_p1/003.bin", "sha256": "pending", "method": "Extraído de P_STRIA1.DFS entrada 003", "deployed": false}
   },
   "validation_evidence": [
     {
@@ -58,6 +60,13 @@
       "method": "tools/bag1import/model_bag1_to_bag2.py",
       "evidence": "59948 -> 61244 bytes (BAG1 -> BAG2 layout, 8 runtime pointer slots + 4 count words added per mesh header), 44 huesos, 27 meshes tipo 1, 2 tipo 0, 15 tipo 4. No desplegado en BAG2JP-exp-8mb.",
       "sha256": "6420aabc06b1bda4234bd2c3f2d61c046f0fa77ae9afb1bb3f073ea978644418"
+    },
+    {
+      "type": "animation_conversion",
+      "file": "_work/character-import/strike/candidate/001_strike_converted.bin",
+      "method": "tools/bag1import/anim_remap_strike.py + profiles/strike-animation-policy.json",
+      "evidence": "84 anims BAG1 -> 101 slots BAG2 (47 mapeados, 54 vacíos/incluyendo 1 y 97). 165808 bytes. Terminator válido en offset 0x0287AC.",
+      "sha256": "570bb2e26cc846e6a8c02196e0fd8cd2e5e5d0efbf9e2fa3e21b8515ce994af3"
     }
   ]
 }
