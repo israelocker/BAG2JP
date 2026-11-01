@@ -14,6 +14,6 @@ Notes are split by topic in notes/ (read only the file you need; grep across the
 
 Quick facts:
 - Disc D:\Games\Bust A Groove 2 (Japan)\ISO\...cue, SLPM-86219, load 0x80010000. Stable build BAG2JP-win (do not touch),
-  experimental BAG2JP-exp-8mb (default target). Project VM copy ~/work/BAG2JP; snapshot BAG2JP-project-snapshot.tar.gz.
+  experimental BAG2JP-exp-8mb (default). Build tree: see AGENTS.md; snapshot: BAG2JP-project-snapshot.tar.gz.
 - Tests: D:\Dev\Tools\winshot\bag2_run.ps1 + tools/test/bag2_report.py (see notes/project.md, "Testing and debugging").
 - Audio analysis: D:\Dev\Tools\audio-probe. BAG1 import pipeline: tools/bag1import (skill bag1-import).

@@ -122,7 +122,7 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   patch in the framework).
 - Native-wide cull sites in stage overlays (only if native-wide is wanted again).
 
-## Resume in a new session (Claude's VM)
+## Historical resume instructions (Claude's former VM; do not run on Windows)
 1. bash ~/mnt/Dev/Tools/vm-setup/setup_vm.sh
 2. tar xzf BAG2JP-project-snapshot.tar.gz -C ~/work ; tar xzf ghidra-project-linux.tar.gz -C ~
 3. game.toml disc= must point to the VM path for generate; to D:/... for the Windows build.
@@ -131,7 +131,7 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - pcsx-redux: PS1 debugger (nightly 29906.20261028.31, SHA1 22E426A1..., portable config pcsx.json).
   Boots the JP disc with OpenBIOS. Use for breakpoints / memory watch on the original JP and US games.
 - realesrgan-ncnn-vulkan (RTX 3090), ollama (qwen3-coder:30b, qwen3.8:27b), local-llm-mcp,
-  local-vibes (bash disabled; always pass working_dir + read_only), ghidra_12.1.4 + ghidra-mcp-python,
+  local-vibes (bash disabled; always pass working_dir + read_only), ghidra_12.1.4_PUBLIC + ghidra-mcp-python,
   ghidra-scripts\DecompileExport.java (headless export). Git 2.56 at C:\Program Files\Git.
 
 ## Testing and debugging (2026-10-30)
@@ -139,7 +139,7 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
   closes the game, starts a 2P Heat-vs-Heat match on the exp build (trace on, autoplay p1_2p/p2_2p from state.toml), and
   starts a detached watcher (bag2_shots.ps1) that captures the window at those game frames ("FxN" = N back-to-back shots;
   frames from bag2jp_frame.txt, written every 6 frames by the debug plugin; shots land within ~6 frames).
-- Then in the VM: `python3 tools/test/bag2_report.py --tag t1 --frame 11400` (or `--until 'phase 2/'`; waits <=160 s per
+- Historical VM command: `python3 tools/test/bag2_report.py --tag t1 --frame 11400` (or `--until 'phase 2/'`; waits <=160 s per
   call, call again to keep waiting). Prints state, phase timeline, fever anims, run report, cue ids per phase (-Cues),
   audio template hits (`--find x.wav ...` on an -Audio run) and writes one contact sheet `_work\shots\<tag>_sheet.png`
   (`--crop x0,y0,x1,y1` fractions to zoom into a region).
@@ -155,12 +155,5 @@ BAG2 USA port (betinn notes/recomp.md 10-12), BAG1 USA port game.toml, DuckStati
 - Independent Heat BAG1/BAG2 stage picker: see the latest section of notes/bag1-stage-song.md.
 
 ## Local workflow helper (2026-10-30)
-- Windows command: `D:\Dev\Tools\ghidra-mcp-python\python.exe D:\Dev\Recomp\BAG2JP\tools\workflow\bag2_workflow.py <action> --tag <tag>`.
-- Actions: `preflight` (default), `test-stage-select`, `build`, `report` (existing game report, timeout 0).
-- Every action checks recorded paths, CMake source tree, pinned dependencies and Git status. Source/resource/executable drift is reported without overwriting files.
-- Logs and `metrics.json` live under `_work/workflow/<UTC timestamp>-<tag>/`; stdout is compact JSON. A command failure returns a nonzero exit and at most 12 tail lines; successful build/test commands show at most two; the compact game report selects state/phase/fever/run-report/sheet lines (up to 12), retaining full cue output in its log.
-- Build and tests reuse the verified WSL commands; subprocess output goes to disk, so retain the process PID until completion. This helper does not deploy, launch/close games or alter settings/cards.
-- The helper records local phase durations and exit status, not cloud-token usage or billing. It preserves dirty working files.
-- Regression checks: `python tools/workflow/test_bag2_workflow.py`. The embedded Python needs an explicit script-directory import path; the test runner supplies it.
-- Image reports use the installed Microsoft Store Python 3.13 (`py -3.13`, Pillow 12.2.0); the helper routes `report` there explicitly. Python 3.14/3.12 and the Ghidra embedded Python do not currently provide Pillow.
-- Skill validation uses WSL Ubuntu Python (PyYAML is available there): `wsl.exe -d Ubuntu --exec python3 /mnt/c/Users/israe/.codex/skills/.system/skill-creator/scripts/quick_validate.py /mnt/c/Users/israe/.codex/skills/bag2jp-build-deploy-test`.
+- Current commands, interpreters and regression checks: `C:/Users/israe/.agents/skills/project-config/bag2jp.md`. The helper `tools/workflow/bag2_workflow.py` checks Git, pins, paths and drift without synchronizing files; `metrics.json` and full logs go under `_work/workflow/<UTC timestamp>-<tag>/` while stdout stays compact.
+- The helper does not deploy, launch/close games or alter settings/cards. It records local durations, not cloud tokens or billing; game acceptance requires separate in-game evidence.
