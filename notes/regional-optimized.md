@@ -1,3 +1,12 @@
+---
+id: regional-optimized
+title: "Regional Optimized"
+tags: []
+summary: "Auto-generated frontmatter - please review"
+related: []
+created: 2026-11-01
+updated: 2026-11-01
+---
 # Regional Content & Launcher — Optimized Summary
 
 ## Opciones del Launcher (bag2jp.localization.regional) ✅

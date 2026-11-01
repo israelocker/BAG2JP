@@ -1,3 +1,12 @@
+---
+id: endings-view-optimized
+title: "Endings View Optimized"
+tags: []
+summary: "Auto-generated frontmatter - please review"
+related: []
+created: 2026-11-01
+updated: 2026-11-01
+---
 # Ending View — Optimized Summary
 
 ## Visión general

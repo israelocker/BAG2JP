@@ -1,3 +1,12 @@
+---
+id: character-pipeline-optimized
+title: "Character Pipeline Optimized"
+tags: []
+summary: "Auto-generated frontmatter - please review"
+related: []
+created: 2026-11-01
+updated: 2026-11-01
+---
 # Shared BAG1 → BAG2JP Character Pipeline — Optimized Summary
 
 ## Estándar del Owner (2026-10-31)

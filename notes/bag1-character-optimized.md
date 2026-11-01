@@ -1,3 +1,12 @@
+---
+id: bag1-character-optimized
+title: "Bag1 Character Optimized"
+tags: []
+summary: "Auto-generated frontmatter - please review"
+related: []
+created: 2026-11-01
+updated: 2026-11-01
+---
 # BAG1 import: Heat character (model, anims, dance grid, fever, voices)
 
 ## Resumen rápido

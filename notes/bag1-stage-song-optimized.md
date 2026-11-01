@@ -1,3 +1,12 @@
+---
+id: bag1-stage-song-optimized
+title: "Bag1 Stage Song Optimized"
+tags: []
+summary: "Auto-generated frontmatter - please review"
+related: []
+created: 2026-11-01
+updated: 2026-11-01
+---
 # BAG1 import: stage port, song chart and audio
 
 ## Visión general

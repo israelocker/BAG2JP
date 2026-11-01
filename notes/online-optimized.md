@@ -1,3 +1,12 @@
+---
+id: online-optimized
+title: "Online Optimized"
+tags: []
+summary: "Auto-generated frontmatter - please review"
+related: []
+created: 2026-11-01
+updated: 2026-11-01
+---
 # Online play, netsync, audio latency
 
 ## Estado actual de netplay ✅
