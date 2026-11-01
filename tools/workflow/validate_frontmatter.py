@@ -7,10 +7,12 @@ Usage:
 Required fields: id, title, tags, summary, related, created, updated
 """
 
+import logging
 import re
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[2]
 NOTES_DIR = ROOT / "notes"
@@ -19,8 +21,10 @@ REQUIRED_FIELDS = ["id", "title", "tags", "summary", "related", "created", "upda
 
 DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:?\d{2})?)?$")
 
+logger = logging.getLogger("validate_frontmatter")
 
-def parse_frontmatter(content: str) -> dict | None:
+
+def parse_frontmatter(content: str) -> Optional[dict]:
     """Return frontmatter dict if present, else None."""
     if not content.startswith("---\n"):
         return None
@@ -28,7 +32,7 @@ def parse_frontmatter(content: str) -> dict | None:
     if end == -1:
         return None
     fm_block = content[4:end]
-    fm = {}
+    fm: dict = {}
     for line in fm_block.splitlines():
         if ":" in line:
             key, _, val = line.partition(":")
@@ -38,14 +42,13 @@ def parse_frontmatter(content: str) -> dict | None:
 
 def validate_file(path: Path, fix: bool = False) -> list[str]:
     """Validate a single note file. Return list of issues."""
-    issues = []
+    issues: list[str] = []
     content = path.read_text(encoding="utf-8")
     fm = parse_frontmatter(content)
 
     if fm is None:
         issues.append(f"MISSING frontmatter in {path.name}")
         if fix:
-            # Add minimal frontmatter
             now = datetime.now().strftime("%Y-%m-%d")
             title = path.stem.replace("-", " ").title()
             new_fm = (
@@ -86,12 +89,17 @@ def validate_file(path: Path, fix: bool = False) -> list[str]:
     return issues
 
 
-def main():
+def main() -> int:
     fix = "--fix" in sys.argv
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(levelname)s: %(message)s",
+    )
+
     md_files = sorted(NOTES_DIR.glob("*.md"))
 
     if not md_files:
-        print("No markdown files found in notes/")
+        logger.warning("No markdown files found in notes/")
         return 1
 
     total_issues = 0
@@ -99,16 +107,16 @@ def main():
         issues = validate_file(f, fix=fix)
         if issues:
             for issue in issues:
-                print(issue)
+                logger.warning(issue)
             total_issues += len(issues)
 
     if total_issues == 0:
-        print(f"All {len(md_files)} notes have valid frontmatter.")
+        logger.info(f"All {len(md_files)} notes have valid frontmatter.")
     else:
         action = "fixed" if fix else "found"
-        print(f"\n{total_issues} issue(s) {action} across {len(md_files)} notes.")
+        logger.warning(f"{total_issues} issue(s) {action} across {len(md_files)} notes.")
         if not fix:
-            print("Run with --fix to auto-fill missing fields.")
+            logger.info("Run with --fix to auto-fill missing fields.")
 
     return 1 if total_issues and not fix else 0
 

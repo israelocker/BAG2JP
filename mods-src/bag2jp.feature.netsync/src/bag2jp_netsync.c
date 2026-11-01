@@ -84,6 +84,19 @@ void bag2jp_bag1_set_version(int chr, int side, int v);
 #define NS_WAIT_MAX   180           /* frames a bar may wait for the other player's result */
 #define PAD_START     0x0008u
 
+/* Protocol packet header size ("B2NS" + version + type + padding + code_hash + nonce) */
+#define NS_PKT_HDR    20
+/* Maximum MQTT message buffer size */
+#define NS_MQ_BUF     8192
+/* Maximum event button buffer size (ring buffer for pad events) */
+#define NS_EV_BUF     256
+/* Maximum number of broker entries */
+#define NS_BROKER_MAX 8
+/* Maximum number of STUN entries */
+#define NS_STUN_MAX   4
+/* Maximum line length when reading settings files */
+#define NS_LINE_MAX   160
+
 enum { NS_OFF, NS_LOOPBACK, NS_LAN, NS_INTERNET, NS_DIRECT };
 enum { M_HELLO = 1, M_PAD = 3, M_STEP = 4, M_PING = 5, M_READY = 6, M_PUNCH = 7, M_PONG = 8, M_FOCUS = 9,
        M_PICK = 10, M_CONTENT = 11 };
@@ -122,7 +135,7 @@ static atomic_int s_mqtt_ready;                   /* worker -> main: 1 connected
 static SOCKET s_mqtt_new = INVALID_SOCKET;
 static atomic_int s_worker_busy;
 static int s_mqtt_state, s_broker_idx;            /* 0 none, 1 connect sent, 2 subscribed */
-static uint8_t s_mq_buf[8192]; static int s_mq_len;
+static uint8_t s_mq_buf[NS_MQ_BUF]; static int s_mq_len;
 static uint32_t s_mq_ping, s_mq_retry;
 static char s_topic[64];
 static struct sockaddr_in s_local_addr;
@@ -428,7 +441,7 @@ static void ns_link(uint64_t nonce, int ch, const struct sockaddr_in* udp) {
 }
 
 static void ns_on_packet(const uint8_t* b, int n, const struct sockaddr_in* from, int via_relay) {
-    if (n < 20 || memcmp(b, "B2NS", 4) || b[4] != 2) return;
+    if (n < NS_PKT_HDR || memcmp(b, "B2NS", 4) || b[4] != 2) return;
     uint32_t h; memcpy(&h, b + 8, 4); if (h != s_code_hash) return;
     uint64_t sender; memcpy(&sender, b + 12, 8);
     if (sender == s_nonce) return;                              /* our own broadcast/publish */

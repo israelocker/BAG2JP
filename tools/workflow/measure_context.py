@@ -7,12 +7,14 @@ Usage:
 Shows the total KB of essential startup files vs. full notes directory.
 """
 
+import logging
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
 # Minimal startup files (optimized protocol)
-MINIMAL_FILES = [
+MINIMAL_FILES: list[str] = [
     "AGENTS.md",
     "NOTES.md",
     "_work/current-state.json",
@@ -25,41 +27,48 @@ NOTES_DIR = ROOT / "notes"
 # Digest files (alternative to full notes)
 DIGESTS_DIR = ROOT / "notes" / "digests"
 
+logger = logging.getLogger("measure_context")
+
 
 def size_kb(path: Path) -> float:
+    """Return file size in KB, or 0.0 if missing."""
     if path.exists():
         return path.stat().st_size / 1024
     return 0.0
 
 
-def main():
-    detailed = "--detailed" in __import__("sys").argv
+def main() -> int:
+    detailed = "--detailed" in sys.argv
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(levelname)s: %(message)s",
+    )
 
     print("=== Context Size Measurement ===\n")
 
     # Minimal startup
     minimal_total = 0.0
-    print("Minimal startup files (new chat reads these first):")
+    logger.info("Minimal startup files (new chat reads these first):")
     for f in MINIMAL_FILES:
         path = ROOT / f
         sz = size_kb(path)
         minimal_total += sz
         marker = "[OK]" if path.exists() else "[MISSING]"
-        print(f"  {marker} {f}: {sz:.1f} KB")
+        logger.info(f"  {marker} {f}: {sz:.1f} KB")
 
     print(f"\n  TOTAL minimal: {minimal_total:.1f} KB")
 
     # Full notes directory
     notes_total = 0.0
     note_count = 0
-    print("\nAll notes/ files (old approach - loads everything):")
+    logger.info("\nAll notes/ files (old approach - loads everything):")
     if NOTES_DIR.exists():
         for f in sorted(NOTES_DIR.glob("*.md")):
             sz = size_kb(f)
             notes_total += sz
             note_count += 1
             if detailed:
-                print(f"   [FILE] {f.name}: {sz:.1f} KB")
+                logger.info(f"   [FILE] {f.name}: {sz:.1f} KB")
         print(f"  TOTAL notes/ ({note_count} files): {notes_total:.1f} KB")
 
     # Digest alternative
@@ -72,7 +81,7 @@ def main():
             digest_total += sz
             digest_count += 1
             if detailed:
-                print(f"   [FILE] {f.name}: {sz:.1f} KB")
+                logger.info(f"   [FILE] {f.name}: {sz:.1f} KB")
         print(f"  TOTAL digests ({digest_count} files): {digest_total:.1f} KB")
 
     # Summary

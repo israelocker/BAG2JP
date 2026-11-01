@@ -12,6 +12,7 @@ Runs:
 Exit code: 0 if all checks pass, 1 if any issue found.
 """
 
+import logging
 import subprocess
 import sys
 from pathlib import Path
@@ -19,20 +20,27 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 TOOLS_DIR = ROOT / "tools" / "workflow"
 
+logger = logging.getLogger("maintenance_check")
+
 
 def run(script: str, args: list[str] | None = None) -> int:
+    """Run a maintenance script and return its exit code."""
     cmd = [sys.executable, str(TOOLS_DIR / script)]
     if args:
         cmd.extend(args)
     print(f"\n{'=' * 60}")
-    print(f"Running: {script} {' '.join(args or [])}")
+    logger.info(f"Running: {script} {' '.join(args or [])}")
     print(f"{'=' * 60}")
     result = subprocess.run(cmd, cwd=ROOT)
     return result.returncode
 
 
-def main():
+def main() -> int:
     fix = "--fix" in sys.argv
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(levelname)s: %(message)s",
+    )
     exit_code = 0
 
     # 1. Validate frontmatter
@@ -43,7 +51,7 @@ def main():
     # 2. Check digests are fresh
     rc = run("generate_digests.py", ["--check-only"])
     if rc != 0:
-        print("\n  -> Run: py tools/workflow/generate_digests.py --all")
+        logger.warning("  -> Run: py tools/workflow/generate_digests.py --all")
         exit_code = 1
 
     # 3. Measure context size
@@ -53,9 +61,9 @@ def main():
 
     print(f"\n{'=' * 60}")
     if exit_code == 0:
-        print("ALL MAINTENANCE CHECKS PASSED [OK]")
+        logger.info("ALL MAINTENANCE CHECKS PASSED [OK]")
     else:
-        print("MAINTENANCE ISSUES FOUND [WARN]")
+        logger.warning("MAINTENANCE ISSUES FOUND [WARN]")
     print(f"{'=' * 60}")
 
     return exit_code
