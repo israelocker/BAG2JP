@@ -3,6 +3,7 @@
 Notes are split by topic in notes/ (read only the file you need; grep across them for addresses):
 
 - notes/project.md — Project: builds, folders, saves, resume
+- notes/agent-handoff.md — Claude→Codex→OpenCode handoff, current scope, tools and profile-safety warning
 - notes/regional.md — Regional content, songs and announcer options, CD-quality songs
 - notes/assets.md — Asset toolkit, archive layout, extracted data
 - notes/ui-mods.md — HD fonts/UI packs, in-game MODS menu, keyboard rebinding
