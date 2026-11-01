@@ -1,3 +1,13 @@
+---
+id: character-pipeline-shared
+title: "Shared BAG1 -> BAG2JP Character Workflow"
+tags: ["workflow", "character", "pipeline", "shared"]
+summary: "Shared BAG1 to BAG2JP character import pipeline standards, rules and reference cache commands"
+related: ["CHARACTER_IMPORT.md", "NOTES.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+created: "2026-10-31"
+updated: "2026-11-01"
+---
+
 # Shared BAG1 -> BAG2JP character workflow
 
 Owner standard (2026-10-31): one shared process, with data-only character profiles and narrowly justified exceptions. Avoid per-character forks of orchestration or conversion logic.
@@ -46,6 +56,7 @@ Reuse unchanged references rather than navigating/re-recording all 66 choices. R
 The generic helper validates profiles, checked catalog inputs and reference caches. Heat and Strike both pass real animation-inventory validation (84 entries each). Strike remains inventory only, with its BAG2 target ID unresolved; it has not been imported or validated in gameplay. The existing complete Heat auditor and conversion recipes remain legacy, specialized adapters; do not present them as a general importer for untested characters.
 The new semantic/transition/coverage requirements are mandatory workflow rules. General assignment generation and automatic graph optimization still need implementation and cross-character validation before they can replace the legacy converter.
 No new character is claimed imported by installing these skills.
+- Character import standardization: `CHARACTER_IMPORT.md`, schema-2 profiles, `character_workflow.py` now supports `plan`, `prepare`, `status`, `acceptance-plan`, compact state and candidate manifests. Heat validates as a candidate; Strike remains inventory with unresolved target ID. Tests: 24 passed.
 
 ## Resource routing
 - Files, hashes, extraction and objective checks: local deterministic scripts through MCP.

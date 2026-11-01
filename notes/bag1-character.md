@@ -1,3 +1,13 @@
+---
+id: bag1-character-heat
+title: "BAG1 Import: Heat Character"
+tags: ["bag1", "import", "heat", "character"]
+summary: "Heat character import from BAG1 to BAG2JP with model, animation, fever and voice adaptations"
+related: ["CHARACTER_IMPORT.md", "NOTES.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+created: "2026-10-29"
+updated: "2026-11-01"
+---
+
 # BAG1 import: Heat character (model, anims, dance grid, fever, voices), 2P autoplay, planned popups
 
 ## BAG1 import (started 2026-10-29): Heat first

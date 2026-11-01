@@ -2,10 +2,32 @@
 The owner chose on 2026-10-30 to continue Claude's existing project workflow and evaluate optimizations later. Preserve this workflow before introducing process or tooling changes.
 
 ## Start and scope
-- Canonical project: D:/Dev/Recomp/BAG2JP. Read NOTES.md, then only the relevant notes/ topic and project-specific skills.
+- Canonical project: D:/Dev/Recomp/BAG2JP.
 - Build tree for Codex: D:/Dev/Recomp/BAG2JP-codex-build/BAG2JP. Historical ~/work paths describe Claude's previous VM.
 - Check Git status before edits. Preserve prior edits, staged files, personal saves, settings and active sessions.
 - Use English names for files, folders and variables. Communicate with the owner in Spanish.
+
+## Optimized Chat Startup (Token-Saving Protocol)
+**NEW CHAT: Read ONLY these files in order (≈10 KB total):**
+
+1. **AGENTS.md** (this file) — policies & workflow
+2. **NOTES.md** — current index with frontmatter summaries
+3. **_work/current-state.json** — compact state + `gaps` field (what needs attention)
+4. **IMPORT_STANDARD.md** — ONLY if task is BAG1→BAG2 character import (8 KB)
+
+**DO NOT READ** full notes/ files unless:
+- The index + state + IMPORT_STANDARD don't answer your question
+- You need historical evidence details
+- You're doing a code review / audit
+
+**PREFER DIGESTS** for files > 10 KB:
+- `notes/digests/character_workflow.digest.md` instead of `tools/bag1import/character_workflow.py`
+- `notes/digests/bag1-character.digest.md` instead of `notes/bag1-character.md`
+- `notes/digests/bag1-stage-song.digest.md` instead of `notes/bag1-stage-song.md`
+- `notes/digests/online.digest.md` instead of `notes/online.md`
+- `notes/digests/project.digest.md` instead of `notes/project.md`
+
+**MINIMAL CONTEXT RULE**: If NOTES.md frontmatter summary + current-state.json `gaps` answers the question, STOP. Don't open the full note.
 
 ## Implement and verify
 - Make bounded changes in source/plugins or conversion tools. Verify original words and module/region before MIPS patches; keep guards and restoration.

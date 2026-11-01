@@ -1,3 +1,13 @@
+---
+id: regional-content-launcher
+title: "Regional Content & Launcher"
+tags: ["regional", "launcher", "localization", "songs"]
+summary: "Regional song options, CD-quality audio, announcer configurations and Launcher settings for BAG2JP"
+related: ["CHARACTER_IMPORT.md", "NOTES.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+created: "2026-10-29"
+updated: "2026-11-01"
+---
+
 # Regional content, songs and announcer options, CD-quality songs
 
 ## Regional content (Launcher) - bag2jp.localization.regional (installed in BAG2JP-exp-8mb)

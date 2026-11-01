@@ -1,3 +1,13 @@
+---
+id: online-play-netsync
+title: "Online Play & NetSync"
+tags: ["online", "netplay", "netsync", "latency"]
+summary: "Online play configuration, netstep sync, audio latency settings and release info for BAG2JP"
+related: ["CHARACTER_IMPORT.md", "NOTES.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+created: "2026-10-29"
+updated: "2026-11-01"
+---
+
 # Online play, netsync, audio latency, v7 release and installer
 
 ## Online play (generic PSXRecomp netplay vs BAG1-style step sync)

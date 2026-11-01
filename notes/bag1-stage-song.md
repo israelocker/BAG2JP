@@ -1,3 +1,13 @@
+---
+id: bag1-stage-song-heat
+title: "BAG1 Stage Song: Heat"
+tags: ["bag1", "stage", "song", "heat"]
+summary: "Port Heat stage and song chart from BAG1 to BAG2JP with audio conversion"
+related: ["CHARACTER_IMPORT.md", "NOTES.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+created: "2026-10-30"
+updated: "2026-11-01"
+---
+
 # BAG1 import: stage port, song chart and audio, camera, sounds, destruction, testing/debug tools
 
 ## BAG1 stage import: findings (2026-10-30)

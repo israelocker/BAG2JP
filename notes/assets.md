@@ -1,3 +1,13 @@
+---
+id: asset-toolkit-extracted-data
+title: "Asset Toolkit & Extracted Data"
+tags: ["assets", "archive", "extraction", "layout"]
+summary: "Asset toolkit layout, extracted data structure and verification for BAG2JP archives and BAG1 imports"
+related: ["CHARACTER_IMPORT.md", "NOTES.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+created: "2026-10-26"
+updated: "2026-11-01"
+---
+
 # Asset toolkit, archive layout, extracted data
 
 ## Asset toolkit and extracted data (2026-10-26)

@@ -1,3 +1,13 @@
+---
+id: ui-hd-fonts-mods
+title: "HD Fonts & UI MODS"
+tags: ["ui", "fonts", "mods", "keyboard"]
+summary: "HD font texture packs, in-game MODS menu configuration and keyboard rebinding for BAG2JP"
+related: ["CHARACTER_IMPORT.md", "NOTES.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+created: "2026-10-27"
+updated: "2026-11-01"
+---
+
 # HD fonts/UI packs, in-game MODS menu, keyboard rebinding
 
 ## HD fonts (texture pack, 2026-10-27)
