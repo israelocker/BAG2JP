@@ -2,7 +2,7 @@
 id: versus-navigation
 title: "Reliable generic versus navigation"
 tags: ["testing", "controls", "workflow"]
-summary: "Proposed bounded extension of existing Windows test harnesses: named characters, observed-state gates, reversible controls and compact evidence. Awaiting approval."
+summary: "Completed named versus harness with observed-state gates, reversible controls, two visually accepted match starts and 94 passing host tests."
 related: ["notes/game-controls.md", "tools/test/bag2_endings_view.ps1", "AGENTS.md"]
 created: "2026-11-01"
 updated: "2026-11-01"
@@ -11,7 +11,7 @@ edited: "2026-11-01"
 
 # Reliable generic versus navigation
 
-Status: proposed; implementation approval pending.
+Status: validated and archived. Local checkpoint and snapshot details are recorded in `_work/versus-navigation/`.
 Ticket: local owner request; no external tracker or publication.
 
 ## Goal and boundaries
@@ -83,5 +83,17 @@ Recommended interface: `-P1Character Heat -P1Version BAG1 -P2Character Heat -P2V
 | Phase | Status |
 | --- | --- |
 | Manual mixed-version Heat probe | Verified selection and match start; restoration recorded in notes |
-| Design | Awaiting owner approval |
-| Steps 1–4 | Not started |
+| Design | Approved by owner |
+| Step 1 | Complete: 46 focused regression tests |
+| Step 2 | Complete: bounded Windows harness, inspect/parser checks, failure restoration |
+| Step 3 | Complete: Heat BAG1/Heat BAG2 and Comet BAG2/Strike BAG2 visually accepted |
+| Step 4 | Notes/digests/baseline complete; local checkpoint and snapshot evidence retained in `_work/versus-navigation/` |
+
+## Execution record
+
+- Full host unittest discovery: 94 passed; existing native debug guard runner also reports nine C cases passed. No runtime code, framework pins or package assets changed.
+- Accepted final runs are indexed in `_work/versus-navigation/acceptance.json`. Original game configs restored and 21 saves unchanged after every run. The compact runbook is `notes/game-controls.md`.
+- Independent read-only review identified four error paths. Each was reproduced and fixed with a regression: stopped watch vs live heartbeat; preparation interruption; secondary contact-sheet failure; reviewed graph/evidence binding. The final complete-row watch parser was also replayed on real logs. One fix pass, no repeated broad review.
+- Baseline: 117.091s/12 inputs and 120.094s/13 inputs, nine raw screenshots/six-panel sheet per match. Exact cloud token usage unavailable. Helper-call counter was added afterwards and is unmeasured for these recorded runs, not backfilled.
+- Scope rulings: preserve existing local main workflow; initial roster only Heat/Comet/Strike with calibrated edges; copied cards rather than edits to originals; optional costume-B/Heat-BAG1-stage paths remain unaccepted; full-song/fever/audio are outside this test.
+- Failed boot/initial-state pilots are retained under `_work/` as failures, never reused as successful acceptance. Existing external experimental scripts are retained but not promoted as the standard.
