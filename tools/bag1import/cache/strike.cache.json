@@ -1,0 +1,21 @@
+{
+  "key": {
+    "schema": 1,
+    "decoder": "metro-motion-prefix-v1",
+    "character": "strike",
+    "catalog_sha256": "0d616c8b0061f7f6953b5d04e8cb520c8adc63ba7943c3f7b135540687cdcb78",
+    "runtime_sha256": "e7ed906a7c8929d41624c4defd8f2599428372c59e39c637188554f717f55e3e",
+    "motion_sha256": "01f43dd20c9fa0e0650861b5da7f17d09486bec560cde064ccefd749918fe5a8",
+    "animation_count": 84
+  },
+  "evidence": [
+    {
+      "file": "D:\\Dev\\Recomp\\BAG2JP\\_work\\character-import\\strike\\evidence\\strike-discovery.mp4",
+      "sha256": "2f14028ec6a88e2cf13587247d5c0e8f0025490397ecf501487cb76d53215a0c"
+    },
+    {
+      "file": "D:\\Dev\\Recomp\\BAG2JP\\_work\\character-import\\strike\\evidence\\timeline.json",
+      "sha256": "6f852fccdb864ab5da595111a0cee2beb158d0e58022811ac0125296c220c5d1"
+    }
+  ]
+}

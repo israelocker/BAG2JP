@@ -1,14 +1,63 @@
 {
-  "schema": 1,
+  "schema": 2,
   "character": "strike",
+  "display_name": "Strike",
   "source_character_id": 1,
-  "target_character_id": null,
-  "stage": "inventory",
+  "target_character_id": 1,
+  "stage": "candidate",
+  "exception_assessment": "complete",
   "source_animation_list": "_work/character_inventory/strike/001.bin",
   "game_catalog": "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
   "reference_runtime": "D:\\Dev\\Scratch\\bag1-native-reference\\BustAGroove_Recompiled.exe",
   "capabilities": {},
   "exceptions": [],
-  "validation_evidence": [],
-  "exception_assessment": "pending"
+  "assets": {
+    "source_model": {"file": "_work/character_inventory/strike/000.bin", "sha256": "c3ce195e0a6645df464ece290cd0cdfa0a81b81a107fc9d36b810d050569f917", "required": true},
+    "source_animation_list": {"file": "_work/character_inventory/strike/001.bin", "sha256": "1daabe66ceb8756ff93b0bd56aef536dc11c63c2a9fcec4169ea82d3a948cd70", "required": true},
+    "converted_model": {"file": "_work/character-import/strike/candidate/000_strike_converted.bin", "sha256": "6420aabc06b1bda4234bd2c3f2d61c046f0fa77ae9afb1bb3f073ea978644418", "method": "model_bag1_to_bag2.py", "deployed": false}
+  },
+  "validation_evidence": [
+    {
+      "type": "discovery_report",
+      "file": "_work/versus-navigation/discovery-strike-id-p1/discovery-report.json",
+      "method": "P1 navigation observed-state gates",
+      "evidence": "P1 cursor moved down from Heat(id 0) to Strike(id 1); screenshot p1-down-1-id1.png confirms Strike name on screen",
+      "sha256": "8a27fbf3d0b3ea778814b9359325f9d9559e4e0bd20be49f1b408e1f6ae53a57"
+    },
+    {
+      "type": "animation_contract",
+      "file": "tools/bag1import/contracts/strike-animation-contract.json",
+      "method": "reqmap.py + animlib.py + bag1-usa-bag2jp.roles.json",
+      "evidence": "Strike BAG1: 84 anims, 70 slots usados (14 sin uso), cubre 70 de 101 slots BAG2 (31 sin cubrir). 0 unresolved requests. Contrato documentado con gaps.",
+      "sha256": "9dd0a41b52ffcdb48b5b3a4d5cf042abe55164bfd8cda2b28ac7f6fe62489818"
+    },
+    {
+      "type": "cache_reference_video",
+      "file": "_work/character-import/strike/evidence/strike-discovery.mp4",
+      "method": "FFmpeg concat of discovery screenshots",
+      "evidence": "8-panel video: versus-menu, selector-entry, p1-start-id0, p1-right-1-id2, p1-down-1-id1(Strike), p1-down-2-id8, p1-down-3-id11, p1-down-4-id14",
+      "sha256": "2f14028ec6a88e2cf13587247d5c0e8f0025490397ecf501487cb76d53215a0c"
+    },
+    {
+      "type": "cache_reference_timeline",
+      "file": "_work/character-import/strike/evidence/timeline.json",
+      "method": "Manual documentation of video frames",
+      "evidence": "Timeline con 8 frames, key_finding: Strike BAG2 target_character_id = 1",
+      "sha256": "6f852fccdb864ab5da595111a0cee2beb158d0e58022811ac0125296c220c5d1"
+    },
+    {
+      "type": "animation_cache",
+      "file": "tools/bag1import/cache/strike.cache.json",
+      "method": "character_workflow.py cache-record + cache-check",
+      "evidence": "cache-check status: hit, animation_count: 84",
+      "sha256": "637b2a41b59c99d4969e901ac9b813b19572e5039003a81c97c8c0263022628b"
+    },
+    {
+      "type": "model_conversion",
+      "file": "_work/character-import/strike/candidate/000_strike_converted.bin",
+      "method": "tools/bag1import/model_bag1_to_bag2.py",
+      "evidence": "59948 -> 61244 bytes (BAG1 -> BAG2 layout, 8 runtime pointer slots + 4 count words added per mesh header), 44 huesos, 27 meshes tipo 1, 2 tipo 0, 15 tipo 4. No desplegado en BAG2JP-exp-8mb.",
+      "sha256": "6420aabc06b1bda4234bd2c3f2d61c046f0fa77ae9afb1bb3f073ea978644418"
+    }
+  ]
 }
