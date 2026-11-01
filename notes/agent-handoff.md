@@ -1,3 +1,13 @@
+---
+id: agent-handoff
+title: "BAG2JP Agent Handoff"
+tags: ["handoff", "resume", "context"]
+summary: "Guía para retomar el trabajo entre agentes. Orquesta la transición de contexto sin sustituir notas temáticas"
+related: ["AGENTS.md", "NOTES.md", "CHARACTER_IMPORT.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+created: "2026-10-31"
+updated: "2026-11-01"
+---
+
 # BAG2JP — traspaso de contexto Claude → Codex → OpenCode (actualizado 2026-10-31)
 
 ## Cómo retomar el trabajo

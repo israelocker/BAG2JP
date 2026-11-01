@@ -1,0 +1,79 @@
+# BAG2JP Notes Search Index
+
+Este archivo permite búsquedas rápidas por palabra clave sin abrir archivos completos.
+Cada línea tiene el formato: `palabra_clave -> archivo_nota.md (#sección)`
+
+## Palabras Clave por Nota
+
+### bag1-character.md
+Heat -> bag1-character.md (#BAG1-import-started, #BAG1-Heat-model-format-solved, #BAG1-Heat-animation-slots)
+Heat -> bag1-character.md (#Two-player-autoplay, #Character-select-popup)
+Heat -> bag1-character.md (#BAG1-and-BAG2-versions-side-by-side, #Heat-victory-announcer)
+Heat -> bag1-character.md (#BAG1-native-Dance-View-reference)
+Heat -> bag1-character.md (#Complete-Heat-animation-comparison)
+Heat -> bag1-character.md (#Heat-animation-role-experiment)
+Heat -> bag1-character.md (#Local-mixed-version-combat-acceptance)
+model -> bag1-character.md (#BAG1-Heat-model-format-solved)
+animation -> bag1-character.md (#BAG1-Heat-animation-slots, #Complete-Heat-animation-comparison)
+fever -> bag1-character.md (#BAG1-Heat-animation-slots, #Heat-animation-role-experiment)
+voice -> bag1-character.md (#BAG1-Heat-animation-slots)
+popup -> bag1-character.md (#Character-select-popup, #Heat-victory-announcer)
+2P -> bag1-character.md (#Two-player-autoplay)
+stage -> bag1-character.md (#BAG1-and-BAG2-versions-side-by-side)
+
+### bag1-stage-song.md
+stage -> bag1-stage-song.md (#BAG1-stage-import-findings, #Independent-Heat-stage-selection)
+song -> bag1-stage-song.md (#BAG1-stage-import-findings)
+audio -> bag1-stage-song.md (#BAG1-stage-import-findings)
+camera -> bag1-stage-song.md (#BAG1-stage-import-findings)
+destruction -> bag1-stage-song.md (#BAG1-stage-import-findings)
+
+### online.md
+netplay -> online.md (#Online-play)
+netsync -> online.md (#Online-step-sync)
+latency -> online.md (#Audio-latency)
+release -> online.md (#Release-v7)
+installer -> online.md (#Windows-installer)
+
+### endings-view.md
+ending -> endings-view.md (#Current-continuation-point, #Scope, #Tests-and-commands)
+HD menu -> endings-view.md (#Current-continuation-point)
+
+### regional.md
+regional -> regional.md (#Regional-content-Launcher)
+announcer -> regional.md (#Regional-content-Launcher)
+songs -> regional.md (#Regional-content-Launcher)
+US title -> regional.md (#US-title-logo)
+
+### project.md
+builds -> project.md (#Game, #Folder-contents)
+snapshot -> project.md (#Save-data)
+
+### character-pipeline.md
+pipeline -> character-pipeline.md (#Shared-facts-vs-character-data, #Animation-contract-rules)
+profile -> character-pipeline.md (#Profile-initialization)
+
+### ui-mods.md
+fonts -> ui-mods.md (#HD-fonts)
+MODS -> ui-mods.md (#Phase-2-in-game-MODS-menu)
+keyboard -> ui-mods.md (#In-game-keyboard-rebinding)
+
+### assets.md
+assets -> assets.md (#Asset-toolkit-and-extracted-data)
+
+### agent-handoff.md
+handoff -> agent-handoff.md (#Cómo-retomar-el-trabajo)
+
+## Búsqueda por Tema
+
+### Importar personaje BAG1
+Lee: IMPORT_STANDARD.md -> CHARACTER_IMPORT.md -> notes/bag1-character.md -> NOTES.md
+
+### Verificar estado actual
+Lee: _work/current-state.json -> NOTES.md -> AGENTS.md
+
+### Buscar por término
+Usar: grep -i "término" notes/*.md o buscar en este archivo .idx
+
+### Mantener notas
+Lee: MAINTENANCE_GUIDE.md
