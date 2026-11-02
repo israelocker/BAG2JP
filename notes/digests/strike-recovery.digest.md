@@ -9,7 +9,7 @@ updated: "2026-11-02"
 edited: "2026-11-02"
 doc_kind: digest
 source: "notes/strike-recovery.md"
-source_sha256: "5f8c88ff2ad2425abfdaf0ec7ba612c15b9cf5d2f3914ff62d7d1565009e40af"
+source_sha256: "42b921fdbd866be120c47a3406cf3dbd869a9dd5e6b0a7da07aa060422b12ffe"
 ---
 
 # Strike: estado vigente

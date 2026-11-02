@@ -2,7 +2,7 @@
 id: strike-import-recovery
 title: "Strike: evidencia vigente y pendientes"
 tags: ["strike", "bag1", "acceptance"]
-summary: "Integrado con mods; dos partidas completas verificadas. Fidelidad, P1/B/P2/A y fever propio pendientes; no aceptación final."
+summary: "Integrado con mods; cuatro combinaciones lado/traje completaron canción y retorno. Fidelidad, fever propio y aceptación visual pendientes."
 related: ["notes/character-alternate-entries.md", "notes/character-import-testing.md", "notes/character-pipeline.md"]
 created: "2026-11-01"
 updated: "2026-11-02"
@@ -33,11 +33,13 @@ Runs bajo `_work/versus-runs/`, con `result.json`, logs y capturas:
 | Run | Caso | Resultado automático |
 |---|---|---|
 | `20261102T102131125467Z-strike-bag1-full-a` | Strike BAG1 P1/A vs Heat BAG2 P2/A | Canción y retorno en 161,2 s desde gameplay |
+| `20261102T112902135591Z-strike-p1-b` | Strike BAG1 P1/B vs Heat BAG2 P2/A | Canción y retorno en 161,0 s |
 | `20261102T102625676713Z-strike-bag1-full-p2-b` | Heat BAG2 P1/A vs Strike BAG1 P2/B | Canción y retorno en 162,2 s |
+| `20261102T113407353131Z-strike-p2-a` | Heat BAG2 P1/A vs Strike BAG1 P2/A | Canción y retorno en 163,4 s |
 
-Ambos: `complete_awaiting_visual_review`, ajustes/keybinds/state restaurados y
-21 saves preservados según resultado. Primer retorno revisado visualmente;
-P2/B gameplay muestra posible artefacto del pecho. No aceptación visual final.
+Todos los cuatro casos P1/P2 × A/B pasaron canción y retorno.
+P2/B gameplay mostró posible artefacto del pecho; revisar capturas de los cuatro casos.
+No aceptación visual final.
 Escenario/canción usados: Heat BAG2; no acreditan contenido propio Strike BAG1.
 Logs fever1/fever2 no prueban fidelidad de solo/dueto BAG1.
 
@@ -62,8 +64,10 @@ conserva toda la secuencia e inventarios, sin autoridad sobre el estado actual.
 
 ## Falta para aceptar
 
-Comparación nativa de UV/CLUT/traje B y animaciones, P1/B y P2/A completos,
-fever aplicable y audio por escucha; capacidades adicionales según alcance.
+Comparación nativa de UV/CLUT/traje B y animaciones, fever aplicable y audio
+por escucha; capacidades adicionales según alcance. Las cuatro combinaciones
+lado/traje ya completaron flujo completo, pero no se aceptan visualmente ni
+certifican fidelidad BAG1.
 Perfil/cache pueden contener estado anterior: contrastar evidencia, no subirlos
 a verified para ocultar gaps. Código/payload previos siguen sin checkpoint final
 de importación; los commits documentales no sustituyen su aceptación.
