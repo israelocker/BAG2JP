@@ -23,7 +23,12 @@ def heat_roles():
     for e in (60, 96, 132, 168): ROLE[e] = (0, 1)
     for e in (22, 40): ROLE[e] = (0, 2)
     ROLE[200] = (0, 3)
+def strike_roles():
+    # BAG2 char id 1 = Strike. Tables: packs 73/74/145/146, models 109/110/181/182
+    for e in (73, 145): ROLE[e] = (1, 0)   # costume A/B p1
+    for e in (74, 146): ROLE[e] = (1, 1)   # costume A/B p2
 heat_roles()
+strike_roles()
 
 disc, out_pkg, header, mods = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4:]
 f = open(disc, 'rb')
