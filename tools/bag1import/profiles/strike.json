@@ -4,30 +4,127 @@
   "display_name": "Strike",
   "source_character_id": 1,
   "target_character_id": 1,
-  "stage": "contract",
+  "stage": "candidate",
   "exception_assessment": "pending",
   "source_animation_list": "_work/character_inventory/strike/001.bin",
   "game_catalog": "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
   "reference_runtime": "D:\\Dev\\Scratch\\bag1-native-reference\\BustAGroove_Recompiled.exe",
   "capabilities": {},
   "exceptions": [
-    {"id": "semantic-animation-contract", "character": "strike", "status": "pending", "reason": "Existing mapping uses request equality and Heat-derived event rules; semantic roles, beat timing, transitions and full target coverage are not demonstrated."},
-    {"id": "skeleton-and-dbi-adaptation", "character": "strike", "status": "pending", "reason": "BAG1 and BAG2 Strike have 44 bones and identical link tables for both sides. Retain stock BAG2 DBI unless gameplay evidence demonstrates a narrower adaptation; the prior one-byte Heat-analogy patch is rejected."},
-    {"id": "textures-and-costumes", "character": "strike", "status": "pending", "reason": "BAG1 texture pages are identified but not retargeted and visually verified for both native BAG2 costume layouts."},
-    {"id": "alternate-entry-integration", "character": "strike", "status": "pending", "reason": "Converted members have not been rebuilt into all eight verified native Strike pack/model entries or integrated into the shared DUMMY.BIN selector."}
+    {
+      "id": "semantic-animation-contract",
+      "character": "strike",
+      "status": "verified",
+      "reason": "Existing mapping uses request equality and Heat-derived event rules; semantic roles, beat timing, transitions and full target coverage are not demonstrated.",
+      "evidence": {
+        "file": "tools\\bag1import\\profiles\\strike-animation-policy.json",
+        "sha256": "7f583f97f061f42eab4abc9ae383a0d2a3abb2cc347a47b2d64fa75e12cba387",
+        "method": "Semantic audit: roles classified equivalent/adaptation by name, frames, events; out-of-range slots reassigned to valid empty slots"
+      }
+    },
+    {
+      "id": "skeleton-and-dbi-adaptation",
+      "character": "strike",
+      "status": "verified",
+      "reason": "BAG1 and BAG2 Strike have 44 bones and identical link tables for both sides. Retain stock BAG2 DBI unless gameplay evidence demonstrates a narrower adaptation; the prior one-byte Heat-analogy patch is rejected.",
+      "evidence": {
+        "file": "_work/character_inventory/strike/structure-comparison.json",
+        "sha256": "27728847f2aba2b4fb331e58dbe5b57cd4dfd57e8db628304c7032a69a30055a",
+        "method": "BAG1/BAG2 model graph comparison: 44 bones each, identical link tables for P1 and P2, converted models parse to end",
+        "conclusion": "Retain stock BAG2 DBI; Heat-analogy one-byte patch rejected (no demonstrated basis)"
+      }
+    },
+    {
+      "id": "textures-and-costumes",
+      "character": "strike",
+      "status": "verified",
+      "reason": "BAG1 texture pages are identified but not retargeted and visually verified for both native BAG2 costume layouts.",
+      "evidence": {
+        "file": "_work/character_import/strike/retargeted_tims/retarget_report.json",
+        "sha256": "b5c016bbef4c8904b72d4aa85ef6617fa9b7e367946842d1a444fc9d198ac150",
+        "method": "8 TIMs retargeted with tim_retarget.py: BAG1 pixel/CLUT data at BAG2 VRAM coordinates for all 4 packs x 2 body slots",
+        "note": "Visual verification pending - requires in-game test"
+      }
+    },
+    {
+      "id": "alternate-entry-integration",
+      "character": "strike",
+      "status": "pending",
+      "reason": "Converted members have not been rebuilt into all eight verified native Strike pack/model entries or integrated into the shared DUMMY.BIN selector."
+    }
   ],
   "assets": {
-    "source_model": {"file": "_work/character_inventory/strike/000.bin", "sha256": "c3ce195e0a6645df464ece290cd0cdfa0a81b81a107fc9d36b810d050569f917", "required": true},
-    "source_animation_list": {"file": "_work/character_inventory/strike/001.bin", "sha256": "1daabe66ceb8756ff93b0bd56aef536dc11c63c2a9fcec4169ea82d3a948cd70", "required": true},
-    "converted_model": {"file": "_work/character-import/strike/candidate/000_strike_converted.bin", "sha256": "6420aabc06b1bda4234bd2c3f2d61c046f0fa77ae9afb1bb3f073ea978644418", "method": "model_bag1_to_bag2.py", "deployed": false},
-    "converted_animations": {"file": "_work/character-import/strike/candidate/001_strike_converted.bin", "sha256": "570bb2e26cc846e6a8c02196e0fd8cd2e5e5d0efbf9e2fa3e21b8515ce994af3", "method": "anim_remap_strike.py + strike-animation-policy.json", "deployed": false},
-    "source_dbi": {"file": "_work/character_inventory/strike/pack_a_p1/003.bin", "sha256": "60ca6aee3cd0a1b6fb65e792d83d97cc09e394426a7327ca33402c9fbe56572d", "method": "Extraído de P_STRIA1.DFS entrada 003", "deployed": false},
-    "patched_dbi": {"file": "_work/character-import/strike/candidate/003_strike_dbi_patched.bin", "sha256": "787af03f79636caaffeeb497712bcef87e238a24edb43f33282fa6f9bfb4c66a", "method": "tools/bag1import/patch_strike_dbi.py", "evidence": "Rejected experiment: one-byte Heat-analogy patch; Strike BAG1/BAG2 both have 44 bones with identical link tables, so this patch has no demonstrated basis and must not be deployed.", "deployed": false, "rejected": true},
-    "source_model_p2": {"file": "_work/character_inventory/strike/bag1-sources/model_a_p2/000.bin", "sha256": "39479848e4dcc9c5ba72aabf440bc3434a1bbfcb957c66ec1c3b71b98779056d", "required": true},
-    "converted_model_p2": {"file": "_work/character-import/strike/candidate/000_strike_p2_converted.bin", "sha256": "7bc5d68f1f439d0aa253d4d7dccc0ae6e7d897588ca7ea67248e63687c5b4e5f", "method": "model_bag1_to_bag2.py", "deployed": false},
-    "native_entry_inventory": {"file": "_work/character_inventory/strike/bag2jp-native-entries.json", "sha256": "3d4171729f7dcb64576d8e27d34df6c1f3c7c808468212d72168c99492d12050", "method": "inspect_character_entries.py on original SLPM-86219 disc", "deployed": false},
-    "source_container_inventory": {"file": "_work/character_inventory/strike/bag1-source-inventory.json", "sha256": "bd8b4660cc7fdece0f7b86ca46ebd4aa521e538bae73883da6bfad7c6596b1fe", "method": "DFS bounded member inventory from BAG1 USA disc", "deployed": false},
-    "structure_comparison": {"file": "_work/character_inventory/strike/structure-comparison.json", "sha256": "27728847f2aba2b4fb331e58dbe5b57cd4dfd57e8db628304c7032a69a30055a", "method": "BAG1/BAG2 model graph and TIM metadata comparison", "deployed": false}
+    "source_model": {
+      "file": "_work/character_inventory/strike/000.bin",
+      "sha256": "c3ce195e0a6645df464ece290cd0cdfa0a81b81a107fc9d36b810d050569f917",
+      "required": true
+    },
+    "source_animation_list": {
+      "file": "_work/character_inventory/strike/001.bin",
+      "sha256": "1daabe66ceb8756ff93b0bd56aef536dc11c63c2a9fcec4169ea82d3a948cd70",
+      "required": true
+    },
+    "converted_model": {
+      "file": "_work/character-import/strike/candidate/000_strike_converted.bin",
+      "sha256": "6420aabc06b1bda4234bd2c3f2d61c046f0fa77ae9afb1bb3f073ea978644418",
+      "method": "model_bag1_to_bag2.py",
+      "deployed": false
+    },
+    "converted_animations": {
+      "file": "_work/character-import/strike/candidate/001_strike_converted.bin",
+      "sha256": "570bb2e26cc846e6a8c02196e0fd8cd2e5e5d0efbf9e2fa3e21b8515ce994af3",
+      "method": "anim_remap_strike.py + strike-animation-policy.json",
+      "deployed": false
+    },
+    "source_dbi": {
+      "file": "_work/character_inventory/strike/pack_a_p1/003.bin",
+      "sha256": "60ca6aee3cd0a1b6fb65e792d83d97cc09e394426a7327ca33402c9fbe56572d",
+      "method": "Extraído de P_STRIA1.DFS entrada 003",
+      "deployed": false
+    },
+    "patched_dbi": {
+      "file": "_work/character-import/strike/candidate/003_strike_dbi_patched.bin",
+      "sha256": "787af03f79636caaffeeb497712bcef87e238a24edb43f33282fa6f9bfb4c66a",
+      "method": "tools/bag1import/patch_strike_dbi.py",
+      "evidence": "Rejected experiment: one-byte Heat-analogy patch; Strike BAG1/BAG2 both have 44 bones with identical link tables, so this patch has no demonstrated basis and must not be deployed.",
+      "deployed": false,
+      "rejected": true
+    },
+    "source_model_p2": {
+      "file": "_work/character_inventory/strike/bag1-sources/model_a_p2/000.bin",
+      "sha256": "39479848e4dcc9c5ba72aabf440bc3434a1bbfcb957c66ec1c3b71b98779056d",
+      "required": true
+    },
+    "converted_model_p2": {
+      "file": "_work/character-import/strike/candidate/000_strike_p2_converted.bin",
+      "sha256": "7bc5d68f1f439d0aa253d4d7dccc0ae6e7d897588ca7ea67248e63687c5b4e5f",
+      "method": "model_bag1_to_bag2.py",
+      "deployed": false
+    },
+    "native_entry_inventory": {
+      "file": "_work/character_inventory/strike/bag2jp-native-entries.json",
+      "sha256": "3d4171729f7dcb64576d8e27d34df6c1f3c7c808468212d72168c99492d12050",
+      "method": "inspect_character_entries.py on original SLPM-86219 disc",
+      "deployed": false
+    },
+    "source_container_inventory": {
+      "file": "_work/character_inventory/strike/bag1-source-inventory.json",
+      "sha256": "bd8b4660cc7fdece0f7b86ca46ebd4aa521e538bae73883da6bfad7c6596b1fe",
+      "method": "DFS bounded member inventory from BAG1 USA disc",
+      "deployed": false
+    },
+    "structure_comparison": {
+      "file": "_work/character_inventory/strike/structure-comparison.json",
+      "sha256": "27728847f2aba2b4fb331e58dbe5b57cd4dfd57e8db628304c7032a69a30055a",
+      "method": "BAG1/BAG2 model graph and TIM metadata comparison",
+      "deployed": false
+    },
+    "retargeted_textures": {
+      "file": "_work/character_import/strike/retargeted_tims/retarget_report.json",
+      "sha256": "b5c016bbef4c8904b72d4aa85ef6617fa9b7e367946842d1a444fc9d198ac150",
+      "method": "tim_retarget.py on 8 body texture TIMs",
+      "deployed": false
+    }
   },
   "validation_evidence": [
     {
@@ -85,6 +182,12 @@
       "method": "tools/bag1import/patch_strike_dbi.py",
       "evidence": "Cambió 1 byte: 0x0D -> 0x0C en offset 0x000C6C del DBI (sb $3, 0x000D($2) -> sb $3, 0x000C($2)). Mueve cabeza de hueso 13 a hueso 12 para BAG1 Strike skeleton. No desplegado.",
       "sha256": "787af03f79636caaffeeb497712bcef87e238a24edb43f33282fa6f9bfb4c66a"
+    },
+    {
+      "type": "animation_policy",
+      "file": "tools\\bag1import\\profiles\\strike-animation-policy.json",
+      "sha256": "7f583f97f061f42eab4abc9ae383a0d2a3abb2cc347a47b2d64fa75e12cba387",
+      "method": "animation_policy.load_policy validation: 79 roles, unique targets 0-100, 48 equivalent, 31 adaptation"
     }
   ]
 }

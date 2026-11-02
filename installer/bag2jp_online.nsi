@@ -9,7 +9,7 @@ RequestExecutionLevel user
 
 !define APPNAME   "Bust A Move 2 Online"
 !define APPKEY    "BAG2JP-Online"
-!define VERSION   "1.0"
+!define VERSION   "2.0"
 !ifndef PAYLOAD
   !error "pass -DPAYLOAD=<folder>"
 !endif

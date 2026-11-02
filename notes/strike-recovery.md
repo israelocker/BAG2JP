@@ -121,8 +121,33 @@ Antes del próximo candidato:
 Los perfiles/caches y mensajes históricos que declaren etapas completas no sustituyen
 estas verificaciones. Strike BAG1 permanece **no aceptado**.
 
-El perfil `strike.json` volvió de `candidate/complete` a `contract/pending`, con
-cuatro excepciones explícitas. La política de animación anterior está marcada
+## Progreso actual (2026-11-02)
+
+Perfil `strike.json`: stage=`candidate`, 1 excepción pendiente (`alternate-entry-integration`).
+
+Completado:
+- target_character_id = 1 resuelto empíricamente (selector P1)
+- Entradas nativas verificadas: packs 73/74/145/146, modelos 109/110/181/182 (vía ISO9660 + tablas RAM)
+- Modelo convertido: P1 (61.244 bytes), P2 (53.076 bytes), ambos parsean hasta el final
+- Animaciones: política semántica con 79 roles (48 equivalent, 31 adaptación), targets únicos 0-100, validada con animation_policy.load_policy
+- Texturas: 8 TIMs retargeteadas con tim_retarget.py (cuerpo 004/005 por pack/lado), guardadas en _work/character_import/strike/retargeted_tims/
+- Esqueleto: 44 huesos idénticos BAG1/BAG2, tablas de enlaces iguales. Parche DBI de Heat rechazado.
+- Mods restaurados: 8 paquetes + bundled bag1-content, ejecutable original, state.toml baseline
+- Prueba en juego: Strike BAG2 vs Heat BAG1 llega a gameplay (popup, selección, inicio)
+- Suite host: 99 pruebas aprobadas, incluidas seguridad de conversión de animación y inspección de entradas de tabla
+
+Pendiente (alternate-entry-integration):
+- Reconstruir 8 contenedores DFS con miembros convertidos (modelos convertidos + texturas retargeteadas + DBI/SEDT stock)
+- Integrar con make_alt_entries.py + bag2jp_bag1_versions.c (mecanismo DUMMY.BIN)
+- Agregar overlay a manifest de bag1-content
+- Probar en juego: ambos lados, ambos trajes, canción completa, retorno
+
+Bloqueador: la integración de entradas alternativas requiere reconstruir contenedores DFS
+completos con miembros convertidos y crear overlays sector-alineados para make_alt_entries.py.
+Esta es ingeniería inversa de disco que requiere tiempo dedicado.
+
+El perfil `strike.json` pasó de `candidate/complete` a `contract/pending`, luego a `candidate`
+con excepciones explícitas. La política de animación anterior está marcada
 `rejected_request_equality_only`; `anim_remap_strike.py` falla cerrado y no escribe
 salida mientras su estado no sea `accepted_local` o `verified`. Esta barrera tiene
 regresión automatizada. Suite host tras el cambio: 99 pruebas aprobadas.

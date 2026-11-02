@@ -28,6 +28,22 @@ TU PARTIDA (MEMORY CARD)
   Viene una partida guardada con todo desbloqueado (todos los personajes
   y DANCE VIEW). El juego la carga solo al iniciar.
 
+HEAT DE BUST A GROOVE 1 (NUEVO)
+  Ahora Heat viene en dos versiones: la de este juego y la del primer
+  Bust A Groove (su modelo, sus pasos, sus voces, su escenario con las
+  ventanas de fuego y su cancion "2 Bad").
+  - Al elegir personaje (Circulo) se abre una ventanita:
+      GAME     BAG 1 / BAG 2   (por ahora solo Heat)
+      COSTUME  A / B           (traje; antes estaba escondido en Triangulo)
+    Arriba/abajo cambia de fila, izquierda/derecha cambia el valor,
+    Circulo confirma y X vuelve a la seleccion.
+  - El escenario y la cancion de Heat salen en la version del jugador que
+    eligio a Heat (si los dos lo eligieron, manda el jugador 1).
+  - Online: cada uno elige en su ventana y los dos PCs ven lo mismo. Si
+    el otro jugador tiene una version sin este contenido, se usa el Heat
+    de BAG2 en los dos.
+  - Para apagarlo: launcher > Mods > "Bust A Groove 1 content".
+
 CONTROLES (teclado por defecto)
   Flechas = cruceta    X = Cruz     S = Circulo
   Z = Cuadrado         A = Triangulo

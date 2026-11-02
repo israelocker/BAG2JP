@@ -1,0 +1,31 @@
+format_version = 11
+id = "bag2jp.feature.endings-view"
+version = "1.0.0"
+name = "Ending View"
+author = "BAG2JP"
+description = "Adds ENDING VIEW to the main menu: choose a character and costume with the game's own selector, then watch that character's ending."
+resolver = "declarative"
+
+[[target]]
+game_id = "SLPM-86219"
+disc_sha256 = "fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268"
+
+[[feature]]
+id = "endings-view"
+name = "Ending View"
+description = "Main menu > ENDING VIEW. The character and costume come from the stock selector."
+group = "Interface"
+default_enabled = true
+
+[[plugin]]
+feature = "endings-view"
+id = "bag2jp.endings_view"
+
+[[resource]]
+feature = "endings-view"
+id = "menu_hd"
+label = "HD main-menu artwork"
+description = "Owner-supplied six-label menu atlas and provenance."
+format = "directory"
+default = "menu_hd"
+required = false

@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import struct
 import tempfile
+import datetime
 
 def file_sha(path):
     with Path(path).open("rb") as stream:
@@ -14,16 +15,31 @@ def file_sha(path):
 def load_profile(path, project):
     path, project = Path(path), Path(project)
     profile = json.loads(path.read_text(encoding="utf-8"))
-    if profile.get("schema") != 1 or not re.fullmatch(r"[a-z0-9-]+", profile.get("character", "")):
+    schema = profile.get("schema")
+    if schema not in (1, 2) or not re.fullmatch(r"[a-z0-9-]+", profile.get("character", "")):
         raise ValueError("Profile requires schema 1 and a character slug")
-    for key in ("source_animation_list", "game_catalog", "reference_runtime"):
-        if not isinstance(profile.get(key), str) or not profile[key]:
+    required = ("source_animation_list", "game_catalog", "reference_runtime")
+    if schema == 2:
+        required += ("display_name", "capabilities", "assets")
+    for key in required:
+        if not isinstance(profile.get(key), str if key not in ("assets","capabilities") else dict) or (key not in ("assets", "capabilities") and not profile[key]):
             raise ValueError(f"Missing profile field: {key}")
-    if profile.get("stage") not in ("inventory", "contract", "verified"):
+    stages = ("inventory", "contract", "verified") if schema == 1 else ("inventory", "contract", "candidate", "verified")
+    if profile.get("stage") not in stages:
         raise ValueError("Invalid workflow stage")
     for key in ("source_animation_list", "game_catalog", "reference_runtime"):
         if not (project / profile[key]).is_file():
             raise ValueError(f"Missing input: {key}")
+    if schema == 2:
+        if not isinstance(profile.get("capabilities"), dict):
+            raise ValueError("Missing capability map")
+        for asset in profile["assets"].values():
+            if not isinstance(asset, dict) or not asset.get("file") or not asset.get("sha256"):
+                raise ValueError("Asset records require file and sha256")
+            if not (project / asset["file"]).is_file():
+                raise ValueError(f"Missing asset input: {asset['file']}")
+            if file_sha(project / asset["file"]) != asset["sha256"]:
+                raise ValueError(f"Asset input changed: {asset['file']}")
     catalog = json.loads((project / profile["game_catalog"]).read_text(encoding="utf-8"))
     if catalog.get("schema") != 1 or not catalog.get("games"):
         raise ValueError("Invalid shared game catalog")
@@ -94,11 +110,104 @@ def motion_fingerprint_data(data):
     digest = hashlib.sha256(json.dumps(hashes, separators=(",", ":")).encode()).hexdigest()
     return digest, len(hashes)
 
+def _state_path(project, character):
+    return Path(project) / "_work" / "character-import" / character / "state.json"
+
+def _atomic_write_json(path, value):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n",
+                                         dir=path.parent, prefix=path.name+".", suffix=".tmp", delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(json.dumps(value, indent=2, sort_keys=True)+"\n")
+        temporary.replace(path)
+    except BaseException:
+        if temporary is not None and temporary.exists():
+            temporary.unlink()
+        raise
+
+def _missing_schema2_gaps(profile):
+    gaps = []
+    if profile.get("target_character_id") is None:
+        gaps.append("target_character_id")
+    if profile.get("stage") not in ("candidate", "verified"):
+        gaps.append("contract_not_approved")
+    if profile.get("exception_assessment") != "complete":
+        gaps.append("exception_assessment")
+    if profile.get("pending_exceptions", []):
+        gaps.append("pending_exceptions")
+    if profile.get("stage") == "verified" and not profile.get("validation_evidence"):
+        gaps.append("gameplay_evidence")
+    return gaps
+
+def acceptance_cases(profile):
+    capabilities = profile.get("capabilities", {})
+    cases = [{"id":"inventory-validation","category":"inventory","required":True},
+             {"id":"model-sides-costumes","category":"model","required":True},
+             {"id":"game-flow","category":"gameplay","required":True},
+             {"id":"song-end","category":"audio","required":True},
+             {"id":"return-to-selection","category":"gameplay","required":True}]
+    if capabilities.get("costumes"):
+        cases.append({"id":"costume-selection","category":"ui","required":True})
+    if capabilities.get("versions"):
+        cases.append({"id":"mixed-version","category":"online","required":capabilities.get("online_content",False)})
+    if capabilities.get("fever"):
+        cases.extend([{"id":"fever-solo","category":"gameplay","required":True},
+                      {"id":"fever-duet","category":"gameplay","required":"duet" in capabilities.get("fever",[])}])
+    if capabilities.get("stage"):
+        cases.append({"id":"stage-load","category":"stage","required":True})
+    if capabilities.get("song"):
+        cases.append({"id":"song-end","category":"audio","required":True})
+    if capabilities.get("ending"):
+        cases.append({"id":"ending-video-credits-return","category":"ending","required":True})
+    if capabilities.get("shared_announcer_name"):
+        cases.append({"id":"announcer-name","category":"audio","required":True})
+    if capabilities.get("online_content"):
+        cases.append({"id":"online-content-identity","category":"online","required":True})
+    return cases
+
+def character_plan(profile_path, project):
+    profile, pending = load_profile(profile_path, project)
+    gaps = _missing_schema2_gaps(profile) if profile.get("schema") == 2 else []
+    if profile.get("schema") != 2:
+        gaps.append("schema_2_required_for_plan")
+    if pending:
+        gaps.append("pending_exceptions")
+    gaps = sorted(set(gaps))
+    cases = acceptance_cases(profile) if profile.get("schema") == 2 else []
+    return {"schema":1,"character":profile["character"],"display_name":profile.get("display_name",profile["character"]),
+            "stage":profile.get("stage"),"pending_exceptions":pending,"gaps":gaps,
+            "prepare_ready":not gaps,"acceptance":cases,"next_action":"prepare" if not gaps else "resolve_gaps"}
+
+def write_state(project, plan, status="planned"):
+    state = {"schema":1,"character":plan["character"],"display_name":plan["display_name"],
+             "stage":plan["stage"],"status":status,"pending_exceptions":plan["pending_exceptions"],
+             "gaps":plan["gaps"],"prepare_ready":plan["prepare_ready"],"next_action":plan["next_action"],
+             "acceptance_count":len(plan["acceptance"]),"updated_utc":datetime.datetime.now(datetime.timezone.utc).isoformat()}
+    path = _state_path(project, plan["character"])
+    _atomic_write_json(path,state)
+    return path
+
+def prepare_workspace(profile_path, project):
+    profile, pending = load_profile(profile_path, project)
+    plan = character_plan(profile_path, project)
+    if plan["gaps"]:
+        raise ValueError("Cannot prepare: "+", ".join(plan["gaps"]))
+    root = Path(project) / "_work" / "character-import" / profile["character"] / "candidate"
+    root.mkdir(parents=True, exist_ok=True)
+    manifest = {"schema":1,"character":profile["character"],"status":"candidate_only",
+                "profile_sha256":file_sha(profile_path),"assets":profile.get("assets",{}),
+                "acceptance":plan["acceptance"],"deployed":False}
+    path = root / "manifest.json"
+    _atomic_write_json(path,manifest)
+    return {"status":"candidate_created","character":profile["character"],"manifest":str(path),"deployed":False}
+
 def signature(profile_path, project):
     profile, pending = load_profile(profile_path, project)
     digest, count = motion_fingerprint(Path(project) / profile["source_animation_list"])
     return {"schema": 1, "decoder": "metro-motion-prefix-v1", "character": profile["character"],
-            "profile_sha256": file_sha(profile_path),
             "catalog_sha256": file_sha(Path(project) / profile["game_catalog"]),
             "runtime_sha256": file_sha(Path(project) / profile["reference_runtime"]),
             "motion_sha256": digest, "animation_count": count}
@@ -204,7 +313,8 @@ def init_profile(project, profile_path, character, source_archive, source_list, 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("init-profile", "validate-profile", "cache-record", "cache-check"))
+    parser.add_argument("action", choices=("init-profile", "validate-profile", "cache-record", "cache-check",
+                                         "plan", "prepare", "status", "acceptance-plan"))
     parser.add_argument("--project", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument("--profile", type=Path, required=True)
     parser.add_argument("--cache", type=Path)
@@ -225,6 +335,18 @@ def main():
         result = {"status": "valid_profile", "character": profile["character"], "animation_count": count,
                   "stage": profile["stage"], "pending_exceptions": pending,
                   "generation_ready": profile["stage"] == "verified" and not pending}
+    elif args.action in ("plan","status","acceptance-plan"):
+        plan = character_plan(args.profile, args.project)
+        if args.action == "acceptance-plan":
+            result = {"status":"acceptance_plan","character":plan["character"],"cases":plan["acceptance"]}
+        else:
+            result = {"status":args.action+"_ready","character":plan["character"],"plan":plan}
+            if args.action == "plan":
+                write_state(args.project, plan, "planned")
+    elif args.action == "prepare":
+        result = prepare_workspace(args.profile, args.project)
+        plan = character_plan(args.profile, args.project)
+        write_state(args.project, plan, "candidate_created")
     else:
         if args.cache is None:
             parser.error("--cache is required for cache actions")

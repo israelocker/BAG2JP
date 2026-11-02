@@ -7,8 +7,12 @@ Notes are split by topic in notes/ (read only the file you need; grep across the
 - notes/regional.md — Regional content, songs and announcer options, CD-quality songs
 - notes/assets.md — Asset toolkit, archive layout, extracted data
 - notes/ui-mods.md — HD fonts/UI packs, in-game MODS menu, keyboard rebinding
+- notes/game-controls.md — Named versus harness, actual P1/P2 bindings, visual gates, restoration and limited Heat/Comet/Strike catalog
+- notes/endings-view.md — Direct character/costume endings menu, JP hooks and acceptance ledger
 - notes/online.md — Online play, netsync, audio latency, v7 release and installer
 - notes/character-pipeline.md - Shared character workflow, profiles, role contracts, reference cache and implementation boundaries
+- notes/strike-recovery.md - Mods restored and Strike BAG2/Heat BAG1 gameplay verified; Strike BAG1 candidate remains unaccepted, shared alternate-entry integration required
+- CHARACTER_IMPORT.md - Canonical compact runbook for importing a BAG1 character into BAG2JP
 - notes/bag1-character.md — BAG1 import: Heat character (model, anims, dance grid, fever, voices), 2P autoplay, planned popups
 - notes/bag1-stage-song.md — BAG1 import: stage port, song chart and audio, camera, sounds, destruction, testing/debug tools
 

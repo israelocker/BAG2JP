@@ -53,6 +53,13 @@ def process_identity(pid: int) -> dict:
     return data
 
 
+def assert_process_safe(pid: int) -> None:
+    """Verifica que el proceso siga vivo y sea el ejecutable experimental esperado."""
+    if pid <= 0:
+        raise ValueError("Positive game PID required")
+    process_identity(pid)
+
+
 def tail(path: Path) -> str:
     """Read bounded log suffixes, avoiding repeated whole-log ingestion."""
     with path.open("rb") as stream:

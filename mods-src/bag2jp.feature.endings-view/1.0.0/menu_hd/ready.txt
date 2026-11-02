@@ -1,0 +1,66 @@
+{
+  "source_sha256": "abb9ab9f8bd5cb0c7d75815ca7fd64b4d8f0eaa28dda80c8a1acbb5955fb8461",
+  "source_size": [
+    1306,
+    816
+  ],
+  "source_bands": [
+    0,
+    147,
+    294,
+    441,
+    577,
+    694,
+    816
+  ],
+  "atlas_size": [
+    1536,
+    960
+  ],
+  "cells": [
+    [
+      0,
+      0,
+      186
+    ],
+    [
+      0,
+      24,
+      186
+    ],
+    [
+      0,
+      48,
+      121
+    ],
+    [
+      0,
+      72,
+      148
+    ],
+    [
+      101,
+      96,
+      91
+    ],
+    [
+      0,
+      96,
+      101
+    ]
+  ],
+  "visible_heights": [
+    17,
+    16,
+    17,
+    18,
+    18,
+    17
+  ],
+  "art_scale": 0.85,
+  "files": [
+    "texupload-P4-D4255CD8ACD2DF66-FB65B34C7CE811F3-48x120-0-0-192x120-P0-15.png",
+    "texupload-P4-D4255CD8ACD2DF66-A8C5D7D627730B15-48x120-0-0-192x120-P0-15.png"
+  ],
+  "source": "Owner-supplied menu artwork; no generated lettering"
+}

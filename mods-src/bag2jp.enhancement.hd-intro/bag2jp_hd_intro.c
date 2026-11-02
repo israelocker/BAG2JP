@@ -41,6 +41,7 @@ enum { HD_IDLE = 0, HD_PLAYING = 1 };
 
 static uint32_t s_str_lba = HD_STR_LBA_FALLBK, s_str_end = HD_STR_LBA_FALLBK + HD_STR_SECTORS;
 static char s_movie_path[1024];
+static char s_intro_path[1024];
 static int  s_movie_ok;
 
 /* emulation thread */
@@ -58,10 +59,11 @@ static SDL_Mutex*  s_lock;
 static SDL_Condition* s_wake;
 static SDL_Thread* s_thread;
 static uint8_t* s_front;                       /* BGRA, guarded by s_lock */
-static uint8_t* s_back;                        /* worker only */
 static int s_w, s_h;                           /* movie size */
 static uint64_t s_front_seq, s_drawn_seq;      /* s_drawn_seq: render thread */
 static int s_have_front;
+static int s_external, s_hud_registered;
+static atomic_int s_audio_done;
 
 /* Small diagnostic log next to the executable (bag2jp_hd_intro.log). */
 static FILE* s_log;
@@ -95,12 +97,18 @@ static int video_worker(void* unused) {
         while (!atomic_load(&s_active) || atomic_load(&s_generation) == seen_gen)
             SDL_WaitCondition(s_wake, s_lock);
         seen_gen = atomic_load(&s_generation);
+        char movie_path[sizeof s_movie_path];
+        memcpy(movie_path, s_movie_path, sizeof movie_path);
         SDL_UnlockMutex(s_lock);
 
-        plm_t* v = plm_create_with_filename(s_movie_path);
+        plm_t* v = plm_create_with_filename(movie_path);
         if (!v) { psx_mod_counter_add("bag2jp.hd_intro.video_open_failed", 1); continue; }
         plm_set_audio_enabled(v, 0);
         plm_set_loop(v, 0);
+        const int w = plm_get_width(v), h = plm_get_height(v);
+        if (w <= 0 || h <= 0 || w > 4096 || h > 4096) { plm_destroy(v); continue; }
+        uint8_t* pixels = (uint8_t*)malloc((size_t)w * h * 4);
+        if (!pixels) { plm_destroy(v); continue; }
         plm_frame_t* f;
         while (atomic_load(&s_active) && atomic_load(&s_generation) == seen_gen &&
                (f = plm_decode_video(v)) != NULL) {
@@ -111,17 +119,26 @@ static int video_worker(void* unused) {
                 atomic_fetch_add(&s_frames_dropped, 1);
                 continue;
             }
-            plm_frame_to_bgra(f, s_back, s_w * 4);
+            plm_frame_to_bgra(f, pixels, w * 4);
             while (atomic_load(&s_active) && atomic_load(&s_generation) == seen_gen &&
                    clock_seconds() < f->time)
                 SDL_Delay(2);
             SDL_LockMutex(s_lock);
-            uint8_t* t = s_front; s_front = s_back; s_back = t;
-            s_front_seq++;
-            s_have_front = 1;
-            atomic_fetch_add(&s_frames_shown, 1);
+            if (atomic_load(&s_active) && atomic_load(&s_generation) == seen_gen) {
+                if (!s_front || w != s_w || h != s_h) {
+                    uint8_t* resized = (uint8_t*)realloc(s_front, (size_t)w * h * 4);
+                    if (resized) { s_front = resized; s_w = w; s_h = h; }
+                }
+                if (s_front && s_w == w && s_h == h) {
+                    memcpy(s_front, pixels, (size_t)w * h * 4);
+                    s_front_seq++;
+                    s_have_front = 1;
+                    atomic_fetch_add(&s_frames_shown, 1);
+                }
+            }
             SDL_UnlockMutex(s_lock);
         }
+        free(pixels);
         plm_destroy(v);
     }
     return 0;
@@ -156,6 +173,7 @@ static void hd_pcm(int16_t* stereo, uint32_t frames) {
                     s_abuf_len = (int)smp->count;
                 } else {
                     s_abuf_len = 0;
+                    atomic_store(&s_audio_done, 1);
                 }
                 s_abuf_pos = 0;
             }
@@ -184,11 +202,14 @@ static void hd_start(void) {
     }
     s_abuf_len = s_abuf_pos = 0;
     atomic_store(&s_audio_frames, 0);
+    atomic_store(&s_audio_done, 0);
     atomic_store(&s_frames_shown, 0);
     atomic_store(&s_frames_dropped, 0);
+    atomic_store(&s_draw_calls, 0);
     SDL_LockMutex(s_lock);
     s_have_front = 0;
     atomic_store(&s_active, 1);
+    psx_host_set_hud_continuous_present(1);
     atomic_fetch_add(&s_generation, 1);
     SDL_SignalCondition(s_wake);
     SDL_UnlockMutex(s_lock);
@@ -200,23 +221,31 @@ static void hd_start(void) {
 static void hd_stop(void) {
     SDL_LockMutex(s_lock);
     atomic_store(&s_active, 0);
+    psx_host_set_hud_continuous_present(0);
     atomic_fetch_add(&s_generation, 1);
     s_have_front = 0;
     SDL_UnlockMutex(s_lock);
     if (s_audio) { plm_destroy(s_audio); s_audio = NULL; }
     s_state = HD_IDLE;
     psx_mod_counter_add("bag2jp.hd_intro.stopped", 1);
-    hd_log("stop: lba %d, audio %.2f s, video frames shown %d dropped %d",
+    hd_log("stop: lba %d, audio %.2f s, video frames shown %d dropped %d draw_calls %d",
            cdrom_get_delivered_lba(), clock_seconds(),
-           atomic_load(&s_frames_shown), atomic_load(&s_frames_dropped));
+           atomic_load(&s_frames_shown), atomic_load(&s_frames_dropped), atomic_load(&s_draw_calls));
 }
 
 static void hd_vblank(void) {
+    if (s_external) {
+        if (atomic_load(&s_audio_done)) { hd_stop(); s_external = 0; }
+        return;
+    }
     if (!s_movie_ok) return;
     const int lba = cdrom_get_delivered_lba();
     const int in_str = lba >= (int)s_str_lba && lba < (int)s_str_end;
     if (s_state == HD_IDLE) {
         if (in_str && (uint32_t)lba < s_str_lba + HD_START_WINDOW && lba != s_last_lba) {
+            SDL_LockMutex(s_lock);
+            memcpy(s_movie_path, s_intro_path, sizeof s_movie_path);
+            SDL_UnlockMutex(s_lock);
             hd_start();
             s_stall = 0;
         }
@@ -241,14 +270,43 @@ static int probe_movie(void) {
     plm_destroy(p);
     if (w <= 0 || h <= 0 || w > 4096 || h > 4096) return 0;
     if (rate != 44100) psx_mod_counter_add("bag2jp.hd_intro.samplerate_not_44100", 1);
-    if (!s_front || w != s_w || h != s_h) {
-        free(s_front); free(s_back);
-        s_front = (uint8_t*)calloc((size_t)w * h, 4);
-        s_back = (uint8_t*)calloc((size_t)w * h, 4);
-        if (!s_front || !s_back) return 0;
-        s_w = w; s_h = h;
-    }
+    return rate == 44100;
+}
+
+/* Shared player: called on the emulation thread with a trusted absolute resource path.
+ * Independent of the optional HD-opening feature. Returns zero before changing playback
+ * if media cannot be opened; the caller can retain its original game flow. */
+int bag2jp_movie_start(const char* path) {
+    if (!path || !*path || strlen(path) >= sizeof s_movie_path) return 0;
+    if (atomic_load(&s_active)) return 0;
+    if (!s_lock) s_lock = SDL_CreateMutex();
+    if (!s_wake) s_wake = SDL_CreateCondition();
+    if (!s_lock || !s_wake) return 0;
+    SDL_LockMutex(s_lock);
+    snprintf(s_movie_path, sizeof s_movie_path, "%s", path);
+    SDL_UnlockMutex(s_lock);
+    if (!probe_movie()) return 0;
+    if (!s_thread) s_thread = SDL_CreateThread(video_worker, "bag2jp-movie", NULL);
+    if (!s_thread) return 0;
+    if (!s_hud_registered) { bag2jp_hud_add(hd_draw, NULL); s_hud_registered = 1; }
+    s_external = 1;
+    hd_start();
+    if (!s_audio) { hd_stop(); s_external = 0; return 0; }
     return 1;
+}
+int bag2jp_movie_playing(void) { return s_external && atomic_load(&s_active); }
+void bag2jp_movie_stop(void) {
+    if (s_external) { hd_stop(); s_external = 0; }
+}
+/* Ending plugin owns these calls even when the opening-movie plugin is disabled. */
+void bag2jp_movie_tick(void) {
+    if (s_external && atomic_load(&s_audio_done)) bag2jp_movie_stop();
+}
+void bag2jp_movie_pcm(int16_t* stereo, uint32_t frames) {
+    if (s_external) hd_pcm(stereo, frames);
+}
+static void hd_intro_pcm(int16_t* stereo, uint32_t frames) {
+    if (!s_external) hd_pcm(stereo, frames);
 }
 
 static void bag2jp_hd_intro_activate(void) {
@@ -258,6 +316,7 @@ static void bag2jp_hd_intro_activate(void) {
     }
     const char* base = SDL_GetBasePath();
     snprintf(s_movie_path, sizeof s_movie_path, "%smovies/%s", base ? base : "", HD_MOVIE_NAME);
+    memcpy(s_intro_path, s_movie_path, sizeof s_intro_path);
     uint32_t lba = 0, size = 0;
     if (psx_mod_disc_file_extent(HD_STR_PATH, &lba, &size) && lba && size) {
         s_str_lba = lba;
@@ -271,11 +330,11 @@ static void bag2jp_hd_intro_activate(void) {
     s_state = HD_IDLE;
     s_last_lba = -1;
     atomic_store(&s_active, 0);
-    bag2jp_hud_add(hd_draw, NULL);
+    if (!s_hud_registered) { bag2jp_hud_add(hd_draw, NULL); s_hud_registered = 1; }
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_hd_intro) {
     (void)psx_mod_register_activation_plugin("bag2jp.hd_intro", bag2jp_hd_intro_activate);
     (void)psx_mod_register_vblank_plugin("bag2jp.hd_intro", hd_vblank);
-    (void)psx_mod_register_pcm_plugin("bag2jp.hd_intro", hd_pcm);
+    (void)psx_mod_register_pcm_plugin("bag2jp.hd_intro", hd_intro_pcm);
 }

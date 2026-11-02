@@ -3,7 +3,7 @@
 # 1. NSIS without root: apt-get download nsis nsis-common; dpkg-deb -x each into ~/tools/nsis
 # 2. Payload = the clean release folder (here: extracted from the portable zip).
 set -e
-REL=~/mnt/Dev/Recomp/BAG2JP/releases/v7-online-portable
+REL=${1:-~/mnt/Dev/Recomp/BAG2JP/releases/v8-bag1-heat}
 PAY=~/work/installer/payload
 if [ ! -f "$PAY/BAG2JP-online/BAG2JP.exe" ]; then
   mkdir -p "$PAY" && python3 -c "import zipfile; zipfile.ZipFile('$REL/BAG2JP-online.zip').extractall('$PAY')"

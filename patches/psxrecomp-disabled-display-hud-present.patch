@@ -1,0 +1,55 @@
+diff --git a/runtime/include/host_overlay.h b/runtime/include/host_overlay.h
+index a695a5c3..a4612456 100644
+--- a/runtime/include/host_overlay.h
++++ b/runtime/include/host_overlay.h
+@@ -54,6 +54,9 @@ void psx_host_overlay_draw(int width, int height);  /* renderer side */
+  * activation reset and GL shutdown clear it. Register again on activation. */
+ void psx_host_set_hud_draw_cb(PsxHostOverlayDrawFn fn, void *ctx);
+ void psx_host_hud_draw(int width, int height);  /* renderer side */
++/* Keep presenting host HUD frames while the guest display is disabled. */
++void psx_host_set_hud_continuous_present(int enabled);
++int psx_host_hud_continuous_present(void);
+ 
+ /* ---- Post-effect live uniforms ------------------------------------------
+  * Sets the value of a `uniform <name> ...` line of the loaded post-effect chain
+diff --git a/runtime/src/host_overlay.c b/runtime/src/host_overlay.c
+index 9f630f99..abbe8175 100644
+--- a/runtime/src/host_overlay.c
++++ b/runtime/src/host_overlay.c
+@@ -106,6 +106,7 @@ static PsxHostOverlayDrawFn s_hud_fn = NULL;
+ static void *s_hud_ctx = NULL;
+ static atomic_flag s_hud_lock = ATOMIC_FLAG_INIT;
+ static atomic_int s_hud_inflight = 0;
++static atomic_int s_hud_continuous_present = 0;
+ #if defined(_MSC_VER)
+ static __declspec(thread) int s_in_hud = 0;
+ #else
+@@ -147,6 +148,14 @@ void psx_host_hud_draw(int width, int height) {
+     atomic_fetch_sub(&s_hud_inflight, 1);
+ }
+ 
++void psx_host_set_hud_continuous_present(int enabled) {
++    atomic_store(&s_hud_continuous_present, enabled ? 1 : 0);
++}
++
++int psx_host_hud_continuous_present(void) {
++    return atomic_load(&s_hud_continuous_present);
++}
++
+ /* ---- P3: input sink -------------------------------------------------------- */
+ static PsxHostInputSinkFn s_sink_fn = NULL;
+ static void *s_sink_ctx = NULL;
+diff --git a/runtime/src/main.cpp b/runtime/src/main.cpp
+index 99e1ba25..d57c772e 100644
+--- a/runtime/src/main.cpp
++++ b/runtime/src/main.cpp
+@@ -9804,7 +9804,8 @@ static NetplayVblankEpilogue sdl_vblank_present_body(void) {
+             /* After savestate load, always restage once even if we blanked
+              * earlier in the session ÔÇö otherwise the window keeps a stale
+              * pre-load frame while vblanks (and FPS) keep advancing. */
+-            if (!s_disabled_frame_presented || s_force_present_after_load) {
++            if (!s_disabled_frame_presented || s_force_present_after_load ||
++                psx_host_hud_continuous_present()) {
+                 s_disabled_frame_presented = true;
+                 s_force_present_after_load = false;
+                 if (g_gl_active) {

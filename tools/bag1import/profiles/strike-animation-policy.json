@@ -1,336 +1,567 @@
 {
   "schema": 1,
   "character": "strike",
-  "status": "rejected_request_equality_only",
+  "status": "proposed",
   "roles": [
+    {
+      "target": 0,
+      "source": 0,
+      "name": "NEUTRAL",
+      "classification": "equivalent",
+      "reason": "Original neutral/wait posture; no attack launch."
+    },
+    {
+      "target": 2,
+      "source": 33,
+      "name": "W",
+      "classification": "equivalent",
+      "reason": "Original dance step; no attack launch."
+    },
     {
       "target": 3,
       "source": 23,
       "name": "Q",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 17 to BAG2 slot 3 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 4,
+      "source": 14,
+      "name": "K",
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 5,
       "source": 5,
       "name": "E",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 5 to BAG2 slot 5 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 6,
+      "source": 1,
+      "name": "A",
+      "classification": "equivalent",
+      "reason": "Original dance step; no attack launch."
     },
     {
       "target": 7,
       "source": 35,
       "name": "X",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 24 to BAG2 slot 7 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 8,
+      "source": 25,
+      "name": "R",
+      "classification": "equivalent",
+      "reason": "Original dance step; no attack launch."
     },
     {
       "target": 9,
       "source": 15,
       "name": "L",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 12 to BAG2 slot 9 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
     },
     {
       "target": 10,
       "source": 7,
       "name": "F",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 6 to BAG2 slot 10 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 11,
       "source": 2,
       "name": "B",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 2 to BAG2 slot 11 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 12,
       "source": 46,
       "name": "FINISH3",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 31 to BAG2 slot 12 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Attack role without launch events; may need hold.",
+      "hold": true
     },
     {
       "target": 13,
       "source": 37,
       "name": "Y",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 25 to BAG2 slot 13 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 14,
+      "source": 64,
+      "name": "ATTACK2",
+      "classification": "adaptation",
+      "reason": "Attack role without launch events; may need hold.",
+      "hold": true
     },
     {
       "target": 15,
       "source": 27,
       "name": "S",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 19 to BAG2 slot 15 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 16,
+      "source": 82,
+      "name": "FEVER1",
+      "classification": "equivalent",
+      "reason": "Original fever/solo dance."
     },
     {
       "target": 17,
       "source": 17,
       "name": "M",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 13 to BAG2 slot 17 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 18,
+      "source": 83,
+      "name": "FEVER2",
+      "classification": "equivalent",
+      "reason": "Original fever/solo dance."
     },
     {
       "target": 19,
       "source": 8,
       "name": "G",
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
+    },
+    {
+      "target": 20,
+      "source": 32,
+      "name": "req_253",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 7 to BAG2 slot 19 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
     },
     {
       "target": 21,
       "source": 3,
       "name": "C",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 3 to BAG2 slot 21 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
     },
     {
       "target": 22,
       "source": 47,
       "name": "FINISH4",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 32 to BAG2 slot 22 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Attack role without launch events; may need hold.",
+      "hold": true
     },
     {
       "target": 23,
       "source": 39,
       "name": "Z",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 26 to BAG2 slot 23 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 24,
       "source": 29,
       "name": "T",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 20 to BAG2 slot 24 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 25,
       "source": 19,
       "name": "N",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 14 to BAG2 slot 25 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
     },
     {
       "target": 26,
       "source": 9,
       "name": "H",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 8 to BAG2 slot 26 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 27,
+      "source": 1,
+      "name": "req_254",
+      "classification": "equivalent",
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 28,
+      "source": 48,
+      "name": "FINISH5",
+      "classification": "equivalent",
+      "reason": "Original attack/finish with launch events."
+    },
+    {
+      "target": 29,
+      "source": 29,
+      "name": "req_258",
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 30,
       "source": 41,
       "name": "ZZ",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 27 to BAG2 slot 30 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 31,
+      "source": 64,
+      "name": "req_260",
+      "classification": "equivalent",
+      "reason": "Original dance step; no attack launch."
     },
     {
       "target": 32,
       "source": 31,
       "name": "U",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 21 to BAG2 slot 32 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 33,
+      "source": 29,
+      "name": "req_262",
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 34,
       "source": 21,
       "name": "O",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 15 to BAG2 slot 34 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
+    },
+    {
+      "target": 35,
+      "source": 29,
+      "name": "req_266",
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 36,
       "source": 11,
       "name": "I",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 9 to BAG2 slot 36 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 37,
+      "source": 29,
+      "name": "req_270",
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 38,
       "source": 49,
       "name": "FINISH6",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 34 to BAG2 slot 38 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Attack role without launch events; may need hold.",
+      "hold": true
     },
     {
       "target": 39,
       "source": 43,
       "name": "ZZZ",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 28 to BAG2 slot 39 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 40,
+      "source": 29,
+      "name": "req_274",
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 43,
       "source": 50,
       "name": "FINISH7",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 35 to BAG2 slot 43 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Attack role without launch events; may need hold.",
+      "hold": true
     },
     {
       "target": 45,
       "source": 44,
       "name": "FINISH1",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 29 to BAG2 slot 45 via reqmap.py"
+      "reason": "Original attack/finish with launch events."
     },
     {
       "target": 49,
       "source": 45,
       "name": "FINISH2",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 30 to BAG2 slot 49 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Attack role without launch events; may need hold.",
+      "hold": true
     },
     {
       "target": 50,
       "source": 32,
       "name": "V",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 22 to BAG2 slot 50 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
     },
     {
       "target": 51,
       "source": 22,
       "name": "P",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 16 to BAG2 slot 51 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 52,
       "source": 13,
       "name": "J",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 10 to BAG2 slot 52 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
+    },
+    {
+      "target": 53,
+      "source": 4,
+      "name": "D",
+      "classification": "adaptation",
+      "reason": "Dance step with attack events; may need adaptation."
     },
     {
       "target": 54,
       "source": 51,
       "name": "SOLO_4_A",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 50 to BAG2 slot 54 via reqmap.py"
+      "reason": "Original fever/solo dance."
     },
     {
       "target": 55,
       "source": 54,
       "name": "SOLO_8_A",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 51 to BAG2 slot 55 via reqmap.py"
+      "reason": "Original fever/solo dance."
     },
     {
       "target": 56,
       "source": 57,
       "name": "SOLO_16_A",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 52 to BAG2 slot 56 via reqmap.py"
+      "reason": "Original fever/solo dance."
     },
     {
       "target": 57,
       "source": 52,
       "name": "SOLO_4_B",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 60 to BAG2 slot 57 via reqmap.py"
+      "reason": "Original fever/solo dance."
     },
     {
       "target": 58,
       "source": 55,
       "name": "SOLO_8_B",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 61 to BAG2 slot 58 via reqmap.py"
+      "reason": "Original fever/solo dance."
     },
     {
       "target": 59,
       "source": 58,
       "name": "SOLO_16_B",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 62 to BAG2 slot 59 via reqmap.py"
+      "reason": "Original fever/solo dance."
+    },
+    {
+      "target": 61,
+      "source": 61,
+      "name": "WALK",
+      "classification": "adaptation",
+      "reason": "Unusual duration 38 for dance step."
+    },
+    {
+      "target": 62,
+      "source": 62,
+      "name": "INDIVIDUAL",
+      "classification": "equivalent",
+      "reason": "Original dodge/individual."
     },
     {
       "target": 63,
       "source": 53,
       "name": "SOLO_4_C",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 70 to BAG2 slot 63 via reqmap.py"
+      "reason": "Original fever/solo dance."
     },
     {
       "target": 64,
       "source": 56,
       "name": "SOLO_8_C",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 71 to BAG2 slot 64 via reqmap.py"
+      "reason": "Original fever/solo dance."
     },
     {
       "target": 65,
       "source": 59,
       "name": "SOLO_16_C",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 72 to BAG2 slot 65 via reqmap.py"
+      "reason": "Original fever/solo dance."
+    },
+    {
+      "target": 66,
+      "source": 66,
+      "name": "HIT1",
+      "classification": "equivalent",
+      "reason": "Original hit/miss reaction."
+    },
+    {
+      "target": 67,
+      "source": 67,
+      "name": "HIT2",
+      "classification": "equivalent",
+      "reason": "Original hit/miss reaction."
+    },
+    {
+      "target": 68,
+      "source": 68,
+      "name": "HIT3",
+      "classification": "equivalent",
+      "reason": "Original hit/miss reaction."
+    },
+    {
+      "target": 71,
+      "source": 60,
+      "name": "WAIT",
+      "classification": "equivalent",
+      "reason": "Original neutral/wait posture; no attack launch."
+    },
+    {
+      "target": 74,
+      "source": 63,
+      "name": "ATTACK1",
+      "classification": "adaptation",
+      "reason": "Attack role without launch events; may need hold.",
+      "hold": true
     },
     {
       "target": 75,
       "source": 65,
       "name": "DODGE",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 170 to BAG2 slot 75 via reqmap.py"
+      "reason": "Original dodge/individual."
     },
     {
       "target": 78,
       "source": 70,
       "name": "CAUGHT",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 123 to BAG2 slot 78 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Caught role with shorter duration."
     },
     {
       "target": 79,
       "source": 69,
       "name": "TIRED",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 124 to BAG2 slot 79 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Tired role with shorter duration."
+    },
+    {
+      "target": 85,
+      "source": 71,
+      "name": "req_130",
+      "classification": "adaptation",
+      "reason": "Unusual duration 44 for dance step."
+    },
+    {
+      "target": 86,
+      "source": 72,
+      "name": "req_131",
+      "classification": "adaptation",
+      "reason": "Unusual duration 46 for dance step."
+    },
+    {
+      "target": 87,
+      "source": 73,
+      "name": "req_132",
+      "classification": "adaptation",
+      "reason": "Unusual duration 44 for dance step."
+    },
+    {
+      "target": 88,
+      "source": 74,
+      "name": "req_133",
+      "classification": "adaptation",
+      "reason": "Unusual duration 46 for dance step."
+    },
+    {
+      "target": 89,
+      "source": 75,
+      "name": "req_134",
+      "classification": "adaptation",
+      "reason": "Unusual duration 44 for dance step."
+    },
+    {
+      "target": 90,
+      "source": 76,
+      "name": "req_135",
+      "classification": "adaptation",
+      "reason": "Unusual duration 46 for dance step."
     },
     {
       "target": 92,
       "source": 1,
       "name": "req_238",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 238 to BAG2 slot 92 via reqmap.py"
+      "reason": "Original dance step; no attack launch."
     },
     {
       "target": 94,
       "source": 77,
       "name": "WIN1",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 140 to BAG2 slot 94 via reqmap.py"
+      "reason": "Original win pose."
     },
     {
       "target": 95,
       "source": 78,
       "name": "WIN2",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 141 to BAG2 slot 95 via reqmap.py"
+      "reason": "Original win pose."
     },
     {
       "target": 96,
       "source": 79,
       "name": "WIN3",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 142 to BAG2 slot 96 via reqmap.py"
+      "reason": "Original win pose."
+    },
+    {
+      "target": 98,
+      "source": 80,
+      "name": "LOSE1",
+      "classification": "equivalent",
+      "reason": "Original lose pose."
     },
     {
       "target": 99,
       "source": 81,
       "name": "LOSE2",
       "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 151 to BAG2 slot 99 via reqmap.py"
+      "reason": "Original lose pose."
     },
     {
       "target": 100,
       "source": 80,
       "name": "req_296",
-      "classification": "equivalent",
-      "reason": "Mapped from BAG1 request 296 to BAG2 slot 100 via reqmap.py"
+      "classification": "adaptation",
+      "reason": "Unusual duration 82 for dance step."
     }
   ]
 }
