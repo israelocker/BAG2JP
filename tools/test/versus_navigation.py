@@ -43,7 +43,7 @@ def resolve_character(name: str) -> int:
 def validate_pick(name: str, version: str, costume: str) -> int:
     """Reject unimplemented versions and invalid costumes before any side effect."""
     character = resolve_character(name)
-    if version not in {"BAG1", "BAG2"} or (version == "BAG1" and character != 0):
+    if version not in {"BAG1", "BAG2"} or (version == "BAG1" and character not in (0, 1)):
         raise ValueError(f"Unsupported version: {name} {version}")
     if costume not in {"A", "B"}:
         raise ValueError("Costume must be A or B")
