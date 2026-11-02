@@ -57,11 +57,46 @@ al archivo BUST2.BIN. Para `disc_user` hay que incorporar el inicio del archivo;
 para acceso físico raw hay además que traducir sectores. Las entradas 133/134
 tienen offsets `0x1A1C000`/`0x1A58800`, no los valores truncados anteriores.
 
-Las tablas en RAM `0x80055180` (packs) y `0x80055258` (modelos), leídas desde el
-PS-X EXE original, contienen 73/109 en índice 1 y 61/97 en índice 8.
-No se equipara todavía el ID 1 observado en el selector con un índice de estas
-tablas: falta trazar el índice que usa el cargador. Por tanto, las etiquetas
-anteriores de entradas «Strike» permanecen sin verificar.
+Las tablas en RAM `0x80055180` (packs) y `0x80055258` (modelos) se verificaron
+contra el PS-X EXE original. El cargador en `0x8003439C` y `0x8003464C` toma el
+byte de personaje de `0x80089250`, usa los cinco bits bajos directamente como
+ID, y calcula `table + (byte >> 5) * 72 + (id * 2)`. Los cuatro bloques de
+36 halfwords son A-P1, A-P2, B-P1 y B-P2. Por tanto, el ID 1 observado para
+Strike resuelve sin permutación a packs 73/74/145/146 y modelos
+109/110/181/182. El cargador pasa el halfword resultante a `FUN_8001F874`.
+
+`tools/bag1import/inspect_character_entries.py` automatiza esta lectura sin
+modificar el disco y valida límites DF2/DFS. El inventario reproducible está en
+`_work/character_inventory/strike/bag2jp-native-entries.json`. Los packs A-P1
+y A-P2 contienen 6 y 5 miembros respectivamente; los cuatro modelos contienen
+dos miembros. En modelo A, el miembro 0 mide 63.976 bytes y el miembro 1
+272.300 bytes; modelo B usa 56.884 y 272.300 bytes. Esto invalida las antiguas
+etiquetas 61/62/97/98 como entradas Strike.
+
+También se extrajeron del disco BAG1 USA los ocho contenedores fuente reales:
+packs `PLAYER1E/P_STRIA1|B1` y `PLAYER3E/P_STRIA3|B3`, y modelos
+`PLAYER2/P_STRIA2|B2` y `PLAYER4/P_STRIA4|B4`. Su inventario está en
+`_work/character_inventory/strike/bag1-source-inventory.json`. Los modelos P1
+de ambos trajes son idénticos entre sí (59.948 bytes); los P2 también
+(51.828 bytes). Comparten una lista de 84 animaciones de 288.048 bytes.
+
+Las texturas BAG1 no están comprimidas ni usan una firma ASCII: cinco miembros
+por pack comienzan con el magic little-endian `0x00000010` de TIM. Las páginas
+corporales 004/005 ya coinciden en tamaño de imagen y coordenadas VRAM con las
+páginas corporales BAG2; varían las filas CLUT. Las otras tres páginas BAG1 son
+gráficos auxiliares. El candidato deberá retargetear 004/005 a los slots
+corporales stock y conservar el gráfico stock de nombre/HUD hasta demostrar
+otra necesidad. Esto resuelve la identificación del formato, no la aceptación
+visual de ambos trajes.
+
+Los modelos BAG1 y BAG2 Strike tienen **44 huesos** y tablas de enlaces
+idénticas para P1 y P2. Ambos modelos convertidos recorren exactamente hasta su
+final; P1 queda en 61.244 bytes y P2 en 53.076 bytes. El parche DBI experimental
+`0x0D -> 0x0C`, copiado por analogía con Heat, queda rechazado: no hay evidencia
+de que Strike necesite cambiar el hueso de cabeza. Se mantendrá el DBI BAG2
+stock salvo que una prueba posterior demuestre una adaptación más estrecha.
+La comparación reproducible está en
+`_work/character_inventory/strike/structure-comparison.json`.
 
 ## Continuación obligatoria para convivencia
 
@@ -72,9 +107,10 @@ coincide con stock o alternativo conocido. Reutilizarlo, no clonar el pipeline H
 
 Antes del próximo candidato:
 
-1. Trazar identidad del selector → índice de tabla → entradas y miembros reales.
-2. Verificar contrato semántico, texturas y necesidades reales del DBI Strike;
-   no reutilizar el parche de cabeza Heat por analogía.
+1. Verificar el contrato semántico y transiciones de animación; no tratar el
+   slideshow del selector como referencia nativa de movimientos.
+2. Retargetear las dos páginas corporales por traje/lado y auditar visualmente
+   el resultado; mantener el DBI stock en el primer candidato.
 3. Preparar contenedores completos y un índice/payload conjunto o rangos alternativos
    no solapados con Heat. Comprobar límites, hashes esperados y espacio reservado.
 4. Integrar versión/costume y opciones mediante el mecanismo compartido;
@@ -84,3 +120,9 @@ Antes del próximo candidato:
 
 Los perfiles/caches y mensajes históricos que declaren etapas completas no sustituyen
 estas verificaciones. Strike BAG1 permanece **no aceptado**.
+
+El perfil `strike.json` volvió de `candidate/complete` a `contract/pending`, con
+cuatro excepciones explícitas. La política de animación anterior está marcada
+`rejected_request_equality_only`; `anim_remap_strike.py` falla cerrado y no escribe
+salida mientras su estado no sea `accepted_local` o `verified`. Esta barrera tiene
+regresión automatizada. Suite host tras el cambio: 99 pruebas aprobadas.

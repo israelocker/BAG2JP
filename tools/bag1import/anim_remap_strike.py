@@ -1,6 +1,6 @@
 """Convierte las animaciones de BAG1 Strike (001.bin, 84 anims) al formato BAG2 (101 slots).
 Adaptado de anim_remap.py de Heat, usando el contrato de animación de Strike."""
-import json, sys, os, struct
+import json, logging, sys, os, struct
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from animlib import anim_list, info, frames
@@ -10,6 +10,8 @@ from rebase_cues import rebase_events, b1_cue_base
 POLICY_PATH = Path(__file__).resolve().parent / "profiles" / "strike-animation-policy.json"
 with POLICY_PATH.open() as f:
     POLICY = json.load(f)
+
+ACCEPTED_POLICY_STATUSES = {"accepted_local", "verified"}
 
 # Construir mapeo target -> source
 ROLES = {row["target"]: row["source"] for row in POLICY["roles"]}
@@ -72,9 +74,12 @@ def build(b1_anims):
     return bytes(out), used, missing
 
 def main():
+    if POLICY.get("status") not in ACCEPTED_POLICY_STATUSES:
+        logging.error("Strike animation policy is not accepted; semantic audit is required")
+        return 2
     if len(sys.argv) < 3:
         print("Uso: anim_remap_strike.py <bag1_001.bin> <out_model_001.bin>")
-        sys.exit(1)
+        return 1
     
     src_path = Path(sys.argv[1])
     dst_path = Path(sys.argv[2])
@@ -93,6 +98,8 @@ def main():
     print('Slots vacíos (1, 97): 2')
     print('Slots faltantes (no mapeados): {}'.format(missing))
     print('Mapeo: {}'.format(' '.join('{}<{}'.format(k, v) for k, v in sorted(used.items()))))
+    return 0
 
 if __name__ == '__main__':
-    main()
+    logging.basicConfig(level=logging.INFO)
+    raise SystemExit(main())

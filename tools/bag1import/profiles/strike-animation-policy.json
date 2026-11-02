@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "character": "strike",
-  "status": "proposed",
+  "status": "rejected_request_equality_only",
   "roles": [
     {
       "target": 3,
