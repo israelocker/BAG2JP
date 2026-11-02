@@ -46,12 +46,15 @@ static void b1v_log(const char* fmt, ...) {
 }
 
 static void b1v_read_options(void) {
-    static const char* const ids[2] = {"heat_p1", "heat_p2"};
+    static const char* const heat_ids[2] = {"heat_p1", "heat_p2"};
+    static const char* const strike_ids[2] = {"strike_p1", "strike_p2"};
     for (int s = 0; s < 2; ++s) {
         char v[16] = {0};
-        b1v_version[0][s] = psx_mod_current_option_value(ids[s], v, sizeof v) > 0 && strcmp(v, "bag2") == 0 ? 0 : 1;
+        b1v_version[0][s] = psx_mod_current_option_value(heat_ids[s], v, sizeof v) > 0 && strcmp(v, "bag2") == 0 ? 0 : 1;
+        b1v_version[1][s] = psx_mod_current_option_value(strike_ids[s], v, sizeof v) > 0 && strcmp(v, "bag2") == 0 ? 0 : 1;
     }
     b1v_log("Heat version: P1 %s, P2 %s", b1v_version[0][0] ? "BAG1" : "BAG2", b1v_version[0][1] ? "BAG1" : "BAG2");
+    b1v_log("Strike version: P1 %s, P2 %s", b1v_version[1][0] ? "BAG1" : "BAG2", b1v_version[1][1] ? "BAG1" : "BAG2");
 }
 
 static int b1v_side_of(uint32_t chr) {      /* side playing chr, player 1 first; -1 if none */

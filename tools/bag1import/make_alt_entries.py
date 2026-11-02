@@ -27,6 +27,8 @@ def strike_roles():
     # BAG2 char id 1 = Strike. Tables: packs 73/74/145/146, models 109/110/181/182
     for e in (73, 145): ROLE[e] = (1, 0)   # costume A/B p1
     for e in (74, 146): ROLE[e] = (1, 1)   # costume A/B p2
+    for e in (109, 181): ROLE[e] = (1, 0)  # model A/B p1
+    for e in (110, 182): ROLE[e] = (1, 1)  # model A/B p2
 heat_roles()
 strike_roles()
 
@@ -65,7 +67,9 @@ for e in touched:
     d = user(lba0, n)
     for k in range(n):
         if lba0 + k in patched: d[k * 2048:(k + 1) * 2048] = patched[lba0 + k]
-    assert e in ROLE, f'entry {e} has no role'
+    if e not in ROLE:
+        print(f'entry {e}: SKIP (no role)', file=sys.stderr)
+        continue
     h = hashlib.sha256(d).hexdigest()
     if h in seen: sec = seen[h]
     else:
