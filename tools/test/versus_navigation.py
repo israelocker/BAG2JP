@@ -26,6 +26,10 @@ WATCHES = {
     "guard1": (0x80091DB0, 4), "guard2": (0x80093138, 4),
     "clock": (0x800892EC, 4),  # Song/native clock keeps gameplay observations advancing.
 }
+# JP character-select overlay: initialization/active roots plus its module guards.
+SELECTOR_ROOTS = (12, 13)
+SELECTOR_GUARDS = (0x27BDFFC8, 0x27BDFFB0)
+GAMEPLAY_ROOT = 0x13  # Native local-versus module; fever stays inside it.
 TEMPORARY_KEYS = {
     1: dict(up="Up", down="Down", left="Left", right="Right", circle="S", cross="X", triangle="A", start="Return"),
     2: dict(up="I", down="K", left="J", right="L", circle="M", cross="N", triangle="V", start="P"),
@@ -43,8 +47,10 @@ def resolve_character(name: str) -> int:
 def validate_pick(name: str, version: str, costume: str) -> int:
     """Reject unimplemented versions and invalid costumes before any side effect."""
     character = resolve_character(name)
-    if version not in {"BAG1", "BAG2"} or (version == "BAG1" and character not in (0, 1)):
+    if version not in {"BAG1", "BAG2"}:
         raise ValueError(f"Unsupported version: {name} {version}")
+    if version == "BAG1" and character not in (0, 1):
+        raise ValueError(f"Unsupported BAG1 character: {name}")
     if costume not in {"A", "B"}:
         raise ValueError("Costume must be A or B")
     return character
@@ -127,7 +133,7 @@ def verify_catalog_review(catalog: dict) -> None:
 
 def is_gameplay(state: dict[str, int]) -> bool:
     """Native local-versus combat root, not selector or an arbitrary stable phase."""
-    return state["root"] == 0x13 and state["mode"] == 2 and state["phase1"] == 1 and state["phase2"] == 3
+    return state["root"] == GAMEPLAY_ROOT and state["mode"] == 2 and state["phase1"] == 1 and state["phase2"] == 3
 
 
 def heartbeat_phases(text: str) -> dict[str, int]:
@@ -184,8 +190,14 @@ def require_versus(state: dict[str, int]) -> None:
 def require_selector(state: dict[str, int]) -> None:
     """Validate native module identity before reading overlay-local structures."""
     require_versus(state)
-    if state["root"] not in (12, 13) or (state["guard1"], state["guard2"]) != (0x27BDFFC8, 0x27BDFFB0):
+    if not is_selector(state):
         raise ValueError("Expected JP character-select overlay")
+
+
+def is_selector(state: dict[str, int]) -> bool:
+    """Same evidence the selector gate requires, usable as a wait predicate."""
+    return (state["mode"] == 2 and state["root"] in SELECTOR_ROOTS
+            and (state["guard1"], state["guard2"]) == SELECTOR_GUARDS)
 
 
 def cursor(state: dict[str, int], side: int) -> int:

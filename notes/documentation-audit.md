@@ -85,6 +85,9 @@ versiones exactas anteriores. No se eliminó información única para lograr red
 
 ### Contexto medido con el mismo conjunto
 
+Medición del cierre de auditoría `646663d`, anterior al ajuste posterior de AGENTS.
+No extrapolar estas cifras a versiones futuras del contexto.
+
 | Conjunto | Antes (bytes UTF-8) | Después (bytes UTF-8) |
 |---|---:|---:|
 | AGENTS + NOTES + estado compacto | 12542 | 11800 |
@@ -96,6 +99,19 @@ facturados, ahorro de tiempo ni garantía de mejor rendimiento en cualquier tare
 Baseline/final usan el mismo script/conjunto y registran archivos ausentes.
 El almacenamiento total aumenta por conservar originales: el objetivo es reducir
 la ruta activa de lectura, no fingir ahorro borrando evidencia.
+
+## Ajuste de política aprobado después de la auditoría
+
+El propietario aprobó aplicar en AGENTS el ciclo objetivo → evidencia → cambio
+mínimo → verificación → checkpoint. Se consolidaron instrucciones repetidas y
+se distinguieron planes amplios de correcciones pequeñas ya autorizadas, tests
+documentales/host de aceptación del juego y WIP de trabajo aceptado. Los snapshots
+se generan al cerrar hitos verificados, no tras cada commit/edición de Markdown;
+los assets fuera de Git siguen necesitando backup propio. No cambian las
+protecciones de saves, estable, GPU, pins o workflow Git local.
+
+Staging sigue manual y el control de capacidad DUMMY requiere comprobación
+independiente: esta política no implementa las dos mejoras de tooling pendientes.
 
 El checker final no encontró errores activos/IDs duplicados/hash de digest obsoleto.
 Conserva nueve advertencias en histórico (fence y rutas antiguas), deliberadamente

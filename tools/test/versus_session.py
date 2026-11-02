@@ -20,7 +20,6 @@ GAME = Path("D:/Games/Bust A Groove 2 (Japan)/BAG2JP-exp-8mb")
 WINSHOT = Path("D:/Dev/Tools/winshot")
 CATALOG = REPO / "_work/versus-navigation/catalog.json"
 MENU_ROOT = 7
-SELECT_ROOTS = (12, 13)  # Initialization then active selector, observed with guarded overlay.
 MENU_VERSUS = 1
 TIMEOUT = 25.0
 HELPER_CALLS = 0
@@ -216,7 +215,7 @@ class Session:
             raise ValueError("Versus menu index not reached")
         self.shot("versus-selected")
         self.key(1, "circle")
-        self.wait(lambda state: state["root"] in SELECT_ROOTS and state["mode"] == 2 and
+        self.wait(lambda state: state["root"] in nav.SELECTOR_ROOTS and state["mode"] == 2 and
                   (state["p1_status"] >> 16 & 255) == 1 and (state["p2_status"] >> 16 & 255) == 1)
         nav.require_selector(self.state())
         self.shot("selector")
@@ -300,6 +299,34 @@ class Session:
         nav.verify_gameplay(state, characters, costumes)
         self.shot("gameplay")
 
+    def finish_match(self, timeout: float = 420.0, interval: float = 20.0) -> dict:
+        """Follow the song to its end and back to character select, keeping evidence.
+
+        Fever runs inside the battle root, so leaving that root - not a phase change -
+        marks the song's end; the selector gate then proves the return.
+        """
+        started = time.monotonic()
+        next_shot = started + interval
+        left_battle = None
+        samples = 0
+        while True:
+            elapsed = time.monotonic() - started
+            if elapsed > timeout:
+                raise TimeoutError("Song never returned to character select")
+            state = self.state()
+            samples += 1
+            if left_battle is None and state["root"] != nav.GAMEPLAY_ROOT:
+                left_battle = round(elapsed, 1)
+                self.shot("song-end")
+            if nav.is_selector(state):
+                self.shot("returned-selector")
+                return {"seconds": round(time.monotonic() - started, 1), "samples": samples,
+                        "left_battle": left_battle, "return_root": state["root"]}
+            if time.monotonic() >= next_shot:
+                self.shot(f"match-{len(self.shots)}")
+                next_shot += interval
+            time.sleep(1.0)
+
     def close(self) -> None:
         """Gracefully close only the process created here, never a name-wide kill."""
         if self.process is not None and self.process.poll() is None:
@@ -322,6 +349,10 @@ def main() -> int:
         parser.add_argument(f"--p{side}-version", choices=("BAG1", "BAG2"), default="BAG2")
         parser.add_argument(f"--p{side}-costume", choices=("A", "B"), default="A")
     parser.add_argument("--stage", choices=("HeatBAG2", "HeatBAG1"), default="HeatBAG2")
+    parser.add_argument("--finish", action="store_true",
+                        help="follow the song to its end and require the return to character select")
+    parser.add_argument("--finish-timeout", type=float, default=420.0,
+                        help="seconds allowed for song end plus return")
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if os.name != "nt":
@@ -370,6 +401,9 @@ def main() -> int:
                     result["observed_picks"] = [session.pick(side, getattr(args, f"p{side}_character"), getattr(args, f"p{side}_version"), getattr(args, f"p{side}_costume"), edges) for side in (1, 2)]
                     session.match(args.stage, characters, [int(args.p1_costume == "B"), int(args.p2_costume == "B")])
                     result["status"] = "machine_verified_awaiting_visual_review"
+                    if args.finish:
+                        result["finish"] = session.finish_match(args.finish_timeout)
+                        result["status"] = "complete_awaiting_visual_review"
             finally:
                 try:
                     if session.process is not None and session.process.poll() is None:

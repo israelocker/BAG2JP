@@ -24,7 +24,30 @@ class NavigationTests(unittest.TestCase):
 
     def test_stock_character_rejects_unimplemented_bag1(self):
         with self.assertRaises(ValueError):
-            nav.validate_pick("Strike", "BAG1", "A")
+            nav.validate_pick("Comet", "BAG1", "A")
+
+    def test_strike_bag1_remains_available_for_import_acceptance(self):
+        self.assertEqual(nav.validate_pick("Strike", "BAG1", "A"), 1)
+
+    def test_finish_waits_through_fever_until_guarded_selector(self):
+        session = versus_session.Session(Path("unused"))
+        states = iter([
+            {"root": nav.GAMEPLAY_ROOT, "mode": 2, "guard1": 0, "guard2": 0},
+            {"root": 13, "mode": 2, "guard1": 0, "guard2": 0},
+            {"root": 13, "mode": 2, "guard1": nav.SELECTOR_GUARDS[0],
+             "guard2": nav.SELECTOR_GUARDS[1]},
+        ])
+        with patch.object(session, "state", side_effect=lambda: next(states)), \
+                patch.object(session, "shot") as capture, \
+                patch.object(versus_session.time, "sleep"):
+            session.finish_match()
+        self.assertEqual(capture.call_args_list[-1].args, ("returned-selector",))
+
+    def test_finish_times_out_in_battle_instead_of_claiming_return(self):
+        session = versus_session.Session(Path("unused"))
+        with patch.object(versus_session.time, "monotonic", side_effect=[0, 421]):
+            with self.assertRaises(TimeoutError):
+                session.finish_match()
 
     def test_invalid_costume_rejected(self):
         with self.assertRaises(ValueError):

@@ -39,7 +39,9 @@ conservan, pero no sustituyen revisión ni prueban ahorro de tokens.
 `audit_docs.py inventory` registra bytes UTF-8 de conjuntos concretos de inicio
 general/importación. No son tokens facturados. Comparar el mismo conjunto antes
 y después; no comparar arbitrariamente una nota con todo el repositorio.
-Las cifras aproximadas de AGENTS son objetivos históricos, no medición vigente.
+Los presupuestos de contexto de AGENTS son guías, no medición vigente.
+Snapshots al cierre de un hito verificado según AGENTS, no por cada edición de
+Markdown. Los checkpoints pequeños no certifican aceptación del juego.
 
 Original preservado, **no receta activa**:
 [guía anterior](docs/archive/MAINTENANCE_GUIDE-20261101.md).

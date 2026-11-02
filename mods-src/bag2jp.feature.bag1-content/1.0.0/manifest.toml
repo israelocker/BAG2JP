@@ -110,11 +110,43 @@ label = "Bust A Groove 1"
 value = "bag2"
 label = "Bust A Groove 2"
 
+[[option]]
+feature = "bag1-heat"
+id = "strike_p1"
+label = "Strike version, player 1"
+description = "Default Strike version for player 1. Selectable per pick in the character-select popup."
+type = "choice"
+default = "bag2"
+
+[[option.choice]]
+value = "bag1"
+label = "Bust A Groove 1"
+
+[[option.choice]]
+value = "bag2"
+label = "Bust A Groove 2"
+
+[[option]]
+feature = "bag1-heat"
+id = "strike_p2"
+label = "Strike version, player 2"
+description = "Which Strike player 2 (or the CPU) gets."
+type = "choice"
+default = "bag2"
+
+[[option.choice]]
+value = "bag1"
+label = "Bust A Groove 1"
+
+[[option.choice]]
+value = "bag2"
+label = "Bust A Groove 2"
+
 [[overlay]]
 feature = "bag1-heat"
 target = "disc_user"
 offset = 458823680
 file = "payload/bag1_alt.bin"
-sha256 = "9629d66cc72d2f7f2329069f4be3da59a26265d4c86fa087d49a0f800bc8ecad"
-expected_sha256 = "3f618f219b2cf4b88e4b4b035816636a236b16d5f1f4e413210e17c01b6f871e"
+sha256 = "f267f1bba4bdf8a6e71b7bc583dcf60b2f75bfb49587ee136f4e4c3dde85deec"
+expected_sha256 = "688d86e8703cb952ce7bdf212e26e2e87ac8e7bd1efa98f0e507b93dab0bebe3"
 

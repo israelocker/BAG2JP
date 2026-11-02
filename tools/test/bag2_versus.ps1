@@ -10,7 +10,9 @@ param(
     [ValidateSet('BAG1','BAG2')][string]$P2Version = 'BAG2',
     [ValidateSet('A','B')][string]$P2Costume = 'A',
     [ValidateSet('HeatBAG2','HeatBAG1')][string]$Stage = 'HeatBAG2',
-    [switch]$TemporaryControls
+    [switch]$TemporaryControls,
+    [switch]$Finish,
+    [double]$FinishTimeout = 420
 )
 $ErrorActionPreference = 'Stop'
 $arguments = @('-3.13', "$PSScriptRoot/versus_session.py", '--action', $Action,
@@ -19,5 +21,6 @@ $arguments = @('-3.13', "$PSScriptRoot/versus_session.py", '--action', $Action,
     '--p2-character', $P2Character, '--p2-version', $P2Version,
     '--p2-costume', $P2Costume, '--stage', $Stage)
 if ($TemporaryControls) { $arguments += '--temporary-controls' }
+if ($Finish) { $arguments += '--finish', '--finish-timeout', $FinishTimeout }
 & py @arguments
 if ($LASTEXITCODE -ne 0) { throw "Versus harness failed (exit $LASTEXITCODE); inspect its result.json" }
