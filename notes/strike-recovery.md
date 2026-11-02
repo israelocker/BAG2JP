@@ -2,14 +2,20 @@
 id: strike-import-recovery
 title: "Strike: recuperación de mods y límites del candidato"
 tags: ["strike", "bag1", "mods", "recovery"]
-summary: "Mods y ejecutable experimental restaurados; Strike BAG2/Heat BAG1 llega a gameplay. Strike BAG1 sigue sin aceptación y requiere integración en el mecanismo alternativo compartido."
-related: ["notes/character-pipeline.md", "notes/game-controls.md", "CHARACTER_IMPORT.md"]
+summary: "Strike BAG1 integrado: offsets DFS corregidos; P1/A y P2/B completan canción y retornan al selector con mods. Aceptación visual, cobertura restante y fever propio pendientes."
+related: ["notes/character-pipeline.md", "notes/game-controls.md", "CHARACTER_IMPORT.md", "notes/character-alternate-entries.md", "notes/character-import-testing.md"]
 created: "2026-11-01"
-updated: "2026-11-01"
-edited: "2026-11-01"
+updated: "2026-11-02"
+edited: "2026-11-02"
 ---
 
 # Recuperación y evidencia
+
+Recetas reutilizables extraídas de esta investigación:
+`notes/character-alternate-entries.md` y `notes/character-import-testing.md`.
+Separan la infraestructura compartida de datos Strike y experimentos rechazados.
+Para estado vigente leer la sección final fechada 2026-11-02; las anteriores
+conservan el histórico, no son instrucciones de reconstrucción actuales.
 
 Se restauraron los ocho paquetes movidos a `disabled_mods`, sus opciones anteriores
 y el paquete bundled `bag2jp.feature.bag1-content` desde el árbol de compilación.
@@ -151,3 +157,48 @@ con excepciones explícitas. La política de animación anterior está marcada
 `rejected_request_equality_only`; `anim_remap_strike.py` falla cerrado y no escribe
 salida mientras su estado no sea `accepted_local` o `verified`. Esta barrera tiene
 regresión automatizada. Suite host tras el cambio: 99 pruebas aprobadas.
+
+## 2026-11-02: integración y partidas completas (no aceptación final)
+
+Esta sección reemplaza los bloqueadores históricos de integración anteriores.
+El generador ad-hoc mantenía `current_offset` constante al escribir la tabla DFS:
+todos los miembros apuntaban al comienzo del primero (56/48/24). El tamaño total
+parecía correcto, pero los miembros de animación y textura eran inaccesibles.
+`tools/bag1import/rebuild_dfs_members.py` usa la longitud efectiva al añadir cada
+miembro, valida límites/solapes y comprueba lectura posterior. Hay ocho pruebas
+unitarias. Se conservan DBI/SEDT stock; no se aplica el experimento DBI de Heat.
+
+`make_alt_entries_exact.py` empaqueta los bytes completos y registra `alt_size`,
+sin truncar entradas mayores que stock. El payload mantiene las once entradas
+Heat originales y añade ocho Strike; 3.889.152 bytes, SHA-256
+`f267f1bba4bdf8a6e71b7bc583dcf60b2f75bfb49587ee136f4e4c3dde85deec`.
+Offset absoluto `disc_user`: 458823680. SHA-256 del ejecutable experimental:
+`d22b3e4e8d80bb0b1e3c7bf3170c97c45cbf2b2ff7c162fc0434d328f14f3ab4`.
+
+Se corrigió una regresión posterior del harness: una prueba obsoleta rechazaba
+Strike BAG1 y se había cambiado erróneamente la implementación para satisfacerla.
+Ahora se prueba explícitamente que Strike BAG1 está permitido y que Comet BAG1
+sigue rechazado. Suite de navegación: 49 pruebas aprobadas, incluyendo espera
+de retorno con guards y timeout sin falso éxito.
+
+Evidencia fresca en `_work/versus-runs/`:
+
+- `20261102T102131125467Z-strike-bag1-full-a`: Strike BAG1 P1/A vs Heat BAG2
+  P2/A; canción y retorno al selector, 161,2 s desde gameplay al retorno.
+- `20261102T102625676713Z-strike-bag1-full-p2-b`: Heat BAG2 P1/A vs Strike BAG1
+  P2/B; canción y retorno, 162,2 s. Posible anomalía de textura en el pecho del
+  traje B visible en `gameplay.png`; pendiente comparar con referencia BAG1.
+
+Ambos resultados son `complete_awaiting_visual_review`, no aceptación final.
+Restauración verificada de keybinds/settings/state y los 21 saves originales.
+Primera captura de retorno revisada visualmente. No se han probado todavía
+P1/B ni P2/A con este runtime. Los logs muestran fases fever1/fever2, pero esto
+no acredita fidelidad de fever propio BAG1 ni sincronización de duetos.
+La canción es Heat BAG2; no acredita importación de canción/escenario Strike.
+
+Prueba repetible: `tools/test/bag2_versus.ps1 -Action run -Tag <tag>
+-P1Character Strike -P1Version BAG1 -P2Character Heat -P2Version BAG2
+-TemporaryControls -Finish`. El flag `-Finish` observa salida del módulo de
+combate y exige módulo selector con guards válidos; no salta fases mediante RAM.
+Pendiente: revisar texturas/animaciones con referencia nativa, completar las otras
+dos combinaciones lado/traje y verificar fever aplicable antes del checkpoint final.

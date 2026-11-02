@@ -1,8 +1,23 @@
+---
+id: character-import-runbook
+title: "BAG2JP Character Import — Canonical Runbook"
+tags: ["bag1", "character", "runbook"]
+summary: "Shared character import stages and acceptance gates, linked to reusable exact-entry integration and observed-state testing recipes."
+related: ["AGENTS.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "notes/character-alternate-entries.md", "notes/character-import-testing.md"]
+created: "2026-10-31"
+updated: "2026-11-02"
+edited: "2026-11-02"
+---
+
 # BAG2JP Character Import — Canonical Runbook
 
-This is the only document a new chat must read before importing a BAG1 character.
-Read `AGENTS.md` and `NOTES.md` first, then this file. `notes/character-pipeline.md`
-remains the detailed technical reference.
+Follow the startup order in `AGENTS.md`; this is the canonical import runbook,
+not a replacement for project policy. `notes/character-pipeline.md` records the
+shared standard. Read only the recipe needed for the current phase:
+- `notes/character-alternate-entries.md`: DFS rebuilding, exact payloads,
+  preservation of prior imports, source/resource staging and deployment.
+- `notes/character-import-testing.md`: calibration, full-song tests,
+  side/costume matrix, diagnostic evidence and implementation limits.
 
 ## 1. What success means
 
@@ -189,6 +204,13 @@ Never assume Heat's counts, IDs, bones, fever folders or model layout.
 
 ## 9. Asset and package rules
 
+Use `notes/character-alternate-entries.md` for the executable recipe. Rebuild
+members with `rebuild_dfs_members.py`; generate full payload/index from explicit
+rows with `make_alt_entries_exact.py`. Keep old BAG1 bytes from the accepted
+payload, not stock disc entries. Validate actual DUMMY byte capacity independently:
+the exact generator's current capacity guard has a units defect. Never truncate
+growing entries, reuse stale DFS offsets or assume preflight synchronizes sources.
+
 - Generate candidates only.
 - Preserve unrelated archive entries.
 - Preserve stock offsets and sizes.
@@ -221,6 +243,11 @@ Conditional cases:
 A case is not valid if its required capability is false.
 
 ## 11. Testing discipline
+
+Use `notes/character-import-testing.md` for commands and evidence meanings.
+`bag2_versus.ps1 -Finish` requires a full return; without it, a run stops at
+gameplay entry. Heat/Strike/Comet routing is a limited observed catalog, not a
+general roster driver. Extend it with verified data for another character.
 
 - Run host-side tests before building.
 - Use the experimental installation only.

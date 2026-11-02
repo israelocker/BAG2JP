@@ -1,9 +1,33 @@
+---
+id: character-import-digest
+title: "Character import runbook digest"
+tags: ["digest", "bag1", "workflow"]
+summary: "Compact import stages and acceptance gates; exact DFS/payload recipes and observed-state testing are linked separately."
+related: ["CHARACTER_IMPORT.md", "notes/character-alternate-entries.md", "notes/character-import-testing.md"]
+created: "2026-11-01"
+updated: "2026-11-02"
+edited: "2026-11-02"
+---
+
 # CHARACTER_IMPORT.md Digest
 
-**Source:** `CHARACTER_IMPORT.md` (~10 KB, 314 lines)
+**Source:** `CHARACTER_IMPORT.md`. Navigate by headings, not historical line numbers below.
+
+## Reutilización verificada al 2026-11-02
+
+- Integración: `notes/character-alternate-entries.md`. DFS con offsets reales,
+  payload exacto, `alt_size` y conservación de entradas anteriores. No truncar.
+- Build: sincronización manual de fuentes a `src` y recursos a `mods/preloaded`;
+  el helper solo diagnostica drift. Comprobar hashes del exe y paquete desplegados.
+- Pruebas: `notes/character-import-testing.md`. Calibración visual ligada al hash,
+  cuatro casos lado/traje y `-Finish` para canción y retorno. Catálogo limitado.
+- Strike P1/A y P2/B pasan flujo completo; no aceptación visual/fever final.
+- Capacidad DUMMY debe comprobarse en bytes fuera del generador exacto: su guard
+  actual sobreestima capacidad. No es un importador automático universal.
 
 ## Resumen
-Manual canónico para importar cualquier personaje BAG1 a BAG2JP. Es el único documento que un nuevo chat debe leer antes de importar un personaje (después de AGENTS.md y NOTES.md).
+Manual canónico de importación. Seguir el inicio de AGENTS.md, leer el índice/estado
+y abrir solo las recetas necesarias para la fase actual.
 
 ## Secciones Clave
 

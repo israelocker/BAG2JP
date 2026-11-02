@@ -1,3 +1,14 @@
+---
+id: bag2jp-notes-index
+title: "BAG2JP notes index"
+tags: ["index", "workflow", "project"]
+summary: "Short project index. Character integration recipes cover exact DFS/payload construction, explicit staging, observed-state tests and acceptance limits."
+related: ["AGENTS.md", "CHARACTER_IMPORT.md", "notes/character-pipeline.md", "_work/current-state.json"]
+created: "2026-10-31"
+updated: "2026-11-02"
+edited: "2026-11-02"
+---
+
 # BAG2JP — Bust A Move 2: Dance Tengoku Mix (Japan), PS1 -> native Windows recompilation
 
 Notes are split by topic in notes/ (read only the file you need; grep across them for addresses):
@@ -11,7 +22,9 @@ Notes are split by topic in notes/ (read only the file you need; grep across the
 - notes/endings-view.md — Direct character/costume endings menu, JP hooks and acceptance ledger
 - notes/online.md — Online play, netsync, audio latency, v7 release and installer
 - notes/character-pipeline.md - Shared character workflow, profiles, role contracts, reference cache and implementation boundaries
-- notes/strike-recovery.md - Mods restored and Strike BAG2/Heat BAG1 gameplay verified; Strike BAG1 candidate remains unaccepted, shared alternate-entry integration required
+- notes/character-alternate-entries.md - Reusable DFS/payload integration, preservation of prior imports, manifest offsets and explicit source/resource staging; tool limits included
+- notes/character-import-testing.md - Runtime calibration, full-song harness, side/costume matrix, active-mod preservation and diagnosis of observed failures
+- notes/strike-recovery.md - Strike BAG1 integrated; P1/A and P2/B complete song and return, visual fidelity and remaining acceptance cases pending
 - CHARACTER_IMPORT.md - Canonical compact runbook for importing a BAG1 character into BAG2JP
 - notes/bag1-character.md — BAG1 import: Heat character (model, anims, dance grid, fever, voices), 2P autoplay, planned popups
 - notes/bag1-stage-song.md — BAG1 import: stage port, song chart and audio, camera, sounds, destruction, testing/debug tools

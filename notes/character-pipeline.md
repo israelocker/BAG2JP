@@ -3,14 +3,20 @@ id: character-pipeline-shared
 title: "Shared BAG1 -> BAG2JP Character Workflow"
 tags: ["workflow", "character", "pipeline", "shared"]
 summary: "Shared BAG1 to BAG2JP character import pipeline standards, rules and reference cache commands"
-related: ["CHARACTER_IMPORT.md", "NOTES.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+related: ["CHARACTER_IMPORT.md", "NOTES.md", "IMPORT_STANDARD.md", "_work/current-state.json", "notes/character-alternate-entries.md", "notes/character-import-testing.md"]
 created: "2026-10-31"
-updated: "2026-11-01"
+updated: "2026-11-02"
+edited: "2026-11-02"
 ---
 
 # Shared BAG1 -> BAG2JP character workflow
 
 Owner standard (2026-10-31): one shared process, with data-only character profiles and narrowly justified exceptions. Avoid per-character forks of orchestration or conversion logic.
+
+## Reusable integration and test recipes (2026-11-02)
+- [Alternate entries](character-alternate-entries.md): checked member replacement, exact payloads, preservation of prior imports, plugin/manifest boundaries and explicit staging before builds.
+- [Testing and diagnosis](character-import-testing.md): runtime-bound visual calibration, side/costume matrix, full-song return, active mods and evidence gates.
+- [Strike evidence](strike-recovery.md): P1/A and P2/B finish and return with stock DBI; texture fidelity, other two side/costume cases and applicable BAG1 fever remain unaccepted. These recipes do not turn the legacy animation adapters into a general solver.
 
 ## Inputs and stages
 1. Inventory: verify source discs/game catalogs, extract model/animation/event data, identify IDs and counts from executable tables, and validate the profile.
@@ -53,10 +59,10 @@ All capture should use the native runtime, an isolated card/settings copy and a 
 Reuse unchanged references rather than navigating/re-recording all 66 choices. Read relevant functions and compact summaries; preserve raw logs. Do not reuse a failed pilot as evidence.
 
 ## Current implementation boundary
-The generic helper validates profiles, checked catalog inputs and reference caches. Heat and Strike both pass real animation-inventory validation (84 entries each). Strike remains inventory only, with its BAG2 target ID unresolved; it has not been imported or validated in gameplay. The existing complete Heat auditor and conversion recipes remain legacy, specialized adapters; do not present them as a general importer for untested characters.
+The generic helper validates profiles, checked catalog inputs and reference caches. Heat and Strike both pass real animation-inventory validation (84 entries each). Strike's JP target ID is verified as 1 and its alternate entries now run full matches on P1/A and P2/B; final acceptance remains pending. The existing complete Heat auditor and animation conversion recipes remain legacy, specialized adapters; do not present them as a general importer for untested characters.
 The new semantic/transition/coverage requirements are mandatory workflow rules. General assignment generation and automatic graph optimization still need implementation and cross-character validation before they can replace the legacy converter.
 No new character is claimed imported by installing these skills.
-- Character import standardization: `CHARACTER_IMPORT.md`, schema-2 profiles, `character_workflow.py` now supports `plan`, `prepare`, `status`, `acceptance-plan`, compact state and candidate manifests. Heat validates as a candidate; Strike remains inventory with unresolved target ID. Tests: 24 passed.
+- Character import standardization: `CHARACTER_IMPORT.md`, schema-2 profiles, `character_workflow.py` supports `plan`, `prepare`, `status`, `acceptance-plan`, compact state and candidate manifests. Historical 24-test validation covered the helper, not gameplay; current Strike acceptance is recorded separately above.
 
 ## Resource routing
 - Files, hashes, extraction and objective checks: local deterministic scripts through MCP.
@@ -79,7 +85,7 @@ The prior complete Heat audit measured 0.144 s in one warm-filesystem run, inclu
 - Do not add duplicate skill libraries or unrelated service integrations. Reconsider a tool when a measured bottleneck or missing capability justifies it.
 
 ## Shared policy/repack implementation (2026-10-31)
-animation_policy.py provides data-defined role adaptations and native predecessor dispatch; alternate_payload.py provides bounded repacking. rebuild_animation_payload.py prepares candidates for any explicit model-entry list from an already converted animation list. Heat exercises these through its legacy adapter; a second character's conversion and gameplay are still unverified. This is not a general assignment or graph optimizer.
+animation_policy.py provides data-defined role adaptations and native predecessor dispatch; alternate_payload.py provides repacking for known JP entries. rebuild_animation_payload.py prepares candidates for an explicit model-entry list from an already converted animation list. Heat exercises these through its legacy adapter. Strike now exercises shared DFS/payload integration and gameplay flow, but semantic fidelity and the full acceptance matrix remain pending. This is not a general assignment or graph optimizer.
 Policy classifications distinguish exact roles from deliberate adaptations. Preserve required target events and hold flags; retain original duplicate event ordering. Never classify an adaptation as an original action merely because it renders.
 
 Native capture now supports tools/test/capture_dance_view.ps1 with --style PowerShell parameters: -GameId -ExpectedExe -Cases -Output -CurrentIndex -ItemCount and optional -WatchLog/-IndexAddress. Prefer observed indices to counted key presses; validate a pilot label before a batch. Use distinct pad bindings and avoid duplicate analog/digital directions. Wait for task-owned processes to exit before editing state. The runtime expects package selections before feature records in state.toml; restore the byte-exact baseline after tests. BAG2JP_TEST_DANCE_VIEW_CHAR is a bounded debug-only native test option, requiring trace and isolated cards; do not save temporary unlock flags.
