@@ -7,13 +7,13 @@ related: ["AGENTS.md", "NOTES.md", "docs/coding-standards.md", "MAINTENANCE_GUID
 created: "2026-11-02"
 updated: "2026-11-02"
 edited: "2026-11-02"
+doc_kind: proposal
 ---
 
 # Auditoría documental: propuesta
 
-Estado: **pendiente de aprobación del propietario**. La solicitud autoriza
-investigar; esta propuesta fija alcance y criterios antes de la depuración amplia.
-No se ha ejecutado la consolidación.
+Estado: **aprobado y ejecutado el 2026-11-02**.
+Resultados y decisiones en `notes/documentation-audit.md`.
 
 ## Alcance y evidencia inicial
 
@@ -123,5 +123,17 @@ No prometer ahorro de tokens a partir de bytes sin indicar método/limitaciones.
 
 | Fase | Estado |
 |---|---|
-| 1 | Inventario preliminar; esperando aprobación |
-| 2–5 | No iniciadas |
+| 1 | Completa: inventario propio y baseline JSON |
+| 2 | Completa: contraste de procedimientos activos y cuarentena de histórico no revalidado |
+| 3 | Completa: fuentes canónicas y redirects, originales preservados |
+| 4 | Completa: revisión independiente, tres hallazgos corregidos RED→GREEN, 32 tests checker y 110 host |
+| 5 | Cierre: commit y snapshot verificado registrados en nota de auditoría |
+
+## Registro de ejecución
+
+No se modificaron AGENTS, preferencias globales, gameplay o código de importación.
+Ruling: el archivo de propuestas históricas conserva su estado sin marcar fases de
+código como completadas; sus comandos inexistentes no son receta actual.
+La revisión independiente comprobó preservación normalizada de 40 documentos y
+detectó tres huecos del checker. Se añadieron regresiones antes de corregirlos.
+No hubo pruebas nuevas de juego ni aceptación visual durante la auditoría.

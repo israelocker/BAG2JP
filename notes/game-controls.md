@@ -5,8 +5,9 @@ tags: ["controls", "menu", "reference"]
 summary: "Controles reales y harness versus por nombre con estados observados, revisión visual y restauración; catálogo limitado a Heat, Comet y Strike."
 related: ["NOTES.md", "AGENTS.md"]
 created: "2026-11-01"
-updated: "2026-11-01"
-edited: "2026-11-01"
+updated: "2026-11-02"
+edited: "2026-11-02"
+doc_kind: reference
 ---
 
 # BAG2JP — Controles y Menú Principal
@@ -21,6 +22,9 @@ edited: "2026-11-01"
 6. options — opciones del juego
 
 ## Keyboard bindings — Player 1
+
+Tabla de una observación histórica, no preferencia ni estado vivo garantizado.
+Comprobar los archivos de la instalación antes de enviar teclas.
 
 | Acción | Tecla | Acción | Tecla |
 |--------|-------|--------|-------|
@@ -78,7 +82,7 @@ Para consultar el código sin cargar archivos grandes: `notes/digests/versus-nav
 
 - Parámetros de traje: `-P1Costume A|B`, `-P2Costume A|B`; escenario predeterminado `HeatBAG2`. Las pruebas de aceptación de esta iteración usan traje A y ese escenario; no certifican las alternativas no ejercitadas.
 - Primera calibración, o tras cambiar el ejecutable: `-Action probe -TemporaryControls`. El catálogo local se guarda en `_work/versus-navigation/catalog.json`. Solo puede usarse después de revisar sus capturas y registrar aprobación con hashes de imágenes y digest del catálogo; crear imágenes no equivale a revisarlas.
-- Catálogo inicial: Heat, Comet y Strike. BAG1 solo está admitido para Heat. Las demás identidades y rutas permanecen sin soporte hasta inventariarlas y verificarlas; no se afirma compatibilidad con todo el plantel.
+- Catálogo: Heat, Comet y Strike. BAG1 está permitido para Heat y Strike; Comet BAG1 se rechaza. Esto habilita probar el candidato Strike, no declara aceptada su importación. Las demás identidades/rutas necesitan evidencia.
 - `-Action inspect -GameId <pid>` inspecciona identidad y controles sin iniciar/cerrar procesos ni confirmar una partida.
 - La herramienta rechaza sesiones de juego activas. No usar los scripts de prueba anteriores con supuestos de tiempo ni interpretar `-P2Left` como una selección por personaje.
 
@@ -99,4 +103,7 @@ Para futuras sesiones, leer este resumen y el resultado de la ejecución pertine
 
 Estos tiempos incluyen arranque, captura, cierre y restauración; no miden una partida completa ni demuestran una mejora respecto del proceso anterior. Cada hoja compacta contiene seis puntos de revisión. El contador de llamadas a helpers se añadió después de estas mediciones y se registrará en ejecuciones posteriores; no confundirlo con llamadas al modelo o tokens de nube.
 
-Pruebas host: `py -3.13 -m unittest discover -s tools/test -p 'test_*.py'`: 94 pruebas aprobadas, incluidas 46 del nuevo harness. La revisión independiente detectó y se corrigieron cuatro casos de error: watch detenido con heartbeat vivo, interrupción durante preparación, fallo de hoja de capturas y aprobación no vinculada al grafo. Los casos tienen regresiones; el parser final también se reprodujo contra los logs reales conservados.
+Los conteos 94 host/46 harness fueron históricos, no la suite actual. La revisión
+inicial cubrió watch detenido con heartbeat vivo, interrupción de preparación,
+fallo de hoja y aprobación no ligada al grafo. Para pruebas actuales y `-Finish`
+consultar `notes/character-import-testing.md`; fuente `tools/test/versus_session.py`.

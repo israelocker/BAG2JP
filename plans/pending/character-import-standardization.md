@@ -1,4 +1,22 @@
+---
+id: character-standardization-proposal
+title: "Character standardization: historical proposal"
+tags: ["proposal", "character"]
+summary: "Plan anterior con fases de implementación no certificadas conjuntamente; no representa estado actual Strike."
+related: ["notes/documentation-audit.md", "notes/character-pipeline.md", "notes/strike-recovery.md"]
+created: "2026-11-01"
+updated: "2026-11-02"
+edited: "2026-11-02"
+doc_kind: proposal
+---
+
 # Character Import Standardization Plan
+
+**Estado: propuesta histórica que requiere revalidación antes de ejecutar.** No
+marcada completa por esta auditoría. Algunas funciones existen, pero sus criterios
+de aceptación no se heredan como hechos. Strike ya tiene ID=1 verificado e
+integración/flujo parciales: el requisito antiguo «remains inventory» de abajo
+no es estado vigente. Ver fuentes canónicas enlazadas y código real por fase.
 
 ## Goal
 Provide one profile-driven, resumable BAG1→BAG2JP workflow and one compact entry document that a new chat can follow without reconstructing Heat's history.

@@ -1,72 +1,29 @@
 ---
 id: agent-handoff
-title: "BAG2JP Agent Handoff"
-tags: ["handoff", "resume", "context"]
-summary: "Guía para retomar el trabajo entre agentes sin reconstruir el proyecto desde cero"
-related: ["AGENTS.md", "NOTES.md", "CHARACTER_IMPORT.md", "IMPORT_STANDARD.md", "_work/current-state.json"]
+title: "Retomar sin repetir trabajo"
+tags: ["handoff", "workflow"]
+summary: "Estado y evidencia por task; no contiene otra tabla mutable del estado de todo el proyecto."
+related: ["AGENTS.md", "NOTES.md", "notes/documentation-audit.md", "notes/strike-recovery.md"]
 created: "2026-10-31"
-updated: "2026-11-01"
+updated: "2026-11-02"
+edited: "2026-11-02"
+doc_kind: requirements
 ---
 
-# BAG2JP Agent Handoff
+# Retomar
 
-## Cómo Retomar el Trabajo
+Aplicar el inicio de AGENTS. Leer `active_task` y gaps en estado local, y solo
+la fuente del tema en NOTES. Si no existe `_work/current-state.json`, usar la
+nota persistente; no regenerarlo con un perfil Heat sobre el estado Strike.
 
-**Repositorio canónico**: `D:/Dev/Recomp/BAG2JP`
+Antes de repetir un check: ¿cambió su input/runtime o hay nueva evidencia?
+Si no, reutilizar el resultado con alcance/hash. Si hay contradicción entre
+resumen y evidencia, verificar la fuente, no confiar en el texto más reciente.
 
-**Orden de lectura para un chat nuevo**:
+Guardar por task: siguiente paso concreto, pendientes, commits, archivos propios
+sin commit, hashes/evidencia y estado de procesos. No copiar tablas de estado
+en CONTRIBUTING/índices/varios resúmenes. Preservar configuración y trabajo ajeno.
 
-1. `AGENTS.md` - Políticas y workflow del proyecto
-2. `NOTES.md` - Índice actual con summaries de frontmatter
-3. `_work/current-state.json` - Estado compacto con campo `gaps` (qué necesita atención)
-4. Nota temática de la tarea específica (solo si es necesaria)
-
-**Este archivo NO sustituye** `notes/bag1-character.md`, `notes/bag1-stage-song.md` ni `notes/character-pipeline.md`. Abrir solo la nota relevante para la tarea actual.
-
-## Estado del Proyecto (Resumen)
-
-| Área | Estado |
-|------|--------|
-| Heat BAG1 import | Completado con adaptaciones documentadas |
-| Stage Heat port | Completado y verificado |
-| Online/netplay | Configurado, pendiente test 2 PCs reales |
-| Audio latency | buffer_ms 90, objetivo 50 ms |
-| Ending View | HD menu implementado, aceptación parcial |
-| Character pipeline | Compartido, Heat validado, Strike inventory only |
-
-## Próximos Pasos Identificados
-
-1. Próximo character import (después de completar Heat workflow y validación)
-2. Cambios que requieran aprobación explícita del owner
-3. Test de online entre 2 PCs reales en redes diferentes
-4. Remover song-start stall en audio (buffer 50 ms objetivo)
-
-## Comandos de Inicio Rápido
-
-```powershell
-# Verificar estado actual
-py tools/bag1import/character_workflow.py validate-profile --profile tools/bag1import/profiles/heat.json
-py tools/bag1import/character_workflow.py plan --profile tools/bag1import/profiles/heat.json
-
-# Medir contexto de inicio
-py tools/workflow/measure_context.py
-
-# Ejecutar mantenimiento completo
-py tools/workflow/maintenance_check.py
-```
-
-## Reglas de Retomada
-
-- **No reconstruir** el proyecto desde conversaciones anteriores
-- **No presuponer** orquestación simultánea entre agentes
-- **Leer solo** lo necesario: índice + estado + nota relevante
-- **Verificar** rutas y hashes antes de copiar archivos
-- **Medir** duración real sin prometer ahorros no medidos
-
-## Referencias Rápidas
-
-- `CHARACTER_IMPORT.md` - Manual canónico de importación
-- `IMPORT_STANDARD.md` - Guía de tarea estándar para importación
-- `NOTES.md` - Índice con summaries por nota
-- `_work/current-state.json` - Estado actual compacto
-- `tools/workflow/bag2_workflow.py` - Helper de workflow (preflight, build, test, report)
+Histórico separado: [handoff anterior](archive/agent-handoff-before-audit.md).
+Sus «Strike inventory only», latencias objetivo y próximos pasos ya no son
+estado actual certificado.

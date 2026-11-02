@@ -2,35 +2,35 @@
 id: bag2jp-notes-index
 title: "BAG2JP notes index"
 tags: ["index", "workflow", "project"]
-summary: "Short project index. Character integration recipes cover exact DFS/payload construction, explicit staging, observed-state tests and acceptance limits."
+summary: "Índice temático único. Leer solo el tema actual; histórico no operativo en archive y estado/evidencia del task en su nota."
 related: ["AGENTS.md", "CHARACTER_IMPORT.md", "notes/character-pipeline.md", "_work/current-state.json"]
 created: "2026-10-31"
 updated: "2026-11-02"
 edited: "2026-11-02"
+doc_kind: index
 ---
 
-# BAG2JP — Bust A Move 2: Dance Tengoku Mix (Japan), PS1 -> native Windows recompilation
+# BAG2JP: índice
 
-Notes are split by topic in notes/ (read only the file you need; grep across them for addresses):
+Seguir el inicio de AGENTS. Consultar `active_task` además del estado global.
+No cargar índices alternativos, variantes ni todo archive. Las cifras antiguas
+de contexto en AGENTS no son medición actual; medir con el checker documental.
 
-- notes/project.md — Project: builds, folders, saves, resume
-- notes/agent-handoff.md — Claude→Codex→OpenCode handoff, current scope, tools and profile-safety warning
-- notes/regional.md — Regional content, songs and announcer options, CD-quality songs
-- notes/assets.md — Asset toolkit, archive layout, extracted data
-- notes/ui-mods.md — HD fonts/UI packs, in-game MODS menu, keyboard rebinding
-- notes/game-controls.md — Named versus harness, actual P1/P2 bindings, visual gates, restoration and limited Heat/Comet/Strike catalog
-- notes/endings-view.md — Direct character/costume endings menu, JP hooks and acceptance ledger
-- notes/online.md — Online play, netsync, audio latency, v7 release and installer
-- notes/character-pipeline.md - Shared character workflow, profiles, role contracts, reference cache and implementation boundaries
-- notes/character-alternate-entries.md - Reusable DFS/payload integration, preservation of prior imports, manifest offsets and explicit source/resource staging; tool limits included
-- notes/character-import-testing.md - Runtime calibration, full-song harness, side/costume matrix, active-mod preservation and diagnosis of observed failures
-- notes/strike-recovery.md - Strike BAG1 integrated; P1/A and P2/B complete song and return, visual fidelity and remaining acceptance cases pending
-- CHARACTER_IMPORT.md - Canonical compact runbook for importing a BAG1 character into BAG2JP
-- notes/bag1-character.md — BAG1 import: Heat character (model, anims, dance grid, fever, voices), 2P autoplay, planned popups
-- notes/bag1-stage-song.md — BAG1 import: stage port, song chart and audio, camera, sounds, destruction, testing/debug tools
+| Tema | Fuente |
+|---|---|
+| Build, staging y snapshot | [Proyecto](notes/project.md) |
+| Rutas/configuración | [Rutas](docs/paths.md), [config](system_config.md) |
+| Desarrollo/documentación | [Estándar](docs/coding-standards.md), [mantenimiento](MAINTENANCE_GUIDE.md) |
+| Importar personaje | [Inicio mínimo](IMPORT_STANDARD.md) |
+| DFS/payload | [Integración](notes/character-alternate-entries.md) |
+| Prueba completa | [Harness](notes/character-import-testing.md) |
+| Strike: evidencia y pendientes | [Ledger](notes/strike-recovery.md) |
+| Heat, escenario/canción | [Personaje](notes/bag1-character.md), [stage](notes/bag1-stage-song.md) |
+| Controles/UI/ending | [Controles](notes/game-controls.md), [UI](notes/ui-mods.md), [ending](notes/endings-view.md) |
+| Regional/online | [Regional](notes/regional.md), [online](notes/online.md) |
+| Assets | [Inventario](notes/assets.md) |
+| Auditoría documental | [Resultados](notes/documentation-audit.md) |
 
-Quick facts:
-- Disc D:\Games\Bust A Groove 2 (Japan)\ISO\...cue, SLPM-86219, load 0x80010000. Stable build BAG2JP-win (do not touch),
-  experimental BAG2JP-exp-8mb (default). Build tree: see AGENTS.md; snapshot: BAG2JP-project-snapshot.tar.gz.
-- Tests: D:\Dev\Tools\winshot\bag2_run.ps1 + tools/test/bag2_report.py (see notes/project.md, "Testing and debugging").
-- Audio analysis: D:\Dev\Tools\audio-probe. BAG1 import pipeline: tools/bag1import (skill bag1-import).
+`notes/archive/` y `docs/archive/` conservan originales no certificados como receta
+actual. Abrirlos solo para una evidencia/decisión concreta. No generalizar Heat
+ni declarar Strike aceptado: su fidelidad/matriz/fever siguen pendientes.

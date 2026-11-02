@@ -1,6 +1,23 @@
+---
+id: coding-standards
+title: "Estándares de desarrollo y evidencia"
+tags: ["standards", "development", "evidence"]
+summary: "Requisitos de código/documentación; no afirma que todo el código existente ya los cumpla."
+related: ["AGENTS.md", "CONTRIBUTING.md", "MAINTENANCE_GUIDE.md"]
+created: "2026-11-01"
+updated: "2026-11-02"
+edited: "2026-11-02"
+doc_kind: requirements
+---
+
 # BAG2JP — Coding Standards
 
 Estándares de código para todo el proyecto. Se aplican a todo código nuevo y modificado.
+
+Son requisitos, no prueba de cumplimiento del código existente. Mantener seams
+compartidos y perfiles de datos; extraer abstracciones solo ante variaciones
+demostradas, sin clonar pipelines ni crear capas por anticipación. Función larga
+es señal para revisar responsabilidades, no motivo para fragmentarla mecánicamente.
 
 ## C (plugins en mods-src/)
 
@@ -83,8 +100,21 @@ def validate_file(path: Path, fix: bool = False) -> list[str]:
 |----------|-------------|
 | Frontmatter required | Cada nota debe tener `id`, `title`, `tags`, `summary`, `related`, `created`, `updated`. |
 | Update `updated` | Cualquier modificación en una nota debe refrescar el timestamp `updated`. |
-| No test/debug noise | Las notas no deben contener números de frame, PIDs, resultados de pilot, rutas personales. |
+| Evidence, not noise | Guardar logs/pilots completos fuera de notas activas. Conservar hashes, rutas de evidencia y direcciones técnicas necesarias; no borrar pruebas únicas ni confundir rutas autorizadas del entorno con secretos. |
 | Digests for large files | Archivos fuente >10 KB deben tener un digest correspondiente en `notes/digests/`. |
+
+### Verdad y estado documental
+
+- Hecho: citar fuente/input/versiones y seam que lo acredita (código, tests host,
+  runtime o escucha humana). Existencia de una función no demuestra uso correcto.
+- Requisito: expresar «debe», sin presentarlo como implementación aceptada.
+- Hipótesis/propuesta: fuera de recetas operativas hasta contrastar.
+- Histórico: preservar separado y fechado; no usar «último exe» sin hash vigente.
+- Una autoridad por tema; índices enlazan y digests resumen con `source` y hash.
+  No mantener variantes clean/optimized con aceptación independiente.
+- Cambio documental: checker y revisión de afirmaciones/enlaces. Cambio de
+  comportamiento: regresión RED→GREEN y aceptación relevante del runtime.
+- No se certifica ahorro con porcentajes genéricos ni con tests no relacionados.
 
 ### Plantilla de frontmatter
 

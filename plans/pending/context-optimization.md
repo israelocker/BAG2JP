@@ -1,4 +1,22 @@
+---
+id: context-optimization-proposal
+title: "Context optimization: historical proposal"
+tags: ["proposal", "context"]
+summary: "Propuesta anterior, no evidencia de implementación; compact-status/read-state no existen en el CLI actual."
+related: ["notes/documentation-audit.md", "MAINTENANCE_GUIDE.md"]
+created: "2026-11-01"
+updated: "2026-11-02"
+edited: "2026-11-02"
+doc_kind: proposal
+---
+
 # Context Optimization Plan
+
+**Estado: propuesta histórica no ejecutable como receta.** No se declara este plan
+completo. Sus cifras y comandos propuestos no describen herramientas actuales;
+el parser no implementa compact-status/read-state. La depuración documental actual
+se registra en `notes/documentation-audit.md`. No refactorizar código ni regenerar
+notas automáticamente por seguir los pasos antiguos de abajo.
 
 ## Goal
 

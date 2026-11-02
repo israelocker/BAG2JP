@@ -7,6 +7,7 @@ related: ["CHARACTER_IMPORT.md", "notes/character-pipeline.md", "notes/character
 created: "2026-11-02"
 updated: "2026-11-02"
 edited: "2026-11-02"
+doc_kind: reference
 ---
 
 # Entradas alternativas: receta compartida

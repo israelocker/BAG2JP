@@ -7,6 +7,9 @@ related: ["IMPORT_STANDARD.md", "CHARACTER_IMPORT.md", "notes/character-alternat
 created: "2026-11-02"
 updated: "2026-11-02"
 edited: "2026-11-02"
+doc_kind: digest
+source: "IMPORT_STANDARD.md"
+source_sha256: "222e30bd473060fdb83d73aacef4bd7b3af81b2d2a54aa02b7d76a7583f138b8"
 ---
 
 # Estándar: resumen

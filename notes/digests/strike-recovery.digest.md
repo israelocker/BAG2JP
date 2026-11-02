@@ -7,6 +7,9 @@ related: ["notes/strike-recovery.md", "notes/character-alternate-entries.md", "n
 created: "2026-11-02"
 updated: "2026-11-02"
 edited: "2026-11-02"
+doc_kind: digest
+source: "notes/strike-recovery.md"
+source_sha256: "5f8c88ff2ad2425abfdaf0ec7ba612c15b9cf5d2f3914ff62d7d1565009e40af"
 ---
 
 # Strike: estado vigente

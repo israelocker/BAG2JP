@@ -7,6 +7,9 @@ related: ["notes/character-alternate-entries.md", "notes/character-import-testin
 created: "2026-11-02"
 updated: "2026-11-02"
 edited: "2026-11-02"
+doc_kind: digest
+source: "notes/character-alternate-entries.md"
+source_sha256: "d765580df0d759e73fc86b90195686795f32869d0b378644255f52ebbb5207b2"
 ---
 
 # Integración: resumen

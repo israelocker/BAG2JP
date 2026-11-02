@@ -7,6 +7,7 @@ related: ["AGENTS.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "not
 created: "2026-10-31"
 updated: "2026-11-02"
 edited: "2026-11-02"
+doc_kind: requirements
 ---
 
 # BAG2JP Character Import — Canonical Runbook
@@ -30,7 +31,7 @@ A character is complete only when:
 - its model, costumes and sides render correctly;
 - all required motions and transitions are accepted;
 - required audio cues do not collide;
-- stage, song, fever and ending are verified;
+- stage, song, fever and ending are verified where required by the approved scope;
 - a full match returns to selection;
 - settings and memory cards remain byte-identical;
 - the local task commit and one verified snapshot are made.
@@ -112,6 +113,13 @@ py -3.13 tools/bag1import/character_workflow.py prepare --profile tools/bag1impo
 ```
 
 `prepare` creates a candidate workspace and manifest. It never deploys.
+
+Implementation limit (parser/source checked 2026-11-02): `init-profile` emits
+schema 1; `plan`/`prepare` require a completed schema-2 profile. The current
+readiness check includes `gameplay_evidence`, not only structural conversion.
+Do not fabricate evidence or mark exceptions complete to force a new candidate
+through this gate. Record the blocker; the helper does not automate the entire
+first-import bootstrap. Populate/validate the actual profile before using these commands.
 
 ### 4. Record reference evidence
 
@@ -240,7 +248,8 @@ Conditional cases:
 - announcer name;
 - online content identity.
 
-A case is not valid if its required capability is false.
+A conditional case is not valid if its required capability is false. Record
+not-applicable with a reason; do not disable a required capability to hide a failure.
 
 ## 11. Testing discipline
 

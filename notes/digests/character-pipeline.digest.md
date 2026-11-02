@@ -7,6 +7,9 @@ related: ["notes/character-pipeline.md", "notes/character-alternate-entries.md",
 created: "2026-11-02"
 updated: "2026-11-02"
 edited: "2026-11-02"
+doc_kind: digest
+source: "notes/character-pipeline.md"
+source_sha256: "137f452c86a9fac21bf2728d4f51bd507ad37d563edee701c88fc15669606c26"
 ---
 
 # Pipeline compartido: resumen
