@@ -2,566 +2,327 @@
   "schema": 1,
   "character": "strike",
   "status": "proposed",
+  "source_character_id": 2,
+  "target_character_id": 1,
+  "source_cue_base": 4608,
   "roles": [
     {
-      "target": 0,
-      "source": 0,
-      "name": "NEUTRAL",
-      "classification": "equivalent",
-      "reason": "Original neutral/wait posture; no attack launch."
-    },
-    {
-      "target": 2,
-      "source": 33,
-      "name": "W",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 3,
-      "source": 23,
-      "name": "Q",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 4,
-      "source": 14,
-      "name": "K",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 5,
-      "source": 5,
-      "name": "E",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 6,
-      "source": 1,
-      "name": "A",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 7,
-      "source": 35,
-      "name": "X",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 8,
-      "source": 25,
-      "name": "R",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 9,
-      "source": 15,
-      "name": "L",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 10,
-      "source": 7,
-      "name": "F",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 11,
-      "source": 2,
-      "name": "B",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 12,
-      "source": 46,
-      "name": "FINISH3",
-      "classification": "adaptation",
-      "reason": "Attack role without launch events; may need hold.",
-      "hold": true
-    },
-    {
-      "target": 13,
-      "source": 37,
-      "name": "Y",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 14,
-      "source": 64,
-      "name": "ATTACK2",
-      "classification": "adaptation",
-      "reason": "Attack role without launch events; may need hold.",
-      "hold": true
-    },
-    {
-      "target": 15,
-      "source": 27,
-      "name": "S",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 16,
-      "source": 82,
-      "name": "FEVER1",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 17,
-      "source": 17,
-      "name": "M",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 18,
-      "source": 83,
-      "name": "FEVER2",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 19,
-      "source": 8,
-      "name": "G",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 20,
-      "source": 32,
-      "name": "req_253",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 21,
-      "source": 3,
-      "name": "C",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 22,
-      "source": 47,
-      "name": "FINISH4",
-      "classification": "adaptation",
-      "reason": "Attack role without launch events; may need hold.",
-      "hold": true
-    },
-    {
-      "target": 23,
-      "source": 39,
-      "name": "Z",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 24,
-      "source": 29,
-      "name": "T",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 25,
-      "source": 19,
-      "name": "N",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 26,
-      "source": 9,
-      "name": "H",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 27,
-      "source": 1,
-      "name": "req_254",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 28,
-      "source": 48,
-      "name": "FINISH5",
-      "classification": "equivalent",
-      "reason": "Original attack/finish with launch events."
-    },
-    {
-      "target": 29,
-      "source": 29,
-      "name": "req_258",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 30,
-      "source": 41,
-      "name": "ZZ",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 31,
-      "source": 64,
-      "name": "req_260",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 32,
-      "source": 31,
-      "name": "U",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 33,
-      "source": 29,
-      "name": "req_262",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 34,
-      "source": 21,
-      "name": "O",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 35,
-      "source": 29,
-      "name": "req_266",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 36,
-      "source": 11,
-      "name": "I",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 37,
-      "source": 29,
-      "name": "req_270",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 38,
-      "source": 49,
-      "name": "FINISH6",
-      "classification": "adaptation",
-      "reason": "Attack role without launch events; may need hold.",
-      "hold": true
-    },
-    {
-      "target": 39,
-      "source": 43,
-      "name": "ZZZ",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 40,
-      "source": 29,
-      "name": "req_274",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 43,
-      "source": 50,
-      "name": "FINISH7",
-      "classification": "adaptation",
-      "reason": "Attack role without launch events; may need hold.",
-      "hold": true
-    },
-    {
-      "target": 45,
-      "source": 44,
-      "name": "FINISH1",
-      "classification": "equivalent",
-      "reason": "Original attack/finish with launch events."
-    },
-    {
-      "target": 49,
-      "source": 45,
-      "name": "FINISH2",
-      "classification": "adaptation",
-      "reason": "Attack role without launch events; may need hold.",
-      "hold": true
-    },
-    {
-      "target": 50,
-      "source": 32,
-      "name": "V",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 51,
-      "source": 22,
-      "name": "P",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 52,
-      "source": 13,
-      "name": "J",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
-    },
-    {
-      "target": 53,
-      "source": 4,
-      "name": "D",
-      "classification": "adaptation",
-      "reason": "Dance step with attack events; may need adaptation."
-    },
-    {
-      "target": 54,
-      "source": 51,
-      "name": "SOLO_4_A",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 55,
-      "source": 54,
-      "name": "SOLO_8_A",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 56,
-      "source": 57,
-      "name": "SOLO_16_A",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 57,
-      "source": 52,
-      "name": "SOLO_4_B",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 58,
-      "source": 55,
-      "name": "SOLO_8_B",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 59,
-      "source": 58,
-      "name": "SOLO_16_B",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 61,
-      "source": 61,
-      "name": "WALK",
-      "classification": "adaptation",
-      "reason": "Unusual duration 38 for dance step."
-    },
-    {
-      "target": 62,
-      "source": 62,
-      "name": "INDIVIDUAL",
-      "classification": "equivalent",
-      "reason": "Original dodge/individual."
-    },
-    {
-      "target": 63,
-      "source": 53,
-      "name": "SOLO_4_C",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 64,
-      "source": 56,
-      "name": "SOLO_8_C",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 65,
-      "source": 59,
-      "name": "SOLO_16_C",
-      "classification": "equivalent",
-      "reason": "Original fever/solo dance."
-    },
-    {
-      "target": 66,
-      "source": 66,
-      "name": "HIT1",
-      "classification": "equivalent",
-      "reason": "Original hit/miss reaction."
-    },
-    {
       "target": 67,
-      "source": 67,
-      "name": "HIT2",
-      "classification": "equivalent",
-      "reason": "Original hit/miss reaction."
+      "source": 64,
+      "name": "POSE1",
+      "classification": "adaptation",
+      "reason": "Hold the original attack-2 finishing posture; no attack launch event.",
+      "hold": true
     },
     {
       "target": 68,
-      "source": 68,
-      "name": "HIT3",
-      "classification": "equivalent",
-      "reason": "Original hit/miss reaction."
-    },
-    {
-      "target": 71,
       "source": 60,
-      "name": "WAIT",
-      "classification": "equivalent",
-      "reason": "Original neutral/wait posture; no attack launch."
+      "name": "POSE2",
+      "classification": "adaptation",
+      "reason": "Hold the original standing posture instead of walking.",
+      "hold": true
     },
     {
       "target": 74,
       "source": 63,
-      "name": "ATTACK1",
+      "name": "ATTACK",
       "classification": "adaptation",
-      "reason": "Attack role without launch events; may need hold.",
-      "hold": true
+      "reason": "Use original BAG1 ATTACK1 (dual-gun draw at f21 and 5 shots f26..46); collapse 5 BAG1 type-16 triggers to one BAG2 projectile launch at f26 so the projectile buffer is not reset mid-flight."
     },
     {
-      "target": 75,
+      "target": 76,
       "source": 65,
-      "name": "DODGE",
-      "classification": "equivalent",
-      "reason": "Original dodge/individual."
+      "name": "GUARD",
+      "classification": "adaptation",
+      "reason": "Use original evasive defense, preserving the BAG2 guard-state event.",
+      "required_events": [
+        [
+          1,
+          1,
+          902
+        ]
+      ]
+    },
+    {
+      "target": 77,
+      "source": 64,
+      "name": "REFLECT",
+      "classification": "adaptation",
+      "reason": "Use the original counter-swing without launching an attack; retain reflection event.",
+      "required_events": [
+        [
+          1,
+          1,
+          903
+        ]
+      ]
     },
     {
       "target": 78,
-      "source": 70,
-      "name": "CAUGHT",
-      "classification": "adaptation",
-      "reason": "Caught role with shorter duration."
+      "source": 69,
+      "name": "TIRED",
+      "classification": "equivalent",
+      "reason": "Original BAG1 TIRED (34 frames); request IDs differ between games (BAG1 req 124 -> slot 69, not CAUGHT slot 70)."
     },
     {
       "target": 79,
-      "source": 69,
-      "name": "TIRED",
+      "source": 66,
+      "name": "MISS1",
       "classification": "adaptation",
-      "reason": "Tired role with shorter duration."
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 80,
+      "source": 67,
+      "name": "MISS2",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 81,
+      "source": 68,
+      "name": "MISS3",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 82,
+      "source": 66,
+      "name": "MISS4",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 83,
+      "source": 67,
+      "name": "MISS5",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 84,
+      "source": 68,
+      "name": "MISS6",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
     },
     {
       "target": 85,
       "source": 71,
-      "name": "req_130",
-      "classification": "adaptation",
-      "reason": "Unusual duration 44 for dance step."
-    },
-    {
-      "target": 86,
-      "source": 72,
-      "name": "req_131",
-      "classification": "adaptation",
-      "reason": "Unusual duration 46 for dance step."
+      "name": "DOWN1",
+      "classification": "equivalent",
+      "reason": "Original knockdown 1 with BAG2 knockdown callback 901 preserved.",
+      "required_events": [
+        [
+          1,
+          1,
+          901
+        ]
+      ]
     },
     {
       "target": 87,
       "source": 73,
-      "name": "req_132",
-      "classification": "adaptation",
-      "reason": "Unusual duration 44 for dance step."
-    },
-    {
-      "target": 88,
-      "source": 74,
-      "name": "req_133",
-      "classification": "adaptation",
-      "reason": "Unusual duration 46 for dance step."
+      "name": "DOWN2",
+      "classification": "equivalent",
+      "reason": "Original knockdown 2 with BAG2 knockdown callback 901 preserved.",
+      "required_events": [
+        [
+          1,
+          1,
+          901
+        ]
+      ]
     },
     {
       "target": 89,
       "source": 75,
-      "name": "req_134",
-      "classification": "adaptation",
-      "reason": "Unusual duration 44 for dance step."
+      "name": "DOWN3",
+      "classification": "equivalent",
+      "reason": "Original knockdown 3 with BAG2 knockdown callback 901 preserved.",
+      "required_events": [
+        [
+          1,
+          1,
+          901
+        ]
+      ]
     },
     {
-      "target": 90,
+      "target": 93,
       "source": 76,
-      "name": "req_135",
+      "name": "DOWN_RECOVERY_ALT",
       "classification": "adaptation",
-      "reason": "Unusual duration 46 for dance step."
+      "reason": "Original knockdown recovery with BAG2 callback 901 preserved.",
+      "required_events": [
+        [
+          1,
+          15,
+          901
+        ]
+      ]
+    }
+  ],
+  "native_transitions": [
+    [
+      5,
+      6,
+      3,
+      3
+    ],
+    [
+      9,
+      10,
+      5,
+      6
+    ],
+    [
+      11,
+      12,
+      7,
+      7
+    ],
+    [
+      15,
+      16,
+      9,
+      10
+    ],
+    [
+      17,
+      18,
+      11,
+      12
+    ],
+    [
+      19,
+      20,
+      13,
+      13
+    ],
+    [
+      23,
+      24,
+      15,
+      16
+    ],
+    [
+      25,
+      26,
+      17,
+      18
+    ],
+    [
+      27,
+      28,
+      19,
+      20
+    ],
+    [
+      29,
+      30,
+      21,
+      21
+    ],
+    [
+      33,
+      34,
+      23,
+      24
+    ],
+    [
+      35,
+      36,
+      25,
+      26
+    ],
+    [
+      37,
+      38,
+      27,
+      28
+    ],
+    [
+      39,
+      40,
+      29,
+      30
+    ],
+    [
+      41,
+      42,
+      31,
+      31
+    ]
+  ],
+  "alternate_edges": [
+    {
+      "normal_slot": 19,
+      "slot": 20,
+      "previous_slot": 11
     },
     {
-      "target": 92,
-      "source": 1,
-      "name": "req_238",
-      "classification": "equivalent",
-      "reason": "Original dance step; no attack launch."
+      "normal_slot": 17,
+      "slot": 18,
+      "previous_slot": 10
     },
     {
-      "target": 94,
-      "source": 77,
-      "name": "WIN1",
-      "classification": "equivalent",
-      "reason": "Original win pose."
+      "normal_slot": 15,
+      "slot": 16,
+      "previous_slot": 9
     },
     {
-      "target": 95,
-      "source": 78,
-      "name": "WIN2",
-      "classification": "equivalent",
-      "reason": "Original win pose."
+      "normal_slot": 13,
+      "slot": 14,
+      "previous_slot": 8
     },
     {
-      "target": 96,
-      "source": 79,
-      "name": "WIN3",
-      "classification": "equivalent",
-      "reason": "Original win pose."
+      "normal_slot": 34,
+      "slot": 35,
+      "previous_slot": 26
     },
     {
-      "target": 98,
-      "source": 80,
-      "name": "LOSE1",
-      "classification": "equivalent",
-      "reason": "Original lose pose."
+      "normal_slot": 32,
+      "slot": 33,
+      "previous_slot": 25
     },
     {
-      "target": 99,
-      "source": 81,
-      "name": "LOSE2",
-      "classification": "equivalent",
-      "reason": "Original lose pose."
+      "normal_slot": 30,
+      "slot": 31,
+      "previous_slot": 24
     },
     {
-      "target": 100,
-      "source": 80,
-      "name": "req_296",
-      "classification": "adaptation",
-      "reason": "Unusual duration 82 for dance step."
+      "normal_slot": 28,
+      "slot": 29,
+      "previous_slot": 23
+    },
+    {
+      "normal_slot": 43,
+      "slot": 44,
+      "previous_slot": 39
+    },
+    {
+      "normal_slot": 41,
+      "slot": 42,
+      "previous_slot": 38
+    }
+  ],
+  "input_evidence": [
+    {
+      "file": "_work/bag1/scus.bin",
+      "sha256": "46cf25699eccd91057c61fe3c68ccd708e2c2c6ea348593e6c7b3ce3171b61c9"
+    },
+    {
+      "file": "_work/mainexe/slpm.bin",
+      "sha256": "143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b"
+    },
+    {
+      "file": "_work/character_inventory/strike/001.bin",
+      "sha256": "1daabe66ceb8756ff93b0bd56aef536dc11c63c2a9fcec4169ea82d3a948cd70"
+    },
+    {
+      "file": "_work/character_import/strike/original_dfs/model_a_p1.dfs",
+      "sha256": "13745821453a9d4d395ea85931cb8c790855e23ab2b8f1f1d717edca3604198d"
     }
   ]
 }
