@@ -23,6 +23,7 @@
 #include <SDL3/SDL.h>
 #include "mod_plugins.h"
 #include "bag2jp_bag1_alt_index.h"
+#include "bag2jp_model_region.h"
 
 #define B1V_TABLE    0x8005D418u   /* RAM copy of the DF2_ header */
 #define B1V_MAGIC    0x5F324644u   /* 'DF2_' */
@@ -30,6 +31,9 @@
 #define B1V_WINNER   0x80089254u
 #define B1V_DANCERS  0x8005F808u   /* dancer pointer per side, stride 8 */
 #define B1V_CHARS    18
+#define B1V_SELECTED 0x80089250u   /* byte per side read by the loader: char | costume << 5, 0xFF none */
+#define B1V_CHAR_MASK 0x1Fu
+#define B1V_NO_CHAR  0xFFu
 
 static uint8_t b1v_version[B1V_CHARS][2];   /* 0 = BAG2 (stock), 1 = BAG1 */
 static int b1v_stage_version = -1;          /* -1 automatic, 0 BAG2, 1 BAG1: independent stage pick */
@@ -82,9 +86,30 @@ static int b1v_wanted(const B1AltEntry* e) {
     }
 }
 
+static int b1v_has_alt(uint32_t chr) {
+    for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i)
+        if (b1_alt_entries[i].chr == chr) return 1;
+    return 0;
+}
+
 static uint32_t b1v_frame;
+/* BAG1 models (full animation lists) need more than the stock per-side buffer: see the header. */
+static void b1v_model_region(void) {
+    int wanted[2];
+    for (int s = 0; s < 2; ++s) {
+        const uint32_t picked = psx_mod_read_byte(B1V_SELECTED + (uint32_t)s);
+        const uint32_t chr = picked & B1V_CHAR_MASK;
+        wanted[s] = !b1v_force_stock && picked != B1V_NO_CHAR && chr < B1V_CHARS
+                    && b1v_version[chr][s] && b1v_has_alt(chr);
+    }
+    const int moved = bag2_model_region_tick(wanted);
+    for (int s = 0; s < 2; ++s)
+        if (moved & (1 << s)) b1v_log("%07u side %d model buffer -> expanded RAM", b1v_frame, s + 1);
+}
+
 static void b1v_vblank(void) {
     ++b1v_frame;
+    b1v_model_region();
     if (psx_mod_read_word(B1V_TABLE) != B1V_MAGIC) return;
     const uint32_t count = psx_mod_read_word(B1V_TABLE + 4u);
     for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i) {
