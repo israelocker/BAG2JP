@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "character": "strike",
+  "status": "experimental_requires_runtime_acceptance",
+  "scope": "Only alternate BAG1 costume-B packs145/146, after the skeleton contract; never stock or Heat",
+  "reason": "BAG2 event-driven MoveImage copies atlas x28/y168 or204 (10x36 words) to x0/y12, overwriting BAG1 emblem texels. Suppress only those calls; flags, delay slots, palette handlers and other instructions stay intact.",
+  "limits": "Suppresses the incompatible BAG2 texture-copy effect, not an implementation of native BAG1 texture animation. A/P2 and complete motion/event acceptance remain pending.",
+  "evidence": "_work/character_import/strike/emblem_audit",
+  "source_sha256": [
+    "6a4e688bc38c6f927811932a1f2349cf4cac192fa06affbd1289f57bd9e6e219",
+    "97cc5439de21b2b4ddf41326fad535819e7052b84dcdce588673f4bd40b07644"
+  ],
+  "word_guards": {
+    "0x2338": "2402000A",
+    "0x2340": "24020024",
+    "0x2348": "246300A8",
+    "0x2358": "0C011B1F",
+    "0x235C": "24C6000C",
+    "0x23B4": "2402000A",
+    "0x23BC": "24020024",
+    "0x23C4": "246300CC",
+    "0x23D4": "0C011B1F",
+    "0x23D8": "24C6000C"
+  },
+  "patches": [
+    {"offset": 9048, "expected": "0C011B1F", "replacement": "00000000"},
+    {"offset": 9172, "expected": "0C011B1F", "replacement": "00000000"}
+  ]
+}

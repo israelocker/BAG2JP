@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "character": "strike",
+  "status": "experimental_host_candidate_not_runtime_accepted",
+  "scope": "Only alternate BAG1 costume-B pack DBIs; never stock BAG2 or Heat",
+  "reason": "All BAG1 Strike models share44-bone topology and native channel bindings match BAG2 costumeA. CostumeB target branches assume a42-bone graph.",
+  "evidence": "_work/character_import/strike/hand_contract/channel-binding-audit.json",
+  "source_sha256": [
+    "b7d55a436265b791010107aa890cc331ef0c9f43ab3516fe835a889c12c49cdc",
+    "65f495807e60cf3263d7b349428b059aae85f84b1cca09f15b9d21739d99c3ec"
+  ],
+  "word_guards": {
+    "0x1AD8": "92220006",
+    "0x1AE0": "1440003A",
+    "0x1AE4": "263907EA",
+    "0x28DC": "92020006",
+    "0x28E4": "14400030",
+    "0x28E8": "3C03801D",
+    "0x28EC": "24020011",
+    "0x28F8": "24020015"
+  },
+  "patches": [
+    {"offset": 6880, "expected": "1440003A", "replacement": "00000000"},
+    {"offset": 10468, "expected": "14400030", "replacement": "00000000"}
+  ]
+}
