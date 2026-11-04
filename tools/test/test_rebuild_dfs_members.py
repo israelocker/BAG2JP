@@ -50,17 +50,24 @@ class ReadTests(unittest.TestCase):
 
 
 class BuildTests(unittest.TestCase):
+    def test_member_after_halfword_dbi_stays_dma_word_aligned(self):
+        """An unaligned TIM makes DMA upload its header height as colour zero."""
+        rebuilt = dfs.build_container([b'DBI_' + bytes(2), b'TIM!'])
+        offset, size = struct.unpack_from('<II', rebuilt, 16)
+        self.assertEqual(offset % 4, 0)
+        self.assertEqual(rebuilt[offset:offset + size], b'TIM!')
+
     def test_every_member_gets_its_own_offset(self):
         rebuilt = dfs.build_container([b"aaaa", b"bb", b"cccccc"])
         offsets = [struct.unpack_from("<II", rebuilt, 8 + index * 8)[0] for index in range(3)]
-        self.assertEqual(offsets, [32, 36, 38])
+        self.assertEqual(offsets, [32, 36, 40])
 
     def test_growing_a_member_moves_the_later_ones(self):
         source = container([b"aaaa", b"bb", b"cc"])
         rebuilt = dfs.replace_members(source, {0: b"aaaaaa"})
         self.assertEqual(dfs.read_members(rebuilt)[0], [b"aaaaaa", b"bb", b"cc"])
         offsets = [struct.unpack_from("<II", rebuilt, 8 + index * 8)[0] for index in range(3)]
-        self.assertEqual(offsets, [32, 38, 40])
+        self.assertEqual(offsets, [32, 40, 44])
 
     def test_unknown_member_is_rejected(self):
         with self.assertRaises(dfs.DfsError):

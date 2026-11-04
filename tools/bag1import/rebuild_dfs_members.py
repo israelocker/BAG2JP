@@ -10,7 +10,9 @@ lookup returns the same bytes. That is exactly how a Strike pack once served mem
 (the name-plate TIM) as the body texture and froze the versus screen.
 
 Layout, from the stock files: `DFS_`, a little-endian member count, `count` pairs of
-little-endian {offset, size}, then the members back to back without padding.
+little-endian {offset, size}, then word-aligned members. Sizes exclude padding.
+DMA rounds addresses down to a 32-bit word: stripping alignment after an odd-sized
+DBI shifts every later TIM upload, even though member lookup still succeeds.
 
 Usage:
     py -3.13 tools/bag1import/rebuild_dfs_members.py --spec containers.json
@@ -27,6 +29,7 @@ from pathlib import Path
 
 MAGIC = b"DFS_"
 HEADER = 8
+MEMBER_ALIGNMENT = 4  # GPU DMA source addresses are word-aligned.
 
 
 class DfsError(ValueError):
@@ -56,7 +59,7 @@ def read_members(data: bytes) -> tuple[list[bytes], int]:
 
 
 def build_container(members: list[bytes]) -> bytes:
-    """Pack members sequentially and describe them with the matching table."""
+    """Pack word-aligned members, preserving their exact payloads and sizes."""
     if not members:
         raise DfsError("a container needs at least one member")
     table_end = HEADER + len(members) * 8
@@ -67,6 +70,7 @@ def build_container(members: list[bytes]) -> bytes:
     for member in members:
         if not member:
             raise DfsError("refusing to write an empty member")
+        out += b"\x00" * (-len(out) % MEMBER_ALIGNMENT)
         offsets.append((len(out), len(member)))
         out += member
     for index, (offset, size) in enumerate(offsets):
