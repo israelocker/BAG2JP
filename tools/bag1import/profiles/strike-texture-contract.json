@@ -2,11 +2,14 @@
   "schema": 1,
   "character": "strike",
   "status": "experimental_requires_runtime_acceptance",
-  "scope": "Only alternate BAG1 costume-B packs145/146, after the skeleton contract; never stock or Heat",
-  "reason": "BAG2 event-driven MoveImage copies atlas x28/y168 or204 (10x36 words) to x0/y12, overwriting BAG1 emblem texels. Suppress only those calls; flags, delay slots, palette handlers and other instructions stay intact.",
-  "limits": "Suppresses the incompatible BAG2 texture-copy effect, not an implementation of native BAG1 texture animation. A/P2 and complete motion/event acceptance remain pending.",
+  "scope": "Only alternate BAG1 Strike packs73/74/145/146; costume A uses original DBI, B uses the skeleton contract first; never write stock or Heat entries",
+  "alternate_entries": [73, 74, 145, 146],
+  "reason": "BAG2 event-driven MoveImage copies atlas x28/y168 or204 (10x36 words) to x0/y12. Native BAG1 A/B share a DBI without these atlas copies; they corrupt B emblem and are suspected in the A chest patch. Suppress only those calls; flags, delay slots, palette handlers and other instructions stay intact.",
+  "limits": "Suppresses incompatible BAG2 atlas copies, not native palette animation. A chest candidate requires VRAM/visual confirmation; P2 and complete motion/event acceptance remain pending.",
   "evidence": "_work/character_import/strike/emblem_audit",
   "source_sha256": [
+    "b7d55a436265b791010107aa890cc331ef0c9f43ab3516fe835a889c12c49cdc",
+    "65f495807e60cf3263d7b349428b059aae85f84b1cca09f15b9d21739d99c3ec",
     "6a4e688bc38c6f927811932a1f2349cf4cac192fa06affbd1289f57bd9e6e219",
     "97cc5439de21b2b4ddf41326fad535819e7052b84dcdce588673f4bd40b07644"
   ],
