@@ -15,11 +15,25 @@
 #include <stdlib.h>
 #include <SDL3/SDL.h>
 #include "mod_plugins.h"
+#include "bag2jp_score_fixture.h"
 
 static FILE* s_log;
 static int s_on = -1;
 static int s_skill = -1;
 static long s_dump_at = -1;
+
+/* Instruction callback changes only the input seed of this one native RNG call.
+ * The native rand and modulo/dispatch instructions still execute normally. */
+static void at_duet_rng(struct CPUState* cpu, uint32_t address) {
+    (void)cpu;
+    if (address != BAG2_FIXTURE_RNG_CALL_ADDR) return;
+    const char* enabled = getenv("BAG2JP_TEST_P1_DUET");
+    if (s_on != 1 || !s_log || !enabled || enabled[0] != '1' || enabled[1] != '\0') return;
+    if (bag2_duet_rng_fixture_tick(1)) {
+        fputs("test fixture: duet RNG seed1 at native call; not natural play\n", s_log);
+        fflush(s_log);
+    }
+}
 /* BAG2JP_WATCH=addr:size,... (hex addr, size 1/2/4): logs those RAM values to bag2jp_watch.log on change */
 static int s_nwatch = -1; static uint32_t s_wa[16], s_ws[16], s_wv[16]; static FILE* s_wlog;  /* BAG2JP_RAM_DUMP=frame: write main RAM (2 MB) to bag2jp_ram_<frame>.bin */   /* BAG2JP_CPU_SKILL=n forces the CPU skill byte 0x8005E661 (test attacks) */
 
@@ -103,6 +117,17 @@ static void at_vblank(void) {
         }
     }
     if (!s_on) return;
+    /* Explicit artificial input for matched P1 duet-exit tests; isolated cards.
+     * Trace is mandatory and all native guards live in the tested helper. */
+    const char* duet_test = getenv("BAG2JP_TEST_P1_DUET");
+    if (bag2_score_fixture_tick(duet_test && duet_test[0] == '1' && duet_test[1] == '\0')) {
+        static int score_fixture_logged;
+        if (!score_fixture_logged && s_log) {
+            fputs("test fixture: P1 duet score input 500000/500100; not natural play\n", s_log);
+            fflush(s_log);
+            score_fixture_logged = 1;
+        }
+    }
     ++frame;
     {   /* bag2jp_frame.txt: "frame phase a/b/c", every 6 frames, for scripted frame-exact screenshots */
         static FILE* ff;
@@ -145,6 +170,8 @@ static void at_vblank(void) {
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_anim_trace) {
+    (void)psx_mod_register_instruction_plugin("bag2jp.anim_trace", BAG2_FIXTURE_RNG_CALL_ADDR,
+                                            BAG2_FIXTURE_RNG_CALL_WORD, at_duet_rng);
     (void)psx_mod_register_vblank_plugin("bag2jp.anim_trace", at_vblank);
     (void)psx_mod_register_pcm_plugin("bag2jp.anim_trace", at_pcm);
 }
