@@ -25,6 +25,7 @@
 #include "bag2jp_bag1_alt_index.h"
 #include "bag2jp_model_region.h"
 #include "bag2jp_strike_shot.h"
+#include "bag2jp_heat_flame.h"
 
 #define B1V_TABLE    0x8005D418u   /* RAM copy of the DF2_ header */
 #define B1V_MAGIC    0x5F324644u   /* 'DF2_' */
@@ -145,6 +146,7 @@ static void b1v_vblank(void) {
     b1v_model_region();
     b1v_dancer_scale();
     bag2jp_strike_shot_tick(b1v_frame);
+    bag2jp_heat_flame_tick(b1v_frame);
     if (psx_mod_read_word(B1V_TABLE) != B1V_MAGIC) return;
     const uint32_t count = psx_mod_read_word(B1V_TABLE + 4u);
     for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i) {

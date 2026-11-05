@@ -4,6 +4,7 @@
  * Env BAG2JP_TEST_DANCE_VIEW_CHAR=0..13 temporarily enables that character in Dance View
  * (requires BAG2JP_ANIM_TRACE=1; use isolated test cards, never save test unlocks).
  * Env BAG2JP_RAM_DUMP=n writes main RAM (2 MB) at trace frame n.
+ * Env BAG2JP_VRAM_DUMP=n[,n...] writes raw VRAM (1024x512x16 bit) at those trace frames.
  * Env BAG2JP_CPU_SKILL=n keeps the CPU skill byte at n (n >= 140: the CPU attacks whenever it can).
  * Env BAG2JP_AUDIO_DUMP=1 records the final audio mix (44.1 kHz stereo, after XA/CD/SPU mixing and
  * the other PCM plugins) to bag2jp_audio.wav, plus bag2jp_audio_sync.log ("frame sample" per vblank,
@@ -16,11 +17,42 @@
 #include <SDL3/SDL.h>
 #include "mod_plugins.h"
 #include "bag2jp_score_fixture.h"
+#include "bag2jp_vram_dump.h"
+#include "cpu_state.h"
+#include "bag2jp_attack_fixture.h"
 
 static FILE* s_log;
 static int s_on = -1;
 static int s_skill = -1;
 static long s_dump_at = -1;
+
+static void at_attack_input(struct CPUState* cpu, uint32_t address) {
+    const char* strike_enabled = getenv("BAG2JP_TEST_STRIKE_ATTACK");
+    const char* heat_enabled = getenv("BAG2JP_TEST_HEAT_ATTACK");
+    const int strike = strike_enabled && strike_enabled[0] == '1' && strike_enabled[1] == '\0';
+    const int heat = heat_enabled && heat_enabled[0] == '1' && heat_enabled[1] == '\0';
+    if (address != BAG2_ATTACK_INPUT_SITE || s_on != 1 || !s_log || (!strike && !heat)) return;
+    static int observed;
+    if (!observed) {
+        fprintf(s_log, "attack fixture boundary: side=%u input=%08X active=%08X pending=%08X\n",
+                cpu->gpr[20], cpu->gpr[21], psx_mod_read_word(0x8005E748u),
+                psx_mod_read_word(0x8005E754u));
+        fflush(s_log);
+        observed = 1;
+    }
+    if (strike && bag2_attack_fixture_tick(1, cpu->gpr[20], cpu->gpr[21])) {
+        fputs("test fixture: P1 Strike attack input 0x6E; not natural play\n", s_log);
+        fflush(s_log);
+    } else if (heat && bag2_heat_attack_fixture_tick(1, cpu->gpr[20], cpu->gpr[21])) {
+        fputs("test fixture: P1 Heat attack input 0x6E; not natural play\n", s_log);
+        fflush(s_log);
+    } else if (heat && bag2_heat_defense_fixture_tick(1, cpu->gpr[20], cpu->gpr[21],
+                   psx_mod_read_byte(cpu->gpr[29] + cpu->gpr[20] + 0x30u))) {
+        /* 0x8009AF04 reads the under-attack flag at sp + side + 0x30. */
+        fputs("test fixture: P2 defense command cleared under Heat attack; not natural play\n", s_log);
+        fflush(s_log);
+    }
+}
 
 /* Instruction callback changes only the input seed of this one native RNG call.
  * The native rand and modulo/dispatch instructions still execute normally. */
@@ -147,6 +179,19 @@ static void at_vblank(void) {
             fclose(f);
         }
     }
+    {   /* BAG2JP_VRAM_DUMP=frame[,frame...]: raw VRAM at those trace frames. */
+        static int vram_count = -1; static uint32_t vram_frames[BAG2_VRAM_DUMP_MAX];
+        if (vram_count < 0) vram_count = bag2_vram_dump_parse(getenv("BAG2JP_VRAM_DUMP"), vram_frames);
+        for (int i = 0; i < vram_count; ++i) {
+            if (vram_frames[i] != frame) continue;
+            const char* b = SDL_GetBasePath(); char p[1024];
+            snprintf(p, sizeof p, "%sbag2jp_vram_%u.bin", b ? b : "", frame);
+            FILE* f = fopen(p, "wb");
+            const int ok = bag2_vram_dump_write(f);
+            if (f) fclose(f);
+            fprintf(s_log, "vram dump f%06u %s\n", frame, ok ? "ok" : "failed"); fflush(s_log);
+        }
+    }
     uint32_t cur[16] = {0};
     for (uint32_t p = 0; p < 2; ++p) {
         const uint32_t d = psx_mod_read_word(0x8005F808u + p * 8u);
@@ -170,6 +215,8 @@ static void at_vblank(void) {
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_anim_trace) {
+    (void)psx_mod_register_instruction_plugin("bag2jp.anim_trace", BAG2_ATTACK_INPUT_SITE,
+                                            BAG2_ATTACK_INPUT_WORD, at_attack_input);
     (void)psx_mod_register_instruction_plugin("bag2jp.anim_trace", BAG2_FIXTURE_RNG_CALL_ADDR,
                                             BAG2_FIXTURE_RNG_CALL_WORD, at_duet_rng);
     (void)psx_mod_register_vblank_plugin("bag2jp.anim_trace", at_vblank);

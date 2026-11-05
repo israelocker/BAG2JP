@@ -33,10 +33,13 @@ def foreground_pid() -> int:
     return pid.value
 
 
-def tap(vk: int, hold_s: float = 0.05) -> None:
-    user32.keybd_event(vk, 0, 0, 0)
+def tap(vk: int, hold_s: float = 0.08, extended: bool = False) -> None:
+    scan = user32.MapVirtualKeyA(vk, 0)
+    flags_down = 1 if extended else 0
+    flags_up = flags_down | 2
+    user32.keybd_event(vk, scan, flags_down, 0)
     time.sleep(hold_s)
-    user32.keybd_event(vk, 0, 2, 0)
+    user32.keybd_event(vk, scan, flags_up, 0)
 
 
 def main() -> int:
