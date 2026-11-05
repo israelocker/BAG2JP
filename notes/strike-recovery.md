@@ -40,8 +40,20 @@ doc_kind: reference
   Restauración verificada.
 - Objetivo del propietario (BAG1 A/B → vídeo BAG1 + créditos con su modelo; BAG2 → final
   BAG2) observado en Ending View, pendiente de su revisión visual.
-- No probado: final de Heat tras restaurar el manifest, salida natural (créditos seguían
-  a los 100 s) y final de campaña real (solo Ending View).
+- Heat y salida natural (runtime `e2521ae4…`, runner
+  `_work/strikedbi/probe_strike_ending.py [BAG1|BAG2] [A|B] [heat|strike] [segundos]`):
+  - Heat BAG1/A `20261105T204502725335Z-heat-ending-bag1-a`: log `movie 0 0`, `dance 0 0`,
+    `exit 33 0`; vídeo BAG1 de Heat y Heat BAG1 bailando en créditos; a los 200 s sale
+    (root 33) y vuelve al título (root 7).
+  - Strike BAG1/A `20261105T204954184810Z-strike-ending-bag1-a`: `movie 1 0`, `dance`,
+    `exit 33 0`; mismo retorno al título a los 200 s (el sondeo leyó un root 6 transitorio).
+  - Referencia stock Strike BAG2 `20261105T205447147749Z-strike-ending-bag2-a`: sin log
+    del plugin; sale por root 33 a los 334 s y vuelve al título. Mismo destino nativo;
+    la duración distinta corresponde al medio.
+  - Ajustes y 21 tarjetas restaurados en las tres.
+- No probado: salida natural de Heat B / Strike B (misma ruta de código) y final de campaña
+  real; este se probará tras importar escenario y canciones de Strike BAG1 (decisión del
+  propietario).
 
 ## Iluminación nativa descartada por el propietario (2026-11-05)
 
