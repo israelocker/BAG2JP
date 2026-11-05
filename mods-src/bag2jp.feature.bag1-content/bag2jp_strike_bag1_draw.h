@@ -10,7 +10,6 @@
 #define STRIKE_B1_BONE_MATRIX 0x2Cu
 #define STRIKE_B1_STAGE_PTR 0x80089200u
 #define STRIKE_B1_STAGE_MATRIX 0x34u
-#define STRIKE_B1_COSTUME_OFF 6u
 #define STRIKE_B1_GUN_NEAR (-4000)
 #define STRIKE_B1_GUN_FAR (-32000)
 #define STRIKE_B1_BEAM_WIDTH 0x1200
@@ -25,13 +24,14 @@ static inline void strike_b1_reset(void) {
     s_strike_b1_last_ot = 0;
 }
 
-/* Native bones 1B/1A are initialized as copies of hands 15/11 in both DBIs.
+/* Native bones 1B/1A are initialized as copies of hands 15/11 in both imported costumes.
+ * B payload entries 145/146 force the A initializer (branch at DBI file +10480 is nop).
+ * Do not apply stock BAG2 B's one-bone decrement to these imported skeletons.
  * +2C is the skeletal hierarchy's actor-space matrix. FUN_8002C404 temporarily replaces
  * the global camera with camera*dancer while calling the DBI; vblank must compose it too. */
 static inline int strike_b1_gun(uint32_t dancer, unsigned gun, StrikeB1Vec* a, StrikeB1Vec* b) {
     uint32_t bones = psx_mod_read_word(dancer + STRIKE_B1_BONES_OFF);
-    unsigned costume = psx_mod_read_byte(dancer + STRIKE_B1_COSTUME_OFF);
-    unsigned index = (gun == 0 ? 0x1Bu : 0x1Au) - (costume != 0);
+    unsigned index = gun == 0 ? 0x1Bu : 0x1Au;
     uint32_t matrix = bones + index * STRIKE_B1_BONE_STRIDE + STRIKE_B1_BONE_MATRIX;
     if (!heat_valid_ptr(bones) || !heat_valid_ptr(matrix + 0x1Cu)) return 0;
     int16_t rot[9];

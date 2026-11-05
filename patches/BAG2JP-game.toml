@@ -30,6 +30,7 @@ known_crc32 = [
 ]
 
 [recompiler]
+mod_function_entry_funcs = ["0x8002C404"] # Actor-local Strike lighting before rendering.
 seeds = "seeds/ghidra_funcs.txt"
 out_dir = "generated"
 strict = true

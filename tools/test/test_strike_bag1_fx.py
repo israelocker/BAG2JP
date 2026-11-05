@@ -1,5 +1,7 @@
 """Exercise Strike's native shot/particle timing without a game process."""
 import subprocess
+import struct
+import sys
 import unittest
 from pathlib import Path
 
@@ -13,6 +15,25 @@ def wsl_path(path: Path) -> str:
 
 
 class StrikeNativeEffectTests(unittest.TestCase):
+    def test_imported_b_payload_forces_a_gun_initializer(self) -> None:
+        """Pin the real payload contract, not just a RAM mock of our chosen indices."""
+        sys.path.insert(0, str(ROOT / 'tools/bag1import'))
+        from alternate_payload import BASE, ROW
+        from rebuild_dfs_members import read_members
+        package = HEADER.parent
+        payload = (package / '1.0.0/payload/bag1_alt.bin').read_bytes()
+        rows = {int(m[1]): (int(m[6], 16) - BASE, int(m[7]))
+                for m in ROW.finditer((package / 'bag2jp_bag1_alt_index.h').read_text())}
+        for entry in (145, 146):
+            with self.subTest(entry=entry):
+                start, size = rows[entry]
+                members, _ = read_members(payload[start:start + size])
+                dbi = next(m for m in members if m.startswith(b'DBI_'))
+                self.assertEqual(struct.unpack_from('<I', dbi, 10472)[0], 0x92020006)
+                self.assertEqual(struct.unpack_from('<I', dbi, 10480)[0], 0)
+                self.assertEqual(struct.unpack_from('<I', dbi, 10608)[0], 0x2402001A)
+                self.assertEqual(struct.unpack_from('<I', dbi, 10620)[0], 0x2402001B)
+
     def test_native_renderer_is_wired_once(self) -> None:
         """The live callback must replace, not layer over, the approximate effect."""
         source = (HEADER.parent / 'bag2jp_bag1_versions.c').read_text()
@@ -65,6 +86,16 @@ int main(void) {
         uint32_t m=bones+bone*STRIKE_B1_BONE_STRIDE+STRIKE_B1_BONE_MATRIX;
         identity(m); W(m+0x18,4000);
     }
+    /* Imported B payload entries 145/146 nop the costume branch at DBI +10480.
+     * They initialize the SAME 1B/1A gun bones as A, not stock B's 1A/19. */
+    for (unsigned gun=0;gun<2;++gun) {
+        StrikeB1Vec aa, ab, ba, bb;
+        *P(d+6)=0; assert(strike_b1_gun(d,gun,&aa,&ab));
+        *P(d+6)=1; assert(strike_b1_gun(d,gun,&ba,&bb));
+        assert(aa.x==ba.x && aa.y==ba.y && aa.z==ba.z);
+        assert(ab.x==bb.x && ab.y==bb.y && ab.z==bb.z);
+    }
+    *P(d+6)=0;
     /* FUN_80031DAC's table is [side*19 + character], not just [side*19]. */
     W(B2_GEOM_H_ADDR,384); W(B2_DT_ADDR,2); W(0x80053548u,desc);
     W(desc+0x44,0x003c003d); W(d+0x154c,74); W(o+0x810,500);

@@ -191,7 +191,7 @@ Los helpers de `bag2jp_strike_shot.h` siguen compartidos con Heat.
   `20261105T155619530504Z-strike-attack-bag1-heatbag1` (`strike-effect-vram-audit.json`).
   Esto no sustituye el control de pecho/emblema ni una auditoría temporal del último candidato.
 
-### Siguiente paso y aceptación pendiente
+### Siguiente paso anterior (sustituido por la aceptación visual de abajo)
 
 Separar únicamente emisores visuales del DBI BAG2 importado, con palabras originales,
 hashes y tests, preservando estados, resultados y cues. No anular `FUN_801cc2a0` completo.
@@ -205,6 +205,108 @@ Después: comparar partículas con la referencia nativa, VRAM de pecho/emblema d
 ataque, matriz P1/P2×A/B, canción/fever/retorno. El modo especial de escenario 0xB no
 está implementado en el renderer (se omite); no declarar soporte global. Revisar índices
 de pistola de traje B frente al inicializador parcheado antes de probar ese caso.
+
+### Revisión en vivo solicitada: Heat BAG1 vs Strike BAG1, Heat BAG1
+
+- Fixture opcional `BAG2JP_TEST_HEAT_STRIKE_DUEL=1`: alterna comandos nativos de
+  ataque P1/P2 en el límite CPU; no cambia efectos, daño ni resultados. Conserva
+  las guardas de región, fase, personaje y estado por lado (stride `0x32`).
+- Tres tests de `test_attack_fixture.py` verdes; mutación P1-only rechazada por
+  la aserción de P2. Build `20261105T163147017023Z-live-bag1-duel` correcto.
+- Runtime experimental `c054ea2c313010cc130df47372628d2ee77c0bc0ed8a8963da68ca3dda5404a2`;
+  respaldo del anterior en ese workflow. Calibración revisada y aceptada:
+  `20261105T163240216399Z-live-bag1-duel-calib`.
+- `_work/character_import/heat/run_live_duel.py` conserva la ventana abierta hasta
+  que el propietario la cierre; después restaura ajustes y comprueba guardados.
+  Journal: `_work/character_import/heat/live-duel-session.json`. Revisión visual
+  del propietario inicialmente pendiente; resultado actualizado abajo.
+- Sesión viva `20261105T163443254952Z-live-heat-strike-bag1`, PID `42744`:
+  popup confirma ambas versiones BAG1/A y escenario observado Heat BAG1. Traza
+  f8107–8109 confirma anim74 en ambos lados. Las entradas se alternan, pero ambas
+  animaciones pueden comenzar en el mismo compás: no se ha probado separación
+  temporal de los ataques. Diez tests host pasan; ventana dejada al propietario.
+- Resultado del propietario: «Okay, visualmente lo veo bien» tras la demostración.
+  Aceptación visual del caso Heat BAG1/A vs Strike BAG1/A en Heat BAG1, con ambos
+  ataques; no extiende aceptación a traje B, otros escenarios ni matriz completa.
+  La eliminación de efectos BAG2 superpuestos deja de ser una corrección visual
+  obligatoria por defecto: conservar el resultado aprobado y consultar antes de
+  cambiarlo. Siguen pendientes las comprobaciones técnicas y de cobertura.
+
+### Tanda de cobertura aprobada (2026-11-05)
+
+El propietario solicita continuar con los pendientes y agrupar los casos en una
+ejecución si es posible. Conservar los efectos aprobados; no confundir fixtures
+de entrada con juego natural ni inyección temporal de luz con solución persistente.
+
+| Paso | Caso / comprobación | Estado |
+|---|---|---|
+| 1 | P1 Strike BAG1/A vs Heat BAG1/A, Heat BAG1 | pendiente |
+| 2 | P1 Heat BAG1/A vs P2 Strike BAG1/A, Heat BAG2 | pendiente |
+| 3 | P1 Strike BAG1/B vs Heat BAG1/A, Heat BAG2 | pendiente |
+| 4 | P1 Heat BAG1/A vs P2 Strike BAG1/B, Heat BAG1 | pendiente |
+| 5 | Auditar luz facial, pistolas B y VRAM de ataque de esos casos | pendiente |
+| 6 | Ending View Strike y escenario especial 0xB: recorrido separado | pendiente |
+
+Pasos 1–4: una orden por lote, procesos secuenciales por las guardas diferentes
+de los fixtures actuales. Cada caso exige picks observados, captura de ataque,
+fases registradas, canción completa y retorno; una ausencia de Fever observado no
+se transforma en aprobación por llegar al selector. Respaldo/restauración por caso.
+Verificación prevista: `py -3.13 tools/test/strike_acceptance_batch.py --execute`;
+regresión del organizador: `py -3.13 -m unittest tools.test.test_strike_acceptance_batch`.
+Bloqueadores: 5 depende de 1–4; 6 requiere su propia navegación verificada, no
+hereda aceptación de versus. No cambiar el ejecutable instalado mientras se mide.
+
+Hallazgos durante la tanda (desplegados como candidato, no aceptados visualmente):
+- Diagnóstico posterior: el candidato `6dc97e0d` **no prueba iluminación aplicada**.
+  Su primer caso no registra el mensaje de aplicación. El shard generado 09 no
+  despacha `psx_mod_function_entry` en `8002C404`: el generador exige la lista
+  `mod_function_entry_funcs`, ausente de la configuración. Regresión de configuración
+  rojo→verde; añadido el opt-in a `patches/BAG2JP-game.toml`. Tres tests de luz pasan,
+   regeneración y build completados; falta observar el callback real antes de aceptar la cara.
+  No editar C generado a mano. Generación aislada en `_work/strikedbi/lighting-codegen`;
+  el emisor Windows existente sale 1 sin diagnóstico. Se compila un emisor nativo
+  local con dependencias vendorizadas, sin cambiar pins ni instalar herramientas.
+- DBI B de entradas 145/146 fuerza el inicializador A: la rama en offset 10480
+  está anulada y asigna pistolas 1A/1B. El renderer restaba uno por traje; corregido
+  y fijado con test RAM A/B y palabras del payload real (rojo→verde).
+- `FUN_80022FF4` reconstruye luces y las copia a bailarines. Solución candidata:
+  perfil nativo solo en estructuras de Strike BAG1, al entrar en `FUN_8002C404`,
+  antes de dibujar. Sin tocar luces globales, escenario ni rival; omitir fades
+  temporizados y fases ajenas a combate normal. Perfil contrastado con captura
+  nativa de `face_audit/live-lighting-with-head.json`.
+- Usar function-entry del plugin existente `bag2jp.bag1_versions`, guardado por
+  palabras `27BDFF68/AFB20088/00809021` de SLPM JP. El jr final de luces no tiene
+  instrumentación de instruction-hook en el C generado; no añadir un hook inerte
+   ni modificar el framework: el opt-in del generador es necesario para el main compilado.
+- Tras cerrar la tanda basal: build/calibración nuevos y repetir matriz en el
+  candidato corregido; aceptación visual nueva de la luz sigue siendo necesaria.
+
+Resultado basal: `20261105T164657339941Z-strike-acceptance-batch`, ejecutable
+`c054ea2c…`, cuatro casos con ataques y retorno observado a raíz 13. Ajustes y
+21 guardados restaurados por caso. Los 32 dumps conservan atlas 004/005 exactos
+frente a sus variantes nativas admitidas (incluida la copia de pecho); no implica
+aceptación visual de materiales. Fever observado únicamente en P1/A Heat BAG1.
+
+Candidato instalado `6dc97e0dcce6e985354c4b8256fc48fa92030555893c7682297c4d727177af3c`:
+build `20261105T170340171860Z-strike-lighting-render-proof`, respaldo de `c054ea2c…`
+en ese workflow, calibración `20261105T170512060701Z-strike-lighting-b-guns-calib`
+revisada y aceptada. Incluye corrección de pistolas B y luz actor-local; payload
+sin cambios. Segunda tanda terminada: `20261105T170727021619Z-strike-acceptance-batch`,
+cuatro casos con ataques, canción/retorno y restauración verificados; 32 dumps con
+cero diferencias de atlas 004/005 frente a las variantes admitidas. Esto verifica
+la ejecución y conservación de texturas, no acepta globalmente los materiales ni
+la luz. Los sheets de ataque quedan disponibles por caso; P2/B revisado sin fallo
+evidente de modelo, pero las capturas escasas no prueban cada fogonazo de pistola.
+El organizador rechaza también un fallo en el cuarto
+caso o una restauración no verificada (mutación del criterio anterior detectada).
+
+Generación corregida: `_work/strikedbi/lighting-codegen/report.json` confirma que
+solo cambia `SLPM_862.19_full_09.c`, añadiendo el despacho function-entry. Emisor
+nativo compilado offline desde el framework fijado; respaldo del shard y `game.toml`
+en `lighting-codegen/stage-backup`. Diecisiete tests host pasan. Build
+`20261105T172504139699Z-strike-lighting-entry-enabled` correcto, aún sin desplegar
+ni calibrar. No atribuir a este build las dos tandas anteriores. Ending View se
+prueba separadamente con el instalado `6dc97e0d`; no prueba el ending de campaña.
 
 # Límites
 
