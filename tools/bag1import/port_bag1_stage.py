@@ -11,6 +11,9 @@ BAG2 stage DBI for stage id 0 (Heat), loaded by BAG2 at 0x801DAF10.
 - BAG2 calls the 4 stage callbacks of id 0 at fixed addresses (main exe tables 0x80051B88/BBC/BF0,
   0x80054C10): trampolines there (init / draw return 1, update -> BAG1 update, setup -> BAG1 setup).
 usage: port_bag1_stage.py <bag1 dbi> <out bag2 dbi>"""
+import json
+import hashlib
+from pathlib import Path
 import struct, sys
 import capstone
 
@@ -50,13 +53,35 @@ GLOBALS = [  # (BAG1 start, length, BAG2 start)
 ]
 LOADS = {'lw', 'sw', 'lh', 'sh', 'lb', 'lbu', 'lhu', 'sb', 'lwl', 'lwr', 'swl', 'swr', 'lwc2', 'swc2'}
 
-def map_addr(a, size1):
-    if B1_BASE <= a < B1_BASE + size1: return a + DELTA, 'reloc'
-    for s, n, d in GLOBALS:
+def load_profile(name):
+    """Load audited stage data; engines remain shared across characters."""
+    def numbers(value):
+        if isinstance(value, str) and value.startswith('0x'):
+            return int(value, 16)
+        if isinstance(value, list):
+            return [numbers(item) for item in value]
+        if isinstance(value, dict):
+            return {key: numbers(item) for key, item in value.items()}
+        return value
+    path = Path(__file__).parent / 'profiles/stages' / (name + '.json')
+    profile = numbers(json.loads(path.read_text()))
+    profile['functions'] = {int(key, 16): value for key, value in profile['functions'].items()}
+    return profile
+
+
+def map_addr(a, size1, profile=None):
+    base = profile['source_base'] if profile else B1_BASE
+    globals_ = profile['globals'] if profile else GLOBALS
+    if base <= a < base + size1: return a + B2_BASE - base, 'reloc'
+    for s, n, d in globals_:
         if s <= a < s + n: return d + (a - s), 'global'
     return None, None
 
-def port(dbi):
+def port(dbi, profile=None):
+    base = profile['source_base'] if profile else B1_BASE
+    code_end = profile['code_end'] if profile else CODE_END
+    functions = profile['functions'] if profile else FUNCS
+    delta = B2_BASE - base
     magic, size, bss = struct.unpack_from('<4sII', dbi, 0)
     assert magic == b'DBI_'
     p = bytearray(dbi[12:12 + size]); img = size + bss
@@ -66,7 +91,7 @@ def port(dbi):
     def put(i, w): struct.pack_into('<I', p, i, w)
     stats = {'jal': 0, 'pairs': 0, 'data': 0}; unknown = []
     lui = {}                                  # reg -> (offset of lui, imm, new hi or None)
-    code_n = (CODE_END - B1_BASE) // 4
+    code_n = (code_end - base) // 4
     # a lui in a branch delay slot also reaches the branch target (e.g. 0x801E3A0C -> 0x801E3F64,
     # texture table entry 5 for the night-city backdrop): carry it there, sharing the same entry
     entries = {}; pending = {}
@@ -81,10 +106,10 @@ def port(dbi):
         off = 4 * k; w = W(off); op = w >> 26
         for reg, e in pending.get(off, ()): lui[reg] = e
         if op in (2, 3):                      # j / jal
-            t = ((B1_BASE + off) & 0xF0000000) | ((w & 0x3FFFFFF) << 2)
-            if B1_BASE <= t < B1_BASE + img: nt = t + DELTA
-            elif t in FUNCS: nt = FUNCS[t]
-            else: unknown.append(('call', hex(B1_BASE + off), hex(t))); continue
+            t = ((base + off) & 0xF0000000) | ((w & 0x3FFFFFF) << 2)
+            if base <= t < base + img: nt = t + delta
+            elif t in functions: nt = functions[t]
+            else: unknown.append(('call', hex(base + off), hex(t))); continue
             put(off, (w & 0xFC000000) | ((nt >> 2) & 0x3FFFFFF)); stats['jal'] += 1; continue
         if op == 0x0F:                        # lui rt
             lui[(w >> 16) & 31] = entries.get(off) or [off, w & 0xFFFF, None]; continue
@@ -97,7 +122,7 @@ def port(dbi):
             lo_off, hi, newhi = lui[rs]
             sim = imm - 0x10000 if (imm & 0x8000 and lo_kind != 'ori') else imm
             a = ((hi << 16) + sim) & 0xFFFFFFFF
-            na, kind = map_addr(a, img)
+            na, kind = map_addr(a, img, profile)
             if na is not None:
                 if newhi is None:
                     newhi = ((na + 0x8000) >> 16) & 0xFFFF if lo_kind != 'ori' else na >> 16
@@ -107,10 +132,10 @@ def port(dbi):
                 if lo_kind == 'ori': assert nlo < 0x10000
                 else:
                     nlo = nlo - 0x100000000 if nlo & 0x80000000 else nlo
-                    assert -0x8000 <= nlo < 0x8000, (hex(B1_BASE + off), hex(a), hex(na))
+                    assert -0x8000 <= nlo < 0x8000, (hex(base + off), hex(a), hex(na))
                 put(off, (w & 0xFFFF0000) | (nlo & 0xFFFF)); stats['pairs'] += 1
             elif 0x80000000 <= a < 0x801E0000 and not (0x1F800000 <= a < 0x1F801000):
-                unknown.append(('global', hex(B1_BASE + off), hex(a)))
+                unknown.append(('global', hex(base + off), hex(a)))
         # a write to a register ends its lui pairing; a register copy (addu/or rd, rs, $zero) shares it
         dst = None; src = None
         if op == 0:
@@ -124,10 +149,10 @@ def port(dbi):
             if src is not None: lui[dst] = lui[src]
             elif dst in lui: del lui[dst]
     # data words that point into the image
-    for off in range(CODE_END - B1_BASE, size - 3, 4):
+    for off in range(code_end - base, size - 3, 4):
         w = W(off)
-        if B1_BASE <= w < B1_BASE + img:
-            put(off, w + DELTA); stats['data'] += 1
+        if base <= w < base + img:
+            put(off, w + delta); stats['data'] += 1
     return p, bss, stats, unknown
 
 STRUCT_PATCHES = []  # filled by find_struct_sites
@@ -146,13 +171,13 @@ def patch_struct_sites(p):
                     n += 1; break
     return n
 
-def bag1_chart(scus, char_id):
+def bag1_chart(scus, char_id, *, table=0x800513DC, header=0):
     """BAG1 song chart (main exe table 0x800513DC[id]: start frame, frames, beats, sections
     u16 (mode << 8 | beats), -1; mode 0 = both players, 1/2 = solo; after -1 both play to the end)
     -> BAG2 chart (start, frames, beats, intro beats, sections with mode 0 = no commands,
     1/2 = solo, 3 = both, -1). BAG1 has no intro section: its pre-roll becomes 32 BAG2 intro beats."""
-    B = 0x80010000
-    p = struct.unpack_from('<I', scus, 0x800513DC + 4 * char_id - B)[0] - B
+    B = 0x80010000 - header
+    p = struct.unpack_from('<I', scus, table + 4 * char_id - B)[0] - B
     start, frames, beats = struct.unpack_from('<3h', scus, p)
     secs = []; o = p + 6
     while True:
@@ -172,10 +197,76 @@ def bag1_chart(scus, char_id):
         out.append(mode << 8 | n)
     return [st, tf, tb, intro] + out + [-1]
 
-def build(dbi_in, bag2_dbi, chart=None):
+def build_sprite_helper(main_exe):
+    """Stage-local 13-argument drawer with BAG1 integer perspective math.
+
+    Clone the audited BAG2 camera/GTE/FT4 implementation, not the incompatible
+    rotated drawer. The nine guarded changes were checked against native JP
+    arithmetic on 10,600 cases; visual acceptance is still required.
+    """
+    start = 0x8002EE10
+    source = main_exe[start - 0x80010000:0x8002F0A4 - 0x80010000]
+    if hashlib.sha256(source).hexdigest() != 'c434b02dfc52a4a1db3998bc706713f342112269ac4f5f882f903783430f6bf0':
+        raise ValueError('Unrecognized BAG2 sprite drawer')
+    result = bytearray(source)
+    changes = [(0x8002EEC4, 0x00112840, 0x02202821),
+               (0x8002EEC8, 0x00B12821, 0), (0x8002EECC, 0x3C028007, 0),
+               (0x8002EED0, 0x8C42D98C, 0), (0x8002EED4, 0x00052BC0, 0),
+               (0x8002EED8, 0x00A2001A, 0), (0x8002EEDC, 0x00002812, 0),
+               (0x8002EF10, 0x00021200, 0), (0x8002EF40, 0x00091280, 0x00091080)]
+    for address, old, new in changes:
+        offset = address - start
+        if struct.unpack_from('<I', result, offset)[0] != old:
+            raise ValueError(f'Unexpected sprite instruction at {address:08X}')
+        struct.pack_into('<I', result, offset, new)
+    return bytes(result)
+
+
+def build_profile_image(p, bss, stats, unknown, stock, chart, profile, main_exe):
+    """Shared image layout: relocated code/BSS, local helper, callbacks, stock tail."""
+    base = profile['source_base']
+    delta = B2_BASE - base
+    tail_offset = profile['tail_address'] - B2_BASE
+    if len(p) + bss > profile['sprite_helper'] - B2_BASE:
+        raise ValueError('Relocated stage/BSS overlaps the sprite helper')
+    image = bytearray(tail_offset)
+    image[:len(p)] = p
+    sprite = build_sprite_helper(main_exe)
+    helper_offset = profile['sprite_helper'] - B2_BASE
+    if helper_offset + len(sprite) > SHIM - B2_BASE:
+        raise ValueError('Sprite helper overlaps the stage shim')
+    image[helper_offset:helper_offset + len(sprite)] = sprite
+    struct.pack_into('<4s', image, SHIM - B2_BASE, b'B1ST')
+    jump = lambda target: 0x08000000 | ((target >> 2) & 0x3FFFFFF)
+    call = lambda target: 0x0C000000 | ((target >> 2) & 0x3FFFFFF)
+    # Preserve BAG1's previous-level update after the stage callback, without
+    # Heat's deliberately character-specific black-backdrop adapter.
+    helper = [0x27BDFFF8, 0xAFBF0000, call(profile['update'] + delta), 0,
+              0x3C08801E, 0x91090108, 0, 0xA1090109,
+              0x8FBF0000, 0x27BD0008, 0x03E00008, 0]
+    struct.pack_into('<12I', image, SHIM + 0x10 - B2_BASE, *helper)
+    init, update, draw, setup = profile['callbacks']
+    for address, words in [(init, (0x03E00008, 0x24020001)),
+                           (update, (jump(SHIM + 0x10), 0)),
+                           (draw, (0x03E00008, 0x24020001)),
+                           (setup, (jump(profile['setup'] + delta), 0))]:
+        struct.pack_into('<2I', image, address - B2_BASE, *words)
+    size, b2bss = struct.unpack_from('<II', stock, 4)
+    tail = bytearray(stock[12 + tail_offset:12 + size])
+    if chart:
+        if len(chart) > profile['chart_halfwords']:
+            raise ValueError('Chart overlaps the following stock data')
+        struct.pack_into(f'<{len(chart)}h', tail, 0, *chart)
+    image += tail
+    return struct.pack('<4sII', b'DBI_', len(image), b2bss) + image, stats, 0, unknown
+
+
+def build(dbi_in, bag2_dbi, chart=None, profile=None, *, main_exe=None):
     # bag2_dbi: the stock BAG2 stage-0 DBI. Everything from 0x801E5410 on is song data the main exe
     # points at (chart/beat table 0x8004DF08[0] and tables 0x80051AC8.. for id 0), so it is kept as is.
-    p, bss, stats, unknown = port(dbi_in)
+    p, bss, stats, unknown = port(dbi_in, profile)
+    if profile and profile['stage_id'] != 0:
+        return build_profile_image(p, bss, stats, unknown, bag2_dbi, chart, profile, main_exe)
     n = patch_struct_sites(p)
     # fire-burst sound: BAG1 plays cue 0x4000 on voice slot 20 (BAG2 has 14 slots, and its 0x4000 is
     # the fever cue of stage banks 1-4) -> BAG2 FUN_8002E478(cue 0x5000, -1, -1, -1) picks a free slot;

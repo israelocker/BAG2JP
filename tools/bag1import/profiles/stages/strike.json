@@ -1,0 +1,55 @@
+{
+  "stage_id": 1,
+  "package": {
+    "source": "_work/stage_import/strike/disc/ST_STRI.DFS",
+    "common": "_work/stage_import/strike/disc/G_COMMON.DFS",
+    "exe": "_work/stage_import/strike/disc/SLPS_012.32",
+    "stock": "assets/archive/stages/209_vault_factory",
+    "chart_table": "0x8004D980",
+    "model_entry": 5, "camera_entry": 6,
+    "texture_entries": [2, 3, 4],
+    "common_textures": [
+      {"entry": 1, "image_xy": [640, 256], "clut_xy": [960, 48]},
+      {"entry": 4, "clut_xy": [992, 48]}
+    ],
+    "padding_texture_entry": 4,
+    "model_scale": [3, 2],
+    "empty_animation_list": true
+  },
+  "source_base": "0x801DCDF8",
+  "code_end": "0x801DDF3C",
+  "tail_address": "0x801E3470",
+  "chart_halfwords": 16,
+  "update": "0x801DDC60",
+  "setup": "0x801DDED8",
+  "callbacks": ["0x801E33D0", "0x801E33D8", "0x801E3400", "0x801E3420"],
+  "sprite_helper": "0x801DF000",
+  "functions": {
+    "0x8004704C": "0x800442A4", "0x800470DC": "0x80044334",
+    "0x8004707C": "0x800442D4", "0x80048D3C": "0x80049824",
+    "0x8004C758": "0x80049F24", "0x80049ADC": "0x80046C7C",
+    "0x800277F8": "0x80022FF4", "0x80028284": "0x80023724",
+    "0x80032BDC": "0x801DF000"
+  },
+  "globals": [
+    ["0x8004E114", "0x2000", "0x8004E488"],
+    ["0x80053E0C", "0x90", "0x800538EC"],
+    ["0x80054DB0", 2, "0x800539C0"],
+    ["0x80054D22", 2, "0x80053992"],
+    ["0x8006F650", 32, "0x8005D0F0"],
+    ["0x8006F718", 4, "0x8008F88C"],
+    ["0x80086121", 1, "0x8005D3E4"],
+    ["0x8008867C", 4, "0x8006D998"],
+    ["0x80075EFC", 4, "0x8006D990"],
+    ["0x80075F00", 4, "0x8006D994"],
+    ["0x8006F638", 1, "0x801E0108"],
+    ["0x8006EACC", 1, "0x801E0109"],
+    ["0x8006F63C", 4, "0x8006D980"],
+    ["0x8006EA80", "0x48", "0x8005F220"],
+    ["0x8006EAE0", "0x60", "0x8005F268"],
+    ["0x8006EBD8", 12, "0x8005F2D8"],
+    ["0x80075EE8", 12, "0x8005F3C0"],
+    ["0x8006EBB8", 12, "0x8005F2C8"],
+    ["0x80075ED0", 12, "0x8005F3B0"]
+  ]
+}

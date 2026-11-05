@@ -3,7 +3,7 @@
  * The BAG1 Heat stage program is ported to a BAG2 stage DBI by tools/bag1import/port_bag1_stage.py.
  * It reads a few BAG1 game variables that BAG2 does not have; the port points them at a shim block
  * inside the DBI image (0x801E0100: 'B1ST', beat flags u32, score level u8, previous level u8) and
- * this plugin fills it once per frame while that DBI is resident and stage id 0 is loaded:
+ * this plugin fills it once per frame while that DBI is resident and stage id 0 or 1 is loaded:
  *   beat flags (BAG1 0x80068704): bit 0 = a beat happened this frame (BAG2 beat counter 0x8005E2D0
  *   changed), bit 4 = it is the first beat of a bar (= bar start 0x8005E684), bit 6 = song over
  *   (beats left 0x8005E658 reached 0);
@@ -35,7 +35,7 @@ static void b1s_vblank(void) {
     static uint16_t last_beat = 0xFFFF;
     if (psx_mod_read_word(B1S_SHIM) != B1S_MAGIC) { last_beat = 0xFFFF; return; }
     const uint32_t stage = psx_mod_read_word(0x80089200u);
-    if (stage < 0x80000000u || stage >= 0x80800000u || psx_mod_read_byte(stage) != 0) return;
+    if (stage < 0x80000000u || stage >= 0x80800000u || psx_mod_read_byte(stage) > 1) return;
     const uint16_t beat = psx_mod_read_half(0x8005E2D0u);
     uint32_t flags = 0;
     if (last_beat != 0xFFFF && beat != last_beat) {
