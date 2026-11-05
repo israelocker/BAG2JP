@@ -24,6 +24,7 @@
 #include "mod_plugins.h"
 #include "bag2jp_bag1_alt_index.h"
 #include "bag2jp_model_region.h"
+#include "bag2jp_strike_shot.h"
 
 #define B1V_TABLE    0x8005D418u   /* RAM copy of the DF2_ header */
 #define B1V_MAGIC    0x5F324644u   /* 'DF2_' */
@@ -39,7 +40,7 @@ static uint8_t b1v_version[B1V_CHARS][2];   /* 0 = BAG2 (stock), 1 = BAG1 */
 static int b1v_stage_version = -1;          /* -1 automatic, 0 BAG2, 1 BAG1: independent stage pick */
 static int b1v_force_stock;                  /* online with different BAG1 content: BAG2 only */
 static FILE* b1v_logf;
-static void b1v_log(const char* fmt, ...) {
+void b1v_log(const char* fmt, ...) {
     if (!b1v_logf) {
         const char* base = SDL_GetBasePath(); char p[1024];
         snprintf(p, sizeof p, "%sbag2jp_bag1_versions.log", base ? base : "");
@@ -107,9 +108,43 @@ static void b1v_model_region(void) {
         if (moved & (1 << s)) b1v_log("%07u side %d model buffer -> expanded RAM", b1v_frame, s + 1);
 }
 
+/* Dancer scale. FUN_8002D85C stores a per-character scale (table 0x80051904: Heat 85,
+ * Strike 98, times the stage factor) at dancer +0x14E4..EC and its base copy +0x1514..1C.
+ * BAG2's Strike model is authored 0.837x the size of BAG1's (vertices and node translations,
+ * A 0.8371 / B 0.8384), so the stock 98 draws BAG1 Strike ~19.5% larger than BAG2 Strike.
+ * BAG1's own table (0x800558FC: Heat 128, Strike 127) keeps both characters at matching
+ * size, and 98 x 0.837 restores that ratio. Heat's models differ by only ~2%: unchanged. */
+#define B1V_SCALE_CUR  0x14E4u
+#define B1V_SCALE_BASE 0x1514u
+static const uint16_t b1v_scale_q12[B1V_CHARS][2] = { [1] = { 3429u, 3434u } };   /* costume A, B */
+static uint32_t b1v_scaled_dancer[4], b1v_scaled_value[4];
+static void b1v_dancer_scale(void) {
+    for (int slot = 0; slot < 4; ++slot) {   /* 0x8005F808 + 4*slot: P1, P1 partner, P2, P2 partner */
+        const int side = slot >> 1;
+        const uint32_t d = psx_mod_read_word(B1V_DANCERS + 4u * (uint32_t)slot);
+        if (d < 0x80010000u || d >= 0x80800000u) { b1v_scaled_dancer[slot] = 0; continue; }
+        const uint32_t chr = psx_mod_read_byte(d + 4u);
+        const uint32_t picked = psx_mod_read_byte(B1V_SELECTED + (uint32_t)side);
+        if (b1v_force_stock || chr >= B1V_CHARS || (picked & B1V_CHAR_MASK) != chr
+            || !b1v_version[chr][side] || !b1v_has_alt(chr)) continue;
+        const uint32_t q = b1v_scale_q12[chr][(picked >> 5) & 1u];
+        const uint32_t base = psx_mod_read_word(d + B1V_SCALE_BASE);
+        if (!q || base == 0 || (b1v_scaled_dancer[slot] == d && b1v_scaled_value[slot] == base)) continue;
+        const uint32_t v = (base * q + 0x800u) >> 12;   /* freshly initialised: scale once */
+        for (uint32_t k = 0; k < 12u; k += 4u) {
+            psx_mod_write_word(d + B1V_SCALE_BASE + k, v);
+            psx_mod_write_word(d + B1V_SCALE_CUR + k, v);
+        }
+        b1v_scaled_dancer[slot] = d; b1v_scaled_value[slot] = v;
+        b1v_log("%07u dancer %d (char %u side %d) scale %u -> %u", b1v_frame, slot, chr, side + 1, base, v);
+    }
+}
+
 static void b1v_vblank(void) {
     ++b1v_frame;
     b1v_model_region();
+    b1v_dancer_scale();
+    bag2jp_strike_shot_tick(b1v_frame);
     if (psx_mod_read_word(B1V_TABLE) != B1V_MAGIC) return;
     const uint32_t count = psx_mod_read_word(B1V_TABLE + 4u);
     for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i) {
@@ -129,7 +164,10 @@ static void b1v_vblank(void) {
 
 static int b1v_active;
 static void b1v_activate(void) { b1v_active = 1; b1v_stage_version = -1; b1v_read_options(); }
-static void b1v_reset(void) { b1v_active = 0; b1v_stage_version = -1; }
+static void b1v_reset(void) {
+    b1v_active = 0; b1v_stage_version = -1;
+    memset(b1v_scaled_dancer, 0, sizeof b1v_scaled_dancer);
+}
 void bag2jp_bag1_set_stage_version(int version) {
     b1v_stage_version = version == 0 || version == 1 ? version : -1;
 }
@@ -168,6 +206,8 @@ uint32_t bag2jp_bag1_content_id(void) {
     h ^= B1_ALT_CONTENT_TAG; h *= 16777619u;
     /* WIN1: BAG1 Heat now retains the stock victory-name cue; its wait affects result timing. */
     h ^= 0x57494E31u; h *= 16777619u;
+    /* SCL1: BAG1 Strike draws at BAG2 Strike's size (dancer scale above). */
+    h ^= 0x53434C31u; h *= 16777619u;
     /* Menus relay pad changes: peers must agree on the expanded stage order too. */
     if (bag2jp_stage_select_enabled()) { h ^= 0x53544731u; h *= 16777619u; }
     return h ? h : 1;
