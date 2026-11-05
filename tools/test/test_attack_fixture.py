@@ -7,6 +7,47 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class AttackFixtureTests(unittest.TestCase):
+    def test_both_sides_keep_independent_attack_guards(self):
+        header = ROOT / 'mods-src/bag2jp.debug.anim-trace/bag2jp_attack_fixture.h'
+        out = ROOT / '_work/character_import/heat/duel-fixture-tests'
+        out.mkdir(parents=True, exist_ok=True)
+        source = '''#include <stdint.h>
+#include <assert.h>
+static unsigned side, writes, blocked;
+uint32_t psx_mod_read_word(uint32_t a) {
+ switch(a) {
+ case 0x8004E2D8:return 0x54535542; case 0x8004E2DC:return 0x4D5F415F;
+ case 0x8005D3D4:return 19; case 0x8005D2C4:return 2; case 0x8005D3D8:return 1;
+ case 0x8005D3DC:case 0x8005D3E0:return 3; case 0x8009B084:return 0xAC510020;
+ case 0x8005E6A0:return 0; case 0x8005E6A4:return 1;
+ default: assert(a==0x8005E754+side*0x32 || a==0x8005E748+side*0x32);return blocked;
+ }
+}
+uint16_t psx_mod_read_half(uint32_t a){(void)a;return 0;}
+void psx_mod_write_half(uint32_t a,uint16_t v){
+ uint32_t input=0x8005CF08+side*0x24;
+ assert((a==input+8 && !v)||(a==input+12 && !v)||(a==input+20 && v==0x6e));writes++;
+}
+''' + f'#include "{header.as_posix()}"\n' + '''
+int main(void){
+ for(side=0;side<2;side++){
+  uint32_t input=0x8005CF08+side*0x24;
+  writes=0;blocked=1;assert(!bag2_side_attack_fixture_tick(1,side,input,side));assert(!writes);
+  blocked=0;assert(!bag2_side_attack_fixture_tick(0,side,input,side));
+  assert(!bag2_side_attack_fixture_tick(1,side,input,1-side));assert(!writes);
+  assert(bag2_side_attack_fixture_tick(1,side,input,side));assert(writes==3);
+ }
+ assert(!bag2_side_attack_fixture_tick(1,2,0x8005CF50,0));
+ return 0;
+}
+'''
+        source = source.replace(header.as_posix(), '/mnt/d/' + header.as_posix()[3:])
+        (out / 'test.c').write_text(source)
+        linux = '/mnt/d/' + out.as_posix()[3:]
+        prefix = ['wsl.exe', '-d', 'Ubuntu', '--exec']
+        subprocess.run(prefix + ['gcc', '-Wall', '-Wextra', '-Werror', linux + '/test.c', '-o', linux + '/test'], check=True)
+        subprocess.run(prefix + [linux + '/test'], check=True)
+
     def test_attack_input_and_guards(self):
         header = ROOT / 'mods-src/bag2jp.debug.anim-trace/bag2jp_attack_fixture.h'
         self.assertTrue(header.exists(), 'Attack fixture is not implemented')

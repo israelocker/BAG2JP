@@ -29,9 +29,27 @@ static long s_dump_at = -1;
 static void at_attack_input(struct CPUState* cpu, uint32_t address) {
     const char* strike_enabled = getenv("BAG2JP_TEST_STRIKE_ATTACK");
     const char* heat_enabled = getenv("BAG2JP_TEST_HEAT_ATTACK");
+    const char* duel_enabled = getenv("BAG2JP_TEST_HEAT_STRIKE_DUEL");
+    const int duel = duel_enabled && duel_enabled[0] == '1' && duel_enabled[1] == '\0';
     const int strike = strike_enabled && strike_enabled[0] == '1' && strike_enabled[1] == '\0';
     const int heat = heat_enabled && heat_enabled[0] == '1' && heat_enabled[1] == '\0';
-    if (address != BAG2_ATTACK_INPUT_SITE || s_on != 1 || !s_log || (!strike && !heat)) return;
+    if (address != BAG2_ATTACK_INPUT_SITE || s_on != 1 || !s_log || (!strike && !heat && !duel)) return;
+    if (duel) {
+        /* Owner-requested live demonstration: alternate input submissions between sides.
+         * Both animations can still start in the same native measure.
+         * Only CPU input is submitted; game logic still owns hits and animation events. */
+        static uint32_t next_side;
+        const uint32_t side = cpu->gpr[20];
+        if (side < 2 && side == next_side &&
+            psx_mod_read_word(0x8005E6A0u) == 0u && psx_mod_read_word(0x8005E6A4u) == 1u &&
+            !psx_mod_read_byte(cpu->gpr[29] + side + 0x30u) &&
+            bag2_side_attack_fixture_tick(1, side, cpu->gpr[21], side)) {
+            fprintf(s_log, "test fixture: duel P%u attack input 0x6E; not natural play\n", side + 1u);
+            fflush(s_log);
+            next_side ^= 1u;
+        }
+        return;
+    }
     static int observed;
     if (!observed) {
         fprintf(s_log, "attack fixture boundary: side=%u input=%08X active=%08X pending=%08X\n",
