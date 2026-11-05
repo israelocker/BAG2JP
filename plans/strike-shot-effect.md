@@ -5,7 +5,7 @@ tags: ["strike", "bag1", "plan"]
 summary: "Recuperar el fogonazo/efecto de disparo de BAG1 sin romper pecho/emblema ni la lógica de ataque BAG2."
 related: ["notes/strike-recovery.md", "notes/character-pipeline.md"]
 created: "2026-11-04"
-updated: "2026-11-04"
+updated: "2026-11-05"
 doc_kind: plan
 status: "in_progress"
 ---
@@ -138,7 +138,7 @@ El propietario eligió la **Opción A (Plugin C nativo en el motor)**:
 Reimplementar el trazador de bala (`POLY_FT4`), partículas y fogonazo en código C dentro de
 `bag2jp.feature.bag1-content`, enganchado a Strike BAG1 en vblank/draw.
 
-## Fase 4 (en curso): Implementación de la Opción A
+## Fase 4: aproximación histórica (sustituida, no referencia del port actual)
 
 - Creado módulo `mods-src/bag2jp.feature.bag1-content/bag2jp_strike_shot.h` y su cableado en
   `bag2jp_bag1_versions.c` (`b1v_vblank`).
@@ -157,13 +157,54 @@ Reimplementar el trazador de bala (`POLY_FT4`), partículas y fogonazo en códig
   - Mediante `dump_dancer_struct.py` en combate real se descubrió la posición mundial 3D en `dancer + 0x14B8`
     (P1 x=-775, y=0, z=-147; P2 x=536, y=0, z=212).
   - La matriz de vista en `0x8005D0F0` (32 B) lleva la traslación combinada en `+0x14`.
-- **Próximos pasos inmediatos (para continuar en la siguiente sesión):**
+- **Próximos pasos históricos (obsoletos; no ejecutar):**
   1. Actualizar `bag2jp_strike_shot.h` con el offset de posición `+0x14B8` y la traslación de la matriz `0x8005D0F0`.
   2. Compilar con `tools/workflow/bag2_workflow.py build --tag strike-shot-coords` y desplegar en experimental.
   3. Ejecutar captura de ataque (`run_attack_capture.py BAG1`) y revisar la hoja de capturas para confirmar
      que el trazador sale de las pistolas de Strike y llega al torso de Heat.
   4. Verificar que la VRAM del pecho/emblema no sufre modificaciones.
   5. Partida completa con retorno al selector.
+
+## Port nativo: candidato experimental del 2026-11-05
+
+El propietario autorizó sustituir la aproximación al observar que faltaban partículas
+(«Sí continua»). El runtime llama ahora a `bag2jp_strike_bag1_tick`, no al tick aproximado.
+Los helpers de `bag2jp_strike_shot.h` siguen compartidos con Heat.
+
+- `bag2jp_strike_bag1_fx.h`: 20 disparos y 40 partículas; cinco eventos (26/31/36/41/46),
+  dos pistolas por evento, vida 20 ticks y tres partículas por disparo al expirar.
+  Conserva el orden nativo dibujo→actualización y cuatro dibujos por partícula.
+- `bag2jp_strike_bag1_draw.h`: POLY_FT4 y UV/CLUT nativos; huesos 1B/1A, matriz +2C.
+  Correcciones demostradas por test y captura: descriptor `[side*19+character]` y
+  composición cámara×bailarín antes de la matriz del escenario. El callback DBI recibe
+  temporalmente esa cámara compuesta (`FUN_8002C404`); vblank no.
+- Tests host: nueve casos pasan entre `test_strike_bag1_fx`, `test_heat_flame_effect`,
+  `test_attack_fixture` y `test_heat_dbi_face_patch`; el nuevo renderer se prueba con UBSan.
+- Build/candidato instalado: `99f3f3b20fc8446bacf332b6a23c6485e34c4a4e417eabcf8234e10a0b27773a`.
+  Workflow `_work/workflow/20261105T161405458824Z-strike-native-actor-frame` conserva backup.
+  Calibración aceptada: `20261105T161438885567Z-strike-native-actor-frame-calib`.
+- Captura: `_work/versus-runs/20261105T161556823304Z-strike-attack-bag1-heatbag1/shot-sheet.jpg`.
+  P1 Strike BAG1/A contra Heat BAG2/A en HeatBAG1: trazadores junto a las pistolas,
+  rival derribado, puntuación 300→0. Ajustes restaurados y 21 guardados verificados.
+  **No aceptado:** persisten fragmentos blancos BAG2 y las partículas BAG1 no se distinguen bien.
+- Atlas de efecto `005.tim` y diez CLUTs exactos en muestras de la captura
+  `20261105T155619530504Z-strike-attack-bag1-heatbag1` (`strike-effect-vram-audit.json`).
+  Esto no sustituye el control de pecho/emblema ni una auditoría temporal del último candidato.
+
+### Siguiente paso y aceptación pendiente
+
+Separar únicamente emisores visuales del DBI BAG2 importado, con palabras originales,
+hashes y tests, preservando estados, resultados y cues. No anular `FUN_801cc2a0` completo.
+En `_work/strikedbi/bag2_strike_decomp.txt`, `FUN_801ccc20` emite el quad de disparo;
+`FUN_801cd0a0` llama al billboard `0x8002f0a4` pero también avanza/desactiva partículas;
+`FUN_801cc7b8` mezcla billboard, distorsión y temporización; `FUN_801cd7e4` dibuja la
+distorsión mientras `FUN_801cdab0` actualiza sus puntos. Esta separación es análisis
+estático, todavía no un parche aplicado ni prueba causal de todos los fragmentos blancos.
+
+Después: comparar partículas con la referencia nativa, VRAM de pecho/emblema durante
+ataque, matriz P1/P2×A/B, canción/fever/retorno. El modo especial de escenario 0xB no
+está implementado en el renderer (se omite); no declarar soporte global. Revisar índices
+de pistola de traje B frente al inicializador parcheado antes de probar ese caso.
 
 # Límites
 
