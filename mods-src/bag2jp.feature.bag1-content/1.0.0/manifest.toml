@@ -78,6 +78,19 @@ default_enabled = true
 feature = "bag1-heat"
 id = "bag2jp.bag1_versions"
 
+[[plugin]]
+feature = "bag1-heat"
+id = "bag2jp.bag1_endings"
+
+[[resource]]
+feature = "bag1-heat"
+id = "ending_movies"
+label = "BAG1 ending movies"
+description = "Original character ending movies, followed by a native BAG1 dance on the final stage."
+format = "directory"
+default = "ending_movies"
+required = false
+
 [[option]]
 feature = "bag1-heat"
 id = "heat_p1"

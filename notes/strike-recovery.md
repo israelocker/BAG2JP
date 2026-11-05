@@ -12,6 +12,29 @@ doc_kind: reference
 
 # Estado vigente de Strike
 
+## Final de Strike BAG1: vídeo BAG1 + baile (2026-11-05, verificado en Ending View A)
+
+- Antes: el plugin `bag2jp.bag1_endings` solo tenía el perfil de Heat, y el manifest
+  activo (canónico, build y exp) había perdido `[[plugin]] bag2jp.bag1_endings` y el
+  recurso `ending_movies` (solo quedaban en un duplicado anidado y en `disabled_mods`).
+  Por eso Strike BAG1 veía el final BAG2 y el final BAG1 de Heat tampoco estaba activo.
+- Extracción: disco JP `D:/Games/Bust A Groove (Japan)/Bust A Move - Dance & Rhythm Action (Japan).bin`,
+  `STR/STRI_END.STR` LBA 146533, 3243 sectores, sectores raw 2352 con
+  `_work/endings/scripts/raw_sectors.py` (método comprobado: HEAT_END raw del mismo disco
+  coincide byte a byte con `_work/endings/HEAT_END.STR`). STR SHA-256 `7d007d36…9971`.
+- Conversión: `ffmpeg -i STRI_END.STR -c:v mpeg1video -r 30 -g 15 -q:v 3 -c:a mp2 -b:a 192k -ar 44100 -ac 2 -f mpeg STRI_END.mpg`
+  → 2822144 B, 21.55 s, SHA-256 `f129a2b4…95f4`. `*.mpg` está en `.gitignore`; se regenera así.
+- Código: fuente del plugin y `bag2jp_bag1_ending_data.h` copiadas a `mods-src/bag2jp.feature.bag1-content/`;
+  perfil `{1, {109,181}, "STRI_END.mpg"}` (análogo de Heat 95/167, paso de grupo 14).
+  Manifest con plugin y recurso restaurado en las tres ubicaciones (hash `464B74E2663D…`).
+- Runtime `e2521ae467f6c146a8a0be3fa80630ac7e7d97e8e47c214b7555ebe52c206a51` desplegado en exp-8mb;
+  calibración `20261105T193934397746Z-strike-ending-calib` aceptada.
+- Evidencia: `_work/versus-runs/20261105T194111841677Z-strike-ending-view` (Strike BAG1/A):
+  log `movie 1 0` y `dance`; muestras: vídeo BAG1 de Strike y después baile del modelo
+  BAG1 en el escenario final con créditos. Restauración y 21 tarjetas verificadas.
+- No probado: costume B de Strike, final de Heat tras restaurar el manifest, y salida natural
+  (los créditos seguían a los 100 s). Final de campaña real no probado (solo Ending View).
+
 ## Iluminación nativa descartada por el propietario (2026-11-05)
 
 - **Decisión:** El propietario ordenó descartar la iluminación nativa del actor Strike porque genera conflictos visuales con la iluminación propia de los escenarios de BAG2.
