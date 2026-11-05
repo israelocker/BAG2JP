@@ -9,22 +9,14 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class StrikeLightingTests(unittest.TestCase):
-    def test_main_render_entry_is_opted_into_codegen(self):
+    def test_native_lighting_is_disabled_per_owner_decision(self):
+        """Owner discarded native lighting due to visual clashes with stage lighting."""
         config = tomllib.loads((ROOT / 'patches/BAG2JP-game.toml').read_text())
-        self.assertIn('0x8002C404', config['recompiler'].get('mod_function_entry_funcs', []),
-                      'Registration alone never dispatches a compiled main-exe entry')
-
-    def test_render_entry_wiring_and_original_words(self):
+        self.assertNotIn('0x8002C404', config['recompiler'].get('mod_function_entry_funcs', []),
+                         'Native Strike lighting should not be opted into codegen')
         source = (ROOT / 'mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_versions.c').read_text()
-        self.assertIn('psx_mod_register_function_entry_plugin("bag2jp.bag1_versions",\n'
-                      '        STRIKE_LIGHT_RENDER_ENTRY, b1v_strike_lighting)', source)
-        exe = (ROOT / '_work/mainexe/slpm.bin').read_bytes()
-        self.assertEqual(struct.unpack_from('<III', exe, 0x8002C404 - 0x80010000),
-                          (0x27BDFF68, 0xAFB20088, 0x00809021))
-        generated = ROOT.parent / 'BAG2JP-codex-build/BAG2JP/generated/SLPM_862.19_full_09.c'
-        self.assertEqual(generated.read_text().count(
-            'if (psx_mod_function_entry(cpu, 0x8002C404u)) return;'), 1,
-            'Runtime build must contain the configured entry')
+        self.assertNotIn('b1v_strike_lighting', source,
+                         'Native Strike lighting callback should not be registered')
 
     def test_actor_lighting_guards(self):
         header = ROOT / 'mods-src/bag2jp.feature.bag1-content/bag2jp_strike_lighting.h'

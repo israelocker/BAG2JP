@@ -27,7 +27,6 @@
 #include "bag2jp_strike_shot.h"
 #include "bag2jp_heat_flame.h"
 #include "bag2jp_strike_bag1_draw.h"
-#include "bag2jp_strike_lighting.h"
 
 #define B1V_TABLE    0x8005D418u   /* RAM copy of the DF2_ header */
 #define B1V_MAGIC    0x5F324644u   /* 'DF2_' */
@@ -226,24 +225,7 @@ void bag2jp_bag1_force_stock(int on) {
     b1v_force_stock = on;
 }
 
-static void b1v_strike_lighting(struct CPUState* cpu, uint32_t address) {
-    static int logged;
-    (void)cpu;
-    if (b1v_active && !b1v_force_stock && address == STRIKE_LIGHT_RENDER_ENTRY &&
-        psx_mod_read_word(address) == STRIKE_LIGHT_RENDER_WORD &&
-        psx_mod_read_word(address + 4u) == 0xAFB20088u &&
-        psx_mod_read_word(address + 8u) == 0x00809021u) {
-        int changed = bag2jp_strike_lighting_apply();
-        if (changed && !logged) {
-            b1v_log("strike native lighting applied at actor render: models %d", changed);
-            logged = 1;
-        }
-    }
-}
-
 PSX_MOD_CONSTRUCTOR(bag2jp_register_bag1_versions) {
-    (void)psx_mod_register_function_entry_plugin("bag2jp.bag1_versions",
-        STRIKE_LIGHT_RENDER_ENTRY, b1v_strike_lighting);
     (void)psx_mod_register_vblank_plugin("bag2jp.bag1_versions", b1v_vblank);
     (void)psx_mod_register_activation_plugin("bag2jp.bag1_versions", b1v_activate);
     (void)psx_mod_register_session_reset_plugin("bag2jp.bag1_versions", b1v_reset);

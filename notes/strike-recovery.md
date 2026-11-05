@@ -12,6 +12,17 @@ doc_kind: reference
 
 # Estado vigente de Strike
 
+## Iluminación nativa descartada por el propietario (2026-11-05)
+
+- **Decisión:** El propietario ordenó descartar la iluminación nativa del actor Strike porque genera conflictos visuales con la iluminación propia de los escenarios de BAG2.
+- **Acciones:**
+  - Se eliminó el callback `b1v_strike_lighting` y su registro en `mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_versions.c`.
+  - Se retiró `mod_function_entry_funcs = ["0x8002C404"]` de `patches/BAG2JP-game.toml` y de `game.toml`.
+  - Se retiró la línea de dispatch en `generated/SLPM_862.19_full_09.c`.
+  - Se recompiló `BAG2JP.exe` (SHA256 `5182795049fa3f85434fc90f88bf76eab7bd4585b968aae95fa8ada045b1dfd7`) y se desplegó a `BAG2JP-exp-8mb`.
+  - `catalog.json` recalibrado y aceptado (`2a8b2e124c84e2d00a3457c6bc35d2d830f8d0cd662ab279758a35cb622f11a8`).
+  - Los 17 host tests pasan (`test_strike_lighting.py` verifica ahora que la iluminación nativa no esté activa).
+
 ## Corrección acotada del pecho A: prueba antes/después (2026-11-04)
 
 - Propietario autoriza reiniciar **solo BAG2 experimental**. BAG1 PID17936 se
