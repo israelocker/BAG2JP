@@ -32,8 +32,16 @@ doc_kind: reference
 - Evidencia: `_work/versus-runs/20261105T194111841677Z-strike-ending-view` (Strike BAG1/A):
   log `movie 1 0` y `dance`; muestras: vídeo BAG1 de Strike y después baile del modelo
   BAG1 en el escenario final con créditos. Restauración y 21 tarjetas verificadas.
-- No probado: costume B de Strike, final de Heat tras restaurar el manifest, y salida natural
-  (los créditos seguían a los 100 s). Final de campaña real no probado (solo Ending View).
+- Strike BAG1/B: `20261105T203530108898Z-strike-ending-bag1-b`, log `movie 1 1` y `dance`;
+  vídeo BAG1 y en créditos baila el modelo B (camiseta amarilla con emblema), distinto
+  del A (sin camiseta, chaleco oscuro); comparación `a-vs-b.jpg`. Restauración verificada.
+- Strike BAG2: `20261105T203855465278Z-strike-ending-bag2-a`, sin `bag2jp_bag1_endings.log`
+  (el plugin no actúa); muestras: final BAG2 original (plató, imágenes con texto japonés).
+  Restauración verificada.
+- Objetivo del propietario (BAG1 A/B → vídeo BAG1 + créditos con su modelo; BAG2 → final
+  BAG2) observado en Ending View, pendiente de su revisión visual.
+- No probado: final de Heat tras restaurar el manifest, salida natural (créditos seguían
+  a los 100 s) y final de campaña real (solo Ending View).
 
 ## Iluminación nativa descartada por el propietario (2026-11-05)
 
