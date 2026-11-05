@@ -16,7 +16,7 @@
  * Online (bag2jp_netsync.c): each PC runs the popup for its own side on its own pad before the buttons
  * are sent; the version pick is sent as a message (the costume travels as the replayed button).
  * Drawn on the host HUD as an alpha overlay over the 4:3 picture, with the game's font 1 glyph table
- * over the HD font atlases (resource popup_assets: font_a05/a06.png). */
+ * over the HD font atlases (resource popup_assets: font_a05/a06.png, font_a03.png for Heat stage names). */
 #include "mod_plugins.h"
 #include "cpu_state.h"
 #include "gpu_gl_renderer.h"
@@ -84,7 +84,9 @@ static void cs_log(const char* fmt, ...) {
 #define CV_SX (CV_W / 512.0)
 #define CV_SY (CV_H / 240.0)
 typedef struct { int w, h; unsigned char* px; } CsImg;
-static CsImg s_font[2];                     /* rows 5 (normal) and 6 (selected) of font atlas a */
+/* Rows 5 (normal), 6 (selected) and 3 (native stage names) of font atlas a. */
+#define CS_FONT_STAGE 2
+static CsImg s_font[3];
 static uint8_t s_glyph[96][3], s_glyph_h;
 static int s_have_glyphs;
 static uint32_t* s_canvas;
@@ -105,9 +107,11 @@ static int cs_load_png(const char* name, CsImg* im) {
     int c; im->px = stbi_load_from_memory(buf, (int)n, &im->w, &im->h, &c, 4); free(buf);
     return im->px != NULL;
 }
-static CsImg* cs_font(int selected) {
-    CsImg* im = &s_font[selected ? 1 : 0];
-    if (!im->px) cs_load_png(selected ? "font_a06.png" : "font_a05.png", im);
+static CsImg* cs_font(int style) {
+    static const char* const names[3] = {"font_a05.png", "font_a06.png", "font_a03.png"};
+    const int i = style == CS_FONT_STAGE ? CS_FONT_STAGE : style ? 1 : 0;
+    CsImg* im = &s_font[i];
+    if (!im->px) cs_load_png(names[i], im);
     return im->px ? im : NULL;
 }
 static void cv_blend(uint32_t* o, unsigned r, unsigned g, unsigned b, double a) {

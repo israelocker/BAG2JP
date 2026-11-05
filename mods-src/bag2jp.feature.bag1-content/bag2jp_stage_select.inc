@@ -131,5 +131,5 @@ static void cs_stage_compose(void) {
         }
     }
     const char* label = v.kind == 2 ? "HEAT BAG1" : "HEAT BAG2";
-    if (!v.random) cv_text(label, v.x + 93 - cv_text_w(label, 1) / 2, v.label_y, 0, 1);
+    if (!v.random) cv_text(label, v.x + 93 - cv_text_w(label, 1) / 2, v.label_y, CS_FONT_STAGE, 1);
 }

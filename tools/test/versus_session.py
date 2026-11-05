@@ -278,9 +278,17 @@ class Session:
         self.wait(lambda state: (state[f"p{side}_status"] >> 16 & 255) == 3)
         return observed
 
-    def match(self, stage: str, characters: list[int], costumes: list[int]) -> None:
-        """Check stage cursor and then require both selected IDs in gameplay."""
+    def match(self, stage: str, characters: list[int], costumes: list[int], survey: bool = False) -> None:
+        """Check stage cursor and then require both selected IDs in gameplay.
+
+        survey: first step through all 14 carousel rows, shooting each one."""
         self.wait(lambda state: state["select_phase"] in (2, 3))
+        if survey:
+            for step in range(14):
+                row = self.state()["stage_position"] >> 16 & 255
+                self.shot(f"stage-survey-{step:02d}-row-{row:02d}")
+                self.key(1, "left")
+                self.wait(lambda current: (current["stage_position"] >> 16 & 255) != row)
         wanted = 0 if stage == "HeatBAG2" else 1
         for _ in range(14):
             state = self.state()
@@ -349,6 +357,8 @@ def main() -> int:
         parser.add_argument(f"--p{side}-version", choices=("BAG1", "BAG2"), default="BAG2")
         parser.add_argument(f"--p{side}-costume", choices=("A", "B"), default="A")
     parser.add_argument("--stage", choices=("HeatBAG2", "HeatBAG1"), default="HeatBAG2")
+    parser.add_argument("--stage-survey", action="store_true",
+                        help="shoot every stage carousel row before choosing the stage")
     parser.add_argument("--finish", action="store_true",
                         help="follow the song to its end and require the return to character select")
     parser.add_argument("--finish-timeout", type=float, default=420.0,
@@ -399,7 +409,7 @@ def main() -> int:
                 else:
                     edges = nav.validated_edges(catalog, executable_hash)
                     result["observed_picks"] = [session.pick(side, getattr(args, f"p{side}_character"), getattr(args, f"p{side}_version"), getattr(args, f"p{side}_costume"), edges) for side in (1, 2)]
-                    session.match(args.stage, characters, [int(args.p1_costume == "B"), int(args.p2_costume == "B")])
+                    session.match(args.stage, characters, [int(args.p1_costume == "B"), int(args.p2_costume == "B")], survey=args.stage_survey)
                     result["status"] = "machine_verified_awaiting_visual_review"
                     if args.finish:
                         result["finish"] = session.finish_match(args.finish_timeout)
