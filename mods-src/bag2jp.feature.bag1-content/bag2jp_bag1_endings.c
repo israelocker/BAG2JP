@@ -88,7 +88,8 @@ static void ending_vblank(void) {
     bag2jp_movie_tick();
     if (!active) return;
     const unsigned root=psx_mod_read_word(0x8005d3d4u);
-    const int in_ending=root==0x1bu && psx_mod_read_word(0x8005d2c4u)==5;
+    const unsigned mode=psx_mod_read_word(0x8005d2c4u);
+    const int in_ending=root==0x1bu && (mode==5 || mode==1 || mode==0);
     if (!in_ending) {
         if (started) { bag2jp_movie_stop(); restore(); ending_log("exit",root,0); }
         started=movie_wait=0; return;

@@ -104,11 +104,25 @@ ya carga el escenario Strike BAG1, pero conserva audio y banco SFX BAG2.
   de las21tarjetas quedó en memoria y no se pudo verificar tras la interrupción;
   la prueba solo configuró tarjetas copiadas. No declarar restauración total verificada.
 - El propietario confirma «si corresponde» al revisar las capturas: el entorno mostrado,
-  incluido el fondo negro, corresponde al escenario BAG1 esperado. Esta validación
-  visual no acredita canción completa, todas las animaciones/cámaras ni retorno.
-- Pendiente: canción y duración Strike, SFX y fila propia del selector;
-  final de campaña después de importar escenario y canciones.
-  No se tocó la instalación estable ni se reactivó la iluminación de actor descartada.
+  incluido el fondo negro, corresponde al escenario BAG1 esperado.
+- Audio Strike completado: `strike_game.flac` (44.1 kHz, 129 s) y guard de root de juego
+  `0x13` implementados y probados en vivo (`20261106T000303289538Z` y `20261106T002321415753Z`).
+  Las 21 tarjetas originales verificadas intactas tras canción completa y retorno al selector.
+- Selector de 15 filas completado: carrusel en `system/007.dbi` ampliado a 15 filas con
+  módulo aleatorio `/14` por multiplicador recíproco `0x4924924A`, fila 5 para Strike BAG1
+  (`< STRIKE BAG1 >`) y fila 4 para Strike BAG2. Verificado en vivo en `20261106T004800028681Z`.
+- SFX de escenario integrados: Banco 0 nativo de `ST_STRI.DFS` (cues `0x4100-0x4102`)
+  unido con bancos 1-3 de fever stock en `strike_209.dfs` (103.048 bytes). Verificado en vivo
+  en `20261106T010056170156Z-strike-15row-selector`.
+- Regresiones del carrusel de 15 filas verificadas en vivo: Heat BAG1 fila 1
+  (`20261106T012500289564Z-heat-b1-regress`) y Strike BAG2 stock fila 4
+  (`20261106T012746447672Z-strike-b2-regress`), ambas con 21 tarjetas intactas.
+- Endings y campaña: `bag2jp_bag1_endings.c` actualizado para soportar modos 1 y 0 (campaña)
+  además de modo 5 (Ending View); verificado con `test_bag1_endings.py`.
+  Rutas de ending verificadas en vivo para Strike BAG1 A (`20261106T014236347408Z`),
+  Strike BAG1 B (`20261106T014508143093Z`), Strike BAG2 stock (`20261106T014745480316Z`)
+  y Heat BAG1 (`20261106T015016909315Z`), todas con 21 tarjetas verificadas.
+- No se tocó la instalación estable ni se reactivó la iluminación de actor descartada.
 
 ## Strike: inventario autorizado en curso (2026-11-05)
 

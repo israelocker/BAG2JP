@@ -278,19 +278,20 @@ class Session:
         self.wait(lambda state: (state[f"p{side}_status"] >> 16 & 255) == 3)
         return observed
 
-    def match(self, stage: str, characters: list[int], costumes: list[int], survey: bool = False) -> None:
+    def match(self, stage: str | int, characters: list[int], costumes: list[int], survey: bool = False) -> None:
         """Check stage cursor and then require both selected IDs in gameplay.
 
-        survey: first step through all 14 carousel rows, shooting each one."""
+        survey: first step through all 15 carousel rows, shooting each one."""
         self.wait(lambda state: state["select_phase"] in (2, 3))
         if survey:
-            for step in range(14):
+            for step in range(15):
                 row = self.state()["stage_position"] >> 16 & 255
                 self.shot(f"stage-survey-{step:02d}-row-{row:02d}")
                 self.key(1, "left")
                 self.wait(lambda current: (current["stage_position"] >> 16 & 255) != row)
-        wanted = 0 if stage == "HeatBAG2" else 1
-        for _ in range(14):
+        stage_map = {"HeatBAG2": 0, "HeatBAG1": 1, "StrikeBAG2": 4, "StrikeBAG1": 5}
+        wanted = stage_map.get(stage, stage)
+        for _ in range(15):
             state = self.state()
             nav.require_selector(state)
             row = state["stage_position"] >> 16 & 255
@@ -299,7 +300,7 @@ class Session:
             self.key(1, "left")
             self.wait(lambda current: (current["stage_position"] >> 16 & 255) != row)
         if (self.state()["stage_position"] >> 16 & 255) != wanted:
-            raise ValueError("Requested stage row not observed")
+            raise ValueError(f"Requested stage row {wanted} ({stage}) not observed")
         self.shot("stage-selected")
         self.key(1, "circle")
         self.wait(nav.is_gameplay, 60)
@@ -356,7 +357,7 @@ def main() -> int:
         parser.add_argument(f"--p{side}-character", default="Heat")
         parser.add_argument(f"--p{side}-version", choices=("BAG1", "BAG2"), default="BAG2")
         parser.add_argument(f"--p{side}-costume", choices=("A", "B"), default="A")
-    parser.add_argument("--stage", choices=("HeatBAG2", "HeatBAG1"), default="HeatBAG2")
+    parser.add_argument("--stage", choices=("HeatBAG2", "HeatBAG1", "StrikeBAG2", "StrikeBAG1"), default="HeatBAG2")
     parser.add_argument("--stage-survey", action="store_true",
                         help="shoot every stage carousel row before choosing the stage")
     parser.add_argument("--finish", action="store_true",
