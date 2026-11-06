@@ -22,27 +22,11 @@ default_enabled = true
 feature = "bag1-stage"
 id = "bag2jp.bag1_stage"
 
-[[option]]
-feature = "bag1-stage"
-id = "bag1_song_audio"
-label = "BAG1 song audio"
-description = "Audio for songs imported from Bust A Groove 1: the soundtrack CD re-aligned to the game's edit, or the game's own XA audio."
-type = "choice"
-default = "cd"
-
-[[option.choice]]
-value = "cd"
-label = "CD quality"
-
-[[option.choice]]
-value = "game"
-label = "Original (game XA)"
-
 [[resource]]
 feature = "bag1-stage"
 id = "bag1_music"
 label = "BAG1 songs"
-description = "Folder with the BAG1 songs as FLAC (44.1 kHz stereo), named <song>_cd.flac / <song>_game.flac."
+description = "BAG1 FLAC songs (44.1 kHz stereo): <song>_japanese.flac, <song>_international.flac and <song>_cd.flac. Uses the existing Regional songs choice."
 format = "directory"
 default = "bag1_music"
 required = false
@@ -155,10 +139,42 @@ label = "Bust A Groove 1"
 value = "bag2"
 label = "Bust A Groove 2"
 
+[[option]]
+feature = "bag1-heat"
+id = "gaso_p1"
+label = "Gas-O version, player 1"
+description = "Default Gas-O version for player 1. Selectable per pick in the character-select popup."
+type = "choice"
+default = "bag1"
+
+[[option.choice]]
+value = "bag1"
+label = "Bust A Groove 1 (Gas-O)"
+
+[[option.choice]]
+value = "bag2"
+label = "Bust A Groove 2 (Bi-O)"
+
+[[option]]
+feature = "bag1-heat"
+id = "gaso_p2"
+label = "Gas-O version, player 2"
+description = "Which Gas-O player 2 (or the CPU) gets."
+type = "choice"
+default = "bag1"
+
+[[option.choice]]
+value = "bag1"
+label = "Bust A Groove 1 (Gas-O)"
+
+[[option.choice]]
+value = "bag2"
+label = "Bust A Groove 2 (Bi-O)"
+
 [[overlay]]
 feature = "bag1-heat"
 target = "disc_user"
 offset = 458823680
 file = "payload/bag1_alt.bin"
-sha256 = "0e3da2d7bb182d557fecbcd9093096658765eb8c5ba064bbf03076ef0dbd997c"
-expected_sha256 = "0139ae61f3e12b52f877d0f39bb186e70f60a045b8410cb0475158c22133d764"
+sha256 = "9f4294d5d31aa39cbf78e70adc692ff868bf948bb6bc7ac0a765736e23d07e4f"
+expected_sha256 = "00c737bbf6556cc48396a8e60e99c613f7614807b86da574f6e769c19f1a3258"

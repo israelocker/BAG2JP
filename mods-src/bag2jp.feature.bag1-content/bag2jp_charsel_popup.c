@@ -222,7 +222,13 @@ static void cs_compose_one(const CsPopup* p) {
         const double y = top + r * row_h, cy = y + s_glyph_h * k * 0.5;
         if (sel) cv_dot(x0 + 8, cy, 7.0, 0xFFD85840u);
         cv_text(is_version ? "GAME" : "COSTUME", x0 + 14, y, sel, k);
-        const char* v = is_version ? (p->version ? "BAG 1" : "BAG 2") : (p->costume ? "B" : "A");
+        const char* v;
+        if (is_version) {
+            if (p->chr == 9) v = p->version ? "GAS-O" : "BI-O";
+            else v = p->version ? "BAG 1" : "BAG 2";
+        } else {
+            v = p->costume ? "B" : "A";
+        }
         const double vw = cv_text_w(v, k), vc = x1 - 24;          /* value centred between arrows */
         cv_text(v, vc - vw / 2, y, sel, k);
         if (sel) { cv_tri(vc - vw / 2 - 7, cy, 2.6, 0, 0xFFD85840u); cv_tri(vc + vw / 2 + 7, cy, 2.6, 1, 0xFFD85840u); }

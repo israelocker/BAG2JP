@@ -1,0 +1,89 @@
+{
+  "schema": 2,
+  "character": "gaso",
+  "display_name": "Gas-O",
+  "source_character_id": 9,
+  "target_character_id": 9,
+  "target_display_name": "Bi-O",
+  "source_layout": {
+    "costume_a": {"pack_directory": "PLAYER1E", "pack_number": 1, "model_directory": "PLAYER2", "model_number": 2},
+    "costume_b": {"pack_directory": "PLAYER3E", "pack_number": 3, "model_directory": "PLAYER4", "model_number": 4},
+    "side_suffixes": {"p1": "A", "p2": "B"},
+    "regions": {
+      "usa": {"disc": "D:/Games/Bust A Groove (USA)/ISO/Bust A Groove (USA).bin", "extraction": "_work/bag1_disc_full", "pack_directories": {"costume_a": "PLAYER1E", "costume_b": "PLAYER3E"}},
+      "jp": {"disc": "D:/Games/Bust A Groove (Japan)/Bust A Move - Dance & Rhythm Action (Japan).bin", "extraction": "_work/bag1jp_disc_full", "pack_directories": {"costume_a": "PLAYER1", "costume_b": "PLAYER3"}}
+    },
+    "evidence": "BAG1 SCUS model table 0x80059918 + side*14*4 + (costume*28 + character)*4 lists P_GAS_A4/B4; files verified in both full disc extractions (dumpsxiso-002/003)"
+  },
+  "target_entries": {
+    "packs_a": [53, 54], "packs_b": [125, 126],
+    "models_a": [89, 90], "models_b": [161, 162],
+    "fever_choreography": [17, 35], "stage": 197,
+    "evidence": "Ghidra FUN_800342dc tables 0x80055180/0x80055258/0x80055360 (ghidra-016); _work/gaso/bio-entries.json reproduces the Heat/Strike alt index"
+  },
+  "stage": "inventory",
+  "exception_assessment": "pending",
+  "source_animation_list": "_work/character_inventory/gaso/001.bin",
+  "game_catalog": "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
+  "reference_runtime": "D:\\Dev\\Scratch\\bag1-native-reference\\BustAGroove_Recompiled.exe",
+  "capabilities": {
+    "costumes": true,
+    "versions": ["bag2", "bag1-usa", "bag1-jp"],
+    "fever": ["solo"],
+    "stage": true,
+    "song": true,
+    "ending": true,
+    "shared_announcer_name": true
+  },
+  "voice_bank": {
+    "max_body_bytes": 64032,
+    "reason": "Same-character VS loads two voice banks; SsVabOpenHead fails when SPU is exhausted (ghidra-033). 64032 = stock Bi-O voice body, so a Gas-O pair fits wherever a Bi-O pair fits.",
+    "approved": "Owner 2026-11-06: lossless dedup plus resampling of BAG1 voice samples; stock announcer kept byte-exact."
+  },
+  "exceptions": [
+    {
+      "id": "semantic-animation-contract",
+      "character": "gaso",
+      "status": "verified",
+      "reason": "Gas-O's 84 BAG1 animations are mapped via tools/bag1import/contracts/gaso-animation-contract.json and tools/bag1import/profiles/gaso-animation-policy.json.",
+      "evidence": {
+        "file": "tools/bag1import/contracts/gaso-animation-contract.json",
+        "sha256": "c2384019e31ca1160d2f875221694ddd2b2e18eb5340d43b6e313e0db9427131"
+      }
+    },
+    {
+      "id": "accessory-model-member",
+      "character": "gaso",
+      "status": "pending",
+      "reason": "BAG2 loader FUN_80031d3c reads model member 2 as one accessory for char 9 (ghidra-017); Bi-O's per-character hook attaches it. Gas-O's 1-node member must be observed in game before acceptance."
+    },
+    {
+      "id": "region-variants",
+      "character": "gaso",
+      "status": "pending",
+      "reason": "Owner rule 2026-11-06: offer USA and JP variants. JP differs in model node 26 geometry, name/VS/loading text TIMs and DBI member 3; visual meaning unverified."
+    }
+  ],
+  "assets": {
+    "source_model": {"file": "_work/character_inventory/gaso/000.bin", "sha256": "e4197c9c0b201156468c2c1a3884148896f71e1cf8fdb7ee3aff32583d333f94", "required": true, "method": "P_GAS_A2.DFS member 0, USA (_work/gaso/extract_inventory.py)"},
+    "source_model_jp": {"file": "_work/character_inventory/gaso-jp/000.bin", "sha256": "b1f51787c97bec7cdb6e38255da7e666a78e42ece7304972223d9897bd17aba5", "required": true, "method": "P_GAS_A2.DFS member 0, JP"},
+    "source_animation_list": {"file": "_work/character_inventory/gaso/001.bin", "sha256": "39f6554982c5bdba54b6075e7a6ad360934d7cf2edd28db92eea003b768692d1", "required": true, "method": "P_GAS_A2.DFS member 1; byte-identical in JP"},
+    "source_accessory": {"file": "_work/character_inventory/gaso/002.bin", "sha256": "106a0fc2dd49ada4998d8ebe7be99f939c7336a4f797a720a292575173374c2e", "required": true, "method": "P_GAS_A2.DFS member 2; identical in JP and A4"}
+  },
+  "validation_evidence": [
+    {
+      "type": "animation_contract",
+      "file": "tools/bag1import/contracts/gaso-animation-contract.json",
+      "method": "generate_gaso_contract.py (reqmap.py + animlib.py + bag1-usa-bag2jp.roles.json)",
+      "evidence": "Gas-O BAG1: 84 anims, 0 empty, 52 mapped, 58 duplicate, 0 unresolved requests.",
+      "sha256": "c2384019e31ca1160d2f875221694ddd2b2e18eb5340d43b6e313e0db9427131"
+    },
+    {
+      "type": "animation_policy",
+      "file": "tools/bag1import/profiles/gaso-animation-policy.json",
+      "method": "Data-driven role adaptations and cue rebase 0x1800 -> 0x6900",
+      "evidence": "Single projectile trigger frame 20 normalised to (16,20,0); guard, reflect and knockdown 901 preserved.",
+      "sha256": "6d69714b04cc1fc23212795d9c97c6ce548e40c0457c566388351914848c3686"
+    }
+  ]
+}

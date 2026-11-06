@@ -57,13 +57,16 @@ void b1v_log(const char* fmt, ...) {
 static void b1v_read_options(void) {
     static const char* const heat_ids[2] = {"heat_p1", "heat_p2"};
     static const char* const strike_ids[2] = {"strike_p1", "strike_p2"};
+    static const char* const gaso_ids[2] = {"gaso_p1", "gaso_p2"};
     for (int s = 0; s < 2; ++s) {
         char v[16] = {0};
         b1v_version[0][s] = psx_mod_current_option_value(heat_ids[s], v, sizeof v) > 0 && strcmp(v, "bag2") == 0 ? 0 : 1;
         b1v_version[1][s] = psx_mod_current_option_value(strike_ids[s], v, sizeof v) > 0 && strcmp(v, "bag2") == 0 ? 0 : 1;
+        b1v_version[9][s] = psx_mod_current_option_value(gaso_ids[s], v, sizeof v) > 0 && strcmp(v, "bag2") == 0 ? 0 : 1;
     }
     b1v_log("Heat version: P1 %s, P2 %s", b1v_version[0][0] ? "BAG1" : "BAG2", b1v_version[0][1] ? "BAG1" : "BAG2");
     b1v_log("Strike version: P1 %s, P2 %s", b1v_version[1][0] ? "BAG1" : "BAG2", b1v_version[1][1] ? "BAG1" : "BAG2");
+    b1v_log("Gas-O version: P1 %s, P2 %s", b1v_version[9][0] ? "BAG1" : "BAG2", b1v_version[9][1] ? "BAG1" : "BAG2");
 }
 
 static int b1v_side_of(uint32_t chr) {      /* side playing chr, player 1 first; -1 if none */
@@ -123,7 +126,13 @@ static void b1v_model_region(void) {
  * size, and 98 x 0.837 restores that ratio. Heat's models differ by only ~2%: unchanged. */
 #define B1V_SCALE_CUR  0x14E4u
 #define B1V_SCALE_BASE 0x1514u
-static const uint16_t b1v_scale_q12[B1V_CHARS][2] = { [1] = { 3429u, 3434u } };   /* costume A, B */
+/* Gas-O retains native model units: anchor its native 116/127 Gas/Strike ratio
+ * to corrected Strike A (3429 Q12), rounded to 3132. Both Gas costumes share
+ * that scale; this candidate still requires native-relative visual acceptance. */
+static const uint16_t b1v_scale_q12[B1V_CHARS][2] = {
+    [1] = { 3429u, 3434u },
+    [9] = { 3132u, 3132u }
+};   /* costume A, B */
 static uint32_t b1v_scaled_dancer[4], b1v_scaled_value[4];
 static void b1v_dancer_scale(void) {
     for (int slot = 0; slot < 4; ++slot) {   /* 0x8005F808 + 4*slot: P1, P1 partner, P2, P2 partner */
@@ -147,6 +156,32 @@ static void b1v_dancer_scale(void) {
     }
 }
 
+static int b1v_region_japanese(const char* option) {
+    char value[16] = {0};
+    /* Explicit package context keeps this independent of character/song choices. */
+    if (psx_mod_option_value("bag2jp.content.bag1-visuals", "regional", option,
+                             value, sizeof value) <= 0) return 1;
+    return strcmp(value, "international") != 0;
+}
+
+static void b1v_apply_entry(const B1AltEntry* e, uint32_t count, int japanese) {
+    if (e->entry >= count) return;
+    const uint32_t a = B1V_TABLE + 8u + 8u * e->entry;
+    const uint32_t off = psx_mod_read_word(a);
+    if (off != e->off && off != e->alt_off && (!e->jp_size || off != e->jp_off)) return;
+    const int alt = b1v_wanted(e);
+    const int available = !japanese || e->jp_size != 0;
+    /* Missing JP resources must not be presented as the Japanese variant. */
+    const int use_alt = alt && available;
+    const uint32_t want = use_alt ? (japanese ? e->jp_off : e->alt_off) : e->off;
+    const uint32_t size = use_alt ? (japanese ? e->jp_size : e->alt_size) : e->size;
+    if (off == want && psx_mod_read_word(a + 4u) == size) return;
+    psx_mod_write_word(a, want);
+    psx_mod_write_word(a + 4u, size);
+    b1v_log("%07u entry %u -> %s", b1v_frame, e->entry,
+            use_alt ? (japanese ? "BAG1 JP" : "BAG1 International") : "BAG2");
+}
+
 static void b1v_vblank(void) {
     ++b1v_frame;
     b1v_model_region();
@@ -155,18 +190,11 @@ static void b1v_vblank(void) {
     bag2jp_heat_flame_tick(b1v_frame);
     if (psx_mod_read_word(B1V_TABLE) != B1V_MAGIC) return;
     const uint32_t count = psx_mod_read_word(B1V_TABLE + 4u);
+    const int models_jp = b1v_region_japanese("models");
+    const int stages_jp = b1v_region_japanese("stages");
     for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i) {
         const B1AltEntry* e = &b1_alt_entries[i];
-        if (e->entry >= count) continue;
-        const uint32_t a = B1V_TABLE + 8u + 8u * e->entry;
-        const uint32_t off = psx_mod_read_word(a);
-        if (off != e->off && off != e->alt_off) continue;          /* someone else's entry: leave it */
-        const int alt = b1v_wanted(e);
-        const uint32_t want = alt ? e->alt_off : e->off;
-        if (off == want) continue;
-        psx_mod_write_word(a, want);
-        psx_mod_write_word(a + 4u, alt ? e->alt_size : e->size);
-        b1v_log("%07u entry %u -> %s", b1v_frame, e->entry, alt ? "BAG1" : "BAG2");
+        b1v_apply_entry(e, count, e->kind == 3 ? stages_jp : models_jp);
     }
 }
 

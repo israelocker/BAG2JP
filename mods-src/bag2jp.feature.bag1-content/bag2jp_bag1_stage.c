@@ -24,10 +24,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdlib.h>
 #include <SDL3/SDL.h>
 #include "mod_plugins.h"
 #include "cdrom.h"
 #include <dr_libs/dr_flac.h>
+#include "bag2jp_stage_visibility_test.h"
 
 #define B1S_SHIM   0x801E0100u
 #define B1S_MAGIC  0x54533142u   /* 'B1ST' */
@@ -61,6 +63,7 @@ static void b1s_vblank(void) {
 }
 
 /* ---- song audio ---- */
+static void b1sv_experiment(void);
 static FILE* b1m_logf;
 static void b1m_log(const char* fmt, ...) {
     if (!b1m_logf) {
@@ -79,11 +82,15 @@ static drflac_bool32 b1m_sk(void* u, int off, drflac_seek_origin o) {
 static drflac_bool32 b1m_tl(void* u, drflac_int64* c) { long p = ftell((FILE*)u); if (p < 0) return 0; *c = p; return 1; }
 
 #define B1M_FRAMES_PER_SECTOR 2352u
-static char b1m_dir[1024], b1m_audio[16] = "cd";
-static uint32_t b1m_lba, b1m_end;          /* XA/BUST2_01.XA extent */
+#define B1M_XA_FILES 2u
+#define B1M_XA_CHANNELS 8u
+#define B1M_MAX_FRAMES 9408
+#define B1M_SECTOR_BYTES 2048u
+static char b1m_dir[1024], b1m_audio[16] = "japanese";
+static uint32_t b1m_lba[B1M_XA_FILES], b1m_end[B1M_XA_FILES];
 static FILE* b1m_fp; static drflac* b1m_flac; static int b1m_failed;
 static uint64_t b1m_cursor;
-static int16_t b1m_tmp[9408 * 2];
+static int16_t b1m_tmp[B1M_MAX_FRAMES * 2];
 static CdromXaHostFilter b1m_prev;
 
 typedef struct {
@@ -91,16 +98,22 @@ typedef struct {
     uint16_t seconds;
     const char* name;
 } B1MusicProfile;
-/* Native stage id is the song index: XA file index=id/8, channel=id%8.
- * Both audited stages use BUST2_01. Strike JP duration: 0x800553F4[1]. */
+/* Native stage id selects the BAG2 XA extent/channel. JP BAG1 durations
+ * are from 0x800553F4; regional timing and Gas-O still need game acceptance. */
 static const B1MusicProfile b1m_profiles[] = {
     {0, 0, 0, 129, "heat_2bad"},
     {1, 1, 1, 129, "strike"},
+    {9, 1, 9, 150, "gaso"},
 };
+#define B1M_PROFILE_COUNT (sizeof b1m_profiles / sizeof b1m_profiles[0])
 static const B1MusicProfile* b1m_loaded;
 
 static const B1MusicProfile* b1m_stage_profile(void) {
-    if (psx_mod_read_word(0x8005D3D4u) != B1S_ROOT_GAMEPLAY) return NULL;
+    const uint32_t root = psx_mod_read_word(0x8005D3D4u);
+    /* Dance View uses root 0x19, not the match root 0x13. Retain all
+     * imported-stage guards so native Strike/Heat music is not replaced. */
+    if (root != B1S_ROOT_GAMEPLAY &&
+        !(root == 0x19u && psx_mod_read_word(0x8005D2C4u) == 4u)) return NULL;
     if (psx_mod_read_word(B1S_SHIM) != B1S_MAGIC) return NULL;
     const uint32_t stage = psx_mod_read_word(0x80089200u);
     if (stage < 0x80000000u || stage >= 0x80800000u) return NULL;
@@ -119,9 +132,8 @@ static int b1m_open(const B1MusicProfile* profile) {
     if (b1m_flac) return 1;
     if (b1m_failed || !b1m_dir[0]) return 0;
     char p[1200];
-    /* No CD master was supplied for Strike: always use its native game edit. */
     snprintf(p, sizeof p, "%s/%s_%s.flac", b1m_dir, profile->name,
-             profile->stage == 0 ? b1m_audio : "game");
+             b1m_audio);
     b1m_fp = fopen(p, "rb");
     b1m_flac = b1m_fp ? drflac_open(b1m_rd, b1m_sk, b1m_tl, b1m_fp, NULL) : NULL;
     if (!b1m_flac || b1m_flac->sampleRate != 44100 || b1m_flac->channels != 2) {
@@ -131,13 +143,42 @@ static int b1m_open(const B1MusicProfile* profile) {
     }
     b1m_cursor = 0; b1m_log("song %s", p); return 1;
 }
+static void b1m_trace_viewer_audio(int lba, int file, int channel) {
+    /* Bounded opt-in observation only: never broaden the replacement guards. */
+    static uint32_t seen[32];
+    static unsigned count;
+    const char* enabled = getenv("BAG2JP_TEST_VIEWER_AUDIO");
+    if (!enabled || strcmp(enabled, "1") != 0 || count == 32 ||
+        psx_mod_read_word(0x8005D2C4u) != 4) return;
+    const B1MusicProfile* profile = b1m_stage_profile();
+    const unsigned xa = profile ? profile->stage / B1M_XA_CHANNELS : 0u;
+    if (xa >= B1M_XA_FILES) return;
+    const uint32_t start = b1m_lba[xa], end = b1m_end[xa];
+    const int in_extent = lba >= 0 && (uint32_t)lba >= start && (uint32_t)lba < end;
+    const uint32_t rel = (uint32_t)lba - start;
+    const uint32_t key = (profile ? (uint32_t)profile->stage + 1u : 0u) |
+        ((uint32_t)in_extent << 8) | (((uint32_t)channel & 255u) << 16) |
+        ((rel & 7u) << 24);
+    for (unsigned i = 0; i < count; ++i) if (seen[i] == key) return;
+    seen[count++] = key;
+    const uint32_t model = psx_mod_read_word(0x80089200u);
+    const int model_id = model >= 0x80000000u && model < 0x80800000u ? psx_mod_read_byte(model) : -1;
+    b1m_log("viewer XA lba=%d file=%d channel=%d extent=%u..%u inside=%d sector_channel=%u profile=%d root=%x shim=%x model=%x model_id=%d",
+        lba, file, channel, start, end, in_extent, rel & 7u,
+        profile ? profile->stage : -1, psx_mod_read_word(0x8005D3D4u),
+        psx_mod_read_word(B1S_SHIM), model, model_id);
+}
 static void b1m_filter(int lba, int file, int channel, int16_t* pcm, int frames) {
     if (b1m_prev) b1m_prev(lba, file, channel, pcm, frames);
-    if (lba < 0 || frames <= 0 || frames > 9408 || (uint32_t)lba < b1m_lba || (uint32_t)lba >= b1m_end) return;
-    const uint32_t rel = (uint32_t)lba - b1m_lba;
+    b1m_trace_viewer_audio(lba, file, channel);
+    if (lba < 0 || frames <= 0 || frames > B1M_MAX_FRAMES) return;
     const B1MusicProfile* profile = b1m_stage_profile();
-    if (!profile || (rel & 7u) != profile->channel || channel != profile->channel || !b1m_open(profile)) return;
-    const uint64_t pos = (uint64_t)(rel >> 3) * B1M_FRAMES_PER_SECTOR;
+    if (!profile) return;
+    const unsigned xa = profile->stage / B1M_XA_CHANNELS;
+    if (xa >= B1M_XA_FILES || (uint32_t)lba < b1m_lba[xa] || (uint32_t)lba >= b1m_end[xa]) return;
+    const uint32_t rel = (uint32_t)lba - b1m_lba[xa];
+    if ((rel % B1M_XA_CHANNELS) != profile->channel || channel != profile->channel || !b1m_open(profile)) return;
+    const uint64_t pos = (uint64_t)(rel / B1M_XA_CHANNELS) * B1M_FRAMES_PER_SECTOR;
     if (b1m_cursor != pos) {
         if (!drflac_seek_to_pcm_frame(b1m_flac, pos)) { memset(pcm, 0, (size_t)frames * 4u); b1m_cursor = ~0ull; return; }
         b1m_cursor = pos;
@@ -147,21 +188,34 @@ static void b1m_filter(int lba, int file, int channel, int16_t* pcm, int frames)
     memcpy(pcm, b1m_tmp, (size_t)got * 4u);
     if (got < (drflac_uint64)frames) memset(pcm + got * 2u, 0, (size_t)(frames - (int)got) * 4u);
 }
+static void b1m_read_extents(void) {
+    for (unsigned i = 0; i < B1M_XA_FILES; ++i) {
+        char path[32]; uint32_t size = 0;
+        b1m_lba[i] = b1m_end[i] = 0;
+        snprintf(path, sizeof path, "XA/BUST2_%02u.XA", i + 1u);
+        if (psx_mod_disc_file_extent(path, &b1m_lba[i], &size) && size &&
+            b1m_lba[i] <= UINT32_MAX - size / B1M_SECTOR_BYTES)
+            b1m_end[i] = b1m_lba[i] + size / B1M_SECTOR_BYTES;
+        b1m_log("activate: %s lba %u..%u", path, b1m_lba[i], b1m_end[i]);
+    }
+}
 static void b1m_activate(void) {
     if (b1m_flac) { drflac_close(b1m_flac); b1m_flac = NULL; }
     if (b1m_fp) { fclose(b1m_fp); b1m_fp = NULL; }
     b1m_failed = 0; b1m_dir[0] = 0; b1m_loaded = NULL;
     char v[16] = {0};
-    if (psx_mod_current_option_value("bag1_song_audio", v, sizeof v) > 0) snprintf(b1m_audio, sizeof b1m_audio, "%s", v);
+    snprintf(b1m_audio, sizeof b1m_audio, "%s", "japanese");
+    if (psx_mod_option_value("bag2jp.localization.regional", "regional", "songs", v, sizeof v) > 0 &&
+        (!strcmp(v, "japanese") || !strcmp(v, "international") || !strcmp(v, "cd")))
+        snprintf(b1m_audio, sizeof b1m_audio, "%s", v);
     if (psx_mod_current_resource_path("bag1_music", b1m_dir, sizeof b1m_dir) <= 0) b1m_dir[0] = 0;
-    uint32_t size = 0;
-    if (!psx_mod_disc_file_extent("XA/BUST2_01.XA", &b1m_lba, &size) || !size) b1m_lba = b1m_end = 0;
-    else b1m_end = b1m_lba + size / 2048u;
-    b1m_log("activate: dir '%s', audio %s, BUST2_01 lba %u..%u", b1m_dir, b1m_audio, b1m_lba, b1m_end);
+    b1m_read_extents();
+    b1m_log("activate: dir '%s', audio %s", b1m_dir, b1m_audio);
 }
 
 #define B1M_SONG_LEN_TABLE 0x800555A8u   /* u16 seconds per XA song */
-static int b1m_len_saved[2] = {-1, -1};
+static uint16_t b1m_len_saved[B1M_PROFILE_COUNT];
+static uint8_t b1m_len_valid[B1M_PROFILE_COUNT];
 static void b1m_song_length(void) {
     const B1MusicProfile* active = b1m_stage_profile();
     for (unsigned i = 0; i < sizeof b1m_profiles / sizeof b1m_profiles[0]; ++i) {
@@ -170,13 +224,13 @@ static void b1m_song_length(void) {
         const uint16_t cur = psx_mod_read_half(address);
         if (active == profile) {
             if (cur != profile->seconds) {
-                if (b1m_len_saved[i] < 0) b1m_len_saved[i] = cur;
+                if (!b1m_len_valid[i]) { b1m_len_saved[i] = cur; b1m_len_valid[i] = 1; }
                 psx_mod_write_half(address, profile->seconds);
                 b1m_log("song %s length %u -> %u s", profile->name, cur, profile->seconds);
             }
-        } else if (b1m_len_saved[i] >= 0) {
+        } else if (b1m_len_valid[i]) {
             if (cur == profile->seconds) psx_mod_write_half(address, (uint16_t)b1m_len_saved[i]);
-            b1m_len_saved[i] = -1;
+            b1m_len_valid[i] = 0;
         }
     }
 }
@@ -184,10 +238,37 @@ static void b1m_song_length(void) {
 static void b1s_vblank_all(void) {
     b1s_vblank();
     b1m_song_length();
+    b1sv_experiment();
     if (g_cdrom_xa_host_filter != b1m_filter) {         /* (re)wrap after other plugins set theirs */
         b1m_prev = g_cdrom_xa_host_filter;
         cdrom_set_xa_host_filter(b1m_filter);
     }
+}
+
+/* Opt-in experiment, not a shipping fix. Missing control file means baseline.
+ * A running test can switch modes without restarting or reseeding its camera. */
+#define B1SV_CONTROL_INTERVAL 15u
+static void b1sv_experiment(void) {
+    static int enabled = -1, requested, last_result;
+    static unsigned poll;
+    if (enabled < 0) {
+        const char* value = getenv("BAG2JP_TEST_STAGE_VISIBILITY");
+        enabled = value && strcmp(value, "1") == 0;
+    }
+    if (!enabled) return;
+    if (poll++ % B1SV_CONTROL_INTERVAL == 0) {
+        char path[1024];
+        const char* base = SDL_GetBasePath();
+        snprintf(path, sizeof path, "%sbag2jp_stage_visibility.mode", base ? base : "");
+        FILE* control = fopen(path, "r");
+        requested = control && fgetc(control) == '1';
+        if (control) fclose(control);
+    }
+    const B1MusicProfile* profile = b1m_stage_profile();
+    const int result = b1sv_update(requested, profile && profile->stage == 1);
+    if (result && result != last_result)
+        b1m_log("experimental stage visibility result=%d (1=screen bypass,2=native,-1=refused)", result);
+    last_result = result;
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_bag1_stage) {

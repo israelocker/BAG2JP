@@ -5,8 +5,8 @@ tags: ["character", "pipeline", "workflow"]
 summary: "Reglas por evidencia y límites de los helpers; perfiles de datos, no pipelines clonados."
 related: ["CHARACTER_IMPORT.md", "notes/character-alternate-entries.md", "notes/character-import-testing.md", "notes/strike-recovery.md"]
 created: "2026-10-31"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-06"
+edited: "2026-11-06"
 doc_kind: requirements
 ---
 
@@ -40,6 +40,73 @@ universal ni optimizador de grafos aceptado con todos los personajes.
 DFS/payload compartidos: [integración](character-alternate-entries.md), con sus
 límites manuales. Harness: [pruebas](character-import-testing.md), catálogo limitado.
 
+### Búsqueda auxiliar de funciones: funcmatch
+
+Usar `tools/bag1import/funcmatch.py` para acotar equivalentes entre funciones de los
+ejecutables principales BAG1/BAG2 antes de repetir búsquedas manuales. Ejecución
+desde la raíz canónica: `py -3.13 tools/bag1import/funcmatch.py <BAG1-address-hex>`.
+El script lee rutas fijas `_work/bag1/scus.bin` y `_work/mainexe/slpm.bin` y presupone
+base `0x80010000`: comprobar región, hashes y layout de esos archivos primero.
+
+**No está plenamente comprobado; necesita pruebas más profundas.** Enmascara
+algunos operandos y devuelve candidatos (la CLI muestra como máximo cinco); puede
+omitir equivalentes y producir coincidencias ambiguas. No busca overlays ni decide
+equivalencia semántica. Confirmar instrucciones, llamadas y función real en Ghidra;
+no aplicar parches ni declarar aceptación basándose únicamente en un match.
+
+## Lecciones verificadas en Strike (2026-11-04): checklist para el siguiente personaje
+
+Cada punto falló de verdad en Strike, se corrigió con evidencia y es reutilizable. Detalle,
+hashes y rutas en [Strike](strike-recovery.md). Aplicar como comprobación, no por analogía.
+
+1. **Carpeta = traje, sufijo = lado.** En BAG1 la pareja de carpetas (`PLAYER1/2` vs
+   `PLAYER3/4`) elige el traje; el sufijo `A/B` del archivo elige el lado del jugador
+   (SCUS `FUN_8003AE20`: lado×14 + traje×28 + personaje). Test: `test_strike_costume_assets.py`.
+2. **Alineación DFS a 4 bytes.** El loader pasa miembro+20 a `LoadImage` y el DMA
+   redondea hacia abajo (`& ~3u`): un TIM desalineado sube desplazado y produce parches
+   blancos. `rebuild_dfs_members.py` ya alinea cada miembro; comprobar offsets mod 4.
+3. **Copias de atlas `MoveImage` del DBI de BAG2.** El código del personaje en BAG2
+   copia rectángulos de su propio atlas (Strike: DBI `0x2358/0x23D4`, 10×36 palabras).
+   Sobre un atlas BAG1 destruyen texturas (emblema B, mancha del pecho A). Anularlas
+   con el contrato reversible por hash/guard (`strike-texture-contract.json`,
+   `dbi_word_contract.py`) en **todos** los trajes y lados, no solo donde se vio.
+   Verificar con volcado de VRAM: atlas y CLUT idénticos al TIM BAG1 tras la carga.
+4. **Esqueleto/manos por traje.** Comparar el grafo de huesos de cada traje BAG2 con
+   BAG1; un traje puede tener otra topología e inicializador de manos (Strike B: 42 vs 44).
+   Adaptar solo el inicializador demostrado (`strike-skeleton-contract.json`).
+5. **Neutral nativo en slot 0** y política de 101 slots por rejilla `B2_ROWS/B2_ALT`,
+   transiciones nativas y roles semánticos; nunca por cercanía de frames.
+6. **Memoria.** Comparar tamaño de modelo+motions con el búfer stock del lado; si no
+   cabe, usar la región de RAM ampliada 8 MB (`bag2jp_model_region.h`) en vez de
+   recortar motions.
+7. **Voces.** Rebasar el banco SEDT BAG1 a `0x6000 + id_BAG2*0x100` **y** los eventos de
+   animación al mismo rango; conservar los cues del anunciador BAG2 del personaje
+   (`preserve_announcer.py`, Strike `0x1107/0x1108`). Verificar en la tabla SPU
+   `0x8007F180` en combate (`probe_cue_table.py`): sin el SEDT rebasado las voces callan.
+   **Presupuesto SPU (Gas-O, 06-11):** un VS espejo carga dos bancos de voz; si el
+   cuerpo VAB supera al stock, P2 falla en `SsVabOpenHead` (SystemError `'V'`,1,
+   ra `8002E060`; ghidra-033). Limitar con `voice_bank.max_body_bytes` del perfil y
+   `tools/bag1import/vab_budget.py` (`fit_voice_budget`: dedup sin pérdida, luego
+   remuestreo con corrección de tono, ghidra-034; muestras stock byte a byte). El
+   remuestreo tiene pérdida: requiere aprobación del propietario y escucha humana.
+8. **Escala.** Comparar vértices/traslaciones BAG1 convertido frente a stock BAG2; el
+   tamaño en pantalla sale de la escala del bailarín (tabla `0x80051904`). Si el ratio no
+   es ~1 (Strike 0,837; Heat 0,98), fijar el factor por personaje/traje en
+   `b1v_scale_q12` (`bag2jp_bag1_versions.c`) y verificar en combate espejo BAG1 vs BAG2.
+9. **Rostro/iluminación.** Leer paquetes GPU antes de tocar materiales. La prueba
+   facial de Strike aisló iluminación sustractiva; **el propietario descartó el
+   override nativo del actor** por conflictos con escenarios BAG2 (05-11).
+   `strike-lighting-profile.json` y el header son respaldo histórico, no una receta
+   activa. Conservar la regresión que exige callback inactivo.
+10. **Manifest.** `[[overlay]].sha256` identifica el payload;
+    `expected_sha256` identifica los bytes **originales del disco** que se reemplazan,
+    con esa longitud, no el payload. `[[target]].disc_sha256` identifica el disco
+    y no cambia por regenerar el mod. Ver la receta de integración.
+11. **Aceptación mínima reutilizable** (`_work/character_import/strike/`):
+    `test_strike_full_match.py` (canción+fever+retorno, A y B), `probe_cue_table.py`,
+    `test_strike_scale_mirror.py`, Dance View individual. Restaurar ajustes/tarjetas
+    (lo hace `IsolatedFiles`; si un run se interrumpe, restaurar desde su `baseline/`).
+
 ## Referencia cacheada
 
 Reutilizar capturas solo con coincidencia de hashes de motions, perfil, catálogo,
@@ -49,8 +116,10 @@ No competir con la GPU del juego; scripts para hashes/conteos antes que modelos.
 
 ## Estado respaldado, no promesas
 
-Strike JP ID=1; integración y dos partidas completas P1/A y P2/B están en
-[su ledger](strike-recovery.md), con fidelidad/matriz/fever pendientes.
+Strike JP ID=1. [Su ledger](strike-recovery.md) y el plan de disparo conservan
+partidas posteriores de los cuatro casos P1/P2 × A/B; los dos casos diagonales
+anteriores no son el límite actual ni aceptación global. Separar revisión visual,
+fever observado y campaña pendiente. Escenario/audio: [receta propia](bag1-stage-song.md) (requiere obligatoriamente importar eventos/interacciones del entorno según el puntaje, no solo geometría y audio).
 Heat tiene adaptadores y evidencia histórica; no generalizar aceptación.
 El [documento anterior](archive/character-pipeline-before-audit.md) conserva
 decisiones y mediciones antiguas. Existencia de Context7 o Ghidra instalado no
