@@ -5,8 +5,8 @@ tags: ["bag1", "character", "dfs", "payload", "workflow"]
 summary: "Reconstrucción DFS, preservación de personajes existentes, payload exacto en DUMMY.BIN y sincronización manual antes de compilar. Lecciones verificadas con Heat y Strike; límites explícitos."
 related: ["CHARACTER_IMPORT.md", "notes/character-pipeline.md", "notes/character-import-testing.md", "notes/strike-recovery.md"]
 created: "2026-11-02"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-06"
+edited: "2026-11-06"
 doc_kind: reference
 ---
 
@@ -82,9 +82,11 @@ El escritor calcula cada offset a partir de la longitud real del buffer.
 Valida orden, límites, solapes, vacíos y lectura posterior. Comparar además los
 hashes de miembros no reemplazados: deben seguir siendo los originales.
 
-**Límite:** el escritor compacta sin conservar huecos ni padding final; no es un
-round-trip byte-idéntico del contenedor stock. Antes de aplicarlo a otro formato,
-comprobar requisitos de alineación del loader. En Strike se ejercitaron los ocho
+**Límite:** el escritor alinea cada comienzo a **4 bytes** (`MEMBER_ALIGNMENT`),
+sin incluir padding en el tamaño del miembro. No conserva los huecos originales
+ni el padding final: no es un round-trip byte-idéntico del contenedor stock.
+El lector valida límites/orden/solapes, no exige alineación; comprobar offsets
+mod 4 por separado. En Strike se ejercitaron los ocho
 contenedores. No aceptar miembros solapados ni forzar otro layout para que pase.
 
 El generador antiguo de `_work/versus-navigation/rebuild_strike_alternate_dfs.py`
@@ -156,12 +158,13 @@ los bytes originales que reemplaza, **no** el del payload. En DUMMY verificado
 eran ceros de longitud igual al payload; no asumir ceros en otro destino.
 
 **Validaciones manuales todavía obligatorias:** el script lee solo 4096 B de
-tabla DF2_, no valida exhaustivamente count/IDs duplicados/kind/chr; el extent
-ISO entrega longitud en bytes, pero su variable `dummy_sectors` se multiplica
-por 2048 en el control de capacidad. Ese control sobreestima capacidad y no sirve
-como prueba. Exigir `payload_bytes <= DUMMY extent bytes`, entradas únicas dentro
+tabla DF2_, no valida exhaustivamente count/IDs duplicados/kind/chr. El código
+canónico inspeccionado en esta auditoría ya usa `capacity = dummy_size` en bytes;
+la advertencia anterior de multiplicación por 2048 corresponde a otra revisión.
+No dar por reparado el build tree por analogía ni por una edición sin regresión.
+Mantener el control independiente `payload_bytes <= DUMMY extent bytes`, entradas únicas dentro
 de count/tabla disponible y hashes de slices correctos antes de desplegar.
-No se corrigieron estas limitaciones en la tarea de documentación.
+No se modificó el generador en esta tarea. Su cambio previo queda fuera de su checkpoint.
 
 ## 6. Plugin y manifiesto: descubrir, no asumir
 

@@ -2,15 +2,55 @@
 id: strike-import-recovery
 title: "Strike: evidencia vigente y pendientes"
 tags: ["strike", "bag1", "acceptance"]
-summary: "Recuperada carga VS con paquete coherente de 19 entradas; prueba P1/B llega a gameplay. Voz del anunciador y fidelidad visual pendientes."
+summary: "Ledger histórico de Strike: modelos, voces, disparo y matriz; iluminación descartada. Stage/audio y endings tienen recetas separadas; campaña y aceptación global no probadas."
 related: ["notes/character-alternate-entries.md", "notes/character-import-testing.md", "notes/character-pipeline.md"]
 created: "2026-11-01"
-updated: "2026-11-05"
-edited: "2026-11-05"
+updated: "2026-11-06"
+edited: "2026-11-06"
 doc_kind: reference
 ---
 
 # Estado vigente de Strike
+
+## Lectura vigente tras auditoría (2026-11-06)
+
+Las secciones fechadas siguientes conservan la secuencia de investigación, no una
+lista acumulativa de pendientes actuales. Voces/anunciador tienen evidencia SPU;
+el disparo tiene aceptación visual registrada en su sección del 05-11 y partidas
+posteriores cubren los cuatro casos lado/traje. Eso no acepta todo el personaje.
+El override de iluminación del actor fue **descartado por el propietario**: no
+reactivarlo por leer una prueba facial anterior. Los PIDs históricos tampoco
+autorizan cerrar o reutilizar una sesión actual.
+
+Recetas vigentes: [pipeline](character-pipeline.md),
+[DFS/payload](character-alternate-entries.md), [stage/audio](bag1-stage-song.md) y
+[endings](endings-view.md). El inventario y resultados conservados comprobados en
+esta auditoría están en [el ledger documental](documentation-audit.md).
+Ending View, salida natural y campaña son recorridos distintos; no hay nueva
+partida en esta auditoría ni prueba suficiente de campaña final completa.
+
+### Reutilización de efectos y callbacks
+
+1. Identificar región, módulo, palabras originales y función de cada evento antes
+   de parchear. El evento 16/índice 1 de Strike y callbacks `0x801DB920/0x801DB940`
+   son evidencia nativa concreta, no direcciones universales.
+2. Contrastar actor, cámara, GTE y recursos: `+0x14B8` es posición en el caso JP
+   estudiado; `+0x14E4` era escala. El factor de proyección empírico del disparo
+   no es un conversor general. Separar GP0/FT4, mezcla y CLUT de la animación.
+3. Mantener guardas de versión BAG1, personaje, lado, overlay y fase; restaurar el
+   comportamiento stock fuera del caso. No suprimir globalmente `MoveImage`:
+   las copias de atlas incompatibles se desactivaron por contrato/hash concreto.
+4. Usar fixtures C para límites/guards y evidencia de combate para alineación,
+   partículas, VRAM y final de canción. Strike tiene esa evidencia histórica;
+   el efecto de Heat sigue pendiente de revisión visual del propietario.
+5. Las herramientas `tools/bag1native` controlan/escriben RAM de la referencia USA
+   `SCUS_942.63`; no son probes pasivos ni válidos en JP por compartir offsets.
+   Exigen aislamiento de controles/saves y restauración. Su README conserva el
+   procedimiento; los vídeos negros de gdigrab no sirven como evidencia visual.
+
+No portar ejecutando reconstrucciones ad hoc de `_work`: algunas truncan datos,
+parchean ejecutables o despliegan directamente. Conservarlas como histórico y
+reutilizar solo el seam y contrato revisados en las herramientas canónicas.
 
 ## Final de Strike BAG1: vídeo BAG1 + baile (2026-11-05, verificado en Ending View A)
 

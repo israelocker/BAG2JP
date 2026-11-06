@@ -1,3 +1,14 @@
+---
+id: strike-bag1-stage-song-plan
+title: "Strike BAG1 stage and song import"
+tags: ["strike", "stage", "audio", "plan"]
+summary: "Approved stage/song import plan and historical execution evidence; campaign ending and listening acceptance remain separate."
+related: ["notes/bag1-stage-song.md", "notes/endings-view.md"]
+created: "2026-11-05"
+updated: "2026-11-06"
+doc_kind: plan
+---
+
 # Strike BAG1 stage and song import
 Status: approved by owner ("sí", 2026-11-05) with all four recommendations: start phase 0;
 game-disc song audio (CD version only if the owner supplies it); new Strike BAG1 selector row;

@@ -5,8 +5,8 @@ tags: ["bag1", "character", "testing", "acceptance", "debugging"]
 summary: "Gates observados del harness, calibración por runtime, matriz lado/traje, canción completa, conservación de mods/saves y fallos reales de Strike."
 related: ["notes/character-alternate-entries.md", "notes/character-pipeline.md", "notes/game-controls.md", "notes/strike-recovery.md"]
 created: "2026-11-02"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-06"
+edited: "2026-11-06"
 doc_kind: reference
 ---
 
@@ -66,7 +66,10 @@ Ejemplo real de Strike, reutilizable cambiando datos **si están soportados**:
 & tools/test/bag2_versus.ps1 -Action run -Tag <unique-tag> -P1Character Strike -P1Version BAG1 -P1Costume A -P2Character Heat -P2Version BAG2 -TemporaryControls -Finish
 ```
 
-`-Stage HeatBAG2|HeatBAG1`: solo esos dos destinos expuestos por el CLI actual.
+`-Stage HeatBAG2|HeatBAG1`: solo esos dos destinos expuestos por el wrapper
+PowerShell actual. El parser Python `versus_session.py --stage` sí admite además
+`StrikeBAG2|StrikeBAG1` (filas 4/5, selector de 15 filas); no pasar esas opciones
+al wrapper ni confundir sus validaciones. Reutilizar solo con calibración vigente.
 No presentar el escenario por defecto como prueba del escenario/canción del
 personaje nuevo. `-FinishTimeout` predeterminado 420 s; incluye canción y retorno.
 Sin `-Finish` el test termina tras entrada a gameplay, no al finalizar canción.
@@ -152,7 +155,8 @@ py -3.13 -m unittest discover -s tools/test -p test_rebuild_dfs_members.py
 py -3.13 -m unittest discover -s tools/test -p test_versus_navigation.py
 ```
 
-Última evidencia: 8 pruebas DFS y 49 de navegación. No acredita cobertura total
+Evidencia histórica del 02-11: 8 pruebas DFS y 49 de navegación; no es un conteo
+actual de la suite. No acredita cobertura total
 del generador de payload o del retarget. Logs completos fuera de notas; en la nota
 del personaje conservar decisiones, causas, hashes y rutas a pruebas aceptadas.
 Actualizar el índice corto y estado compacto sin borrar estado ajeno. Copiar

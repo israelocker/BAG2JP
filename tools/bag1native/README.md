@@ -1,3 +1,14 @@
+---
+id: bag1native-reference-tools
+title: "Native BAG1 reference tools"
+tags: ["bag1", "reference", "tools"]
+summary: "External RAM and input helpers for the SCUS_942.63 reference runtime; writes require isolated sessions and restored controls."
+related: ["notes/strike-recovery.md", "notes/character-import-testing.md"]
+created: "2026-11-05"
+updated: "2026-11-06"
+doc_kind: reference
+---
+
 # Native BAG1 reference tools
 
 External helpers for the native BAG1 runtime (`BustAGroove_Recompiled.exe`, reference install

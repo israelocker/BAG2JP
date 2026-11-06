@@ -56,6 +56,29 @@ exceptions.
 - Do not generalize Heat-specific bone, DBI, cue or stage fixes.
 - Keep unresolved roles unresolved until a documented adaptation is chosen.
 
+## Verified conversion seams (audit 2026-11-06)
+
+Use new candidate paths, never live assets as outputs. These parsers do not replace
+the inventory, role contract or gameplay gate:
+
+| Process | Verified implementation and reuse boundary |
+|---|---|
+| Model layout | `model_bag1_to_bag2.convert(data, scale=None)` expands mesh headers from 0x3C to 0x48 words; preserves the skeleton and trailing bytes. Run `check_bag2(result)` and explain any tail. Unknown node types fail; it does not repair bone topology or choose dancer scale. CLI: `py -3.13 tools/bag1import/model_bag1_to_bag2.py <source.bin> <candidate.bin>` |
+| TIM/CLUT | `tim_retarget.retarget(bag1, bag2)` keeps BAG1 pixels/flags and uses BAG2 VRAM coordinates; extra destination CLUT rows survive only with equal row width. CLI: `py -3.13 tools/bag1import/tim_retarget.py <source.tim> <stock.tim> <candidate.tim>`. Audit dimensions, UV/tpage/CLUT and runtime writes separately; this is not an atlas allocator |
+| Motions | `animlib`, role catalogs and `reqmap` supply structure/dispatch evidence. `anim_remap.py` is Heat-specific; `anim_remap_strike.build` builds Strike's 101 slots, with 1/97 intentionally empty. Its CLI rejects unaccepted policy unless `--allow-proposed` is explicitly used for an experimental candidate; that switch is not acceptance |
+| Voices | `rebase_cues.rebase_sedt` and `rebase_events` must change bank IDs and animation events together. `rebase_cues.py <input.sedt> <candidate.sedt> <old-base-hex> <new-base-hex>` changes the bank only. Preserve the destination announcer separately; verify collisions and the live cue table, then listen |
+| Containers | `rebuild_dfs_members` and exact payload integration: [canonical recipe](notes/character-alternate-entries.md). Inventory A/B folders and side suffixes independently; model topology and DBI resource behavior can differ |
+
+`rebuild_animation_payload.prepare` is a candidate-only helper, but currently assumes
+the old/new replaced disc bytes are zero when updating `expected_sha256`. It rejects
+a manifest without that old zero hash; do not bypass the check or use it for a
+nonzero original extent. Use the exact-disc recipe instead. Legacy patch/deploy
+scripts and hash-bound `_work` probes are evidence, not a generic import command.
+
+Heat and Strike exercise shared structural helpers, not a universal character
+converter. Double fever remains a BAG2 adaptation; unresolved native roles must
+stay visible. Host tests establish structure/guards, not visual or audio identity.
+
 ## 3. Standard tools
 
 ```powershell
@@ -216,7 +239,8 @@ Use `notes/character-alternate-entries.md` for the executable recipe. Rebuild
 members with `rebuild_dfs_members.py`; generate full payload/index from explicit
 rows with `make_alt_entries_exact.py`. Keep old BAG1 bytes from the accepted
 payload, not stock disc entries. Validate actual DUMMY byte capacity independently:
-the exact generator's current capacity guard has a units defect. Never truncate
+the canonical generator now compares bytes, but the build-tree copy differs and
+that prior change is not certified by this documentary audit. Never truncate
 growing entries, reuse stale DFS offsets or assume preflight synchronizes sources.
 
 - Generate candidates only.
@@ -291,7 +315,7 @@ State must contain:
 Keep notes compact. Current state belongs at the top; history belongs in dated
 sections. Never rely on a chat transcript as project state.
 
-## 13. Known Heat-specific adapters
+## 13. Shared helpers and character-specific adapters
 
 These are not general rules:
 
@@ -299,12 +323,18 @@ These are not general rules:
 - `anim_remap.py`: Heat animation and cue policy;
 - `audit_animation_roles.py`: Heat inventory and role classification;
 - `make_alt_entries.py`: Heat entry table;
-- `port_bag1_stage.py`: Heat stage port;
-- `preserve_announcer.py`: Heat victory-name merge;
 - `restore_heat_winner.py`: Heat voice packs.
 
 Use them as examples and legacy adapters only. A second character must validate
 its own equivalents.
+
+`port_bag1_stage.py` now has data profiles for Heat and Strike, with explicit
+relocations/callbacks: shared code does not make an arbitrary stage portable.
+`preserve_announcer.py` merges an explicitly selected stock cue (`--cue`, hex)
+into a SEDT destination; it has been used for both characters. Verify each
+character's cue IDs, bank layout and live SPU entries; do not copy Heat's IDs.
+Current recipes and evidence: `notes/bag1-stage-song.md`,
+`notes/character-alternate-entries.md` and the respective character ledger.
 
 ## 14. Common failure modes
 

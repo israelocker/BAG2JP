@@ -1,22 +1,64 @@
 ---
 id: bag1-stage-song-heat
-title: "Escenario/canción: alcance del port Heat"
+title: "Escenarios y canciones BAG1: Heat y Strike"
 tags: ["bag1", "heat", "stage", "song"]
-summary: "Adaptadores existentes y barreras para reutilizar investigación Heat; tablas/direcciones históricas no se generalizan."
+summary: "Receta compartida Heat/Strike, fuentes JP, audio y evidencia delimitada; campaña y escucha pendientes."
 related: ["notes/bag1-character.md", "notes/character-pipeline.md", "notes/character-import-testing.md"]
 created: "2026-10-30"
-updated: "2026-11-02"
-edited: "2026-11-05"
+updated: "2026-11-06"
+edited: "2026-11-06"
 doc_kind: reference
 ---
 
 # Escenario y canción se verifican por separado del personaje
 
+## Ruta reutilizable y estado de evidencia (auditoría 2026-11-06)
+
+1. Identificar disco/región y hashes. `iso_extract.py <disc.bin> list` entrega
+   extents ISO en **bytes**; extraer a un directorio nuevo con `extract <out> <glob>`.
+   Su lector entrega 2048 bytes útiles/sector: no sirve para conservar XA/STR raw
+   completos. No ejecutar scripts de `_work` que escriban discos como probes.
+2. Inventariar DFS y callbacks nativos/stock; contrastar palabras originales,
+   llamadas, globales, tamaños y chart. JP y USA no son intercambiables.
+   Los perfiles `tools/bag1import/profiles/stages/{heat,strike}.json` son contratos
+   concretos, no heurísticas de relocación. El porter debe rechazar llamadas desconocidas.
+3. Crear candidato en ruta nueva, desde la raíz del proyecto:
+
+   ```powershell
+   py -3.13 tools/bag1import/build_stage_package.py --root D:/Dev/Recomp/BAG2JP --profile strike --output <new-output>/strike_209.dfs
+   ```
+
+   `build_from_project` lee los inputs de `profile.package`; escribe DFS y JSON,
+   no despliega. Strike: tres TIM nativos + dos comunes retargeteados + cuatro
+   rellenos = nueve slots; modelo 44 huesos escala 3/2, intro JP + baile stock,
+   lista vacía experimental. Banco0 SFX nativo se combina con bancos1..3 stock.
+   El reporte conserva `experimental=true`; su texto fijo «stock sound bank» es
+   obsoleto cuando `native_sfx_bank0=true`: comprobar bytes, no ese texto.
+4. Revisar referencias externas/CLUT/UV, cámara, efectos, luces y lista vacía.
+   `test_stage_port.py` comprueba estructura, banco0 y preservación del DBI Heat;
+   la prueba aritmética de sprites no demuestra fidelidad GTE/cámara en juego.
+5. Integrar candidato como fila `kind=3` conservando filas aceptadas:
+   [DFS/payload/staging](character-alternate-entries.md). Mantener conjunto coherente
+   payload/índice/manifest/exe y backups; no copiar el build tree entero.
+6. Música: extraer el canal XA real, registrar hash/frecuencia/duración y tabla
+   nativa; convertir a FLAC estéreo 44100 Hz para el decoder. La receta Strike
+   exacta está abajo. No aplicar el corte/fade Heat de `song_ending.py` a Strike:
+   ese adaptador procesa game/CD, requiere NumPy/ffmpeg y sobreescribe outputs.
+7. Probar selección independiente del personaje, carga, canción completa,
+   efectos/SFX y retorno, regresiones Heat/BAG2 y restauración de tarjetas/settings.
+   Escucha humana separada. Endings/campaña: [su receta](endings-view.md).
+
+**Qué está respaldado:** evidencia histórica conservada de carrusel15filas,
+Strike209, canción completa+retorno, SFX y regresiones HeatB1/StrikeB2 listada
+abajo. El propietario confirmó la rejilla/fondo negro. **No** nueva ejecución en
+esta auditoría, aceptación auditiva subjetiva ni campaña completa demostrada.
+Los bloques siguientes conservan revisiones fechadas; no son estado simultáneo.
+
 Fuentes existentes:
 - `tools/bag1import/port_bag1_stage.py`: motor con perfiles Heat/Strike y adaptador
   Heat conservado; no relocador validado con todos los escenarios.
 - `mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_stage.c`: shim/XA y duración
-  configurada Heat. Sus constantes no se copian para otro escenario.
+  configurada por perfiles Heat/Strike. Sus constantes no se copian para otro escenario.
 - `tools/bag1import/build_heat_stage_test.sh`, `song_ending.py`: adaptadores,
   no comandos de build por defecto del workflow Windows actual.
 
@@ -31,9 +73,9 @@ sin resolver explícitas, comprobación de duración y audio, efectos/cámara y
 final+retorno con mods activos. No deducir canción de memoria ni del nombre
 de la carpeta extraída; comparar evidencia del audio y tablas.
 
-Las partidas históricas Strike usaban **Heat BAG2** como escenario/canción. No
-constituyen importación del escenario o canción Strike BAG1. El candidato siguiente
-ya carga el escenario Strike BAG1, pero conserva audio y banco SFX BAG2.
+Las partidas Strike anteriores al port de escenario usaban **Heat BAG2** como
+escenario/canción. No prueban Strike BAG1. Los candidatos visuales iniciales
+conservaban audio/SFX BAG2; fueron sustituidos por las revisiones descritas abajo.
 
 ## Strike: audio profile candidate (2026-11-06)
 
@@ -64,7 +106,8 @@ ya carga el escenario Strike BAG1, pero conserva audio y banco SFX BAG2.
   `e29dce9774dddfd538af022dffd445b9292e621312a6cda0f924b5ae5201c7b7` deployed;
   old exe retained at `_work/stage_import/strike/audio/BAG2JP.before-song.exe`.
   Calibration `20261106T000120988911Z-strike-song-calib` reviewed,21saves verified.
-  Full-song probe running with durable original-save hashes; no live acceptance yet.
+  Estado de ese build: probe aún en curso entonces; resultado posterior en los
+  runs 000303/002321 de abajo. No tratar este hash como ejecutable vigente.
 - SFX y banco de sonido: el SEDT de Strike BAG1 tiene el banco 0 nativo (cues 4100–4102)
   fusionado con los bancos 1..3 de fever stock de BAG2 (cue 4000). Total 4 bancos, 103048 bytes.
   Empaquetado mediante `build_stage_package.py` con opción `native_sfx_bank0: true`.
@@ -84,7 +127,8 @@ ya carga el escenario Strike BAG1, pero conserva audio y banco SFX BAG2.
   El plan sigue abierto; escucha humana y campaña real no están aceptadas.
 - `build_stage_package.py --profile strike` genera209 desde datos JP: tres TIM nativos,
   atlas común reubicado, cuatro TIM de relleno, modelo44huesos escala3/2, intro JP
-  y cámaras de baile BAG2. Lista de animaciones vacía experimental; banco SFX stock.
+   y cámaras de baile BAG2. Lista de animaciones vacía experimental; banco SFX stock
+   en esta revisión inicial (sustituido posteriormente).
 - Tres pruebas WSL `tools.test.test_stage_port` verifican estructura, referencias de
   llamadas y Heat DBI idéntico al admitido. Payload `5acc109af8814ef86f710868bc9d1157c7164975f15af0c71f64c4350619465b`:
   19 entradas anteriores intactas, capacidad comprobada4270080≤27648000bytes.
@@ -124,7 +168,7 @@ ya carga el escenario Strike BAG1, pero conserva audio y banco SFX BAG2.
   y Heat BAG1 (`20261106T015016909315Z`), todas con 21 tarjetas verificadas.
 - No se tocó la instalación estable ni se reactivó la iluminación de actor descartada.
 
-## Strike: inventario autorizado en curso (2026-11-05)
+## Strike: inventario histórico usado por el candidato (2026-11-05)
 
 - Plan aprobado: `plans/strike-bag1-stage-song.md`; inventario histórico usado para
   el candidato experimental descrito arriba, no aceptación final.
@@ -257,6 +301,7 @@ ya carga el escenario Strike BAG1, pero conserva audio y banco SFX BAG2.
   `scripts/review_stage_equivalents.py` y `scripts/audit_texture_loading.py` bajo
   `_work/stage_import/strike/`; salidas `review_*.txt`, `texture_caller_*.txt`,
   `texture_loading_audit.json`, `perspective_ref_*.txt`. Evidencia estática, no aceptación visual.
-- Siguiente: resolver conservación de escala del sprite y globales pendientes; contrastar
-  consumo de modelo/cámara/animaciones y slots sobrantes. Después, escucha del canal1.
-  El modo0xB sigue sin identificar; runtime sin cambios.
+- Siguiente de aquella fase (histórico): resolver escala/globales y consumo de
+  miembros antes del candidato. La identificación anterior de 0xB como **stage-id11**
+  invalida la antigua frase «modo sin identificar». El estado posterior está al
+  principio; escucha humana, fidelidad restante y campaña real siguen separadas.
