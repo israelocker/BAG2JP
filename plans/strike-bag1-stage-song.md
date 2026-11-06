@@ -165,8 +165,9 @@ Blocked by: 3.1, 4.1.
 | 0 | static inventory used for experimental candidate; listening/native motion review pending |
 | 1 | three host tests pass; Heat DBI byte-identical; Strike profile/package generated; legacy Heat adapter retained |
 | 2 | candidate deployed: row209/1/3; 19 admitted entries preserved exactly; 4270080 bytes < 27648000 capacity |
-| 3-4 | pending: Strike song/SFX, duration and separate selector row not implemented |
-| 5 | experimental visual evidence: active dancers, attacks, fog and green/red lights; black surroundings require native review; no full acceptance |
+| 3 | song done (experimental): profile Strike stage1/XA ch1/length index1/native129s, `strike_game.flac` 44.1kHz; gameplay-root 0x13 guard; live run `20261106T000303289538Z` full song→results→select, 21 saves verified. Stage SFX bank0 still stock (cue remap pending). Human listening pending |
+| 4 | pending: separate 15-row selector (Strike BAG1 row) |
+| 5 | owner accepted environment ("si corresponde", incl. black background); fever/result/return per 5.1-5.3 and campaign pending |
 
 ## Experimental execution evidence (2026-11-05)
 - Host check: `wsl.exe -d Ubuntu --exec python3 -m unittest tools.test.test_stage_port`:

@@ -33,6 +33,12 @@ int main(void) {
     half(0x8005e2e8,256); half(0x8005e658,100);
     half(0x8005e2d0,1); psx_mod_write_word(0x8005e6f8,20000);
     b1s_vblank();
+    /* Non-gameplay root: vblank must do nothing */
+    assert(psx_mod_read_byte(B1S_SHIM+8)==0);
+    assert(psx_mod_read_word(B1S_SHIM+4)==0);
+    /* Gameplay root: vblank processes beats and score */
+    psx_mod_write_word(0x8005d3d4u, 0x13u);
+    b1s_vblank();
     half(0x8005e2d0,2); half(0x8005e684,2); b1s_vblank();
     assert(psx_mod_read_byte(B1S_SHIM+8)==(id<2?2:0));
     assert(psx_mod_read_word(B1S_SHIM+4)==(id<2?0x11:0));

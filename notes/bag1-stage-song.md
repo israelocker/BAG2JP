@@ -35,6 +35,41 @@ Las partidas históricas Strike usaban **Heat BAG2** como escenario/canción. No
 constituyen importación del escenario o canción Strike BAG1. El candidato siguiente
 ya carga el escenario Strike BAG1, pero conserva audio y banco SFX BAG2.
 
+## Strike: audio profile candidate (2026-11-06)
+
+- Implemented in `bag2jp_bag1_stage.c`: shared Heat/Strike music profiles, isolated
+  XA channels, decoder switching, per-song duration override/restoration. Heat keeps
+  its existing CD/game option; Strike uses the extracted game edit only.
+- Native BAG2 evidence: main EXE `0x8001E3CC..1E3D8` copies stage id from
+  `0x8005E666` to song byte `0x80089240`; match overlay `005.dbi`, base
+  `0x8008F890`, calls `0x800358BC` at `0x800986EC` with that byte.
+  Song start selects channel `index&7` and file `index>>3`; stage1 therefore uses
+  `XA/BUST2_01.XA` channel1 and duration table `0x800555A8` u16 index1 (stock136s).
+- JP BAG1 duration is **129s**, not the decoded file's132.053333s: native
+  `0x80039A34..39A58` indexes the u32 table `0x800553F4`, entry1=129.
+  Keep chart start920, frames6264, beats192; no extra fade or trim introduced.
+- Source `_work/stage_import/strike/audio/dancexa1_s1.wav`: 37800Hz stereo,
+  SHA256 `a05012d326579b76c53e1de96b88f2407cc4cd9ac3f2e3e2229674325903e42f`.
+  `D:/ffmpeg/bin/ffmpeg.exe -hide_banner -loglevel error -n -i
+  _work/stage_import/strike/audio/dancexa1_s1.wav -ar 44100 -ac 2 -c:a flac
+  _work/stage_import/strike/audio/strike_game_44100.flac` produces the plugin's
+  required44100Hz stereo. File14487342bytes, SHA256
+  `880b02ef763284625fbfa91b7d9589f6bf2e07ea38cd0cfd535d549a47313d3d`.
+  Staged as `1.0.0/bag1_music/strike_game.flac` in canonical/build/experimental
+  packages; the earlier37800Hz FLAC is an unused intermediate, not deployed.
+- Host regression `tools.test.test_bag1_stage_audio` failed before implementation
+  and passes afterward: channel/slot isolation, Heat/Strike switching, seek, EOF,
+  previous-filter chaining, stock duration restoration and external-write preservation.
+- Build `20261105T235959660433Z-strike-song-profile` passed. Experimental exe
+  `e29dce9774dddfd538af022dffd445b9292e621312a6cda0f924b5ae5201c7b7` deployed;
+  old exe retained at `_work/stage_import/strike/audio/BAG2JP.before-song.exe`.
+  Calibration `20261106T000120988911Z-strike-song-calib` reviewed,21saves verified.
+  Full-song probe running with durable original-save hashes; no live acceptance yet.
+- SFX audit (not implemented): native SEDT has6banks, bank0 cues4100–4102;
+  stock has5banks, bank0 cues5100–5104. Native extra banks use3000, stock4000.
+  Do not replace the whole SEDT or assume equal bank count. Preserve stock fever
+  banks unless native selection semantics are independently verified.
+
 ## Strike: candidato visual experimental (2026-11-05)
 
 - El propietario autoriza avanzar hasta evidencia visual antes de consultarle.
@@ -60,8 +95,11 @@ ya carga el escenario Strike BAG1, pero conserva audio y banco SFX BAG2.
   restauró y verificó hashes de ajustes, controles y estado de mods. El hash previo
   de las21tarjetas quedó en memoria y no se pudo verificar tras la interrupción;
   la prueba solo configuró tarjetas copiadas. No declarar restauración total verificada.
-- Pendiente: revisión de fidelidad del escenario nativo (fondo/animaciones/cámara),
-  canción y duración Strike, SFX y fila propia del selector; final de campaña después.
+- El propietario confirma «si corresponde» al revisar las capturas: el entorno mostrado,
+  incluido el fondo negro, corresponde al escenario BAG1 esperado. Esta validación
+  visual no acredita canción completa, todas las animaciones/cámaras ni retorno.
+- Pendiente: canción y duración Strike, SFX y fila propia del selector;
+  final de campaña después de importar escenario y canciones.
   No se tocó la instalación estable ni se reactivó la iluminación de actor descartada.
 
 ## Strike: inventario autorizado en curso (2026-11-05)
