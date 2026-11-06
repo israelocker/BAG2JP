@@ -40,6 +40,8 @@ class StagePortTests(unittest.TestCase):
         _, palette, _ = tim.parse(entries[6])
         self.assertEqual((palette['x'], palette['y']), (992, 48))
         self.assertEqual(entries[7:11], [native[4]] * 4)
+        import preserve_announcer as pa
+        self.assertEqual(pa.banks(entries[1])[0], pa.banks(native[1])[0])
 
     def test_heat_profile_is_byte_identical_to_admitted_stage(self):
         self.assertTrue(hasattr(stage, 'load_profile'), 'Stage profiles are not implemented')

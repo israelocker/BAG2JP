@@ -165,9 +165,9 @@ Blocked by: 3.1, 4.1.
 | 0 | static inventory used for experimental candidate; listening/native motion review pending |
 | 1 | three host tests pass; Heat DBI byte-identical; Strike profile/package generated; legacy Heat adapter retained |
 | 2 | candidate deployed: row209/1/3; 19 admitted entries preserved exactly; 4270080 bytes < 27648000 capacity |
-| 3 | song done (experimental): profile Strike stage1/XA ch1/length index1/native129s, `strike_game.flac` 44.1kHz; gameplay-root 0x13 guard; live run `20261106T000303289538Z` full song→results→select, 21 saves verified. Stage SFX bank0 still stock (cue remap pending). Human listening pending |
-| 4 | pending: separate 15-row selector (Strike BAG1 row) |
-| 5 | owner accepted environment ("si corresponde", incl. black background); fever/result/return per 5.1-5.3 and campaign pending |
+| 3 | song done: profile Strike stage1/XA ch1/length index1/native129s, `strike_game.flac` 44.1kHz; gameplay-root 0x13 guard; live runs `20261106T000303289538Z` and `20261106T002321415753Z` full song→results→select, 21 saves verified. Human listening pending |
+| 4 | stage selector done: 15-row carousel in `system/007.dbi` (Heat B2/B1, Hiro, Kelly, Strike B2/B1, stock stages, Random % 14). Row 5 is Strike BAG1, Row 4 is Strike BAG2. Thumbnail `strike_bag1.png` and `< STRIKE BAG1 >` label verified. Independent stage choice verified in `test_stage_version.c` and in live run `20261106T004800028681Z-strike-15row-selector`. 21 saves verified |
+| 5 | native stage SFX Bank 0 merged into `001.sedt` (4 banks total: Bank 0 native cues 4100-4102, Banks 1-3 stock fever cues 4000); package test passes; live probe running. Owner accepted visual environment ("si corresponde"); campaign pending |
 
 ## Experimental execution evidence (2026-11-05)
 - Host check: `wsl.exe -d Ubuntu --exec python3 -m unittest tools.test.test_stage_port`:

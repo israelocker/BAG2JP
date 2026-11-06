@@ -14,7 +14,8 @@
     ],
     "padding_texture_entry": 4,
     "model_scale": [3, 2],
-    "empty_animation_list": true
+    "empty_animation_list": true,
+    "native_sfx_bank0": true
   },
   "source_base": "0x801DCDF8",
   "code_end": "0x801DDF3C",

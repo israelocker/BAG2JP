@@ -65,10 +65,18 @@ ya carga el escenario Strike BAG1, pero conserva audio y banco SFX BAG2.
   old exe retained at `_work/stage_import/strike/audio/BAG2JP.before-song.exe`.
   Calibration `20261106T000120988911Z-strike-song-calib` reviewed,21saves verified.
   Full-song probe running with durable original-save hashes; no live acceptance yet.
-- SFX audit (not implemented): native SEDT has6banks, bank0 cues4100–4102;
-  stock has5banks, bank0 cues5100–5104. Native extra banks use3000, stock4000.
-  Do not replace the whole SEDT or assume equal bank count. Preserve stock fever
-  banks unless native selection semantics are independently verified.
+- SFX y banco de sonido: el SEDT de Strike BAG1 tiene el banco 0 nativo (cues 4100–4102)
+  fusionado con los bancos 1..3 de fever stock de BAG2 (cue 4000). Total 4 bancos, 103048 bytes.
+  Empaquetado mediante `build_stage_package.py` con opción `native_sfx_bank0: true`.
+  Test unitario `tools.test.test_stage_port` verifica la presencia exacta del banco 0 nativo.
+- Selector de 15 filas: ampliado en `system/007.dbi` de 14 a 15 filas (Heat BAG2/1, Hiro, Kelly,
+  Strike BAG2/1, Tsutomu, Capoeira, Bi-O, Shorty, Kitty-N, Gas-O, Comet, Robo-Z, Random).
+  Aritmética MIPS de rand() modificada para división por 14 (`0x4924924A`, shift 2, resta de 14*q).
+  Fila 5 muestra `< STRIKE BAG1 >` y miniatura `strike_bag1.png`. Fila 4 muestra `< STRIKE BAG2 >`.
+  Tests `test_native_menu.py` y `test_stage_version.c` pasan al 100%.
+  Run en vivo `20261106T004800028681Z-strike-15row-selector` recorrió el carrusel, seleccionó la
+  fila 5 independientemente del personaje (Strike BAG2 elegido en character select), y verificó
+  la carga de `entry 209 -> BAG1` y la música `strike_game.flac`. 21 tarjetas restauradas e intactas.
 
 ## Strike: candidato visual experimental (2026-11-05)
 

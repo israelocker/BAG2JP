@@ -53,14 +53,14 @@ def remainder(n):
         else: raise AssertionError(hex(word))
     return registers[2]
 
-assert remainder(13) == 0, "Random selection still has only 12 stage choices"
+assert remainder(14) == 0, "Random selection still has only 13 stage choices"
 for n in list(range(32768)) + [0x7FFFFFFF, 0x7FFFFFFE, 123456789, 1000000000]:
-    assert remainder(n) == n % 13, (n, remainder(n))
-assert struct.unpack_from("<I", image, 0x80091268-base)[0] & 65535 == 14
+    assert remainder(n) == n % 14, (n, remainder(n))
+assert struct.unpack_from("<I", image, 0x80091268-base)[0] & 65535 == 15
 order = list(image[0x800963D0-base:0x800963E0-base])
 inverse = list(image[0x800963E0-base:0x800963F0-base])
-assert order[:2] == [0, 0] and order[2:13] == arrays["order_stock"][1:12]
-assert inverse[12] == 13
+assert order[:2] == [0, 0] and order[4:6] == [1, 1]
+assert inverse[12] == 14
 for character in range(12):
     assert order[inverse[character]] == character
-print("PASS: JP word guards, 14-row carousel, inverse mapping and MIPS random modulo 13")
+print("PASS: JP word guards, 15-row carousel, inverse mapping and MIPS random modulo 14")

@@ -29,6 +29,11 @@ def build_from_project(root, name):
         main_exe=(root / '_work/mainexe/slpm.bin').read_bytes())
     if unknown:
         raise ValueError(f'Unmapped stage calls: {unknown}')
+    if config.get('native_sfx_bank0'):
+        import preserve_announcer as pa
+        native_banks = pa.banks(source[1])
+        stock_banks = pa.banks(members[1])
+        members[1] = pa.pack_banks([native_banks[0]] + stock_banks[1:])
     textures = [source[index] for index in config['texture_entries']]
     for item in config['common_textures']:
         flags, clut, image = tim.parse(common[item['entry']])

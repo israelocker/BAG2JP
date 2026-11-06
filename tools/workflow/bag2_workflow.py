@@ -76,7 +76,7 @@ def preflight(log):
     built_exe = BUILD / "build-win-codex/BAG2JP.exe"
     resource_drift = []
     package = Path("bag2jp.feature.bag1-content/1.0.0/popup_assets")
-    for name in ("heat_bag1.png", "heat_bag2.png"):
+    for name in ("heat_bag1.png", "heat_bag2.png", "strike_bag1.png", "strike_bag2.png"):
         source = REPO / "mods-src" / package / name
         for parent in (BUILD / "mods/preloaded/packages", EXPERIMENTAL / "mods/bundled"):
             target = parent / package / name

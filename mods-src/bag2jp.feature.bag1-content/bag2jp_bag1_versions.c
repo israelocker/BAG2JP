@@ -40,6 +40,8 @@
 
 static uint8_t b1v_version[B1V_CHARS][2];   /* 0 = BAG2 (stock), 1 = BAG1 */
 static int b1v_stage_version = -1;          /* -1 automatic, 0 BAG2, 1 BAG1: independent stage pick */
+static int b1v_stage_choice_chr = -1;
+static int b1v_stage_choice_version = -1;
 static int b1v_force_stock;                  /* online with different BAG1 content: BAG2 only */
 static FILE* b1v_logf;
 void b1v_log(const char* fmt, ...) {
@@ -82,7 +84,10 @@ static int b1v_wanted(const B1AltEntry* e) {
         const int s = b1v_side_of(c);
         return b1v_version[c][s < 0 ? 0 : s];
     }
-    case 3: if (c == 0 && b1v_stage_version >= 0) return b1v_stage_version;
+    case 3:
+        if (b1v_stage_choice_chr == (int)c && b1v_stage_choice_version >= 0)
+            return b1v_stage_choice_version;
+        if (c == 0 && b1v_stage_version >= 0) return b1v_stage_version;
         /* Story mode has no stage picker: retain its character-based default. */
         /* fall through */
     default: { const int s = b1v_side_of(c); return b1v_version[c][s < 0 ? 0 : s]; }
@@ -166,13 +171,27 @@ static void b1v_vblank(void) {
 }
 
 static int b1v_active;
-static void b1v_activate(void) { b1v_active = 1; b1v_stage_version = -1; b1v_read_options(); }
+static void b1v_activate(void) {
+    b1v_active = 1;
+    b1v_stage_version = -1;
+    b1v_stage_choice_chr = -1;
+    b1v_stage_choice_version = -1;
+    b1v_read_options();
+}
 static void b1v_reset(void) {
-    b1v_active = 0; b1v_stage_version = -1;
+    b1v_active = 0;
+    b1v_stage_version = -1;
+    b1v_stage_choice_chr = -1;
+    b1v_stage_choice_version = -1;
     memset(b1v_scaled_dancer, 0, sizeof b1v_scaled_dancer);
 }
+void bag2jp_bag1_set_stage_choice(int chr, int version) {
+    b1v_stage_choice_chr = chr;
+    b1v_stage_choice_version = (version == 0 || version == 1) ? version : -1;
+    if (chr == 0) b1v_stage_version = b1v_stage_choice_version;
+}
 void bag2jp_bag1_set_stage_version(int version) {
-    b1v_stage_version = version == 0 || version == 1 ? version : -1;
+    bag2jp_bag1_set_stage_choice(0, version);
 }
 
 /* Select-screen popup (bag2jp_charsel_popup.c): which characters have a BAG1 version, and the
