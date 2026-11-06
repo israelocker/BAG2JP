@@ -2,7 +2,7 @@
 id: asset-toolkit-extracted-data
 title: "Assets: inventario antes de nombres"
 tags: ["assets", "archive", "reference"]
-summary: "Disc/table/member hashes como identidad; nombres extraídos y resultados antiguos no son evidencia actual automática."
+summary: "Identidad de assets, herramientas instaladas y uso pertinente obligatorio con historial individual de efectividad."
 related: ["notes/character-alternate-entries.md", "notes/bag1-stage-song.md"]
 created: "2026-10-26"
 updated: "2026-11-06"
@@ -83,8 +83,11 @@ instaladas desde wheels, sin compilar ni instalar paquetes del sistema.
 
 ### Evaluación progresiva, no aceptación automática
 
-Usar cada herramienta cuando responda a una necesidad concreta; no ejecutar todas
-en cada tarea. Por ensayo registrar en la nota canónica del tema:
+**Uso obligatorio cuando sea pertinente**, según AGENTS; no ejecutar todas en
+cada tarea. Antes de usarla, leer su historial de la tabla siguiente. Después de
+cada ensayo, añadir su resultado al log propio, incluidos errores y omisiones
+justificadas. La nota canónica del tema enlaza esa entrada, sin duplicar otro
+historial. Por ensayo registrar:
 
 1. Pregunta, herramienta/versión, hashes de entrada, región/módulo y procedimiento
    previo con el que se compara. Salidas nuevas separadas; nunca sobrescribir originales.
@@ -99,3 +102,71 @@ en cada tarea. Por ensayo registrar en la nota canónica del tema:
 Primer ensayo recomendado, aún pendiente: decodificar copias de XA/STR ya
 inventariadas con jPSXdec y contrastar canal, duración y contenido con la evidencia
 existente. La instalación no ejecutó ese ensayo ni modificó assets.
+
+### Historial por herramienta y pertinencia
+
+Los logs son registros duraderos en Git; los archivos completos de evidencia
+pueden vivir en `_work/` o en la instalación externa, con ruta y SHA-256. No cargar
+todos los historiales como contexto de inicio. Consultar solo los pertinentes.
+
+| Herramienta / log | Usarla cuando… |
+| --- | --- |
+| [jPSXdec](tool-evidence/jpsxdec.md) | Se deba contrastar identificación/decodificación XA o STR de PS1 |
+| [dumpsxiso](tool-evidence/dumpsxiso.md) | Haga falta verificar extracción, sectores raw, canales, CUE/LBA frente al extractor local |
+| [mkpsxiso](tool-evidence/mkpsxiso.md) | Una tarea autorizada requiera reconstruir un disco; no para un simple overlay DFS |
+| [TIMedit](tool-evidence/timedit.md) | Haya dudas de píxeles, coordenadas, CLUT o STP en TIM; trabajar sobre copias |
+| [spimdisasm](tool-evidence/spimdisasm.md) | Se necesite desensamblado MIPS estructurado independiente de un rango identificado |
+| [m2c](tool-evidence/m2c.md) | Convenga obtener C revisable de MIPS ya delimitado; contrastarlo en Ghidra |
+| [asm-differ](tool-evidence/asm-differ.md) | Se comparen dos revisiones MIPS de una función/parche, con configuración y objdump verificados |
+| [Ghidra / PSX / PsyQ](tool-evidence/ghidra-psx-psyq.md) | Siempre según AGENTS; firmas PsyQ solo cuando aporten a la identificación concreta |
+| [PCSX-Redux](tool-evidence/pcsx-redux.md) | Un diagnóstico complementario necesite GPU/GTE/breakpoints y no lo resuelva la referencia nativa; respetar autorización y sesiones |
+| [funcmatch.py](tool-evidence/funcmatch.md) | Se busquen equivalentes de funciones de los ejecutables principales BAG1/BAG2, no overlays |
+
+No se impone una prueba peligrosa ni un cambio de configuración ajeno al objetivo.
+Si procede la herramienta pero está bloqueada, ya existe evidencia reutilizable
+o el ensayo requiere autorización adicional, registrar la omisión y su motivo.
+Una omisión no cuenta como uso ni como resultado negativo de la herramienta.
+
+### Clasificación y medición obligatorias
+
+- **Útil / buenos resultados:** resolvió la pregunta y la comprobación independiente
+  sustenta la corrección. Precisar el alcance; una respuesta válida sin ahorro
+  medido sigue siendo útil, pero no demuestra optimización.
+- **Irrelevante:** se ejecutó, pero no añadió información aplicable a esa pregunta.
+- **Contraproducente:** produjo un resultado demostrado incorrecto o añadió coste,
+  confusión o retrabajo frente al procedimiento de referencia; describir la causa.
+- **Inconcluso:** falta contraste o evidencia suficiente, o solo se probó arranque.
+- **No ejecutado / bloqueado:** precondición, seguridad, permiso o reutilización
+  impidió/necesitó evitar el uso; no atribuirle un fallo práctico inexistente.
+
+Un código de salida distinto de cero no decide por sí solo la utilidad ni la causa.
+Separar fallo de configuración, limitación conocida y fallo propio de la herramienta.
+Medir por ensayo tiempo de ejecución y tiempo de preparación/revisión/retrabajo;
+registrar el método y el procedimiento de referencia con su tiempo, si existe.
+Sin referencia comparable, declarar **ahorro no medido**. No inventar tiempos,
+porcentajes ni trasladar un éxito a otros módulos, regiones o versiones.
+Al decidir reutilización, revisar aciertos, falsos positivos/negativos y costes
+del mismo tipo de tarea; no declarar eficacia general a partir de una ayuda CLI.
+
+### Plantilla para añadir una entrada
+
+Añadir al final del log tras cada ensayo (una entrada puede agrupar sus llamadas
+relacionadas). Usar ID único `YYYYMMDD-tool-NNN`, fecha UTC y referencia a la tarea.
+No borrar resultados desfavorables; corregir mediante una nueva entrada que cite
+el ID previo. Los antecedentes iniciales están transcritos de evidencia retenida,
+no son ejecuciones nuevas ni un historial exhaustivo de usos antiguos.
+
+```text
+## <ID> — <fecha UTC> — <pregunta/tarea>
+- Tipo: uso real | arranque | omisión justificada | corrección de <ID>.
+- Versión, entorno y comando/MCP/configuración exactos:
+- Entradas: rutas y SHA-256; juego, región, módulo/base (o no aplica y por qué).
+- Resultado observado: salida/código, hallazgos, errores y límites.
+- Evidencia: rutas/consultas y SHA-256 de archivos; salidas separadas de originales.
+- Contraste independiente y procedimiento de referencia: resultado o pendiente.
+- Dictamen: útil / buenos resultados | irrelevante | contraproducente |
+  inconcluso | no ejecutado / bloqueado. Justificación y alcance:
+- Medición: ejecución, preparación, revisión/retrabajo y referencia; método.
+  Ahorro medido o no medido (si no hay datos, escribir no medido).
+- Decisión / siguiente paso: reutilizar para <caso>, ajustar, evitar o pendiente.
+```

@@ -5,8 +5,8 @@ tags: ["index", "workflow", "project"]
 summary: "Índice temático único. Leer solo el tema actual; histórico no operativo en archive y estado/evidencia del task en su nota."
 related: ["AGENTS.md", "CHARACTER_IMPORT.md", "notes/character-pipeline.md", "_work/current-state.json"]
 created: "2026-10-31"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-06"
+edited: "2026-11-06"
 doc_kind: index
 ---
 
@@ -29,6 +29,7 @@ de contexto en AGENTS no son medición actual; medir con el checker documental.
 | Controles/UI/ending | [Controles](notes/game-controls.md), [UI](notes/ui-mods.md), [ending](notes/endings-view.md) |
 | Regional/online | [Regional](notes/regional.md), [online](notes/online.md) |
 | Assets | [Inventario](notes/assets.md) |
+| Herramientas: uso pertinente e historial de efectividad | [Criterios y logs individuales](notes/assets.md#historial-por-herramienta-y-pertinencia) |
 | Auditoría documental | [Resultados](notes/documentation-audit.md) |
 
 `notes/archive/` y `docs/archive/` conservan originales no certificados como receta
