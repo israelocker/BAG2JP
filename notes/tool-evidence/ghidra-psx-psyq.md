@@ -11,6 +11,11 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 2026-11-07 — ghidra-036 — victory name cue and missing-cue behaviour
+
+- Actual MCP: installed bridge `D:/Dev/Tools/ghidra-mcp-python/python.exe _work/gaso/probe_call.py read_memory` at 0x80051424 → `_work/gaso/victory-table.json`; `probe_motion_binding.py 0x8002e2d0` (re-read) → `binding-0x8002e2d0.c`. get_program_info first: existing GUI 12.1.4 JP SLPM_862.19. Read-only.
+- Finding: victory name table (u16 per character) gives chr9 cue 0x1909 (Heat 0x1007 … Shorty 0x1813), so the earlier 0x1907/0x1908 premise (copied from Heat's index) was wrong; FUN_8002e2d0 returns -1 without key-on when a cue is absent. Independent validation: faster-whisper transcripts of stock Bi-O 0x1909 ("BIO!"), 0x3090/0x3091 (VS names) and 0x1907 ("NOOOO", Bi-O's own line); rebuilt banks transcribe "Gas-O"; full double Gas-O match `20261107T005347685398Z` completes. Outcome: useful (correct cue targets). Time unknown. Next: owner in-game listening of VS intro and victory.
+
 ## 2026-11-06 — ghidra-035 — sound-table key-on path for announcer playback rate
 
 - Actual MCP: installed bridge `_work/gaso/probe_pitch.py` (get_program_info first: existing GUI 12.1.4 JP SLPM_862.19) for `SsUtKeyOnV` 80039884, `_work/gaso/probe_xrefs.py 0x80039884` → `xrefs-0x80039884.json`, `probe_motion_binding.py 0x8002e2d0` → `binding-0x8002e2d0.c`. Read-only.

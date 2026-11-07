@@ -132,6 +132,21 @@ def append_cue(destination, stock, cue):
     merged_table = struct.pack("<I", len(records)) + b"".join(records)
     return pack_banks([(bytes(out_head), body+extra_body, merged_table)])
 
+def replace_cue(stock, cue, clip_source, clip_cue):
+    """Return a one-bank SEDT equal to `stock` except that `cue` plays `clip_cue`.
+
+    The clip keeps the stock record (flags, volume, note) so callers that
+    wait on `cue` still find it; every other stock cue is copied unchanged.
+    """
+    clip = rename_cue(clip_source, clip_cue, cue, cue_record(stock, cue))
+    result = pack_banks([single_cue(clip, cue)])
+    for _, _, table in banks(stock):
+        for rec in cue_records(table):
+            other = struct.unpack_from("<H", rec)[0]
+            if other != cue:
+                result = append_cue(result, stock, other)
+    return result
+
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("destination", type=Path)

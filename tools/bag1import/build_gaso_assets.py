@@ -16,9 +16,11 @@ its extraction root and pack directories; model directories are shared.
 Uses exact documented seams:
   - Models converted via model_bag1_to_bag2.convert()
   - Retargeted body textures via tim_retarget.retarget()
-  - Rebased voice bank (0x1800 -> 0x6900) + BAG1 Gas-O announcer name calls renamed to the
-    Bi-O name cues (profile "announcer"), fitted to the voice_bank budget by
+  - Rebased voice bank (0x1800 -> 0x6900) + the BAG1 Gas-O name call as the victory
+    name cue 0x1909 (profile "announcer"), fitted to the voice_bank budget by
     vab_budget.fit_voice_budget()
+  - VS intro banks with the Bi-O names 0x3090/0x3091 replaced by the BAG1 Gas-O calls
+    (stock "versus" kept exact, each bank within its stock body size)
   - DFS containers packed via rebuild_dfs_members.build_container()
 
 Usage:
@@ -34,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/bag1import"))
 
 from model_bag1_to_bag2 import convert, check_bag2
-from preserve_announcer import append_cue, cue_record, rename_cue
+from preserve_announcer import append_cue, cue_record, rename_cue, replace_cue
 from rebase_cues import rebase_sedt
 from rebuild_dfs_members import build_container, read_members
 from tim_retarget import retarget
@@ -96,11 +98,21 @@ def build(region: str, out_dir: Path) -> None:
     names = read_members((names_root / names_dirs["costume_a"] / "P_GAS_A1.DFS").read_bytes())[0]
     names = names[announcer["source_member"]]
     merged_voice = rebased_voice
-    for target, source in announcer["cue_map"].items():
+    for target, source in announcer["voice_cues"].items():
         target, source = int(target, 16), int(source, 16)
         # The BAG1 clip takes the stock record (flags, volume, note 60) of the Bi-O call.
         clip = rename_cue(names, source, target, cue_record(bio_voice_ref, target))
         merged_voice = append_cue(merged_voice, clip, target)
+    stock_vs = {"p1": bio_sfx_p1, "p2": bio_sfx_p2}
+    vs_banks = dict(stock_vs)
+    for side, cues in announcer["vs_cues"].items():
+        stock_body = Vab(stock_vs[side]).body_bytes()
+        for target, source in cues.items():
+            vs_banks[side] = replace_cue(vs_banks[side], int(target, 16), names, int(source, 16))
+        # Keep the stock "versus" sample exact and the bank within its stock SPU footprint.
+        vs_banks[side], vs_units = fit_voice_budget(vs_banks[side], Vab(stock_vs[side]).samples, stock_body)
+        print(f"[{region}] VS {side} bank: body {Vab(vs_banks[side]).body_bytes()}/{stock_body}, "
+              f"resample {vs_units}/128 semitones")
     budget = profile["voice_bank"]["max_body_bytes"]
     merged_voice, units = fit_voice_budget(merged_voice, [], budget)
     print(f"[{region}] Merged voice bank ready: {len(merged_voice)} bytes, "
@@ -111,9 +123,9 @@ def build(region: str, out_dir: Path) -> None:
         body2 = retarget(packs[key][BODY_MEMBERS[1]], bio_body2_ref)
         costume, side = key.split("_")
         if side == "p1":
-            members = [bio_portrait, gaso_dbi_p1, body1, body2, merged_voice, bio_sfx_p1]
+            members = [bio_portrait, gaso_dbi_p1, body1, body2, merged_voice, vs_banks["p1"]]
         else:
-            members = [gaso_dbi_p2, body1, body2, merged_voice, bio_sfx_p2]
+            members = [gaso_dbi_p2, body1, body2, merged_voice, vs_banks["p2"]]
         write_entry(out_dir, f"entry_{entry}_pack_{costume}_{side}.dfs", members)
 
     model_a, _ = read_members((extraction / model_dirs["costume_a"] / "P_GAS_A2.DFS").read_bytes())

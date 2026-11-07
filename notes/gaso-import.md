@@ -207,6 +207,26 @@ a `bag2` (respaldo `_work/gaso/version-defaults/deployment-backup/`). exe
 8FE7BB2F. Run `20261107T003500323308Z-gaso-version-defaults-pick`: log
 `open: … current 0` para Gas-O y Heat, popup muestra "GAME BAG 2", BAG1 sigue
 seleccionable (confirm Gas-O BAG1).
+
+**Corrección del anunciador (2026-11-07, sustituye el mapeo 0x1907/0x1908).**
+El propietario seguía oyendo "Bi-O" en el VS y solo "Win" al ganar. ghidra-036:
+la tabla de victoria 0x80051424 da a chr9 la cue 0x1909 (voz); el nombre del VS
+son 0x3090 (P1 miembro 5, junto a 0x3130 "versus") y 0x3091 (P2 miembro 4).
+0x1907/0x1908 son frases propias de Bi-O ("NOOOO"), no nombres: se quitan (una
+cue ausente no suena: FUN_8002e2d0 devuelve -1). Perfil `announcer.voice_cues`
+{0x1909←0x2090} y `vs_cues` {p1 0x3090←0x2090, p2 0x3091←0x2091}; nuevo
+`preserve_announcer.replace_cue` conserva el registro stock y el "versus" exacto.
+Cuerpos: voz 63792/64032 (remuestreo −848/128, mejor que −1248), VS P1
+31600/36576 y P2 18368/27472 sin remuestrear. Transcripción de los bancos
+reconstruidos: "Gas-O" en 0x1909/0x3090/0x3091. Payload `c6e4ae8f…` 9439232 B
+(28 filas, cabe); **al cambiar la longitud cambia `expected_sha256`** (`443d687e…`
+del `alt_report.json`); el primer probe falló con "stock overlay range checksum
+failed" hasta corregirlo — `check_alt_payload.py` no lo comprueba. exe
+`8DC32D7B`, respaldo `_work/gaso/announcer-fix/`. Probe
+`20261107T005204027472Z` revisado y aceptado; doble Gas-O B/A StrikeBAG1 con
+final `20261107T005347685398Z-gaso-announcer-fix-double-strike-finish` completo
+298s, fever2, vuelta al selector, sin system-error, 21 saves restaurados. Host
+tests 20 OK. Pendiente: escucha en juego por el propietario (VS y victoria).
 Diagnóstico posterior: MCP ghidra-028 confirmó los límites de carga P2 en
 800337B8/80033F14; no identifica aún la instrucción responsable. Se lanzó una
 repetición instrumental `gaso-pair-loader-dump` con `--ram-dump-frame 9000`,

@@ -44,8 +44,9 @@
   "announcer": {
     "source_region": "jp",
     "source_member": 7,
-    "cue_map": {"0x1907": "0x2091", "0x1908": "0x2090"},
-    "evidence": "BAG1 pack member 7 holds 0x2090/0x2091 (name calls, owner-confirmed by listening) and 0x20F0 (versus); JP bytes equal USA PLAYER1E. Played at table note 60 (FUN_8002e2d0)."
+    "voice_cues": {"0x1909": "0x2090"},
+    "vs_cues": {"p1": {"0x3090": "0x2090"}, "p2": {"0x3091": "0x2091"}},
+    "evidence": "BAG1 pack member 7 holds 0x2090/0x2091 (name calls, owner-confirmed by listening) and 0x20F0 (versus); JP bytes equal USA PLAYER1E. Victory name table 0x80051424 gives chr9 cue 0x1909 (voice bank); VS intro names are 0x3090 (P1 member 5, beside 0x3130 'versus') and 0x3091 (P2 member 4). Stock 0x1907/0x1908 are Bi-O's own lines, not names; missing cues are skipped by FUN_8002e2d0 (returns -1)."
   },
   "exceptions": [
     {

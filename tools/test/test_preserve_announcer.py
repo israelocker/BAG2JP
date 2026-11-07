@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/bag1import"))
 
 from preserve_announcer import (banks, cue_record, cue_records, pack_banks,
-                                rename_cue, single_cue)
+                                rename_cue, replace_cue, single_cue)
 from rebuild_dfs_members import read_members
 
 
@@ -47,6 +47,32 @@ class TestRenameCue(unittest.TestCase):
     def test_cue_record_missing_raises(self):
         with self.assertRaises(ValueError):
             cue_record(self.single, 0x2090)
+
+
+class TestReplaceCue(unittest.TestCase):
+    """VS bank P1 holds the name 0x3090 beside 'versus' 0x3130."""
+
+    @classmethod
+    def setUpClass(cls):
+        pack = ROOT / "_work/stage_import/gaso/stock_bio_entries/pack_a_p1.dfs"
+        members = read_members(pack.read_bytes())[0]
+        cls.vs = members[5]
+        cls.clip = rename_cue(pack_banks([single_cue(members[4], 0x1907)]), 0x1907, 0x2090)
+        cls.replaced = replace_cue(cls.vs, 0x3090, cls.clip, 0x2090)
+
+    def test_replace_keeps_every_stock_cue_id(self):
+        self.assertEqual(sorted(cue_ids(self.replaced)), sorted(cue_ids(self.vs)))
+
+    def test_replace_takes_stock_record_of_the_replaced_cue(self):
+        self.assertEqual(cue_record(self.replaced, 0x3090), cue_record(self.vs, 0x3090))
+
+    def test_replace_swaps_the_sample_and_keeps_other_cues_exact(self):
+        self.assertEqual(single_cue(self.replaced, 0x3090)[1], single_cue(self.clip, 0x2090)[1])
+        self.assertEqual(single_cue(self.replaced, 0x3130), single_cue(self.vs, 0x3130))
+
+    def test_replace_missing_cue_raises(self):
+        with self.assertRaises(ValueError):
+            replace_cue(self.vs, 0x3091, self.clip, 0x2090)
 
 
 if __name__ == "__main__":
