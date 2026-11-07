@@ -16,8 +16,9 @@ its extraction root and pack directories; model directories are shared.
 Uses exact documented seams:
   - Models converted via model_bag1_to_bag2.convert()
   - Retargeted body textures via tim_retarget.retarget()
-  - Rebased voice bank (0x1800 -> 0x6900) + preserved Bi-O announcer cues (0x1907, 0x1908),
-    fitted to the profile voice_bank budget by vab_budget.fit_voice_budget()
+  - Rebased voice bank (0x1800 -> 0x6900) + BAG1 Gas-O announcer name calls renamed to the
+    Bi-O name cues (profile "announcer"), fitted to the voice_bank budget by
+    vab_budget.fit_voice_budget()
   - DFS containers packed via rebuild_dfs_members.build_container()
 
 Usage:
@@ -33,7 +34,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/bag1import"))
 
 from model_bag1_to_bag2 import convert, check_bag2
-from preserve_announcer import append_cue
+from preserve_announcer import append_cue, cue_record, rename_cue
 from rebase_cues import rebase_sedt
 from rebuild_dfs_members import build_container, read_members
 from tim_retarget import retarget
@@ -89,10 +90,19 @@ def build(region: str, out_dir: Path) -> None:
 
     rebased_voice, moved = rebase_sedt(packs["a_p1"][VOICE_MEMBER], 0x1800, 0x6900)
     assert moved == 11, f"Expected 11 cues rebased, got {moved}"
-    merged_voice = append_cue(rebased_voice, bio_voice_ref, 0x1907)
-    merged_voice = append_cue(merged_voice, bio_voice_ref, 0x1908)
-    budget = json.loads(PROFILE.read_text(encoding="utf-8"))["voice_bank"]["max_body_bytes"]
-    merged_voice, units = fit_voice_budget(merged_voice, Vab(bio_voice_ref).samples, budget)
+    profile = json.loads(PROFILE.read_text(encoding="utf-8"))
+    announcer = profile["announcer"]
+    names_root, names_dirs, _ = region_sources(announcer["source_region"])
+    names = read_members((names_root / names_dirs["costume_a"] / "P_GAS_A1.DFS").read_bytes())[0]
+    names = names[announcer["source_member"]]
+    merged_voice = rebased_voice
+    for target, source in announcer["cue_map"].items():
+        target, source = int(target, 16), int(source, 16)
+        # The BAG1 clip takes the stock record (flags, volume, note 60) of the Bi-O call.
+        clip = rename_cue(names, source, target, cue_record(bio_voice_ref, target))
+        merged_voice = append_cue(merged_voice, clip, target)
+    budget = profile["voice_bank"]["max_body_bytes"]
+    merged_voice, units = fit_voice_budget(merged_voice, [], budget)
     print(f"[{region}] Merged voice bank ready: {len(merged_voice)} bytes, "
           f"body {Vab(merged_voice).body_bytes()}/{budget}, resample {units}/128 semitones")
 

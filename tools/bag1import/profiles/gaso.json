@@ -38,7 +38,14 @@
   "voice_bank": {
     "max_body_bytes": 64032,
     "reason": "Same-character VS loads two voice banks; SsVabOpenHead fails when SPU is exhausted (ghidra-033). 64032 = stock Bi-O voice body, so a Gas-O pair fits wherever a Bi-O pair fits.",
-    "approved": "Owner 2026-11-06: lossless dedup plus resampling of BAG1 voice samples; stock announcer kept byte-exact."
+    "approved": "Owner 2026-11-06: lossless dedup plus resampling of BAG1 voice samples; stock announcer kept byte-exact.",
+    "announcer_update": "Owner 2026-11-06: replace the Bi-O name calls with the BAG1 JP Gas-O name calls; name samples join the resampled set."
+  },
+  "announcer": {
+    "source_region": "jp",
+    "source_member": 7,
+    "cue_map": {"0x1907": "0x2091", "0x1908": "0x2090"},
+    "evidence": "BAG1 pack member 7 holds 0x2090/0x2091 (name calls, owner-confirmed by listening) and 0x20F0 (versus); JP bytes equal USA PLAYER1E. Played at table note 60 (FUN_8002e2d0)."
   },
   "exceptions": [
     {

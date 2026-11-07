@@ -11,6 +11,11 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 2026-11-06 — ghidra-035 — sound-table key-on path for announcer playback rate
+
+- Actual MCP: installed bridge `_work/gaso/probe_pitch.py` (get_program_info first: existing GUI 12.1.4 JP SLPM_862.19) for `SsUtKeyOnV` 80039884, `_work/gaso/probe_xrefs.py 0x80039884` → `xrefs-0x80039884.json`, `probe_motion_binding.py 0x8002e2d0` → `binding-0x8002e2d0.c`. Read-only.
+- Finding: only caller FUN_8002e2d0; sound table entries are 6×u16 (vab, prog, cue, vol=(w>>6)&0x7f, note=(w&0x3fff)>>7, fine=w&0x7f). Character cue records use note 60, so playback rate = 44100·2^((60−centre)/12). Independent validation: exported WAVs at that rate transcribed "Gas-O" by faster-whisper and confirmed by owner listening. Outcome: useful (correct WAV export, record reuse for `rename_cue`). Time unknown. Next: in-game owner listening of the Gas-O name calls.
+
 ## 2026-11-06 — ghidra-034 — VAB tone pitch fields before voice resampling
 
 - Actual MCP: installed bridge `_work/gaso/probe_pitch.py Pitch Note Vm` (get_program_info first: existing GUI 12.1.4 JP SLPM_862.19; `search_functions_by_name`) then `probe_motion_binding.py 0x8003b9c4 0x8003ba10 0x80039314`. No writes/overlay/restart. Evidence `_work/gaso/pitch-ghidra.json`, `binding-0x8003ba10.c`, `binding-0x80039314.c`.

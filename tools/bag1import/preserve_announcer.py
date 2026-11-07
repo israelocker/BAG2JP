@@ -73,6 +73,35 @@ def single_cue(data, cue):
         return bytes(out_head), bytes(out_body), struct.pack("<I", 1)+records[program]
     raise ValueError("Stock announcer cue not found")
 
+def rename_cue(data, old, new, record=None):
+    """Return SEDT data with cue `old` renamed to `new`.
+
+    `record` (8 bytes) optionally replaces the remaining record fields so a
+    foreign clip takes the flags/note of the stock cue it stands in for.
+    """
+    items = banks(data)
+    out = []
+    found = 0
+    for head, body, table in items:
+        records = []
+        for rec in cue_records(table):
+            if struct.unpack_from("<H", rec)[0] == old:
+                rec = struct.pack("<H", new) + (record[2:] if record else rec[2:])
+                found += 1
+            records.append(rec)
+        out.append((head, body, struct.pack("<I", len(records)) + b"".join(records)))
+    if found != 1:
+        raise ValueError("Cue to rename must occur exactly once")
+    return pack_banks(out)
+
+def cue_record(data, cue):
+    """Return the 8-byte table record of a cue."""
+    for _, _, table in banks(data):
+        for rec in cue_records(table):
+            if struct.unpack_from("<H", rec)[0] == cue:
+                return bytes(rec)
+    raise ValueError("Cue not found")
+
 def append_cue(destination, stock, cue):
     items = banks(destination)
     if any(struct.unpack_from("<H", rec)[0] == cue for _, _, table in items for rec in cue_records(table)):

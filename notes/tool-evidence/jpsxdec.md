@@ -146,3 +146,11 @@ Aplicar [criterios y plantilla](../assets.md#clasificación-y-medición-obligato
   `tools/test/test_vab_budget.py` (11 OK). Result recorded in `notes/gaso-import.md`.
 - Outcome: irrelevant for this task (no utility claimed or refuted).
   Measurement: none. Next: none for jPSXdec on this step.
+
+## 20261106-jpsxdec-006 — BAG1 XA search for announcer name calls
+
+- Purpose: find BAG1 announcer clips saying "Gas-O" (owner request).
+- Command: `D:/Dev/Tools/jdk-21.0.12.1+1/bin/java.exe -jar .../jpsxdec_v2.1-beta/jpsxdec.jar -f <DANCEXA1..5> -x <idx>`; indexes `_work/gaso/announcer/xa/DANCEXA{1..5}.idx`.
+- Observed: each BAG1 DANCEXA file indexes 8 stereo song channels; no short voice items.
+- Independent validation: the name calls were found instead in character pack DFS member 7 SEDT (cues 0x2090/0x2091), exported by `_work/gaso/export_bag1_jockey.py`, transcribed and confirmed by owner listening.
+- Outcome: irrelevant for this task (XA holds only songs; useful only to rule it out). Time unknown. Next: none.

@@ -150,8 +150,39 @@ recalibrado (probe `gaso-voice-budget-probe`, 8 bordes revisados visualmente,
 (`20261106T230811669356Z-gaso-voice-budget-double-strike`, 152s) y HeatBAG2
 (`20261106T231105650680Z-gaso-voice-budget-double-heat`, 132s): sin
 system-error, popups Gas-O/B y Gas-O/A, ambos en escenario; configs+21 saves
-restaurados. Solo llega a gameplay inicial: canción completa/fever/retorno y
-calidad de las voces remuestreadas (escucha humana) siguen pendientes.
+restaurados. Partida completa doble Gas-O B/A en StrikeBAG1 con `--finish`
+(`20261106T232951078763Z-gaso-voice-budget-double-strike-finish`, 293s,
+`complete_awaiting_visual_review`): fever dúo (fever2) en el trace, combo y
+puntuaciones en juego, fin de canción y vuelta al selector revisados visualmente
+(`agent-end-sheet.png`); sin system-error; configs+21 saves restaurados. WAV
+antes/después para escucha: `_work/gaso/voice-budget/listening/`
+(`_work/gaso/export_voice_listening.py`; duraciones iguales ±2ms). **Escucha
+aprobada por el propietario (2026-11-06): voces y efectos se oyen bien.**
+Regresión Gas-O individual (Gas-O BAG1/A vs Heat BAG2/A, HeatBAG2, `--finish`)
+`20261106T233514461994Z-gaso-voice-budget-single-finish` completa, 287s, saves
+restaurados.
+
+**Anunciador con nombre de Gas-O (petición del propietario 2026-11-06).** Las
+cues 0x1907/0x1908 del banco de voz eran las de Bi-O. Ghidra (ghidra-035):
+`SsUtKeyOnV` solo lo llama FUN_8002e2d0; la tabla de sonido son 6×u16 (vab,
+prog, cue, volumen, nota/fine), por lo que la tasa real es
+44100·2^((60−centro)/12). BAG1 pack Gas-O miembro 7 (JP == USA byte a byte):
+0x2091 vag01 "Gas-O!" 1,95s y 0x2090 vag02 "Gas-O" 1,41s; 0x20F0 vag03 dice
+"versus" (no usado). Propietario eligió la versión japonesa. Mapeo en perfil
+`gaso.json` `announcer.cue_map` {0x1907←0x2091, 0x1908←0x2090};
+`preserve_announcer.rename_cue` reutiliza el registro stock de Bi-O. Bi-O sigue
+con su banco nativo (sus cues no cambian). Cuerpo 63776/64032, voces BAG1
+remuestreadas −1248/128 semitonos (antes −1104). Payload `78842df3…` (28 filas,
+capacidad DUMMY `_work/gaso/announcer-names/dummy-capacity.json`), build
+`20261107T000811610572Z`, desplegado en exp-8mb (exe `71CE8826…`, ruta real
+`mods/bundled/...`; respaldo `_work/gaso/announcer-names/deployment-backup/`).
+Probe `20261107T000948902901Z` revisado (8 bordes) y aceptado. Partida completa
+doble Gas-O B/A en StrikeBAG1 `20261107T001149362684Z-gaso-announcer-names-double-strike-finish`
+291s: fever en trace, popups Gas-O/B y A, gameplay, vuelta al selector
+revisados; sin system-error; 21 saves restaurados. Pendiente: escucha en juego
+del nombre por el propietario (WAV `_work/gaso/announcer-names/listening/`).
+Pruebas host `tools/test/test_preserve_announcer.py` (5) + `test_vab_budget.py`
+(11): 16 OK.
 Diagnóstico posterior: MCP ghidra-028 confirmó los límites de carga P2 en
 800337B8/80033F14; no identifica aún la instrucción responsable. Se lanzó una
 repetición instrumental `gaso-pair-loader-dump` con `--ram-dump-frame 9000`,
