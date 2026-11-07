@@ -227,6 +227,24 @@ failed" hasta corregirlo — `check_alt_payload.py` no lo comprueba. exe
 final `20261107T005347685398Z-gaso-announcer-fix-double-strike-finish` completo
 298s, fever2, vuelta al selector, sin system-error, 21 saves restaurados. Host
 tests 20 OK. Pendiente: escucha en juego por el propietario (VS y victoria).
+
+**Ciclo combinado (2026-11-07): fix de dobles en Heat/Strike.** El propietario
+pidió hacer los pasos pendientes en un solo ciclo. `_work/gaso/rebuild_heat_strike_doubles.py`
+regenera los movimientos de Heat (95/96/167/168) y Strike (109/110/181/182) con el
+mapeo antiguo, exige igualdad byte a byte con el miembro actual (16/16 iguales) y lo
+sustituye por el corregido. Peor borde Heat 136.8°→55.1°; Strike sin cambio (52.7°).
+Spec `_work/gaso/combined-cycle/spec.json`, payload `f2296c4c…` 9439232 B (28 filas,
+cabe; `expected_sha256` sin cambio `443d687e…`). Scripts reutilizables nuevos:
+`_work/gaso/stage_alt_payload.py <work>` (mods-src + árbol de build, actualiza ambos
+hashes del manifest) y `_work/gaso/deploy_exp.py <work>` (exe/manifest/payload con
+respaldo e informe). exe `8DC32D7B→FE791DD9`. Probe `20261107T103635164262Z`
+revisado y aceptado; Heat BAG1/A vs Strike BAG1/A HeatBAG2 con final
+`20261107T103823507356Z-combined-heat-strike-finish` completo 279s, fever en traza,
+vuelta al selector, sin system-error; doble Gas-O B/A StrikeBAG1
+`20261107T104322223495Z-combined-double-gaso` correcto. 21 saves restaurados en
+todos. Ghidra no se usó en este paso (solo empaquetado; evidencia de la causa en
+capstone-005). Pendiente: escucha/vista del propietario (nombres VS/victoria y bailes
+Heat/Strike/Gas-O) y retrato HD Gas-O↔Bi-O (diseño por aprobar).
 Diagnóstico posterior: MCP ghidra-028 confirmó los límites de carga P2 en
 800337B8/80033F14; no identifica aún la instrucción responsable. Se lanzó una
 repetición instrumental `gaso-pair-loader-dump` con `--ram-dump-frame 9000`,
