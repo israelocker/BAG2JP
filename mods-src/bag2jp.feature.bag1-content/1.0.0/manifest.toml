@@ -81,7 +81,7 @@ id = "heat_p1"
 label = "Heat version, player 1"
 description = "Default Heat version for player 1. The stage is selected separately in 2P and Practice; story mode keeps the character-based stage default."
 type = "choice"
-default = "bag1"
+default = "bag2"
 
 [[option.choice]]
 value = "bag1"
@@ -97,7 +97,7 @@ id = "heat_p2"
 label = "Heat version, player 2"
 description = "Which Heat player 2 (or the CPU) gets."
 type = "choice"
-default = "bag1"
+default = "bag2"
 
 [[option.choice]]
 value = "bag1"
@@ -145,7 +145,7 @@ id = "gaso_p1"
 label = "Gas-O version, player 1"
 description = "Default Gas-O version for player 1. Selectable per pick in the character-select popup."
 type = "choice"
-default = "bag1"
+default = "bag2"
 
 [[option.choice]]
 value = "bag1"
@@ -161,7 +161,7 @@ id = "gaso_p2"
 label = "Gas-O version, player 2"
 description = "Which Gas-O player 2 (or the CPU) gets."
 type = "choice"
-default = "bag1"
+default = "bag2"
 
 [[option.choice]]
 value = "bag1"
@@ -176,5 +176,5 @@ feature = "bag1-heat"
 target = "disc_user"
 offset = 458823680
 file = "payload/bag1_alt.bin"
-sha256 = "78842df3c52bd18ccef12b52ab91518105dd1fe4cc0a8eb712a39924bc247ac4"
+sha256 = "ff79c563337aa92cb679fd6c876f15e85e324ffaea726adf745364c0d6c8234a"
 expected_sha256 = "00c737bbf6556cc48396a8e60e99c613f7614807b86da574f6e769c19f1a3258"

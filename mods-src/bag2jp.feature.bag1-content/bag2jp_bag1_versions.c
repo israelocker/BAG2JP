@@ -60,9 +60,9 @@ static void b1v_read_options(void) {
     static const char* const gaso_ids[2] = {"gaso_p1", "gaso_p2"};
     for (int s = 0; s < 2; ++s) {
         char v[16] = {0};
-        b1v_version[0][s] = psx_mod_current_option_value(heat_ids[s], v, sizeof v) > 0 && strcmp(v, "bag2") == 0 ? 0 : 1;
-        b1v_version[1][s] = psx_mod_current_option_value(strike_ids[s], v, sizeof v) > 0 && strcmp(v, "bag2") == 0 ? 0 : 1;
-        b1v_version[9][s] = psx_mod_current_option_value(gaso_ids[s], v, sizeof v) > 0 && strcmp(v, "bag2") == 0 ? 0 : 1;
+        b1v_version[0][s] = psx_mod_current_option_value(heat_ids[s], v, sizeof v) > 0 && strcmp(v, "bag1") == 0;
+        b1v_version[1][s] = psx_mod_current_option_value(strike_ids[s], v, sizeof v) > 0 && strcmp(v, "bag1") == 0;
+        b1v_version[9][s] = psx_mod_current_option_value(gaso_ids[s], v, sizeof v) > 0 && strcmp(v, "bag1") == 0;
     }
     b1v_log("Heat version: P1 %s, P2 %s", b1v_version[0][0] ? "BAG1" : "BAG2", b1v_version[0][1] ? "BAG1" : "BAG2");
     b1v_log("Strike version: P1 %s, P2 %s", b1v_version[1][0] ? "BAG1" : "BAG2", b1v_version[1][1] ? "BAG1" : "BAG2");

@@ -50,7 +50,8 @@ ROLES = {
 #        bar 2/4/6). A row is one choreography played bar after bar; its last bar is a double.
 #        Level-up (only into even bars) plays the row's alternate slot (table 0x80051838).
 #  BAG1: cell (bar s 0..6, level v <= s), request s(s+1)/2 + (s - v) + 1 (command length grows with
-#        v, constant along it); bar 7 = double, request 29 + (7 - v). The normal anim of (s, v) follows
+#        v, constant along it); bar 7 = double, request 35 - v for levels 0..6 (BAG1 0x800243f4 decodes
+#        requests >= 29 as bar 7, level 35 - request). The normal anim of (s, v) follows
 #        (s-1, v); its alternate (table 0x80055854) follows a level-up from (s-1, v-1). Same rule as BAG2.
 # Each BAG2 row (level L, bar s) maps to BAG1 bar s + (7 - last bar of the row), so every row ends on a
 # BAG1 double, at BAG1 level min(L, bar): consecutive cells are always a designed BAG1 transition.
@@ -69,7 +70,7 @@ B1_ALT = {5: 6, 9: 10, 11: 12, 15: 16, 17: 18, 19: 20, 23: 24, 25: 26, 27: 28, 2
 
 def b1_anim(cell, prev):
     s, v = cell
-    if s == 7: return B1_REQ_ANIM[29 + 7 - max(v, 1)]           # doubles: level 1..7
+    if s == 7: return B1_REQ_ANIM[35 - min(v, 6)]               # doubles: level 0..6
     a = B1_REQ_ANIM[s * (s + 1) // 2 + (s - v) + 1]
     if prev and prev[1] == v - 1: a = B1_ALT.get(a, a)          # entered by a level-up
     return a

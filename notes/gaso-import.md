@@ -183,6 +183,30 @@ revisados; sin system-error; 21 saves restaurados. Pendiente: escucha en juego
 del nombre por el propietario (WAV `_work/gaso/announcer-names/listening/`).
 Pruebas host `tools/test/test_preserve_announcer.py` (5) + `test_vab_budget.py`
 (11): 16 OK.
+
+**Dobles de baile corregidos (2026-11-07, pendiente de revisión humana).** El
+propietario vio pasos "de cabeza" que vuelven de golpe a pie. Causa: el
+`b1_anim((7,v))` compartido de `tools/bag1import/anim_remap.py` usaba la petición
+BAG1 `29+7-max(v,1)` (desplazada un nivel). Evidencia BAG1 (Capstone sobre
+`_work/bag1/scus.bin`, capstone-005; Ghidra solo tiene cargado BAG2): 0x800243f4
+decodifica la petición r>=29 como compás 7, nivel 35-r, así que el doble del
+nivel v es la petición `35-v` (v 0..6); tabla alt 0x80055854 coherente. La
+matriz de poses `_work/gaso/double_entry_matrix.py` coincide (Gas-O, Heat y
+Strike). Remapeo regenerado: peor arista 171°→66° (Bi-O nativo 79°). Solo
+cambian los 4 DFS de modelo (packs/voces idénticos); payload ff79c563…,
+`_work/gaso/dance-doubles/`; exe C7A34421. Doble Gas-O B/A StrikeBAG1 con final
+`20261107T002631063982Z-gaso-dance-doubles-double-strike-finish`: completo,
+sin system-error, 21 guardados restaurados. **Afecta a Heat/Strike** en su
+próxima reconstrucción (sus activos desplegados no cambian aún).
+
+**Versión por defecto BAG2 (petición del propietario 2026-11-07).** Heat,
+Strike y Gas-O abren el popup en su versión BAG2 (Gas-O → Bi-O): defaults
+`bag2` en el manifiesto y `b1v_read_options` solo activa BAG1 con `bag1`
+explícito. `mods/state.toml` de exp-8mb tenía heat/strike en `bag1`; cambiado
+a `bag2` (respaldo `_work/gaso/version-defaults/deployment-backup/`). exe
+8FE7BB2F. Run `20261107T003500323308Z-gaso-version-defaults-pick`: log
+`open: … current 0` para Gas-O y Heat, popup muestra "GAME BAG 2", BAG1 sigue
+seleccionable (confirm Gas-O BAG1).
 Diagnóstico posterior: MCP ghidra-028 confirmó los límites de carga P2 en
 800337B8/80033F14; no identifica aún la instrucción responsable. Se lanzó una
 repetición instrumental `gaso-pair-loader-dump` con `--ram-dump-frame 9000`,
