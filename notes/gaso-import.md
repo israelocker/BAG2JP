@@ -245,6 +245,23 @@ vuelta al selector, sin system-error; doble Gas-O B/A StrikeBAG1
 todos. Ghidra no se usó en este paso (solo empaquetado; evidencia de la causa en
 capstone-005). Pendiente: escucha/vista del propietario (nombres VS/victoria y bailes
 Heat/Strike/Gas-O) y retrato HD Gas-O↔Bi-O (diseño por aprobar).
+
+**Pitch de voces remuestreadas (2026-11-07).** El propietario aprobó el nombre en el VS
+pero no oía el nombre de la victoria. Sonda de slots de cue (`--watch-cues`, límite del
+watcher elevado a 32) mostró que 0x1909 sí se dispara (estado 4, 80 frames antes del Win)
+y está en la tabla de sonido; el audio grabado no coincidía (NCC 0.09; control Bi-O
+original 0.746). Volcado SPU (`BAG2JP_SPU_CUE_DUMP`, `--spu-cue-dump`) en
+`20261107T114911955759Z-gaso-victory-spu`: muestras byte a byte correctas, pitch voz14
+0x0465 en lugar de 0x0416. Ghidra ghidra-037: `SsPitchFromNote` suma `shift/128`, así que
+el centro efectivo es `center − shift/128`; `vab_budget.resample_samples` aplicaba el
+signo al revés y **todas** las voces remuestreadas sonaban +1.25 semitonos (también las
+que el propietario escuchó). Corregido (test RED→GREEN, 21 OK). Rebuild
+`_work/gaso/pitch-fix/` (prog11 centro 84 shift 48 = 83.625), payload `852ebd0c…`
+(28 filas, cabe, `expected_sha256` sin cambio), exe `4790B275→F5F92BEB`. Probe
+`20261107T115922321063Z` revisado/aceptado. Doble Gas-O B/A HeatBAG2 con final
+`20261107T120108356029Z-gaso-pitch-fix-victory`: pitch voz14 0x0416, NCC 0.643 a 269.09 s,
+21 saves restaurados. Pendiente: nueva escucha del propietario (voces en canción y
+victoria ahora 1.25 semitonos más graves que lo aprobado).
 Diagnóstico posterior: MCP ghidra-028 confirmó los límites de carga P2 en
 800337B8/80033F14; no identifica aún la instrucción responsable. Se lanzó una
 repetición instrumental `gaso-pair-loader-dump` con `--ram-dump-frame 9000`,

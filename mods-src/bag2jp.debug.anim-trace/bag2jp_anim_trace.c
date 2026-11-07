@@ -4,8 +4,10 @@
  * Env BAG2JP_TEST_DANCE_VIEW_CHAR=0..13 temporarily enables that character in Dance View
  * (requires BAG2JP_ANIM_TRACE=1; use isolated test cards, never save test unlocks).
  * Env BAG2JP_RAM_DUMP=n writes main RAM (2 MB) at trace frame n.
+ * BAG2JP_RAM_DUMP_SIZE=8mb includes extended RAM in experimental 8 MB builds.
  * Env BAG2JP_VRAM_DUMP=n[,n...] writes raw VRAM (1024x512x16 bit) at those trace frames.
  * Env BAG2JP_CPU_SKILL=n keeps the CPU skill byte at n (n >= 140: the CPU attacks whenever it can).
+ * Env BAG2JP_SPU_CUE_DUMP=cue writes SPU RAM and voice states when sound slot 14 starts that cue.
  * Env BAG2JP_AUDIO_DUMP=1 records the final audio mix (44.1 kHz stereo, after XA/CD/SPU mixing and
  * the other PCM plugins) to bag2jp_audio.wav, plus bag2jp_audio_sync.log ("frame sample" per vblank,
  * same frame numbering as the trace / watch logs) so sounds can be located against game events.
@@ -14,26 +16,51 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <SDL3/SDL.h>
 #include "mod_plugins.h"
 #include "bag2jp_score_fixture.h"
 #include "bag2jp_vram_dump.h"
 #include "cpu_state.h"
+#include "spu.h"
 #include "bag2jp_attack_fixture.h"
+#include "bag2jp_system_error_probe.h"
 
 static FILE* s_log;
 static int s_on = -1;
 static int s_skill = -1;
 static long s_dump_at = -1;
+static uint32_t s_attack_frame;
+
+static void at_system_error(struct CPUState* cpu, uint32_t address) {
+    bag2_system_error_probe_observe(cpu, address, s_log);
+}
+
+static uint32_t bag2_ram_dump_end(const char* size) {
+    return size && strcmp(size, "8mb") == 0 ? 0x80800000u : 0x80200000u;
+}
 
 static void at_attack_input(struct CPUState* cpu, uint32_t address) {
     const char* strike_enabled = getenv("BAG2JP_TEST_STRIKE_ATTACK");
     const char* heat_enabled = getenv("BAG2JP_TEST_HEAT_ATTACK");
     const char* duel_enabled = getenv("BAG2JP_TEST_HEAT_STRIKE_DUEL");
+    const char* ordered_enabled = getenv("BAG2JP_TEST_ORDERED_DUEL");
+    const int ordered = ordered_enabled && ordered_enabled[0] == '1' && ordered_enabled[1] == '\0';
     const int duel = duel_enabled && duel_enabled[0] == '1' && duel_enabled[1] == '\0';
     const int strike = strike_enabled && strike_enabled[0] == '1' && strike_enabled[1] == '\0';
     const int heat = heat_enabled && heat_enabled[0] == '1' && heat_enabled[1] == '\0';
-    if (address != BAG2_ATTACK_INPUT_SITE || s_on != 1 || !s_log || (!strike && !heat && !duel)) return;
+    if (address != BAG2_ATTACK_INPUT_SITE || s_on != 1 || !s_log || (!strike && !heat && !duel && !ordered)) return;
+    if (ordered) {
+        static Bag2OrderedDuel sequence;
+        const uint32_t side = cpu->gpr[20];
+        if (side < 2u && !psx_mod_read_byte(cpu->gpr[29] + side + 0x30u) &&
+            bag2_ordered_duel_fixture_tick(1, side, cpu->gpr[21], s_attack_frame, &sequence)) {
+            fprintf(s_log, "test fixture: ordered duel %u/4 P%u attack input 0x6E frame=%u; not natural play\n",
+                    sequence.count, side + 1u, s_attack_frame);
+            fflush(s_log);
+        }
+        return;
+    }
     if (duel) {
         /* Owner-requested live demonstration: alternate input submissions between sides.
          * Both animations can still start in the same native measure.
@@ -85,7 +112,8 @@ static void at_duet_rng(struct CPUState* cpu, uint32_t address) {
     }
 }
 /* BAG2JP_WATCH=addr:size,... (hex addr, size 1/2/4): logs those RAM values to bag2jp_watch.log on change */
-static int s_nwatch = -1; static uint32_t s_wa[16], s_ws[16], s_wv[16]; static FILE* s_wlog;  /* BAG2JP_RAM_DUMP=frame: write main RAM (2 MB) to bag2jp_ram_<frame>.bin */   /* BAG2JP_CPU_SKILL=n forces the CPU skill byte 0x8005E661 (test attacks) */
+#define MAX_WATCH 32
+static int s_nwatch = -1; static uint32_t s_wa[MAX_WATCH], s_ws[MAX_WATCH], s_wv[MAX_WATCH]; static FILE* s_wlog;  /* BAG2JP_RAM_DUMP=frame: write main RAM (2 MB) to bag2jp_ram_<frame>.bin */   /* BAG2JP_CPU_SKILL=n forces the CPU skill byte 0x8005E661 (test attacks) */
 
 /* ---- audio recorder ---- */
 static int s_audio = -1; static FILE* s_wav; static FILE* s_async;
@@ -121,6 +149,7 @@ static void audio_vblank(void) {
 
 static void at_vblank(void) {
     static uint32_t frame, last[16];
+    ++s_attack_frame;
     audio_vblank();
     if (s_on < 0) {
         const char* e = getenv("BAG2JP_ANIM_TRACE"); s_on = (e && *e == '1');
@@ -147,7 +176,7 @@ static void at_vblank(void) {
     if (s_dump_at == -1) { const char* k = getenv("BAG2JP_RAM_DUMP"); s_dump_at = (k && *k) ? atol(k) : -2; }
     if (s_nwatch < 0) {
         s_nwatch = 0; const char* w = getenv("BAG2JP_WATCH");
-        while (w && *w && s_nwatch < 16) {
+        while (w && *w && s_nwatch < MAX_WATCH) {
             char* e; s_wa[s_nwatch] = (uint32_t)strtoul(w, &e, 16); s_ws[s_nwatch] = 4;
             if (*e == ':') s_ws[s_nwatch] = (uint32_t)strtoul(e + 1, &e, 10);
             s_wv[s_nwatch] = 0xDEADBEEFu; ++s_nwatch; w = (*e == ',') ? e + 1 : NULL;
@@ -155,7 +184,7 @@ static void at_vblank(void) {
         if (s_nwatch) { const char* b = SDL_GetBasePath(); char p[1024]; snprintf(p, sizeof p, "%sbag2jp_watch.log", b ? b : ""); s_wlog = fopen(p, "w"); }
     }
     if (s_wlog) {
-        static uint32_t wf; ++wf; int ch = 0; uint32_t v[16];
+        static uint32_t wf; ++wf; int ch = 0; uint32_t v[MAX_WATCH];
         for (int i = 0; i < s_nwatch; ++i) {
             v[i] = s_ws[i] == 1 ? psx_mod_read_byte(s_wa[i]) : s_ws[i] == 2 ? psx_mod_read_half(s_wa[i]) : psx_mod_read_word(s_wa[i]);
             if (v[i] != s_wv[i]) ch = 1;
@@ -167,6 +196,7 @@ static void at_vblank(void) {
         }
     }
     if (!s_on) return;
+    bag2_system_error_probe_arm(s_on, s_log);
     /* Explicit artificial input for matched P1 duet-exit tests; isolated cards.
      * Trace is mandatory and all native guards live in the tested helper. */
     const char* duet_test = getenv("BAG2JP_TEST_P1_DUET");
@@ -193,8 +223,32 @@ static void at_vblank(void) {
         snprintf(p, sizeof p, "%sbag2jp_ram_%u.bin", b ? b : "", frame);
         FILE* f = fopen(p, "wb");
         if (f) {
-            for (uint32_t a = 0x80000000u; a < 0x80200000u; a += 4) { uint32_t w = psx_mod_read_word(a); fwrite(&w, 4, 1, f); }
+            uint32_t end = bag2_ram_dump_end(getenv("BAG2JP_RAM_DUMP_SIZE"));
+            for (uint32_t a = 0x80000000u; a < end; a += 4) { uint32_t w = psx_mod_read_word(a); fwrite(&w, 4, 1, f); }
             fclose(f);
+        }
+    }
+    {   /* BAG2JP_SPU_CUE_DUMP=cue: when sound slot 14 (0x8006DA60) starts that cue, write SPU RAM
+         * (bag2jp_spu_<frame>.bin) at that frame and 6 frames later, logging all 24 voice states. */
+        static long spu_cue = -1; static uint32_t spu_hits[2]; static uint16_t spu_prev;
+        if (spu_cue == -1) { const char* k = getenv("BAG2JP_SPU_CUE_DUMP"); spu_cue = (k && *k) ? strtol(k, NULL, 0) : -2; }
+        if (spu_cue >= 0) {
+            const uint16_t cue = (uint16_t)psx_mod_read_half(0x8006DA66u);
+            if (cue == (uint16_t)spu_cue && spu_prev != cue) { spu_hits[0] = frame; spu_hits[1] = frame + 6u; }
+            spu_prev = cue;
+            if (spu_hits[0] && (frame == spu_hits[0] || frame == spu_hits[1])) {
+                const char* b = SDL_GetBasePath(); char p[1024];
+                snprintf(p, sizeof p, "%sbag2jp_spu_%u.bin", b ? b : "", frame);
+                FILE* f = fopen(p, "wb");
+                if (f) { fwrite(spu_get_ram(), 1, 512u * 1024u, f); fclose(f); }
+                for (int v = 0; v < 24; ++v) {
+                    SpuVoiceState s; spu_get_voice_state(v, &s);
+                    fprintf(s_log, "spu f%06u v%02d act%d vol%04x/%04x pitch%04x start%05x loop%05x cur%05x env%04x ph%u\n",
+                            frame, v, s.active, s.vol_ctrl_l, s.vol_ctrl_r, s.pitch, (uint32_t)s.start_lo << 3,
+                            (uint32_t)s.loop_lo << 3, s.cur_addr, s.env_level, s.adsr_phase);
+                }
+                fflush(s_log);
+            }
         }
     }
     {   /* BAG2JP_VRAM_DUMP=frame[,frame...]: raw VRAM at those trace frames. */
@@ -233,6 +287,8 @@ static void at_vblank(void) {
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_anim_trace) {
+    (void)psx_mod_register_instruction_plugin("bag2jp.anim_trace", BAG2_SYSTEM_ERROR_PC,
+                                            BAG2_SYSTEM_ERROR_OBSERVED, at_system_error);
     (void)psx_mod_register_instruction_plugin("bag2jp.anim_trace", BAG2_ATTACK_INPUT_SITE,
                                             BAG2_ATTACK_INPUT_WORD, at_attack_input);
     (void)psx_mod_register_instruction_plugin("bag2jp.anim_trace", BAG2_FIXTURE_RNG_CALL_ADDR,

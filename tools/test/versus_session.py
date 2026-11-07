@@ -22,6 +22,8 @@ CATALOG = REPO / "_work/versus-navigation/catalog.json"
 MENU_ROOT = 7
 MENU_VERSUS = 1
 TIMEOUT = 25.0
+CUE_SLOTS = 0x8006D9F6  # u16 cue id per sound slot, stride 8 (FUN_8002e2d0)
+RESULT_STATE = 0x8005D3E0  # result-screen announcer state (overlay at 0x80098C88)
 HELPER_CALLS = 0
 
 
@@ -119,6 +121,11 @@ class Session:
         self.shots: list[str] = []
         self.checkpoints: dict[str, dict] = {}
         self.logs: list = []
+        self.ram_dump_frame: int | None = None
+        self.ram_dump_size = "2mb"
+        self.audio_dump = False
+        self.watch_cues = False
+        self.spu_cue_dump: int | None = None
 
     def start(self) -> None:
         """Refuse active sessions; launch with only explicit debug instrumentation."""
@@ -134,7 +141,21 @@ class Session:
                 nav.key_for(self.bindings, side, action)
         env = {key: value for key, value in os.environ.items() if not key.startswith("BAG2JP_")}
         env["BAG2JP_ANIM_TRACE"] = "1"
-        env["BAG2JP_WATCH"] = ",".join(f"{address:08X}:{size}" for address, size in nav.WATCHES.values())
+        if self.ram_dump_frame is not None:
+            if self.ram_dump_frame <= 0:
+                raise ValueError("RAM dump frame must be positive")
+            if self.ram_dump_size not in ("2mb", "8mb"):
+                raise ValueError("RAM dump size must be 2mb or 8mb")
+            env["BAG2JP_RAM_DUMP"] = str(self.ram_dump_frame)
+            env["BAG2JP_RAM_DUMP_SIZE"] = self.ram_dump_size
+        if self.audio_dump:
+            env["BAG2JP_AUDIO_DUMP"] = "1"
+        if self.spu_cue_dump is not None:
+            env["BAG2JP_SPU_CUE_DUMP"] = f"0x{self.spu_cue_dump:04X}"
+        watches = list(nav.WATCHES.values())
+        if self.watch_cues:
+            watches += [(CUE_SLOTS + 8 * slot, 2) for slot in range(15)] + [(RESULT_STATE, 4)]
+        env["BAG2JP_WATCH"] = ",".join(f"{address:08X}:{size}" for address, size in watches)
         self.logs = [(self.run / name).open("wb") for name in ("stdout.log", "stderr.log")]
         self.started = time.time()
         self.process = subprocess.Popen([str(GAME / "BAG2JP.exe"), "--no-launcher"], cwd=GAME,
@@ -233,15 +254,31 @@ class Session:
             raise ValueError("Unexpected target or cross-player cursor movement")
 
     def probe(self, executable_hash: str) -> dict:
-        """Calibrate four local edges, leaving all other roster entries unsupported."""
+        """Calibrate local edges, reaching Strike (1), Comet (2), Shorty (5), and Bi-O (9)."""
         if nav.cursor(self.state(), 1) != 0:
             raise ValueError("Probe requires observed initial P1 Heat")
         edges = []
-        for action, expected in (("right", 2), ("left", 0), ("down", 1), ("up", 0)):
+        # Calibrated path:
+        # 0 -> right -> 2 -> left -> 0
+        # 0 -> down -> 1 -> left -> 5 -> down -> 9
+        # and back: 9 -> up -> 5 -> right -> 1 -> up -> 0
+        steps = [
+            ("right", 2),
+            ("left", 0),
+            ("down", 1),
+            ("left", 5),
+            ("down", 9),
+            ("up", 5),
+            ("right", 1),
+            ("up", 0),
+        ]
+        for action, expected in steps:
             source = nav.cursor(self.state(), 1)
             self.move(1, action, expected)
             self.shot(f"probe-{source}-{action}-{expected}")
-            edges.append([source, action, expected])
+            edge = [source, action, expected]
+            if edge not in edges:
+                edges.append(edge)
         return {"runtime_sha256": executable_hash, "edges": edges, "evidence": str(self.run)}
 
     def pick(self, side: int, name: str, version: str, costume: str, edges: dict) -> dict:
@@ -352,6 +389,16 @@ def main() -> int:
     parser.add_argument("--action", choices=("probe", "run", "inspect"), default="inspect")
     parser.add_argument("--game-id", type=int)
     parser.add_argument("--tag", default="versus")
+    parser.add_argument("--ram-dump-frame", type=int,
+                        help="Explicit diagnostic RAM snapshot frame; inherited debug flags remain ignored")
+    parser.add_argument("--ram-dump-size", choices=("2mb", "8mb"), default="2mb",
+                        help="Snapshot extent; 8mb requires the experimental expanded-RAM runtime")
+    parser.add_argument("--audio-dump", action="store_true",
+                        help="record bag2jp_audio.wav and its sync log into the run after the game closes")
+    parser.add_argument("--spu-cue-dump", type=lambda text: int(text, 0), default=None,
+                        help="dump SPU RAM and voice states when sound slot 14 starts this cue")
+    parser.add_argument("--watch-cues", action="store_true",
+                        help="also watch the 15 sound-slot cue ids (0x8006D9F6 + 8*slot) in bag2jp_watch.log")
     parser.add_argument("--temporary-controls", action="store_true")
     for side in (1, 2):
         parser.add_argument(f"--p{side}-character", default="Heat")
@@ -365,6 +412,8 @@ def main() -> int:
     parser.add_argument("--finish-timeout", type=float, default=420.0,
                         help="seconds allowed for song end plus return")
     args = parser.parse_args()
+    if args.ram_dump_frame is not None and args.ram_dump_frame <= 0:
+        parser.error("--ram-dump-frame must be positive")
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if os.name != "nt":
         parser.error("Windows test host required")
@@ -390,6 +439,11 @@ def main() -> int:
     run = REPO / "_work/versus-runs" / f"{stamp}-{args.tag}"
     run.mkdir(parents=True, exist_ok=False)
     session = Session(run)
+    session.ram_dump_frame = args.ram_dump_frame
+    session.ram_dump_size = args.ram_dump_size
+    session.audio_dump = args.audio_dump
+    session.watch_cues = args.watch_cues
+    session.spu_cue_dump = args.spu_cue_dump
     files = nav.IsolatedFiles(GAME, run, safe_to_restore=lambda: session.process is None or session.process.poll() is not None)
     result = {"status": "failed", "requested": vars(args), "runtime_sha256": executable_hash,
               "visual_review": "pending", "evidence": str(run),
@@ -428,6 +482,16 @@ def main() -> int:
                             shutil.copy2(path, run / name)
                 finally:
                     session.close()
+                    # The recorder finalizes the WAV on exit; copy only after close.
+                    copies = [name for name in ("bag2jp_audio.wav", "bag2jp_audio_sync.log") if args.audio_dump]
+                    if args.ram_dump_frame is not None:
+                        copies.append(f"bag2jp_ram_{args.ram_dump_frame}.bin")
+                    if args.spu_cue_dump is not None:
+                        copies += [path.name for path in GAME.glob("bag2jp_spu_*.bin")]
+                    for name in copies:
+                        path = GAME / name
+                        if path.exists() and (session.process is None or session.process.poll() is not None):
+                            shutil.copy2(path, run / name)
     except (OSError, ValueError, RuntimeError, TimeoutError, subprocess.SubprocessError, KeyboardInterrupt) as exc:
         result["status"], result["error"] = "failed", str(exc)
     finally:

@@ -5,9 +5,10 @@ Two steps, applied in order by fit_voice_budget():
      share one sample, as stock BAG2 voice banks already do.
   2. resample_samples(): lossy; decodes the selected PS-ADPCM samples,
      resamples them by r = 2^(-units/1536) and re-encodes them. Each tone that
-     uses a resampled sample raises center/shift by `units` 1/128 semitones,
-     because SsPitchFromNote computes center + (shift+fine)/128 - note
-     (Ghidra 8003BA10/80039314, notes/tool-evidence ghidra-034).
+     uses a resampled sample raises its effective center (center - shift/128)
+     by `units` 1/128 semitones, because SsPitchFromNote computes
+     note - center + (shift+fine)/128 (Ghidra 8003BA78; voice 14 pitch measured
+     in the SPU, notes/tool-evidence ghidra-037; ghidra-034 had the sign wrong).
 """
 import logging
 import math
@@ -196,10 +197,12 @@ def resample_samples(sedt: bytes, sample_ids: list[int], units: int) -> bytes:
     for offset in vab.tone_records():
         if struct.unpack_from("<H", vab.head, offset + 22)[0] not in sample_ids:
             continue
-        total = vab.head[offset + 4] * 128 + vab.head[offset + 5] + actual
-        if total // 128 > 127:
+        # Effective center in 1/128 semitones is center*128 - shift (shift raises pitch).
+        total = vab.head[offset + 4] * 128 - vab.head[offset + 5] + actual
+        center = -(-total // 128)
+        if center > 127:
             raise ValueError("Pitch compensation exceeds note range")
-        vab.head[offset + 4], vab.head[offset + 5] = divmod(total, 128)
+        vab.head[offset + 4], vab.head[offset + 5] = center, center * 128 - total
     return vab.pack()
 
 

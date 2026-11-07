@@ -12,7 +12,7 @@ sys.path.insert(0, str(ROOT / "tools/bag1import"))
 from preserve_announcer import append_cue, pack_banks, single_cue
 from rebuild_dfs_members import read_members
 from vab_budget import (Vab, decode_adpcm, dedupe_samples, encode_adpcm,
-                        fit_voice_budget, payload, resample_samples)
+                        fit_voice_budget, payload, ratio_for_units, resample_samples)
 
 
 def snr_db(reference: np.ndarray, candidate: np.ndarray) -> float:
@@ -57,6 +57,16 @@ class TestVabBudget(unittest.TestCase):
         changed = [(before.head[o + 4], after.head[o + 4]) for o in before.tone_records()
                    if struct.unpack_from("<H", before.head, o + 22)[0] == 7]
         self.assertTrue(changed and all(new == old + 12 for old, new in changed))
+
+    def test_fractional_resample_lowers_effective_pitch(self):
+        # SsPitchFromNote: note - center + (shift+fine)/128, so shift raises the pitch.
+        def effective(vab):
+            return [vab.head[o + 4] * 128 - vab.head[o + 5] for o in vab.tone_records()
+                    if struct.unpack_from("<H", vab.head, o + 22)[0] == 7]
+        before = effective(Vab(self.stock))
+        after = effective(Vab(resample_samples(self.stock, [7], 848)))
+        actual = round(1536 * np.log2(1 / float(ratio_for_units(848))))
+        self.assertTrue(before and after == [value + actual for value in before])
 
     def test_octave_resample_halves_payload(self):
         before = len(payload(Vab(self.stock).samples[6]))

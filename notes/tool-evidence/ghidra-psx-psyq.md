@@ -11,6 +11,11 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 2026-11-07 — ghidra-037 — pitch sign of tone shift (corrects ghidra-034)
+
+- Actual MCP: `tools.ghidra.get_program_info` (SLPM_862.19, sha ea5a1668…), decompile `_spu_note2pitch` 0x80039314 and `SsPitchFromNote` 0x8003ba78. Read-only. Also read result overlay state 4/5 (0x1909 then Win 0x100).
+- Finding: semitones = note − center + (shift+fine)/128, so shift raises pitch; effective centre = center − shift/128. ghidra-034 stated the opposite sign. Independent validation: SPU dump of run `20261107T114911955759Z` showed voice-14 pitch 0x0465 vs expected 0x0416; after fixing `vab_budget.resample_samples`, run `20261107T120108356029Z` shows 0x0416 and recorded-audio NCC 0.643 (was 0.09). Outcome: useful (root cause of sharp resampled voices). Time unknown. Next: owner listening.
+
 ## 2026-11-07 — ghidra-036 — victory name cue and missing-cue behaviour
 
 - Actual MCP: installed bridge `D:/Dev/Tools/ghidra-mcp-python/python.exe _work/gaso/probe_call.py read_memory` at 0x80051424 → `_work/gaso/victory-table.json`; `probe_motion_binding.py 0x8002e2d0` (re-read) → `binding-0x8002e2d0.c`. get_program_info first: existing GUI 12.1.4 JP SLPM_862.19. Read-only.
