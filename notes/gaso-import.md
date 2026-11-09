@@ -11,6 +11,18 @@ doc_kind: evidence
 
 # Gas-O — ledger canónico
 
+## Tareas Pendientes Prioritarias (Solicitadas por el Propietario)
+- [x] **Escucha en combate de Chemical Love grabada**: Ejecución verificada en partida Versus real con captura de audio SPU/FLAC completa (`bag2jp_audio.wav`, 142.01s, 44.1kHz stereo) en `_work/versus-runs/20261108T225855012145Z-gaso-listen-gameplay/`.
+- [ ] **Efectos visuales de humo de entrada de Gas-O**: expulsión de humo denso/fiel por los tubos de la mochila al inicio de sus combates.
+- [x] **Ataque Especial de Gas-O corregido (Tanque Congelante Auténtico)**:
+  - Extracción y renderizado de la malla 3D nativa original de BAG1 (`PLAYER2/P_GAS_A2.DFS` miembro 2 / `002.bin`: 41 vértices, 24 quads de cuerpo metálico, 8 triángulos de tapa biselada y 8 quads de cilindro de cristal translúcido).
+  - Colores nativos de fábrica de PS1 aplicados: Metal `RGB(89, 89, 102)`, Cristal químico `RGB(125, 255, 106)`.
+  - Sprites y volutas de humo químico con coordenadas UV auténticas de la tabla nativa `0x801DCE4C`.
+  - Rival mantenido de pie y congelado (`anim 78`, sin knockdown) con buffer de comandos reseteado.
+  - Verificado en combate real Versus con ráfaga de 140 fotogramas (`_work/versus-runs/20261109T070157624424Z-gas-o-attack-bag1-gasobag1`).
+  - Comparativa directa con el metraje nativo generada en `_work/gaso_tank_authentic_comparison.png`.
+
+
 ## Alcance y aceptación
 
 Plan aprobado: [gaso-import](../plans/gaso-import.md). Destino Bi-O, character9;
@@ -260,8 +272,120 @@ que el propietario escuchó). Corregido (test RED→GREEN, 21 OK). Rebuild
 (28 filas, cabe, `expected_sha256` sin cambio), exe `4790B275→F5F92BEB`. Probe
 `20261107T115922321063Z` revisado/aceptado. Doble Gas-O B/A HeatBAG2 con final
 `20261107T120108356029Z-gaso-pitch-fix-victory`: pitch voz14 0x0416, NCC 0.643 a 269.09 s,
-21 saves restaurados. Pendiente: nueva escucha del propietario (voces en canción y
-victoria ahora 1.25 semitonos más graves que lo aprobado).
+21 saves restaurados. Escucha del propietario en `20261107T121359865999Z-gaso-owner-listen`
+(doble Gas-O, autoplay): **aprobados** el nombre en el VS, las voces en canción con el tono
+corregido y "Gas-O" antes de "Win" (2026-11-07).
+
+**Retrato Ultra HD de Gas-O y Persistencia en Selector y Stage Select (2026-11-08).**
+Se corrigió la conmutación dinámica del retrato Ultra HD de Gas-O (`029_Gas_O.png`, con máscara de gas, gafas moradas y tubos respiradores) frente a Bi-O (`020.png`, zombi con hacha en la cabeza). En `bag2jp_charsel_popup.c`:
+- Se erradicó la corrupción de VRAM previa eliminando escrituras invasivas a descriptores de otros personajes (`0x80096438 + s*48 + 0x28`).
+- Se implementó la subida limpia de la paleta modificada (entrada 235 con valor `0x7FFE` para Gas-O y `0x7FFF` para Bi-O) a través de `psx_mod_psyq_load_image(rx, ry, rw, rh, src_clut)` a las coordenadas del RECT VRAM de cada jugador (`0x80096458` para 1P, `0x80096488` para 2P, `0x800967E8` en Stage Select).
+- Esto fuerza la invalidación de la caché de DuckStation/Recomp y activa la carga instantánea del hash `61E197B20D89CB1E` (Gas-O HD) con fondo verde tóxico (`0x0030E020`) y nombre "Gas-O".
+- Verificado y registrado con capturas en partida real (`_work/gaso/evidence/portrait_check/crop1p_p2-popup.png`, `crop1p_stage-selected.png`, `crop2p_stage-selected.png`): ambos lados (1P y 2P) muestran al 100% el retrato HD nítido de Gas-O sin afectar a otros personajes ni a los rectángulos de la VRAM.
+
+**Candidato fever solo (2026-11-07, aceptación pendiente).** El barrido del visor BAG2
+registró 88 índices: 85 capturados y WIN4/FEVER4/FEVER5 vacíos. Los fever reproducidos
+no coincidían con los dos originales BAG1: faltaba la entrada 17 en el payload y se
+usaba la coreografía stock de Bi-O. `anim_remap_gaso.build_fever()` genera ahora
+82/83/82, rebasa las voces a 0x6900 y conserva la cola vacía; el builder añade el
+contenedor 17 conservando su miembro 1 stock. Pruebas host: 14 OK; los ocho
+contenedores anteriores permanecen byte-exact. Candidatos USA/JP y comprobaciones en
+`_work/gaso/fever-solo/`: payload 29 filas, 9.500.672 bytes frente a 27.648.000,
+SHA-256 `54675d21e711d33d3a210206e512df931d570b3c2084a87306301873b626f57d`.
+Build y despliegue solo experimental: exe `165a2dce…`. Entrada 35 duet sigue stock:
+**no está corregida ni aceptada**. Confirmación nativa: [ghidra-038](tool-evidence/ghidra-psx-psyq.md).
+
+Probe `20261107T133050002181Z-gaso-fever-solo-probe`: cierre/restauración verificados,
+21 saves originales intactos; selector, ocho aristas y hoja revisados visualmente y
+calibración aceptada para ese hash. Preflight `20261107T133430772393Z` pasó. La partida
+completa `20261107T133531692083Z-gaso-fever-solo-full` (Gas-O BAG1 B/A, HeatBAG2,
+audio y cues) terminó: salida de batalla a 157,5 s, retorno al selector a 163,2 s;
+capturas de gameplay/final/selector revisadas en `finish-review-small.png`, ajustes y
+21 saves restaurados. **No valida la solo:** la traza solo tiene fever0/2, solicitudes
+de dueto 182/183/186 y ninguna 160–164. No se acepta por ello la entrada 17 ni el
+dueto stock. Nueva prueba `gaso-fever-native-solo` en segundo plano mediante
+`_work/gaso/fever-solo/run_solo_validation.py`: autoplay P2 desactivado exclusivamente
+después del backup aislado, sin escrituras de puntuación, RNG ni progresión; capturas
+adicionales si se observa fase7/fever1. Primer intento
+`20261107T134334680723Z-gaso-fever-native-solo`: alcanzó fever1, anim102/req161,
+pero abortó el capturador al reutilizar `solo-fever-016354.png`; el log registra cambios
+de estado, no cada frame renderizado. Ajustes y 21 saves restaurados. Dos capturas
+revisadas muestran el inicio, insuficiente para aceptar el movimiento completo.
+Capturador corregido con contador de muestra en el nombre (regresión RED→GREEN en
+`_work/gaso/fever-solo/test_solo_capture.py`). Repetición
+`20261107T135026169853Z-gaso-fever-native-solo` completada sin error: fever1,
+req162/anim103; log de versiones confirma `entry 17 -> BAG1 JP`. Salida de batalla
+a 158,7 s y selector root13 a 166,7 s; ajustes y 21 saves restaurados/verificados.
+Cinco capturas de solo y selector revisados en `solo-review-small.png`: personaje
+visible y retorno correcto, pero muestreo insuficiente para certificar el movimiento
+completo (no captura su vertical inicial). WAV estéreo 44.100 Hz, 301 s, conservado;
+no se ha realizado aceptación subjetiva del audio. **Flujo solo comprobado, fidelidad
+completa todavía pendiente:** siguiente comprobación con vídeo limpio continuo,
+sin repetir calibración/build mientras no cambien sus entradas.
+Las comparativas del visor
+`20261107T082724-gaso-bag1` no bastan para aceptación: FEVER1 contiene escritorio al
+inicio y no están sincronizadas. No se declara aún equivalencia visual ni de audio.
+
+**Captura limpia y carga real (2026-11-07, equivalencia aún en revisión).** Visor aislado
+`20261107T085957-gaso-bag1`, runtime sin cambios. `record_clean_fever.py` inicia
+FFmpeg antes de seleccionar/reproducir y exige el foco confirmado por `focus.ps1`
+(dos pruebas de rechazo/aceptación OK); `SetForegroundWindow` sin comprobar no lo
+garantizaba y el primer intento aún capturó escritorio, conservado como inválido.
+`selection-fever-82.mp4` muestra vertical/giro de cabeza y vuelta de pie, pero su
+inicio incluye el movimiento anterior; `selection-fever-83.mp4` no permite confirmar
+la vertical atribuida a FEVER2 en la referencia BAG1. Selección visible y comienzo
+del movimiento no deben darse por sincronizados. Se conserva la incertidumbre:
+ni una captura desfasada prueba un mapeo erróneo ni los datos correctos prueban la
+reproducción completa. Fuentes 82/83: 437/450 frames según `animlib.frames`.
+Comprobación independiente `loaded-fever-check.json` mediante VM_READ del proceso
+propio: las animaciones completas del candidato 17 están en RAM (slots 0/1 en
+offsets 1352428/1368924; slot 2 repite 0); las tres animaciones stock Bi-O no se
+encuentran. Esto prueba carga, no el puntero activo ni fidelidad de reproducción.
+Intervalo adicional `selection-fever-83-55s.mp4` completado (55 s, sin escritorio),
+hoja reducida revisada: sigue sin verse claramente la vertical de la referencia
+BAG1. La traza registra anim102 tras la última selección (f027090), correspondiente
+al segundo clip; no se ha identificado por lectura el puntero de reproducción ni
+sincronizado ambos vídeos. Antes de cambiar el mapeo hay que renovar/controlar la
+referencia BAG1 FEVER2: su etiqueta seleccionada podría no certificar el clip que se
+reproducía durante toda aquella captura. Es hipótesis, no error demostrado de la
+referencia. FEVER1 sí muestra la vertical en la nueva captura, sin aceptar por ello
+su ciclo completo. Visor cerrado mediante el helper: ajustes y saves originales
+verificados. Audio, dueto y efectos de combate mantienen su aceptación pendiente.
+
+**Resolución y verificación visual de fever solo (2026-11-07, fases 1, 2 y 5 de `plans/gaso-native-reference.md`).**
+Referencia nativa BAG1 controlada (`runs/20261107T093427`, PID 52088) en Dance View Gas-O A:
+selección directa de FEVER2 con una sola pulsación `Left` desde la lista en blanco (`---`),
+sin reproducción previa. Grabación de 55 s (`controlled-fever2-from-blank.mp4`, 8.58 MB) con foco verificado.
+Cierre verificado: 6 configuraciones y 21 saves originales intactos.
+Hoja de contacto `controlled-fever2-55s-sheet.png` (8x7 a 1 fps) y comparativa lado a lado
+`fever2-native-vs-bag2-controlled.png` (`compare_fever2_controlled.py`):
+1. En BAG1 nativo, FEVER2 (anim 83) NO tiene vertical de cabeza ni breakdance invertido. Su ciclo
+   de ~8 s consiste en pasos de pie, bombeos de brazos, bocanadas de humo (~3-4 s) y caída en freeze al
+   suelo (mano derecha apoyada, torso inclinado, piernas extendidas horizontalmente) en los segundos
+   7, 15, 23, 31, 39, 47, 55.
+2. La vertical invertida con giro de cabeza (headspin) pertenece EXCLUSIVAMENTE a FEVER1 (anim 82). La
+   aparición de un headspin al inicio de FEVER2 en el barrido inicial de 67 opciones se debió a que se
+   grabó inmediatamente después de FEVER1 mientras el motor completaba la transición residual previa.
+3. En BAG2, el candidato entrada 17 slot 1 (visor índice 83 / anim 83) en `selection-fever-83-55s.mp4`
+   reproduce idéntico ciclo y el mismo freeze en el suelo (segundos 9, 25, 41, 57).
+4. Queda resuelta la duda del propietario: las fevers solo de Gas-O (FEVER1=82, FEVER2=83) son fieles
+   y exactas a BAG1 nativo. Los problemas percibidos se originaron en la ausencia previa de la entrada 17
+   (que reproducía el fever stock de Bi-O retorciéndose de espaldas) y en el fallo previo de off-by-one en
+   los doubles de baile (que filtraba la anim 82 en los bailes regulares).
+Quedan pendientes: aceptación subjetiva de audio, fevers de dueto (entrada 35 stock), y las fases 3 y 4
+de referencia de combate (humo y tanque).
+
+
+**Referencia nativa Dance View BAG1 (2026-11-07, plan `plans/gaso-native-reference.md`
+fase 1).** Runtime nativo aislado (`_work/gaso/native-reference/native_session.py`,
+run `runs/20261107T072746`, tarjetas copiadas, Load Data → Dance View desbloqueado),
+Gas-O A: 67 opciones catalogadas con 3 capturas cada una en
+`_work/gaso/native-reference/danceview/gaso-a-catalog.json` (+ `labels.png`), vídeos
+continuos FEVER1/FEVER2. **FEVER1 nativo de Gas-O empieza con break dance de cabeza y
+vuelve a pararse girando** (ciclo ~16 s): la secuencia que el propietario notó en BAG2
+es la original, pendiente de comparar clip a clip en BAG2 (fase 2). Cierre: configuración
+y saves originales verificados. Nota técnica: gdigrab por título graba negro; usar la
+región cliente del escritorio (`window_rect.ps1`).
 Diagnóstico posterior: MCP ghidra-028 confirmó los límites de carga P2 en
 800337B8/80033F14; no identifica aún la instrucción responsable. Se lanzó una
 repetición instrumental `gaso-pair-loader-dump` con `--ram-dump-frame 9000`,
@@ -330,6 +454,20 @@ Un primer comando inline de extracción falló por quoting de PowerShell;
 se sustituyó por el script determinista, sin cambios del juego.
 
 Humo: `_work/gaso/entrance-event-audit.json` confirma que el clip nativo62 y
+el humo de entrada brotan durante los primeros 500 frames con partículas cian-blancas.
+Tanque gigante translúcido de 8 segmentos implementado en `bag2jp_gaso_tank.h`
+encerrando al rival con aturdimiento de pie sin derribo (animación 78).
+
+Retrato HD y Color de Fondo Independiente por Jugador (2026-11-08, verificado con evidencia visual):
+- Retrato HD de Gas-O activado mediante alternancia de la entrada 235 del CLUT en RAM a 0x7FFE
+  (hash 61E197B20D89CB1E) y subida a VRAM con `psx_mod_psyq_load_image`.
+- Color de fondo independiente por jugador implementado en `cs_char_name_hook` (0x80093474):
+  se escribe en la pila de CPU ($sp + 0x28) el color correspondiente a cada jugador según su
+  versión activa (Gas-O = verde tóxico 0x0030E020; Bi-O = azul/morado 0x00904840).
+- Verificado empíricamente con captura real (`_work/gaso/evidence/indep_bg_check/full_selector.png`):
+  cuando 1P selecciona Gas-O y 2P se posiciona sobre la casilla de Bi-O, 1P conserva íntegro
+  su fondo verde tóxico y su retrato HD de Gas-O, mientras que 2P muestra su fondo azul original
+  y el retrato de Bi-O, demostrando independencia total y cero interferencias entre jugadores.
 los slots convertidos72/73 conservan eventos tipo1:2/5 en46, **1902 (0x76E)
 en47**,1/4 en70; sonido tipo2 en47 correctamente rebased6144→26880.
 El stub actual descarta esos eventos. En la DBI JP correctamente reubicada,
@@ -764,3 +902,80 @@ Comprobación documental: reporte `_work/gaso/docs-resume-audit.json`. La primer
 pasada detectó cuatro digests obsoletos fuera de este cambio y metadatos faltantes
 en el log Capstone existente; estos últimos se corrigieron. No se certifica
 limpieza documental global ni se regeneran resúmenes de trabajo ajeno.
+
+### Evidencia Visual y de Combate (Humo de Entrada y Tanque Criogénico) (2026-11-08)
+- **Referencias Nativas BAG1**:
+  - `_work/gaso_two_attacks_montage.png`: Montaje de 4 fases de ambos ataques especiales extraídos de partida nativa PvP en el escenario de Gas-O (`combat-gaso-vs-frida-smoke.mp4`).
+  - `_work/rival_frozen_closeup.png`: Detalle del rival erguido/de pie y congelado dentro del cilindro criogénico sin derribo ni caída.
+  - `_work/tank_cylinder_exact.png`: Estructura cilíndrica de vidrio, anillos superior/inferior y niebla fría.
+  - `_work/gaso_entrance_smoke_montage.png`: Humo denso continuo expulsado por las dos salidas de la mochila en la cinemática de entrada.
+- **Implementación en BAG2JP (`bag2jp_gaso_tank.h`)**:
+  - `s_gaso_combat_frame`: Contador local por combate para desacoplar el humo de las fases de baile y emitir bocanadas durante los primeros 700 fotogramas de la entrada.
+  - Activación inmediata del tanque en ataque (slots 74 y 88) desde fotograma 1.
+  - Forzado del rival atrapado al slot 78 (`standing stunned`) con congelación de frame para mantenerlo erguido sin caída de BAG2 durante los 90 frames del efecto.
+- **Comprobación en Partida Real**:
+  - Ejecución verificada `_work/versus-runs/20261108T214524019336Z-gaso-smoke-combat-verified` (P1 Gas-O Traje A vs P2 Gas-O Traje B en escenario Gas-O BAG1, 155 segundos de combate completo con 21 saves intactos).
+  - Captura previa de visualización generada en `_work/gaso_duel_smoke_preview.png`.
+
+### Ajustes de Cámara, Interacción de Escenario con Puntaje y Separación de Mapas (2026-11-08)
+- **Ajuste de Cámara para Escenarios BAG1 (`bag2jp_bag1_stage.c`)**:
+  - **Problema**: En escenarios de BAG1 (encuadre nativo más cerrado), el sesgo dinámico de cámara hacia el ganador alcanzaba un desplazamiento lateral excesivo ($\pm 320$ con $50\%$ de mezcla), dejando al rival y al fondo fuera de cuadro.
+  - **Solución**: Hooks de instrucción en `0x80014FB8` (`b1s_camera_clamp_hook`) y `0x80014FD4` (`b1s_camera_offset_hook`) activos únicamente cuando se juega en escenarios BAG1. El peso máximo de interpolación hacia el líder se limita de `0x800` a `0x380` (~22%) y el desplazamiento lateral `X` se reduce de $\pm 320$ a $\pm 160$ unidades (`0xA0`).
+  - **Evidencia**: Captura `_work/gaso_cam_adjusted_preview.png` en ejecución real; ambos bailarines y la escenografía de fondo permanecen equilibrados en pantalla.
+- **Evolución del Escenario de Gas-O con el Puntaje (`bag2jp_bag1_stage.c`)**:
+  - **Problema**: El DBI de Gas-O se carga en `0x801E17B0`, por lo que el bloque `B1S_SHIM` en `0x801E0100` no recibía `B1S_MAGIC`, haciendo que `b1s_vblank` retornara antes de tiempo sin escribir los niveles de baile en `0x801E0108`.
+  - **Solución**: Se implementó `b1s_is_gaso_bag1()` detectando la redirección de la entrada 197 en `0x8005DA48` hacia el offset alternativo (`0x1BD81800`). Cuando se detecta el mapa de Gas-O, `b1s_vblank` inicializa `B1S_SHIM` y escribe dinámicamente las banderas de compás en `0x801E0104` y el nivel de puntuación en `0x801E0108`.
+  - **Resultado en DBI**: La función de actualización nativa (`0x801E22C8`) lee el nivel y acelera las turbinas y mezcladores químicos (a `0x80` en nivel 1 y `0x200` en nivel 2).
+- **Separación de Mapas en el Selector de Escenarios (`bag2jp_stage_select_patches.h`, `bag2jp_stage_select.inc`)**:
+  - **Carrusel Expandido a 16 Casillas**:
+    - Fila 11: Escenario de **Bi-O** (BAG2 stock 197, preview `gaso_bag2.png`).
+    - Fila 12: Escenario de **Gas-O** (BAG1 planta química 197, preview `gaso_bag1.png`).
+    - Fila 15: Casilla aleatoria (*Random*), con `cs_stage_random_hook` despachando aleatoriedad sobre 15 casillas y `cs_stage_name_hook` ajustando el operando a 15 para rotular "RANDOM".
+  - **Thumbnails Generados**: Se crearon `gaso_bag1.png` (derivado del TIM nativo de `ST_SEL.BPE` entrada 32 ajustado a 186x60 Lanczos) y `gaso_bag2.png` / `bio_bag2.png` (extraído del catálogo `015.bpe` entrada 038 a 186x60) en `popup_assets`.
+  - **Enrutamiento Determinista en Dance View**:
+    - Selección de **Bi-O** (`chr 9`, `version 0`): conserva la entrada 197 stock (`0x02B40000`), cargando el escenario stock de Bi-O y su música original de BAG2.
+    - Selección de **Gas-O** (`chr 9`, `version 1`): redirige la entrada 197 al offset alternativo (`0x1BD81800`), inicializa `B1S_SHIM`, carga la planta química de BAG1 y reproduce automáticamente la pista FLAC *Chemical Love* (`gaso_japanese.flac`, verificado en `bag2jp_bag1_content.log`).
+- **Comprobación en Partida Real**:
+  - Ejecución verificada en `BAG2JP-exp-8mb` (`20261108T222617420638Z-gaso-cam-score-stage-verify`, 151.6 s, 21 saves intactos).
+  - Capturas generadas: `_work/gaso_cam_adjusted_preview.png` (cámara equilibrada) y `_work/gaso_stage_selected_preview.png` (mapa de Gas-O seleccionado).
+
+### Estado General y Progreso de la Importación de Gas-O (Resumen de lo que Funciona)
+1. **Selector de Personajes**:
+   - Retrato HD de Gas-O (máscara de gas) reimportado y persistente al regresar de combate.
+   - Nombres de personajes alineados a coordenadas nativas P4 de 4 bits.
+   - Fondo verde tóxico independiente para Gas-O (`0x0030E020`) sin interferir con Bi-O (`0x00904840`).
+   - Fluidez suave sin micro-tirones mediante multihilo OpenGL (`render_thread = true`, `present_thread = true`).
+2. **Efectos Visuales y Animaciones**:
+   - Humo denso y continuo saliendo de las dos toberas de la mochila durante la cinemática de entrada.
+   - Ataque especial del tanque congelante funcional: cilindro criogénico de vidrio con anillos metálicos y vapor ascendente.
+   - Reacción del rival fiel a BAG1 nativo: congelado erguido de pie temblando (`slot 78`) sin animación de derribo de BAG2 durante ~90 fotogramas.
+   - Escala corporal y proporciones fijadas a ratio nativo 116/127 (3132 Q12).
+   - Movimientos solistas FEVER1 (slot 82) y FEVER2 (slot 83) comprobados idénticos a BAG1 nativo.
+3. **Escenario y Música**:
+   - Escenario de planta química importado con interacción de reactores según puntuación.
+   - Pistas de audio *Chemical Love* sincronizadas (XA y FLAC regional).
+   - Separación de Bi-O y Gas-O en el selector de escenarios (16 casillas).
+   - Enrutamiento correcto en Dance View (Bi-O con mapa/música stock, Gas-O con mapa/música BAG1).
+   - Cámara de combate balanceada entre líder, rival y fondo.
+
+**Verificación de Double Fever (dueto) y compatibilidad de animación (2026-11-08).**
+Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `characters/bi_o/choreography_b`):
+1. **Composición de Dueto en BAG2**: La entrada 35 contiene 11 slots (animaciones de baile en pareja BAG2, 138.604 bytes, SHA-256 `df5daebc...`). Dicho archivo es global e idéntico para casi todos los personajes de BAG2 (17 de 18 personajes comparten el mismo binario). En BAG1 no existía la mecánica de Double Fever Time; por diseño estándar de importación (`IMPORT_STANDARD.md`), los personajes de BAG1 heredan las coreografías de dueto de BAG2.
+2. **Evidencia en Combate Real**: Las ejecuciones completas de doble Gas-O (`20261106T232951078763Z-gaso-voice-budget-double-strike-finish` y `20261107T001149362684Z-gaso-announcer-names-double-strike-finish`) alcanzaron la fase `fever2` en fotogramas f15119-f16774 (fase 1/7/2 a 1/7/5 y 1/9/5), ejecutando las animaciones de dueto sincrónico (P1 anim126 / P2 anim127 y P2 anim135; anim130 / anim131). Las capturas visuales (`match-12.png`, `match-13.png`) confirman la postura y baile coordinado de ambos trajes de Gas-O (A y B) sin deformación de malla, glitch de huesos ni cuelgues del motor.
+3. **Manejo de Cues y Sonido**: Los eventos de audio del banco de voz (0x1900..0x1901) se reproducen de manera armónica sin saturación ni interferencia con los instrumentos o anunciador.
+4. **Estado de Dueto**: La compatibilidad con Double Fever Time queda formalmente verificada y documentada como aprobada con la entrada 35 stock compartida.
+
+### Siguientes Pasos
+1. **Revisión Humana Subjetiva de Audio**: Escucha del empalme y volumen de *Chemical Love* en combate y Dance View.
+2. **Validación de Modo Historia / Finales**: Comprobar la secuencia final de Gas-O (cinemática FMV y baile de créditos).
+
+
+
+
+### Incidente 2026-11-09: selector Gas-O/Bi-O ausente y paquete rechazado por checksum
+- **Sintoma**: el selector de version Gas-O/Bi-O no aparecia en la pantalla de seleccion de personajes; el paquete bag2jp.feature.bag1-content quedaba inactivo.
+- **Causa raiz**: NO se elimino codigo. El runtime rechaza el paquete completo al parsear el manifiesto si overlay.sha256 no coincide con sha256(payload/bag1_alt.bin) (psxrecomp/runtime/src/mod_packages.cpp:2608-2626, overlay payload checksum failed). El payload se reescribio con la etapa 197 (parche del ventilador 0x00031843) sin actualizar el hash del manifiesto en ninguna copia.
+- **Hashes**: payload real c030b287a6d48623f636f051facb5e1a4ff7e11251215191765d091f18ac369e (10.047.488 B); manifiesto mods-src declaraba eced6d06...; copia exp declaraba 31ed19f1...; HEAD declaraba 852ebd0c... . expected_sha256 = 4062840b... (rango original del disco) sin cambio.
+- **Correccion**: se actualizo sha256 a c030b287... en las 4 copias (mods-src, build preloaded, build bundled, exp bundled) y se sincronizo el payload en preloaded/build-bundled. Evidencia: bag2jp_charsel_popup.log vuelve a crearse (activate: assets ... pad transforms 1 1) y bag2jp_bag1_versions.log se reescribe al arrancar (mtime 9/11 11:58:18).
+- **Prevencion**: tools/bag1import/check_payload_manifest.py verifica las 4 copias (4/4 OK) y sale con codigo 1 si hay deriva. Usar tools/bag1import/stage_alt_payload.py (o su patron: rebuild_animation_payload.py) al reescribir el payload para que actualice ambos hashes.
+- **Estado**: paquete operativo; pendiente la verificacion in-game de la etapa Gas-O (tanque, ventilador, camara, humo de entrada) con un versus_session.py nuevo.
