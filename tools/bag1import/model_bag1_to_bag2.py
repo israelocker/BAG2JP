@@ -36,11 +36,75 @@ def mesh_len_bag1(w, i):
         p += sh(k, False) * lo + sh(k, True) * hi
     return p
 
-def convert(data, scale=None):
-    """scale (num, den): multiply every node's scale and translation (stage world-scale fix)."""
+def convert(data, scale=None, flatten_type2=False):
+    """scale (num, den): multiply every node's scale and translation (stage world-scale fix).
+    flatten_type2: convert type 2 instance nodes into full type 1 mesh copies (needed for BAG1 stages).
+    """
     w = list(struct.unpack('<%di' % (len(data) // 4), data[:len(data) // 4 * 4]))
     n = w[0]
     links = [w[1 + 4 * b: 5 + 4 * b] for b in range(n)]
+    order = walk_order(links)
+
+    if flatten_type2:
+        # Pre-parse all nodes in walk order to extract meshes for reference
+        i = 1 + 4 * n
+        parsed = {}
+        for b in order:
+            t = w[i]
+            if t == 0:
+                parsed[b] = {'type': 0, 'data': w[i:i + 1], 'xf': w[i + 1:i + 11]}
+                i += 11
+            elif t == 2:
+                tgt_rel = w[i + 1]
+                target_bone = b + tgt_rel
+                parsed[b] = {'type': 2, 'target_bone': target_bone, 'xf': w[i + 2:i + 12]}
+                i += 12
+            elif t == 3:
+                ln = 3 + w[i + 2] * 2
+                parsed[b] = {'type': 3, 'data': w[i:i + ln], 'xf': w[i + ln:i + ln + 10]}
+                i += ln + 10
+            elif t == 4:
+                hi = struct.unpack('<hh', struct.pack('<i', w[i + 5]))
+                ln = 0x13 + w[i + 4] * 2 + hi[0] * 2 + hi[1] * 2
+                parsed[b] = {'type': 4, 'data': w[i:i + ln], 'xf': w[i + ln:i + ln + 10]}
+                i += ln + 10
+            elif t == 1:
+                ln = mesh_len_bag1(w, i)
+                hdr = w[i:i + 0x3C]
+                new = [hdr[0]] + hdr[1:0x1D] + [0] * 8 + hdr[0x1D:0x2F] + [0] * 4 + hdr[0x2F:0x3C]
+                assert len(new) == 0x48
+                mesh_bag2 = new + w[i + 0x3C:i + ln]
+                parsed[b] = {'type': 1, 'mesh': mesh_bag2, 'xf': w[i + ln:i + ln + 10]}
+                i += ln + 10
+            else:
+                raise ValueError(f'bone {b}: unknown type {t} at word {i}')
+
+        out = w[:1 + 4 * n]
+        stats = {}
+        for b in order:
+            node = parsed[b]
+            t = node['type']
+            if t == 2:
+                # Flatten to type 1 using target bone's mesh
+                target_bone = node['target_bone']
+                mesh = parsed[target_bone]['mesh']
+                out += mesh
+                t = 1
+            elif t == 1:
+                out += node['mesh']
+            else:
+                out += node['data']
+            stats[t] = stats.get(t, 0) + 1
+
+            xf = list(node['xf'])
+            if scale:
+                xf = xf[:2] + [v * scale[0] // scale[1] for v in xf[2:5]] + xf[5:6] + \
+                     [v * scale[0] // scale[1] for v in xf[6:9]] + xf[9:]
+            out += xf
+
+        tail = data[i * 4:]
+        return struct.pack('<%di' % len(out), *out) + tail, stats, len(tail)
+
     out = w[:1 + 4 * n]
     i = 1 + 4 * n
     stats = {}

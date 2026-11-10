@@ -1,5 +1,7 @@
 """Real stage fixtures: shared relocation must preserve the admitted Heat blob."""
 import hashlib
+import copy
+import struct
 from pathlib import Path
 import sys
 import subprocess
@@ -25,6 +27,48 @@ def load_tests(loader, tests, pattern):
 
 
 class StagePortTests(unittest.TestCase):
+    def test_gaso_package_preserves_native_assets_and_stock_song_tail(self):
+        import build_stage_package as package
+        import preserve_announcer as pa
+
+        result, report = package.build_from_project(ROOT, 'gaso')
+        entries = dfs_entries(result)
+        native = dfs_entries((ROOT / '_work/bag1_disc_full/STAGEE/ST_GAS.DFS').read_bytes())
+        stock = (ROOT / '_work/stage_import/gaso/stock_197_graveyard/000.dbi').read_bytes()
+        self.assertEqual(len(entries), 13)
+        self.assertEqual(entries[2:5], native[2:5])
+        import tim_retarget as tim
+        _, palette, image = tim.parse(entries[5])
+        self.assertEqual((image['x'], image['y']), (640, 256))
+        self.assertEqual((palette['x'], palette['y']), (960, 48))
+        _, palette, _ = tim.parse(entries[6])
+        self.assertEqual((palette['x'], palette['y']), (992, 48))
+        self.assertEqual(entries[7:11], [native[4]] * 4)
+        self.assertEqual(pa.banks(entries[1])[0], pa.banks(native[1])[0])
+        self.assertEqual(report['unmapped_calls'], [])
+        self.assertEqual(report['model'], {1: 32, 3: 1})
+        from tools.test.test_stage_geometry import nodes
+        converted_nodes = nodes(entries[11])
+        for panel in (23, 26, 30):
+            self.assertEqual(struct.unpack_from('<I', converted_nodes[panel], 0x25*4)[0], 21)
+            self.assertEqual(struct.unpack_from('<I', converted_nodes[panel], 0x30*4)[0], 9 << 16)
+        # Fresh Ghidra MCP: id9 callbacks and chart pointer (2026-11-06).
+        self.assertEqual(struct.unpack_from('<2I', entries[0], 12 + 0x801E25C4 - stage.B2_BASE),
+                         (0x03E00008, 0x24020001))
+        tail_offset = 12 + 0x801E268C - stage.B2_BASE
+        self.assertEqual(entries[0][tail_offset:], stock[tail_offset:])
+        self.assertEqual(len(entries[0]), len(stock))
+
+    def test_gaso_rejects_a_wrong_callback_within_the_image(self):
+        import build_stage_package as package
+        from unittest.mock import patch
+
+        profile = copy.deepcopy(stage.load_profile('gaso'))
+        profile['callbacks'][0] += 4  # In bounds, but overwrites init's delay slot.
+        with patch.object(stage, 'load_profile', return_value=profile):
+            with self.assertRaisesRegex(ValueError, 'callback'):
+                package.build_from_project(ROOT, 'gaso')
+
     def test_strike_package_has_native_textures_and_safe_empty_animation_list(self):
         import build_stage_package as package
         result, report = package.build_from_project(ROOT, 'strike')

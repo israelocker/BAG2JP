@@ -21,6 +21,9 @@ B1_BASE, B2_BASE = 0x801E17B0, 0x801DAF10
 DELTA = B2_BASE - B1_BASE
 CODE_END = 0x801E48F0                       # first data word after the last function
 SHIM = 0x801E0100                           # 'B1ST', beat flags u32, level u8, prev level u8
+MAIN_EXE_BASE = 0x80010000                  # Flat executable image, no PS-X EXE header.
+STAGE_CALLBACK_TABLES = (0x80051B88, 0x80051BBC, 0x80051BF0, 0x80054C10)
+STAGE_TABLE_COUNT = 13                      # Each callback table occupies 0x34 bytes.
 FUNCS = {
     0x8004FB0C: 0x80049824,  # SetPolyFT4
     0x8004A86C: 0x80043784, 0x8004B08C: 0x80044334, 0x8004AFFC: 0x800442A4, 0x8004A5BC: 0x800434D4,
@@ -171,6 +174,42 @@ def patch_struct_sites(p):
                     n += 1; break
     return n
 
+
+def patch_stage_structs(dbi, p, profile):
+    """Adapt BAG1 stage-struct field offsets (+0x0c..+0x1c -> +0x20..+0x30) and bone mesh records."""
+    base, code_end = profile['source_base'], profile['code_end']
+    raw = dbi[12:]
+    sreg, breg, n, clear_after = set(), set(), 0, False
+    for off in range(0, code_end - base, 4):
+        rw = struct.unpack_from('<I', raw, off)[0]
+        w = struct.unpack_from('<I', p, off)[0]
+        op, rs, rt, rd, imm = rw >> 26, (rw >> 21) & 31, (rw >> 16) & 31, (rw >> 11) & 31, rw & 0xFFFF
+        if op == 0x23 and imm == 0x79D4:
+            sreg.add(rt)
+        elif op == 0x23 and rs in sreg and imm in (0x0C, 0x10, 0x14, 0x18, 0x1C):
+            struct.pack_into('<I', p, off, (w & 0xFFFF0000) | (imm + 0x14))
+            n += 1
+            if imm == 0x0C: breg.add(rt)
+            if rt in sreg: sreg.discard(rt)
+        elif op == 0x23 and rs in breg and (imm & 0xFF) == 0xDC:
+            bone = (imm - 0xDC) >> 8
+            struct.pack_into('<I', p, off, (w & 0xFFFF0000) | (bone * 0xB0 + 0x8C))
+            n += 1
+            if rt in breg: breg.discard(rt)
+        elif op == 0 and (rw & 0x3F) in (0x21, 0x25) and rt == 0:
+            if rs in sreg: sreg.add(rd)
+            elif rd in sreg: sreg.discard(rd)
+        else:
+            dst = rd if op == 0 and (rw & 0x3F) not in (0x08, 0x09, 0x18, 0x19, 0x1A, 0x1B) else (
+                rt if op in (0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x20, 0x21, 0x23, 0x24, 0x25) else None)
+            if dst in sreg: sreg.discard(dst)
+            if dst in breg: breg.discard(dst)
+        if clear_after:
+            sreg.clear(); breg.clear(); clear_after = False
+        elif op == 0 and (rw & 0x3F) == 0x08 and rs == 31:
+            clear_after = True
+    return n
+
 def bag1_chart(scus, char_id, *, table=0x800513DC, header=0):
     """BAG1 song chart (main exe table 0x800513DC[id]: start frame, frames, beats, sections
     u16 (mode << 8 | beats), -1; mode 0 = both players, 1/2 = solo; after -1 both play to the end)
@@ -222,13 +261,36 @@ def build_sprite_helper(main_exe):
     return bytes(result)
 
 
+def validate_profile_callbacks(profile: dict, main_exe: bytes) -> None:
+    """Reject callback addresses that disagree with the target executable tables."""
+    stage_id = profile['stage_id']
+    if not 0 <= stage_id < STAGE_TABLE_COUNT:
+        raise ValueError('Stage callback table index is out of range')
+    if len(profile['callbacks']) != len(STAGE_CALLBACK_TABLES):
+        raise ValueError('Expected four stage callbacks')
+    for table, configured in zip(STAGE_CALLBACK_TABLES, profile['callbacks']):
+        offset = table - MAIN_EXE_BASE + stage_id * 4
+        if main_exe is None or offset + 4 > len(main_exe):
+            raise ValueError('Target executable is missing stage callback tables')
+        expected = struct.unpack_from('<I', main_exe, offset)[0]
+        if configured != expected:
+            raise ValueError(f'Stage callback mismatch at {table:08X}: '
+                             f'{configured:08X} != {expected:08X}')
+
+
 def build_profile_image(p, bss, stats, unknown, stock, chart, profile, main_exe):
     """Shared image layout: relocated code/BSS, local helper, callbacks, stock tail."""
+    validate_profile_callbacks(profile, main_exe)
     base = profile['source_base']
     delta = B2_BASE - base
     tail_offset = profile['tail_address'] - B2_BASE
     if len(p) + bss > profile['sprite_helper'] - B2_BASE:
         raise ValueError('Relocated stage/BSS overlaps the sprite helper')
+    for address, old, new in profile.get('patches', ()):
+        offset = address - base
+        if struct.unpack_from('<I', p, offset)[0] != old:
+            raise ValueError(f'Unexpected stage instruction at {address:08X}')
+        struct.pack_into('<I', p, offset, new)
     image = bytearray(tail_offset)
     image[:len(p)] = p
     sprite = build_sprite_helper(main_exe)
@@ -266,7 +328,9 @@ def build(dbi_in, bag2_dbi, chart=None, profile=None, *, main_exe=None):
     # points at (chart/beat table 0x8004DF08[0] and tables 0x80051AC8.. for id 0), so it is kept as is.
     p, bss, stats, unknown = port(dbi_in, profile)
     if profile and profile['stage_id'] != 0:
-        return build_profile_image(p, bss, stats, unknown, bag2_dbi, chart, profile, main_exe)
+        n = patch_stage_structs(dbi_in, p, profile)
+        img, stats, _, unknown = build_profile_image(p, bss, stats, unknown, bag2_dbi, chart, profile, main_exe)
+        return img, stats, n, unknown
     n = patch_struct_sites(p)
     # fire-burst sound: BAG1 plays cue 0x4000 on voice slot 20 (BAG2 has 14 slots, and its 0x4000 is
     # the fever cue of stage banks 1-4) -> BAG2 FUN_8002E478(cue 0x5000, -1, -1, -1) picks a free slot;

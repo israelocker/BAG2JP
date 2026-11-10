@@ -7,6 +7,7 @@ import struct
 
 from animlib import dfs_entries
 import model_bag1_to_bag2 as model
+import stage_geometry
 import port_bag1_stage as stage
 from rebuild_dfs_members import build_container
 import tim_retarget as tim
@@ -21,8 +22,8 @@ def build_from_project(root, name):
     stock = sorted(path for path in (root / config['stock']).glob('[0-9][0-9][0-9].*')
                    if path.suffix in {'.dbi', '.sedt', '.tim', '.bin'})
     members = [path.read_bytes() for path in stock]
-    if len(members) != 14:
-        raise ValueError('Expected audited 14-member destination stage')
+    if len(members) not in (13, 14):
+        raise ValueError(f'Expected audited 13 or 14-member destination stage, got {len(members)}')
     chart = stage.bag1_chart((root / config['exe']).read_bytes(), profile['stage_id'],
                             table=config['chart_table'], header=0x800)
     members[0], stats, _, unknown = stage.build(source[0], members[0], chart, profile,
@@ -45,16 +46,48 @@ def build_from_project(root, name):
         raise ValueError('Too many textures for destination descriptors')
     textures += [source[config['padding_texture_entry']]] * (9 - len(textures))
     members[2:11] = textures
+    scale = tuple(config['model_scale']) if config.get('model_scale') else None
+    flatten_type2 = bool(config.get('flatten_type2', False))
     members[11], model_stats, tail = model.convert(source[config['model_entry']],
-                                                  scale=tuple(config['model_scale']))
+                                                  scale=scale,
+                                                  flatten_type2=flatten_type2)
+    members[11] = stage_geometry.subdivide_ft4_meshes(members[11], config.get('ft4_subdivisions', []))
     if tail or model.check_bag2(members[11]):
         raise ValueError('Converted model failed structural validation')
     camera = source[config['camera_entry']]
     if camera[-4:] != bytes(4) or struct.unpack_from('<I', camera)[0] + 8 != len(camera):
         raise ValueError('Expected one native intro camera track')
+    cam_speed = float(config.get('camera_speed', 1.0))
+    if cam_speed != 1.0:
+        c_track_len, c_flags_keys = struct.unpack_from('<II', camera, 0)
+        c_flags = c_flags_keys >> 16
+        c_nkeys = c_flags_keys & 0xFFFF
+        c_keys = [struct.unpack_from('<6h', camera, 8 + i * 12) for i in range(c_nkeys)]
+        # Target total frames matching stock track 0 (e.g. 165 frames for stage 197)
+        first_stock_track = struct.unpack_from('<I', members[12])[0]
+        s_flags_keys = struct.unpack_from('<I', members[12], 4)[0]
+        s_target_keys = s_flags_keys & 0xFFFF
+        resampled_keys = []
+        for out_f in range(s_target_keys):
+            in_pos = out_f * cam_speed
+            if in_pos >= c_nkeys - 1:
+                resampled_keys.append(c_keys[-1])
+            else:
+                i0 = int(in_pos)
+                i1 = min(i0 + 1, c_nkeys - 1)
+                frac = in_pos - i0
+                k0 = c_keys[i0]
+                k1 = c_keys[i1]
+                resampled_keys.append(tuple(int(round(k0[c] + (k1[c] - k0[c]) * frac)) for c in range(6)))
+            new_track_len = 4 + len(resampled_keys) * 12
+        new_cam = struct.pack('<II', new_track_len, (c_flags << 16) | len(resampled_keys))
+        for rk in resampled_keys:
+            new_cam += struct.pack('<6h', *rk)
+        new_cam += bytes(4)
+        camera = new_cam
     first_stock_track = struct.unpack_from('<I', members[12])[0]
     members[12] = camera[:-4] + members[12][4 + first_stock_track:]
-    if config['empty_animation_list']:
+    if config.get('empty_animation_list') and len(members) > 13:
         members[13] = bytes(4)
     result = build_container(members)
     if dfs_entries(result) != members:

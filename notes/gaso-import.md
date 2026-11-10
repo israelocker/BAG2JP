@@ -2,19 +2,21 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Personaje USA con evidencia histórica; doble Gas-O arreglado por presupuesto de voz SPU (pasa hasta gameplay en Strike/Heat); escucha, partida completa, entrada nativa y JP pendientes."
+summary: "Prioridad: paneles rojos sobre GAS corregidos y ACEPTADOS por el propietario el 2026-11-10 con el candidato v2; tanque rechazado por el propietario. Historial regional, SPU, audio y aceptación parcial conservados."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md"]
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-10"
 doc_kind: evidence
 ---
 
 # Gas-O — ledger canónico
 
 ## Tareas Pendientes Prioritarias (Solicitadas por el Propietario)
+- [x] **Escenario: paneles rojos no deben tapar el cartel blanco GAS**. V1 falló visualmente; v2 subdivide solo tres caras nativas y no muestra el solape en las capturas reales de la intro (frames 056-074). **Aceptado por el propietario el 2026-11-10.** Véase «Revisión visual de la intro v2» al final. No confundir pruebas host/build con aceptación.
 - [x] **Escucha en combate de Chemical Love grabada**: Ejecución verificada en partida Versus real con captura de audio SPU/FLAC completa (`bag2jp_audio.wav`, 142.01s, 44.1kHz stereo) en `_work/versus-runs/20261108T225855012145Z-gaso-listen-gameplay/`.
 - [ ] **Efectos visuales de humo de entrada de Gas-O**: expulsión de humo denso/fiel por los tubos de la mochila al inicio de sus combates.
-- [x] **Ataque Especial de Gas-O corregido (Tanque Congelante Auténtico)**:
+- [ ] **Ataque Especial de Gas-O: corrección visual pendiente, NO aceptada por el propietario (2026-11-09)**:
+  - Los siguientes puntos son antecedentes del candidato; no demuestran la aceptación visual actual. Véase el seguimiento de defectos al final de esta nota.
   - Extracción y renderizado de la malla 3D nativa original de BAG1 (`PLAYER2/P_GAS_A2.DFS` miembro 2 / `002.bin`: 41 vértices, 24 quads de cuerpo metálico, 8 triángulos de tapa biselada y 8 quads de cilindro de cristal translúcido).
   - Colores nativos de fábrica de PS1 aplicados: Metal `RGB(89, 89, 102)`, Cristal químico `RGB(125, 255, 106)`.
   - Sprites y volutas de humo químico con coordenadas UV auténticas de la tabla nativa `0x801DCE4C`.
@@ -979,3 +981,305 @@ Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `char
 - **Correccion**: se actualizo sha256 a c030b287... en las 4 copias (mods-src, build preloaded, build bundled, exp bundled) y se sincronizo el payload en preloaded/build-bundled. Evidencia: bag2jp_charsel_popup.log vuelve a crearse (activate: assets ... pad transforms 1 1) y bag2jp_bag1_versions.log se reescribe al arrancar (mtime 9/11 11:58:18).
 - **Prevencion**: tools/bag1import/check_payload_manifest.py verifica las 4 copias (4/4 OK) y sale con codigo 1 si hay deriva. Usar tools/bag1import/stage_alt_payload.py (o su patron: rebuild_animation_payload.py) al reescribir el payload para que actualice ambos hashes.
 - **Estado**: paquete operativo; pendiente la verificacion in-game de la etapa Gas-O (tanque, ventilador, camara, humo de entrada) con un versus_session.py nuevo.
+
+### Seguimiento de defectos visuales — revisión del propietario 2026-11-09
+
+- **Prioridad A, pendiente**: paneles rojos dibujados sobre el cartel blanco «GAS».
+  Evidencia original: `C:/Users/israe/AppData/Local/Temp/opencode/uploads/251d2beb-bc20-4d7f-89e2-93f3f77a605e/image.png`;
+  copia reducida de diagnóstico: `_work/gaso/defect-a-owner-small.png`.
+  La imagen confirma la superposición; todavía no determina su causa (geometría,
+  ordenación OT o estado del renderer). No hay un parche de escenario aceptado.
+- **B, NO aceptado**: el propietario confirma que el tanque/rival siguen mal.
+  La lectura de posición Y=0 y el seguimiento XZ de `af2720e` no prueban contacto
+  visual con el suelo, encierro del rival ni pose congelada correcta. Evidencia:
+  `C:/Users/israe/AppData/Local/Temp/opencode/uploads/bc7a814f-54e4-4159-b803-3c0697cbd579/image.png`.
+  Esto corrige las afirmaciones de completitud anteriores, no sus registros históricos.
+- **Orden solicitado**: corregir A y después verificar en juego; B permanece en
+  la lista hasta contraste visual con la referencia BAG1.
+- Preflight de esta continuación: `_work/workflow/20261110T022054362906Z-gaso-sign-depth/metrics.json`.
+  Detecta deriva de `bag2jp_gaso_tank.h` entre fuente y build; no sincronizar ni
+  desplegar a ciegas. Ejecutable build/experimental coinciden según el helper.
+- **Auditoría acotada, 2026-11-10 UTC**: `py -3.13 _work/gaso/audit_sign_candidate.py`
+  generó `_work/gaso/sign-candidate-audit.json`. La etapa 197 desplegada mide
+  514000 bytes en offset 8689664; SHA-256
+  `805872fadd6b214077e36dee28e2a2f234a73cf6b836767f55a0fefab5c883f6`.
+  Su modelo coincide byte a byte con la conversión actual de la malla nativa:
+  `bcff254feac68db92533c13aca7f32b621cd1aff6d600baf63d18982594e0878`,
+  32 nodos tipo 1, uno tipo 3, sin cola. Esto descarta deriva respecto al conversor
+  actual, **no** un defecto de conversión ni un problema de ordenación/profundidad.
+  El checker de manifiestos pasó en las cuatro copias; no hay nuevo fallo de checksum.
+- **Deriva B confirmada**: el header del build conserva el rival cacheado y carece
+  del refresco por frame de `opp_dancer` y XZ que sí existe en la fuente canónica.
+  SHA-256 fuente `19472b5164b4cab2b77b12fe939df210c19c61d0c87ae2c05b65a6b4d5af671c`;
+  build `55dfb2121dc8c201694da4472ebdaf252b35b4699681f46c241137ac1985eee8`.
+  Por tanto no se puede certificar que la corrida anterior ejecutara ese cambio.
+- **Bloqueo histórico de análisis, resuelto en la continuación siguiente**:
+  `get_program_info()` falló con `BACKEND_UNAVAILABLE`
+  en `http://127.0.0.1:8080`. Se reutilizó el gestor de proyecto existente
+  (PID 57236); los intentos acotados de abrir `SLPM_862.19` no demostraron apertura
+  de CodeBrowser ni conexión MCP. No se verificó binario/región/módulo mediante MCP.
+  Registro: `notes/tool-evidence/ghidra-psx-psyq.md`, entrada
+  `20261110-ghidra-041`. No hubo nuevo parche, build, despliegue ni prueba de juego.
+- **Próximo paso de aquella continuación, sustituido abajo**: recuperar CodeBrowser/MCP en la sesión existente sin duplicarla,
+  confirmar identidad y leer el renderer relevante; localizar la causa de A antes
+  de modificarlo. Luego construir/desplegar un candidato trazable y verificar GAS
+  visible durante la intro; B sigue pendiente de comparación visual con BAG1.
+- **Cierre documental**: `audit_docs.py check --output _work/gaso/docs-sign-depth-audit.json`
+  informa seis errores de digests ajenos desactualizados y nueve avisos; sin issues
+  en esta nota ni en el log Ghidra modificado. `_work/current-state.json` parsea
+  correctamente. Rama `fix/gaso-tank-anchor`; no nuevo commit: las notas ya tenían
+  cambios previos mezclados que se preservan. No se arrancaron servicios/juegos.
+  Revisión del método: diagnóstico acotado y checks deterministas útiles;
+  aceptación de juego y análisis MCP pendientes. Para retomar: comprobar primero
+  `get_program_info()` y continuar desde este bloqueo, sin repetir la auditoría
+  binaria mientras no cambien sus hashes.
+
+### Continuación de A — MCP recuperado y captura gráfica diagnóstica (2026-11-10 UTC)
+
+- Se abrió `SLPM_862.19` en CodeBrowser reutilizando PID 57236; MCP confirmó el
+  main japonés SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  No se abrió otro proceso ni se cambió la instalación. Lecturas del parser
+  `0x800220B8` y del inicializador `0x80022518` confirman el layout del conversor,
+  pero **no** identifican todavía la causa de los paneles. Registro completo:
+  `notes/tool-evidence/ghidra-psx-psyq.md`, `20261110-ghidra-042`.
+- `_work/gaso/sign-geometry.json` inventaría los 33 nodos nativos con vértices,
+  transforms, límites y conteos; no hay nodos tipo 2 que aplanar en este escenario.
+  No se han eliminado paneles ni recreado texturas/mallas. Preflight satisfactorio:
+  `_work/workflow/20261110T025704528068Z-gaso-sign-renderer/metrics.json`.
+- Diagnóstico GPU inicial (histórico): `_work/gaso/capture_sign_gpu.py` reutiliza navegación y
+  aislamiento existentes; solo consulta `gpu_ring_stats` y `gpu_frame_dump` del
+  puerto propiedad de su PID. Los PNG se capturan después del paquete, no son
+  una pareja frame-exacta. No requiere nuevo ejecutable ni altera el renderer.
+- Primer intento `_work/versus-runs/20261110T030837394741Z-gaso-sign-gpu/result.json`
+  falló **antes de arrancar**: settings conserva rutas a tarjetas copiadas de
+  `gaso-fix5`, fuera de `experimental/saves`. Sin acciones ni capturas, no es
+  fallo del escenario. No se repararon permanentemente esas preferencias.
+- El wrapper admite temporalmente esas copias históricas bajo `_work/versus-runs`
+  trasladando **copias adicionales**, no originales, a una carpeta propia en
+  `experimental/saves`; guarda baseline y hashes, restaura settings byte a byte y
+  comprueba tarjetas fuente. Rechaza sesión activa/rutas externas ajenas; no restaura
+  sobre cambios concurrentes ni un juego abierto. Tres pruebas host de
+  `_work/gaso/test_capture_sign_gpu.py` pasaron (restauración tras error, sesión
+  activa y rutas no autorizadas). Backups/reportes: `_work/gaso/sign-card-bridge-*`.
+- Segundo intento `gaso-sign-gpu2` ejecutado sobre el ejecutable
+  existente `27dfebb4d39e7ea71d5469d8f77eba56a0ac70b22621813532d73bec0e5d8ce8`.
+  falló: ningún listener TCP del PID. `PSX_DEBUG_TOOLS:BOOL=OFF` ya estaba
+  documentado en la referencia de configuración; repetir este intento socket-only
+  fue contraproducente, no un nuevo hallazgo del juego. Restauración verificada:
+  `_work/gaso/sign-card-bridge-20261110T031059475970Z/report.json`.
+
+### Continuación de A — captura RAM de solo lectura y descarte de un falso candidato
+
+- Sin recompilar, el wrapper ahora identifica símbolos COFF `ram` y
+  `g_psx_ram_size`, abre **solo su proceso verificado** con VM_READ/QUERY_INFORMATION
+  y comprueba tamaño y firma del main `0x80027FC8`. No escribe, suspende ni inyecta.
+  `_work/gaso/read_task_ram.py` enlaza el handle al PID y comprueba que siga vivo
+  antes/después de cada lectura; un PID reutilizado no cambia ese handle.
+- Primera captura útil: `_work/versus-runs/20261110T031745392946Z-gaso-sign-ram/`,
+  tres snapshots de 8 MiB; diagnóstico terminado, no partida completa aceptada.
+  Resultado de navegación `machine_verified_awaiting_visual_review`, 146.547 s;
+  settings/tarjetas restaurados, reporte exterior
+  `_work/gaso/sign-card-bridge-20261110T031744460530Z/report.json`.
+- Captura temprana finalizada: `_work/versus-runs/20261110T034745727209Z-gaso-sign-early/`,
+  32 snapshots de 8 MiB, desde reloj 41; handle prearmado antes de confirmar etapa.
+  Resultado de navegación `machine_verified_awaiting_visual_review`, 133.476 s;
+  restauración interior verificada (27 archivos de saves, incluidos duplicados
+  diagnósticos retenidos). Verificar también el reporte exterior
+  `_work/gaso/sign-card-bridge-20261110T034744715127Z/report.json`.
+  Lecturas **no atómicas ni frame-exactas**: pueden contener buffers previos.
+  No se capturó PNG por snapshot para no perder la bajada de cámara.
+- Ocho pruebas host de `_work/gaso/test_capture_sign_gpu.py` pasan (0.076 s),
+  incluyendo RED→GREEN de comprobación del handle y prearmado, protección de
+  tarjetas/configuración, límite de lectura y rechazo de firma errónea.
+  No son una regresión visual del escenario ni la suite completa del proyecto.
+- Identificación objetiva: GAS usa 7 polígonos por nodo de sala 17..20,
+  textura nativa miembro 3, atributo `0x0501`, TPAGE 9/CLUT `0x097D`.
+  `_work/gaso/sign-primitives.json` conserva 796 primitivas nativas; no se han
+  recreado ni eliminado mallas/texturas. `render_stage_textures.py` solo genera
+  una hoja de inspección. El antiguo `tank_0780.png` muestra otra etapa y no
+  sirve como referencia del defecto A; `entrance-tiles.png` es del selector.
+- Descartado como explicación: paquete GAS `0xB8960` y panel rojo `0xB9158`
+  del primer snapshot anterior. Dibujo posterior confirmado, pero su intersección
+  es **solo borde**, sin centros de píxel interiores comunes. Reproyección de
+  cámara (`sign-camera-fit.json`) residual máx. 0.687 px para GAS, 1.342 px para
+  panel nativo nodo 23/quad 1. Esto no demuestra la superposición amplia aportada
+  por el propietario. No aplicar un sesgo OT arbitrario a partir de ese caso.
+- Tres tramos de emisores nativos BAG1/BAG2 resultaron byte-idénticos (funcmatch-002,
+  capstone-006, ghidra-043); esto acota la comparación, no prueba igualdad del
+  renderer entero ni del estado de cámara. Evidencia/hashes:
+  `_work/gaso/sign-emitter-comparison.json`, `sign-diagnostic-hashes.json`.
+- **A sigue sin corregir, B sin aceptar**. Analizar snapshots donde el modelo
+  esté residente y GAS entre en pantalla; los primeros cinco no contienen aún
+  paquetes GAS. No repetir la navegación mientras estas capturas permitan resolver
+  la pregunta. Sin cambios de código del juego, build, deploy ni commit en esta fase.
+
+#### Corrección acotada de A dentro del objetivo aprobado
+- Snapshot temprano 31: el lado izquierdo (nodo 23, quad 1) tiene 727 centros
+  de píxel interiores compartidos, todos con el rojo detrás; el derecho (nodo 30,
+  quad 5), 679, también todos detrás. Ajustes de cámara con residual máximo GAS
+  1.20/1.36 px y panel 0.67/0.71 px. Los paneles se dibujan después por profundidad
+  representativa de dos esquinas, no por su profundidad en el área compartida.
+- Cambio mínimo implementado: subdivisión 2×2 solo de esas dos caras nativas,
+  conservando superficie, textura, color, transform y el resto del modelo.
+  Predicción geométrica: 0 píxeles de orden incorrecto en ambos casos frente a
+  776/750 antes; no es todavía prueba del runtime. Sin sesgo global ni recreación.
+- Gate: regresión host con guard de primitivas exactas y resto byte-idéntico,
+  construcción experimental y verificación visual de la intro. B no se toca ni
+  se declara corregido por este cambio. No desplegar un candidato sin checks.
+- Implementación compartida `tools/bag1import/stage_geometry.py`, activada solo
+  mediante `package.ft4_subdivisions` de `profiles/stages/gaso.json`; sin perfil,
+  conserva bytes. `build_stage_package.py` aplica la transformación antes del
+  check estructural. Diez tests de `test_stage_port` + `test_stage_geometry`
+  pasan en WSL (0.411 s), incluyendo identidad de Heat y los casos de Strike.
+  No se ha ejecutado la suite completa ni aceptado aún el runtime.
+- DFS candidato: `_work/stage_import/gaso/sign-subdivision/gaso_197.dfs`,
+  514264 bytes, SHA256 `a94237b824ab794a4c8842bf08658093405aa0a711adeb546bc298915dc7979f`.
+  Crece 264 bytes; no cabe en el hueco de 48 bytes del payload anterior.
+- `_work/gaso/prepare_sign_payload.py` regenera el índice regional de nueve
+  campos y comprueba independientemente los **60 contenidos regionales de 30
+  entradas**, modificando solo 197 y conservando metadatos stock. El primer
+  intento rechazó una suposición histórica errónea de 28 entradas antes de
+  crear outputs; corregido contra el inventario explícito del índice actual.
+  Payload nuevo 10016768 bytes, SHA256
+  `c6a68ac2ba0c071a2f1000b83617f0041eef11cf4e11d3fbef48eb9eb3e7335e`;
+  DUMMY LBA224035/capacidad27648000 bytes, libres17631232. La deduplicación
+  reduce el total; todos los rangos y bytes regionales se verificaron.
+- Staging protegido por `_work/gaso/stage_sign_candidate.py`: backups nuevos
+  en `sign-subdivision-candidate/{backup,build-stage-backup}`, igualdad inicial
+  de manifiesto/payload/índice y hash del header del tanque sin cambios.
+  Build experimental `--tag gaso-sign-subdivision` pasó en39.996s, métricas
+  `_work/workflow/20261110T040907290164Z-gaso-sign-subdivision/metrics.json`.
+- `deploy_sign_candidate.py` confirmó ausencia de juegos activos, coincidencia
+  preloaded/bundled y30 archivos protegidos intactos; rollback en
+  `sign-subdivision-candidate/deployment-backup`. Exe experimental SHA256
+  `168d91d0ffcc747ad9254b53417cc03bf2ff0e381ce28f9fc4dd7d1ae7b17971`.
+  `check_payload_manifest.py`:4/4 copias correctas. Instalación estable intacta.
+- Calibración nueva `20261110T041045055464Z-gaso-sign-subdivision-cal`,91.403s:
+  selector y ocho aristas revisados con hoja reducida; catálogo aceptado para ese
+  hash. Restauración del harness verificada; wrapper conserva además la copia
+  histórica de configuración/tarjetas. Verificación de intro/combate lanzada con
+  tag `gaso-sign-subdivision-verify`, `--finish --finish-timeout 300`, capturas
+  RAM y PrintWindow acotadas al PID propio. **Resultado aún pendiente**.
+- Tras ampliar casos límite,15 tests de stage_port/stage_geometry pasan (0.506s):
+  divisiones inválidas, nodo inexistente/no-malla, quad fuera de rango y límite8.
+  No sustituyen aceptación en juego ni equivalen a toda la suite del repositorio.
+- Revisión de alcance: sin eliminación de assets ni lógica del selector; solo
+  perfil de dos primitivas + transformación compartida. Los scripts de staging
+  verifican que el header del tanque no cambie. Snapshot de siete fuentes en
+  `sign-subdivision-candidate/source-checkpoint` (incluye prerrequisitos previos,
+  no atribuye autoría exclusiva). No commit: builder/tests/perfil contienen también
+  trabajo previo no separado; índice Git existente sigue intacto.
+- Checker documental: `_work/gaso/docs-sign-subdivision-audit.json`,130 documentos,
+  seis errores por digests ajenos desactualizados y nueve avisos históricos;
+  ninguna incidencia en esta nota ni en los tres logs de herramientas tocados.
+  No se declara limpio el repositorio completo.
+
+### Verificación del candidato 2x2 — A aún no aceptado
+
+- Corrida `20261110T041309977417Z-gaso-sign-subdivision-verify` completó298.578s,
+  final de canción y vuelta al selector. `fever1` consta desde f015511 en
+  `bag2jp_anim_trace.log`; no se afirma aceptación visual de solo/duet por ese dato.
+  Restauración del harness verificada (31 saves); wrapper exterior
+  `_work/gaso/sign-card-bridge-20261110T041309023305Z/report.json` confirma bytes
+  originales de settings y ambas tarjetas históricas intactos.
+- Hoja `sign-intro-review.jpg` y90 PNG reducidos cubren selección→VS→intro→combate.
+  **Falla visual A**: `sign-window/frame-060.png` y`frame-066.png` aún muestran un
+  rectángulo rojo tapando la zona superior derecha del cartel GAS izquierdo.
+  La predicción local0/0 del candidato **no se generaliza a toda la cámara**.
+- RAM29/31 del mismo run:56 primitivas GAS, cero solapamientos posteriores con
+  TPAGE9/CLUT0x9FD; no contradice los PNG porque la captura terminó en reloj198
+  de intro. Los32 cupos se gastaron mayoritariamente en fase1=0 (VS). Además no
+  son snapshots atómicos ni PNG sincronizados. Análisis en
+  `_work/gaso/sign-subdivision-packet-review.log`; error de lector JSON al abrir
+  `frames.json` con UTF-8 sin BOM es diagnóstico, no un fallo del juego.
+- Corrección del capturador solo bajo`_work`: omitir VS, capturar fase1=1 cada0.3s
+  conservando límite32 y lectura de handle propio. Regresión observó primero
+  fallo (capturaba fase0), luego nueve tests host pasan. No nuevo cambio de assets.
+- Diagnóstico nuevo `gaso-sign-late-diagnostic` lanzado sin ataque forzado ni
+  repetir canción completa: esperar notificación y revisar el tramo tardío antes
+  de elegir otra división/orden. Exe/payload experimentales siguen168d91d0/c6a68ac2,
+  marcados candidatos fallidos visualmente; rollback disponible. B sigue pendiente.
+
+### Cámara tardía y candidato v2 — tres caras nativas, mismo motor
+
+- Diagnóstico `20261110T042201510577Z-gaso-sign-late-diagnostic` terminó133.311s;
+  capturas ahora cubren únicamente intro, reloj9→589 (30 muestras), sin gastar
+  cupo en VS. Restauración interior y exterior verificadas, reporte exterior
+  `_work/gaso/sign-card-bridge-20261110T042200569595Z/report.json`. Sin ataque
+  forzado ni segunda repetición completa de canción para este diagnóstico.
+- RAM16/reloj329 identifica solapamiento adicional: cartel packet0xB4C98,
+  panel0xB9558,1.483 píxeles de máscara/1.428 interiores. Reproyección confirma
+  **nodo26/quad1**, error máximo0.861px; ajuste de cámara máximo1.247px,
+  mediana0.331px. Los1.428 puntos sitúan el panel detrás del cartel. Archivos
+  `sign-intro-16-ram-packets-0xb4c98-camera-fit.json` y
+  `_work/gaso/sign-late-camera-fit.log`. No confundirlo con nodo30 ya dividido.
+- La predicción del nodo26 es1.440 píxeles de orden incorrecto sin dividir,
+  cero con2x2; sigue siendo predicción local, no aceptación. Perfil añade solo
+  `{node:26,quad:1,divisions:2}` con words guardados
+  `[67109125,8355711,4278124240,3201351422,1793]`, mismo stage_geometry sin cambios.
+  Regresión real del paquete falló primero12!=21 en ese nodo, después15 tests
+  pasan0.394s; prueba de preservación ahora verifica solo23/26/30 modificados.
+- DFS v2: `_work/stage_import/gaso/sign-subdivision-v2/gaso_197.dfs`,514396 bytes,
+  SHA256`0a99486052f49e8f817e2cae709219c6367bfcf5c55ef44226bdc68eb94bd302`.
+  Capstone ensayo008; repack60 variantes y byte-capacidad pasan. Payload sigue
+ 10016768 bytes, SHA256`376287abd3ee2a13944deeafb0415da9b0f163a185dd3cad1540259596232f7e`.
+  Staging respaldado en`_work/gaso/sign-subdivision-v2-candidate`, sin tocar header
+  de tanque. Build `--tag gaso-sign-subdivision-v2` pasó33.224s; métricas
+  `_work/workflow/20261110T042849657766Z-gaso-sign-subdivision-v2/metrics.json`.
+  Deploy respaldado del exe/manifest/payload,36 archivos protegidos intactos;
+  exe experimental07462FF2, manifiestoF76698BE, payload376287AB. Checker4/4 pasa.
+  Calibración nueva `gaso-sign-subdivision-v2-cal` lanzada; esperar notificación,
+  revisar imágenes y aceptar antes de verificar intro. Sin aceptación visual v2.
+- Diagnósticos nuevos aceptan inventario de primitivas del candidato, separado
+  del nativo (`inventory_candidate_panels.py`):802 registros con18 FT4 de las
+  dos mallas del primer candidato; no usar ese inventario para v2 sin regenerarlo.
+- V2 calibración `20261110T043047325701Z-gaso-sign-subdivision-v2-cal` pasó90.936s;
+  nueve capturas revisadas, aristas aceptadas para SHA256 del exe
+  `07462ff211bcfa8e3b50fd44a0096a94129079ea750b56e0ab8722a7c90d59a4`.
+  Configuración y35 saves restaurados por harness. Verificación nueva
+  `gaso-sign-subdivision-v2-verify` lanzada con fin de canción/retorno, sin ataque
+  forzado; esperar notificación antes de revisar resultado, sin duplicar proceso.
+- Inventario v2 generado separadamente: `_work/gaso/sign-v2-primitives.json`,805
+  registros/27 FT4 de nodos23/26/30. `inventory_candidate_panels.py` recibe DFS,
+  archivo de salida y nodos CSV; se ajustó lectura de conteo normal a cursor+4,
+  coherente con conversor (estos tres nodos no tienen esos grupos normales).
+  `analyze_early_sign_capture.py` acepta `--primitives <archivo>` para no comparar
+  tiles nuevos contra UV del quad antiguo y obtener falsos ceros. Helpers bajo
+  `_work`, sin cambios en juego; aceptación visual aún pendiente.
+- Snapshot de siete fuentes v2 en
+  `_work/gaso/sign-subdivision-v2-candidate/source-checkpoint`; preserva también
+  prerrequisitos previos, no implica commit ni aceptación. JSON del estado parsea,
+  helpers de inventario/batch compilan; índice Git no modificado. Reporte exterior
+  de calibración `sign-card-bridge-20261110T043046396227Z/report.json` confirma
+  además restauración exacta y hashes originales de ambas tarjetas históricas.
+
+### Revisión visual de la intro v2 - solape del cartel GAS eliminado en capturas
+
+- Se identificó el cartel: los paneles blancos de la intro dicen GAS en letras
+  estilizadas; en `frame-057.png` se leen ambos, izquierdo y derecho. Antes se
+  comparaban blobs blancos genéricos (incluida piel del VS), lo que hacía
+  ambiguas las mediciones previas.
+- Comparación directa V1 (`20261110T041309977417Z-gaso-sign-subdivision-verify`)
+  contra V2 (`20261110T043326680373Z-gaso-sign-subdivision-v2-verify`) sobre los
+  mismos índices de fotograma: alineación confirmada en 056-074 (diferencia
+  media 1.3-5.2 niveles de gris). En 060 el cambio V1→V2 (22.015 px) queda
+  confinado al cuadrángulo del cartel izquierdo.
+- Resultado visual: en V1 el cartel izquierdo aparece cortado por una arista
+  recta y su esquina superior derecha muestra ladrillo rojo oscuro y la viga roja;
+  en V2 el cartel blanco está completo en 056, 057, 060, 063, 066, 067, 071 y
+  074, la viga roja queda por encima/detrás y no hay píxeles rojos dentro de la
+  silueta del cartel. En la zona del cartel, V2 muestra ~58% más píxeles blancos
+  (6.306 frente a 3.976 en los fotogramas con cámara fija).
+- Sin artefactos nuevos observados en las caras subdivididas (sin huecos ni
+  intrusión roja). Evidencia:
+  `_work/versus-runs/20261110T043326680373Z-gaso-sign-subdivision-v2-verify/defect-a-v1-vs-v2-wide.png`,
+  `defect-a-v1-vs-v2-left-sign.png`, `frame-diff-v1-v2.json` y
+  `_work/gaso/defect-a-v2-review.json`.
+- Flujo completo del run V2: fin de canción 169.1s, `return_root`13, estado
+  final root13 (selector), restauración `verified: true` con37 saves. No se
+  repitió la canción ni se forzó ataque; no hay commit ni cambio en la
+  instalación estable.
+- Estado: el defecto A queda eliminado según las capturas reales del juego y el propietario
+  **aceptó el cambio el 2026-11-10**. El candidato v2 sigue desplegado en la instalación
+  experimental `BAG2JP-exp-8mb`. El defecto B (tanque) sigue rechazado y sin trabajo hasta su
+  decisión.
