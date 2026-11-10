@@ -479,3 +479,39 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
 - Input: Ghidra12.1.4 GUI, SLPM_862.19, PSX LE32 main, SHA256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`. No overlay selected/verified; no writes. Loader role is historical analysis, not a fresh semantic decompile in this trial.
 - Independent validation: real-C DF2 host harness compiled with actual generated index type; five host tests in `_work/gaso/visual-region-tests.json` (mock runtime, not live game). Confirms exact routing/ownership properties, not character-hook coherence or stage semantics. Index has no JP resources yet; no deployment.
 - Outcome: **parcial**, useful identity/read-access confirmation; not evidence of full regional import. No MCP failure in this trial. Time, manual rework and savings unknown. Next: real JP resources and final assembled/runtime validation.
+
+## 20261110-ghidra-044 — 2026-11-10 UTC — espacio y altura del tanque GAS-O
+- Tipo: arranque recuperado y uso real. Ghidra 12.1.4; MCP exacto:
+  `get_program_info()`, `decompile_function_by_address(address="0x8002c404")`.
+  Identidad fresca: `SLPM_862.19`, main BAG2 JP, PSX LE32, imagebase
+  `0x80000000`, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  No se afirma overlay cargado ni se modificó el análisis.
+- Arranque: una sola ejecución de
+  `D:/Dev/Tools/ghidra_12.1.4_PUBLIC/ghidraRun.bat D:/Dev/Recomp/BAG2JP/ghidra/BAG2JP.gpr`.
+  Inicialmente `BACKEND_UNAVAILABLE` en `127.0.0.1:8080`. Reutilizada Java
+  PID 7728; el modal Tip of the Day impedía abrir el programa. Cerrado ese modal
+  tras verificar PID/título. Intentos de foreground rechazados por Windows;
+  `AppActivate=True`, mensajes de doble clic y Java vivo no probaron apertura.
+  Hubo además un SyntaxError de quoting y una aserción de foreground fallida;
+  un ENTER no protegido no tuvo efecto confirmado. No repetir ese envío.
+  Finalmente, topmost temporal sin activar, hit-test contra HWND/PID exactos,
+  doble clic en el programa y restauración de cursor/topmost/foreground abrieron
+  CodeBrowser. MCP siguió fallando durante la carga y luego respondió con la
+  identidad anterior. Sin duplicados, instalaciones ni cambios de configuración.
+- Resultado: el decompilado nativo compone cámara `0x8005d0f0` con matriz del
+  actor `+0x14c4` antes de proyectar la raíz `+0x810/+0x814/+0x818`.
+  Contraste independiente: RAM histórica inicializada
+  `_work/versus-runs/20261110T034745727209Z-gaso-sign-early/sign-intro-31-ram.bin`,
+  SHA-256 `e272fae7241f8e9e5261ad9cbe335376dee959aef53d9616a775714d4f645a9f`;
+  pelvis Y positivas y cámara con Y invertida, coherentes con sumar altura local.
+  `_work/gaso/tank-resume-space-audit-initialized.json`, SHA-256
+  `9347228ab172ef427732f3e16f60fb0923d426007762f65bdc31121e5e6dd5b9`.
+  El primer audit con `sign-intro-07-ram.bin` tenía punteros nulos: evidencia
+  inválida, conservada en `tank-resume-space-audit.json`, no usada para concluir.
+  Decompilado contrastado con `_work/strike-0x8002c404-decompile.txt` histórico.
+- Dictamen: **útil** para matriz/convención vertical; no prueba pose congelada,
+  anclaje visual ni aceptación del tanque. Tests posteriores ejecutan el C real.
+  Ejecución, preparación, revisión/retrabajo y ahorro: **no medidos**.
+  Siguiente: verificar el candidato de coordenadas en el juego experimental;
+  reutilizar esta instancia y lectura mientras no cambie el binario.

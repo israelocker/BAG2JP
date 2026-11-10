@@ -1283,3 +1283,74 @@ Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `char
   **aceptó el cambio el 2026-11-10**. El candidato v2 sigue desplegado en la instalación
   experimental `BAG2JP-exp-8mb`. El defecto B (tanque) sigue rechazado y sin trabajo hasta su
   decisión.
+
+### Tanque B — coordenadas corregidas, candidato experimental (2026-11-10 UTC)
+
+- El propietario pidió continuar el ataque especial. Se reabre B; A sigue
+  aceptado y sus recursos no cambian. Objetivo acotado: corregir altura, caída y
+  composición del tanque antes de evaluar encierro/pose/liberación en juego.
+- Causa contrastada: el C restaba altura y caída a Y local, aunque la cámara
+  ya invierte Y, y omitía la matriz del rival. Ghidra MCP confirmó el patrón
+  nativo de composición (`20261110-ghidra-044`); la RAM histórica inicializada
+  aporta contraste, no aceptación de comportamiento.
+- Cambio: `bag2jp_gaso_tank.h` suma altura/caída, compone cámara con matriz del
+  rival y cancela punteros cuyo registro completo sale de RAM 8 MiB. Mantiene
+  seguimiento XZ previo del source; se reconoce expresamente su inclusión al
+  staging porque faltaba en el build anterior. Sin cambios a humo, duración,
+  congelación slot 78 ni cartel GAS. No se clona el motor de otro personaje.
+- TDD del C real: `tools/test/gaso_tank_harness.c` y `test_gaso_tank.py`, guest RAM
+  aislada y paquetes GPU emitidos. RED de inversión/matriz/cancelación y RED de
+  límite RAM conservados; GREEN final: 7 tests (tanque + escala), 3,979 s.
+  `_work/gaso/tank-anchor-{red,bound-red,final-host}.log`. El harness cubre caída,
+  suelo desde ataque real, matriz no identidad, puntero nulo/fuera de rango y
+  cancelación persistente. No simula el motor completo ni valida la pose.
+- Suite completa: 217 tests, **1 fallo y 31 errores**, 20,399 s; no verde.
+  `_work/gaso/tank-anchor-host-suite.log` y `tank-anchor-host-failures.txt`
+  enumeran audio/shim/vblank y contratos/assets Heat/Strike. No se ha probado
+  independientemente que sean preexistentes; no se modifican fuera de alcance.
+- Goldfish: **2 revisores independientes**, spec
+  `_work/goldfish/spec-gaso-tank-space.md`. Primera pasada `CON HALLAZGOS`:
+  límite superior RAM insuficiente (alto), falta de spawn/suelo y cancelación
+  persistente (medios). Confirmados y corregidos con tests; ninguno refutado.
+  Relectura acotada por ambos: **SIN HALLAZGOS BLOQUEANTES** en ese alcance.
+  No verificaron hashes por su cuenta ni aceptación visual/suite completa.
+  Hash del header revisado:
+  `7bd077089dd21a0af334aa2a0ec5b8bb457b1464a29c39ff468df3ac1347ac0f`.
+  Sigue siendo un único efecto pese al tamaño del header; sin refactor ajeno.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Build de dos jobs: PASS, 41,867 s; warning clang `-mbig-obj` sin uso.
+  `_work/workflow/20261110T102150722350Z-gaso-tank-space/metrics.json`.
+  Desplegado **solo EXE experimental**, SHA-256
+  `3145ba5bc943751ea3337868743d5a5e24b184087467239ebeeba4c7dd10d39f`.
+  Payload `376287ab...`, DFS aceptado `0a994860...`, settings y saves sin cambios
+  tras despliegue. Backup/rollback:
+  `_work/gaso/tank-space-candidate/deployment-backup`; build backup separado.
+  `BAG2JP-win` estable no tocado. El candidato no está aceptado.
+- Prueba gráfica fresca P1 GAS-O BAG1 A contra Heat BAG2 A, escenario GAS-O:
+  `_work/versus-runs/20261110T102756932598Z-gaso-tank-space-bag1/`.
+  Fixture explícito de ataque/defensa, no juego natural; 120 capturas PrintWindow
+  con heartbeat antes/después, no exactas por frame. Ráfaga compacta inspeccionada
+  en `tank-space-burst-compact.png`: caída desde arriba y volumen vertical, pero
+  cristal verde oculta al rival; **encierro/pose no verificables visualmente**.
+  No se declara B aceptado. Traza: rival anim 78 en f7255/f7307, transición
+  a anim 89 req202 en f7308 y vuelta a 78 en f7309; no demuestra inmovilidad
+  continua ni se atribuye todavía una causa. `attack-window-trace.txt`.
+- Navegación del nuevo runtime: 9 imágenes inspeccionadas y catálogo ligado a
+  sus hashes, `_work/versus-runs/20261110T102335812425Z-gaso-tank-space-probe`.
+  Ambas sesiones cerradas por el harness; restauración de controles/settings y
+  saves verificada. El bridge restauró también las tarjetas externas históricas;
+  `post-test-protected-check.json` confirmó los **42 originales** del backup,
+  incluido settings `b41a5fc8...`. Se conservan copias nuevas de tarjetas de test.
+  El hash `runner_sha256` de `capture-result.json` identifica el runner Strike
+  reutilizado; el hash del adaptador efectivo está en el check posterior:
+  `b4a430b42a517129d6c69d21ccde203dc3da975baf055ba40df8ea193018863c`.
+- Documentación: checker completo 131 docs, 6 errores/9 avisos en el repositorio;
+  comprobación focal de esta nota y log Ghidra sin incidencias en
+  `_work/gaso/tank-space-docs-targeted.json`. `git diff --check` focal limpio.
+- Siguiente acción exacta: inspeccionar emisores de cristal/cuerpo del header
+  (opcode G4, estado de mezcla/orden OT) contra los helpers compartidos y los
+  paquetes nativos; usar la ráfaga y traza anteriores sin repetir captura.
+  Formular una hipótesis de opacidad y un RED del C real antes de otro cambio.
+  Después verificar por qué f7308 sale de anim 78 durante el tanque y cubrir
+  P1/P2 × A/B, fin de canción, fever aplicable y selector. No inferir aceptación
+  de B a partir de tests/build/revisores. Sin snapshot de milestone: candidato WIP.

@@ -18,6 +18,8 @@
 #define GASO_ATTACK_ANIM    74u
 #define GASO_ATTACK_START   20u
 #define GASO_ATTACK_END     65u
+/* Last accessed dancer field is the 32-bit animation frame at +0x1554. */
+#define GASO_DANCER_MAX_BASE (0x80800000u - 0x1558u)
 
 #define GASO_TANK_FALL_DUR  12u  /* Frames of vertical descent from above */
 #define GASO_TANK_HOLD_DUR  65u  /* Frames of locked cryo-trap confinement */
@@ -262,8 +264,8 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
 
         uint32_t dancer = psx_mod_read_word(B2_DANCER_BASE + side * 8u);
         uint32_t opp_dancer = psx_mod_read_word(B2_DANCER_BASE + (side ^ 1u) * 8u);
-        if (dancer < 0x80010000u || dancer >= 0x80800000u ||
-            opp_dancer < 0x80010000u || opp_dancer >= 0x80800000u) {
+        if (dancer < 0x80010000u || dancer > GASO_DANCER_MAX_BASE ||
+            opp_dancer < 0x80010000u || opp_dancer > GASO_DANCER_MAX_BASE) {
             s_gaso_attack_seen[side] = 0;
             continue;
         }
@@ -363,11 +365,20 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
          * anchored on top of the rival (floor contact at Y = 0). */
         uint32_t opp_dancer = psx_mod_read_word(B2_DANCER_BASE + (side ^ 1u) * 8u);
         tank->opp_dancer = opp_dancer;
-        if (opp_dancer >= 0x80010000u && opp_dancer < 0x80800000u) {
-            StrikeVec3 root = strike_read_root(opp_dancer);
-            tank->target_x = root.x;
-            tank->target_z = root.z;
+        if (opp_dancer < 0x80010000u || opp_dancer > GASO_DANCER_MAX_BASE) {
+            tank->active = 0;
+            continue;
         }
+        StrikeVec3 root = strike_read_root(opp_dancer);
+        tank->target_x = root.x;
+        tank->target_z = root.z;
+
+        /* +0x810 is in dancer space, not camera/world space. Match the native
+         * renderer (0x8002C404), including the rival's model transform. */
+        int16_t model_rot[9], tank_rot[9];
+        int32_t model_pos[3], tank_pos[3];
+        strike_read_matrix(opp_dancer + B2_DANCER_MTX_OFF, model_rot, model_pos);
+        strike_comp_matrix(cam_rot, cam_pos, model_rot, model_pos, tank_rot, tank_pos);
 
         /* Keep rival frozen upright inside the cryogenic tank (slot 78, no knockdown).
          * Applies for the whole hold window so the rival never breaks out early. */
@@ -409,13 +420,13 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
 
         for (int i = 0; i < GASO_NATIVE_TANK_NUM_VERTS; ++i) {
             int32_t vx = tank->target_x + ((int32_t)s_gaso_native_verts[i][0] * 35) / 100;
-            /* PSX GTE world space: -Y is up, so the native +Y height must be
-             * subtracted, and y_drop is a positive offset above the floor. */
-            int32_t vy = tank->target_y - ((int32_t)s_gaso_native_verts[i][1] * 22) / 100 - y_drop;
+            /* Dancer-space +Y is up; the camera supplies the screen-space flip.
+             * Negating height here would put both chamber and descent below the floor. */
+            int32_t vy = tank->target_y + ((int32_t)s_gaso_native_verts[i][1] * 22) / 100 + y_drop;
             int32_t vz = tank->target_z + ((int32_t)s_gaso_native_verts[i][2] * 35) / 100;
 
             StrikeVec3 p = { vx, vy, vz };
-            valid[i] = strike_project(&p, cam_rot, cam_pos, geom_h, &pts[i]);
+            valid[i] = strike_project(&p, tank_rot, tank_pos, geom_h, &pts[i]);
         }
 
         /* --- 1. Translucent cryo-glass chamber (8 quads), drawn first so the
