@@ -2,12 +2,13 @@
 id: gaso-attack-effect-plan
 title: "Plan: portar el efecto de ataque nativo BAG1 de Gas-O y revisar la reacción del rival"
 tags: ["gaso", "bag1", "plan"]
-summary: "Requisito 2026-11-10: fidelidad completa del ataque BAG1, incluidos imagen, escala, lógica y sonido. Plan revisado pendiente de aprobación; tanque actual parcial y no aceptado."
+summary: "Plan F1–F8 aprobado 2026-11-10 para fidelidad completa del ataque BAG1: imagen, escala, lógica y sonido. F1 inventariado; F2/F3 en investigación; tanque instalado parcial y no aceptado."
 related: ["notes/gaso-import.md", "plans/heat-attack-effect.md", "plans/strike-shot-effect.md", "notes/bag1-character.md"]
 created: "2026-11-07"
 updated: "2026-11-10"
 doc_kind: plan
-status: "pending_approval"
+status: "in_progress"
+approved: "owner 2026-11-10: Aprobar plan (question tool)"
 ---
 
 # Objetivo y aceptación
@@ -62,7 +63,8 @@ Petición literal: «okay necesitamos la reconstrucción 100% fiel el efecto, so
 Se refiere al ataque del tanque, no a rehacer toda la importación o el escenario.
 Sustituye la meta de aproximación visual. El candidato `d9ce984` usa malla original,
 render/lógica nuevos, escalas 35/22 %, tiempos propios y congelación no continua;
-no satisface este requisito. Esta revisión espera aprobación antes de implementarse.
+no satisface este requisito. Revisión F1–F8 aprobada explícitamente por el propietario
+el 2026-11-10 mediante «Aprobar plan»; ejecución iniciada por F1, sin aceptación del efecto.
 
 ### Contrato de fidelidad
 
@@ -123,5 +125,8 @@ exija cambiar alcance o herramientas, se informa antes de adoptar una aproximaci
 | Progreso | Estado |
 | --- | --- |
 | Requisito de fidelidad completa | Confirmado por petición del propietario 2026-11-10 |
-| Revisión F1–F8 | Pendiente de aprobación |
+| Revisión F1–F8 | Aprobada explícitamente 2026-11-10 |
+| F1 | Inventario cerrado con carencias explícitas: report/accessory/audio-deployed; fuentes y vídeo auditados |
+| F2 | En curso: controlador, matriz, 44 primitivas, blend y evento16/20/1 JP rastreados; faltan estado rival, partículas y dimensiones equivalentes |
+| F3 | En curso: cues 0x1806/0x180a y muestras originales identificados; desplegadas resampleadas; falta PCM/onset |
 | Nueva implementación/captura | No iniciada; `d9ce984` sigue WIP |

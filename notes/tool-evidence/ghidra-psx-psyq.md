@@ -537,3 +537,87 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   review/manual rework and savings unmeasured; no claimed efficiency gain.
 - Next: identify/hash the actual BAG1 tank controller, resources and sound events;
   do not repeat this unchanged BAG2 query to claim original-effect fidelity.
+
+## 20261110-ghidra-046 — Native tank controller and audio dependencies
+
+- Purpose: F1 identity/inventory and bounded F2/F3 reads, without changing runtime.
+  Installed Ghidra12.1.4/JDK21.0.12.1+1, retained GUI session and task-owned isolated
+  `_work/gaso/gaso-runtime-hooks` project. No installation/configuration changes.
+- MCP: `get_program_info()` confirmed BAG2 JP main `SLPM_862.19`, SHA
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`;
+  `read_memory(address="0x80031d3c", length=48)` returned initialized accessory-loader
+  bytes. This is a BAG2 dependency check, **not** MCP identification of BAG1 overlay.
+- Supplementary headless commands: `py -3.13 _work/gaso/trace_native_tank.py` then
+  `--label native-tank-lifecycle 0x801d67a0 0x801d6908 0x801d6c18 0x801d6de8
+  0x801d6e70 0x801d7218`; scripts call `analyzeHeadless.bat ... gaso-runtime-hooks
+  -process native-gas-jp-relocated.dbi -noanalysis -scriptPath _work/gaso
+  -postScript AnalyzeGasHooks.java <fresh-output> <addresses>`. First default targets
+  `0x801d6480/0x801d666c`. Exit0, 12.017s and7.218s; logs/trial JSON under same labels.
+- Input: JP main SHA `9676a28c589e20829e5b43874c8534e49393337f4f5238610598b14257a778ff`,
+  JP DBI SHA `05220579f3f84427f7e9744136561a3cc9cb437f3699765f01d06aaaf0f17eb4`.
+  File-byte base `0x801d587c` includes12-byte header; independently checked against
+  the original main's callback tables in `native-callback-layout.json`. No USA base
+  equivalence claimed. Native mesh41 triples independently match source header.
+- Main import trial: `py -3.13 _work/gaso/trace_native_tank_main.py`, 8.454s/exit0
+  **not useful as decompile evidence**. `-loader-fileOffset 2048` loaded file0x2048,
+  independently proved by `VerifyTankMain.java` memory bytes and exact source search.
+  Decompiler had Pcode errors and misleading empty/partial functions. Retained wrong
+  program `SLPS_012.32` and `native-tank-main-decompile/` as rejected evidence; do not
+  reuse them. Offset behavior contradicted the decimal expectation from README.
+- Corrected command `...trace_native_tank_main.py --corrected` imports the explicitly
+  sliced original payload `native-main-jp-payload.bin` with BinaryLoader base80010000
+  and no file-offset option. Header proves load80010000/payload315392. Exit0/7.876s,
+  no Pcode errors. `--follow-up` reads that saved program, verifies24bytes at four
+  addresses, then decompiles80032064/8002b138/80013e20; exit0/7.479s. Raw payload SHA
+  `ec7f4b0ef8c1823e86baa72bf5813e88c0a13e560f60adc5add6e7228bb66faf` and all four
+  memory ranges match original bytes after header. Command JSON/logs retain exact args.
+- Evidence: acceleration/landing/dimension-dependent scale, saved rival-state restore,
+  cues1806/180a and recurring particle sound; main matrix and sound-record consumers.
+  Separate deterministic `audio-deployed.json` shows original cues' samples differ
+  from resampled deployed6906/690a. No PCM/guest-frame/audio acceptance established.
+- Outcome: useful partial static contract, with one counterproductive main import
+  detected/corrected by byte validation. Native render/event/rival semantics remain
+  incomplete. `funcmatch.py` deliberately not run: this trial traces JP main/overlay,
+  not the script's hard-coded USA-main→BAG2 search; no unvalidated match used.
+  Preparation/review/manual rework and savings unmeasured; no efficiency claim.
+- Next: native primitive dispatch and event/dimension units, then source-derived RED
+  tests. Do not replace remaining unknowns with another handcrafted approximation.
+- Continuation of the same bounded trial: `trace_native_tank_main.py --follow-up
+  --label native-tank-render-dispatch --addresses 0x8002ab3c` exit0/7.662s, then
+  `--label native-tank-primitives --addresses 0x8002becc 0x8002c430 0x8002cf6c
+  0x8002d020 0x8002d3e0 0x8002bbe8` exit0/7.758s. Corrected payload SHA above,
+  four raw-memory checks retained with each trial; 44 records independently counted
+  from original accessory. Establishes G3/G4/F3/F4 packet layouts, lighting and
+  depth-based OT insertion, NOT yet the initialized blend opcode/prefix semantics.
+- `trace_native_tank.py --label native-tank-init --addresses 0x801d58cc` was
+  rejected by argparse (overlay wrapper takes positional addresses), no analysis
+  occurred. Corrected `--label native-tank-init 0x801d58cc` exit0/7.027s; native
+  node-role initialization only, not a new tank implementation or acceptance.
+- Raw main pointer scan found GAS-O P1 event callback at80055130, inside table
+  base8005510c; `trace_native_tank_main.py --follow-up --label
+  native-tank-event-callbacks --addresses 0x80035d30 0x80035d80` exit0/7.982s.
+  Direct JAL scan independently located caller8002f3f8 in prologue8002efc8;
+  `--label native-tank-animation-dispatch --addresses 0x8002efc8` exit0/8.370s
+  proves event16 frame crossing passes value and countdown to selected callback.
+  Existing animlib extraction independently shows source63 event16/frame20/value1,
+  source64 none; deployed conversion normalizes that value to0. No BAG2 fix inferred.
+  Native table801d8280 extracted directly from original JP DBI at offset2a04.
+- Updated outcome: useful native primitive/event contract, still missing buffer
+  initialization/blend, rival-state and BAG2 dimension mappings, actual PCM/onset.
+  No program/session in the GUI was replaced, no runtime changed, no acceptance
+  claimed. Additional rework/savings unmeasured; individual headless times above
+  exclude preparation and review. Reuse saved trial outputs for the next consumer.
+- Packet-initializer continuation: deterministic opcode-store/JAL scan located
+  original G3/G4 setters80048d00/80048d50 and shared constructor80025528.
+  `trace_native_tank_main.py --follow-up --label native-tank-packet-initializer
+  --addresses 0x80025528` exit0/7.097s; output26608bytes, only relevant branches
+  read (lines30–35,143–148,568–579; other branches not claimed audited).
+  `--label native-tank-packet-helpers --addresses 0x800489a4 0x80048eac
+  0x80048c88 0x80048bd4 0x80048d00 0x80048d50` exit0/6.771s, same input/hash
+  and independent memory checks. Establishes opaque metal0x38/G3cap0x30, glass0x3a
+  with ABR(word-1)=0 and linked draw-mode prefix; PSX-standard branchE1000600,
+  alternate GPU branch retained, active branch not live-probed. No textures invented.
+  This resolves earlier missing static blend initialization, NOT lighting/runtime
+  equivalence, particles/rival behavior, audio or owner acceptance. All saved programs
+  remain in isolated task project. Next: rival-state consumer and dimension/particle
+  bindings; no need to repeat completed primitive/headless trials unchanged.

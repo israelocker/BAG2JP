@@ -1375,3 +1375,125 @@ Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `char
   hashes y carencias sin repetir capturas válidas. Cartel GAS aceptado, estable,
   preferencias y tarjetas preservados. Esta unidad es exclusivamente documental:
   Goldfish no requerido aquí, sí para el siguiente cambio que lo active.
+
+#### Aprobación y comienzo F1 (2026-11-10 UTC)
+
+El propietario aprobó explícitamente la revisión F1–F8 mediante **«Aprobar plan»**.
+Ejecutar el contrato completo sin pedir otra aprobación del mismo plan; esto no
+acepta el efecto ni convierte `d9ce984` en una reproducción fiel.
+
+Auditoría inicial de solo lectura: `_work/gaso/full-fidelity-source-audit/report.json`
+(0.747 s), ocho contenedores GAS-O USA y ocho JP, miembros con hashes, identidad
+del ejecutable/disco de referencia. `character_workflow.py validate-profile`
+valida 84 animaciones, pero mantiene dos excepciones pendientes (accesorio y región):
+`generation_ready=false`.
+
+El vídeo original de 45 s contiene **solo H.264, sin pista de audio**, y no vincula
+cada imagen a un frame invitado. Su runtime actual coincide con el registrado,
+pero `session.json` conserva `closed=false`: no demuestra una sesión activa ni
+restauración. El `boot_exe` relativo de `game.toml` tampoco existe actualmente.
+Revisar carga real, estado y procedencia antes de nuevas capturas; no usar este
+vídeo para afirmar equivalencia sonora o tiempos exactos.
+
+#### F1 cerrado como inventario; F2/F3 en investigación (2026-11-10 UTC)
+
+No hay cambio de runtime ni aceptación nueva. El inventario identifica fuentes y
+carencias; **no** demuestra fidelidad del port. Reportes de solo lectura:
+`_work/gaso/full-fidelity-source-audit/{report,accessory,audio,audio-deployed}.json`.
+
+- BAG1 JP main `SLPS_012.32`: SHA-256
+  `9676a28c589e20829e5b43874c8534e49393337f4f5238610598b14257a778ff`;
+  overlay GAS-O P1 JP `native-gas-jp.dbi`:
+  `05220579f3f84427f7e9744136561a3cc9cb437f3699765f01d06aaaf0f17eb4`.
+  Base de **archivo**, incluyendo cabecera de 12 bytes, `0x801d587c`, contrastada
+  con tablas de callbacks del main (`native-callback-layout.json`). No aplicar
+  esta base/direcciones al overlay USA ni tratar un candidato JP como USA.
+- Los 41 vértices copiados al header coinciden exactamente con el miembro original
+  de 1460 bytes, SHA `106a0fc2dd49ada4998d8ebe7be99f939c7336a4f797a720a292575173374c2e`.
+  Pero hay 44 registros de primitivas frente a 40 caras emitidas actualmente;
+  cuatro registros adicionales siguen sin interpretar. La transformación estática
+  original es identidad. Los porcentajes 35 % XZ / 22 % Y no proceden de ella.
+- El controlador JP `0x801d5bb0` inicializa altura en suelo del rival +4096 y
+  velocidad cero. `0x801d67a0` actualiza velocidad con `32*delta`, resta de Y
+  `delta*(velocidad_actualizada + (32*delta >> 1))` y limita al suelo del rival
+  (`+0x43cc`). Al aterrizar escribe `0x7fffffff` en el estado del rival; aún falta
+  demostrar el significado completo de ese campo. No equivale por evidencia a
+  forzar animación BAG2 78/frame0. Los tiempos fijos 12/65/15 siguen siendo WIP.
+- `0x801d6908` sigue XZ del rival mientras cae y los conserva después. Construye
+  escala desde dimensiones del rival `+0x43b8/+0x43c0`, con `12*dimensión+230`
+  normalmente y `+600` en dos casos de IDs; Y viene de una tabla por personaje
+  multiplicada por cuatro. El main JP `0x80013ed4` compone la matriz/modelo con
+  esa escala R12 y la cámara. Identificar las unidades, tabla y equivalencias de
+  estructuras BAG2 antes de cambiar el tamaño; no sustituirlo por otro porcentaje.
+- `0x801d666c` mantiene efectos de aterrizaje y partículas; a partir de contador
+  >32 llama a la segunda fase. `0x801d6480` decide salida por flags/temporizador
+  del rival y restaura su estado guardado, no por un fade global de 15 frames.
+  `0x801d60c4` además retrasa el controlador por parámetro del evento y una señal
+  global. Pendiente trazar ese evento, reloj, render/materiales y ramas de defensa.
+
+**Audio: diferencia demostrada en lo desplegado, no solo ausencia de escucha.**
+El overlay llama a `0x1806` en `0x801d6480` y a `0x180a` en `0x801d7218`; este
+último puede repetirse por temporizador/azar, no es un único sonido al inicio.
+SEDT miembro6 es idéntico USA/JP. Los dos cues originales usan muestras de 7568
+y 672 bytes, SHA `7399441cdd4269c9dc41b358f1369d44f23e867857b351b6e3481fe1078c12c8`
+y `07a87f233c77a7e3ba131c3f32d40c351d7273b466d16db68379617536495a02`.
+Los candidatos históricos conservan esas muestras, **pero el payload experimental
+actual no**: cues rebased `0x6906/0x690a`, muestras de 5184/480 bytes y center/shift
+93/48 y 101/48 frente a 86/0 y 94/0. Se aplicó el resampling del presupuesto de voz.
+No confundir esos candidatos antiguos con lo desplegado. Recuperar audio exacto
+sin perjudicar otras voces requiere resolver el presupuesto y routing en F5.
+
+La extracción desplegada verifica manifiesto, índice y LBAs reales de BUST2/DUMMY:
+offset de manifiesto es absoluto de disco; offsets del índice son relativos al
+archivo BUST2. Una resta directa fue rechazada por el guard de rango y se corrigió
+el análisis, sin tocar el payload. Main JP `0x80032064` confirma volumen/pitch
+por registro y multiplicador global; falta PCM aislado/onset y escucha del ataque.
+
+Ghidra: trial `20261110-ghidra-046` documenta consultas MCP y análisis headless
+complementario, incluyendo una importación main con offset erróneo descartada.
+Usar solo `native-tank-main-corrected-decompile/` y posteriores con bytes
+contrastados, no `native-tank-main-decompile/`. La sesión MCP sigue siendo main
+BAG2 JP; no se ha confirmado el overlay BAG1 mediante ese canal ni cambiado su GUI.
+
+Siguiente unidad: terminar F2 con emisor nativo y evento/tabla de dimensiones;
+F3 conserva la carencia de PCM/frame invitado. No implementar F4 con esas incógnitas
+ni declarar sonido/tamaño originales por tener el mismo archivo de vértices.
+
+#### F2 — primitivas y disparador contrastados (2026-11-10 UTC)
+
+El emisor JP `0x8002ab3c` y sus consumidores distinguen **44 primitivas** del
+miembro2: 8 G3 (`0x8002becc`, stride de paquete 0x1c), 24 G4 (`0x8002c430`,
+0x24), 2 F3 (`0x8002cf6c`, 0x14), 2 F4 (`0x8002d020`, 0x18) y 8 G4 con
+prefijo de ocho bytes (`0x8002d3e0`, 0x2c). Los ocho triángulos de la tapa son
+Gouraud, no los F3 de la reconstrucción; faltan las cuatro primitivas F3/F4.
+El cilindro usa los ocho últimos registros, cuyo cuarto word es 1. El seguimiento
+del inicializador `0x80025528` ya confirma su significado: pasa `word-1` a
+`0x800489a4`, construye draw-mode con `0x80048eac(…,1,1,tpage)`, inicializa G4
+0x38 y habilita semitransparencia con `0x80048c88` (opcode final0x3a).
+Los 24 G4 metálicos quedan en0x38 opaco y la tapa G3 en0x30; no se activa en ellos
+la mezcla. Para el cilindro se selecciona ABR0 (promedio), con prefijo draw-mode
+encadenado antes del polígono mediante `0x80048bd4`. En la rama PSX estándar,
+el comando es0xe1000600; la otra rama de GPU se conserva en el decompile, no se
+supone activa. La reconstrucción actual usa G4 semitransparente para metal y
+cristal sin ese prefijo individual. La iluminación de `0x8002bbe8` usa normales/GTE y
+depth cue, y la inserción OT usa profundidad; no equivale a RGB constante y OT fijo.
+Evidencia: `native-tank-render-dispatch-decompile/`, `native-tank-primitives-decompile/`
+y `full-fidelity-source-audit/accessory.json` bajo `_work/gaso/`.
+
+El slot original **63 sí contiene el disparador del tanque**: evento `(16,20,1)`;
+el 64 no tiene evento16. También contiene `(1,11,0x76d)` y cues1803/1805.
+`attack-events.json` conserva todos los eventos extraídos con `animlib.info`.
+El main JP `0x8002efc8` cruza el frame del evento16 y llama a `0x80035d80` con
+actor, valor del evento y contador `param_1[7]`. Este wrapper selecciona la tabla
+`0x8005510c + side*0x38 + character*4`; GAS-O P1 apunta a `0x801d5bb0`.
+Ese controlador habilita el tanque con valor1 y calcula retraso desde el tercer
+parámetro menos16. Por tanto no hay evidencia para reemplazar ATTACK1 por ATTACK2;
+sí hay una diferencia explícita al normalizar valor1 a0 en `anim_remap_gaso.py`.
+Resolver la adaptación del dispatcher BAG2, no restaurar ese valor a ciegas.
+
+La tabla Y JP en `0x801d8280` contiene, para IDs BAG1 0..13:
+`410,530,390,390,420,350,460,440,470,380,390,390,150,320` (se multiplica por4).
+`scale-y-table.json` registra dirección/base y offset. No asigna valores inventados
+a los personajes exclusivos de BAG2. Faltan unidades de dimensiones, consumidor del
+estado rival y binding de partículas. F2 sigue
+parcial; la aceptación visual/audio y F4 siguen pendientes. No se cambió el runtime.
