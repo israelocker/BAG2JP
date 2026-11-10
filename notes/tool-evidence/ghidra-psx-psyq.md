@@ -515,3 +515,25 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   Ejecución, preparación, revisión/retrabajo y ahorro: **no medidos**.
   Siguiente: verificar el candidato de coordenadas en el juego experimental;
   reutilizar esta instancia y lectura mientras no cambie el binario.
+
+## 20261110-ghidra-045 — Dependency check for full-fidelity attack planning
+
+- Purpose: verify the existing BAG2 sound consumer before planning original BAG1
+  tank audio. Installed Ghidra 12.1.4 / existing MCP session, no startup or edits.
+- Exact queries: `get_program_info()` followed by
+  `decompile_function_by_address(address="0x8002e2d0")`.
+- Identity: `SLPM_862.19`, Japanese main executable, PSX LE32, entry `0x80035d98`,
+  SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  No BAG1 binary or DBI module was selected or identified by this trial.
+- Evidence: six-u16 sound-record stride; cue match at word2, bank/program words0/1,
+  default volume from word3, pitch/fine from word4 and `SsUtKeyOnV` call. Missing
+  cue returns -1. Existing globals also scale output volumes; raw sample equality
+  alone cannot prove identical in-game sound.
+- Independent validation: compared with the historical consumer description in
+  `notes/gaso-import.md` (announcer section); no fresh attack-cue, PCM or live-audio
+  validation. This is largely unchanged prior evidence, not discovery of tank audio.
+- Outcome: redundant confirmation of a dependency during mandatory MCP use; useful
+  boundary for planning only. Both queries succeeded. Preparation, execution,
+  review/manual rework and savings unmeasured; no claimed efficiency gain.
+- Next: identify/hash the actual BAG1 tank controller, resources and sound events;
+  do not repeat this unchanged BAG2 query to claim original-effect fidelity.

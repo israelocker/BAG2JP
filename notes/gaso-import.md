@@ -1354,3 +1354,24 @@ Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `char
   Después verificar por qué f7308 sale de anim 78 durante el tanque y cubrir
   P1/P2 × A/B, fin de canción, fever aplicable y selector. No inferir aceptación
   de B a partir de tests/build/revisores. Sin snapshot de milestone: candidato WIP.
+
+### Ataque del tanque — requisito de fidelidad completa (2026-11-10 UTC)
+
+- Petición: «la reconstrucción 100% fiel el efecto, sonido, tamaño, todo».
+  El candidato `d9ce984` es parcial y no queda aceptado por esta petición.
+- Objetivo: geometría/proporciones/transforms, materiales/partículas, estados,
+  tiempos, reacción y sonido originales sincronizados. Corregir opacidad ya no
+  basta. Números históricos llamados «exactos» requieren código/datos/traza nativos.
+- `plans/gaso-attack-effect.md` conserva historial y propone F1–F8, audio, comparación
+  por guest frame y compatibilidad con los 19 rivales. Revisión pendiente de aprobación;
+  sin nueva implementación, build, despliegue ni captura de esta revisión.
+- Preflight PASS: `_work/workflow/20261110T104154528615Z-gaso-native-fidelity-plan/metrics.json`;
+  HEAD `d9ce984`, índice vacío, 82 cambios previos preservados, 31 fuentes coincidentes,
+  sin drift de recursos, EXE build/desplegado iguales. No es aceptación del ataque.
+- Ghidra MCP confirmó main JP `SLPM_862.19` y reproducción de cues `0x8002e2d0`
+  (trial `20261110-ghidra-045`). Es una dependencia BAG2, no la identificación del
+  sonido/controlador BAG1 del tanque. Escucha histórica general no valida este ataque.
+- Siguiente acción: aprobar revisión F1–F8; luego F1, inventario de identidad/región,
+  hashes y carencias sin repetir capturas válidas. Cartel GAS aceptado, estable,
+  preferencias y tarjetas preservados. Esta unidad es exclusivamente documental:
+  Goldfish no requerido aquí, sí para el siguiente cambio que lo active.
