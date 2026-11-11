@@ -1548,3 +1548,47 @@ Comprobación documental focal de nota/plan/log: sin incidencias en
 en esta unidad exclusivamente documental; no se cambió herramienta productiva,
 runtime, payload ni manifiesto. No se repite la suite host de entradas intactas ni
 se presenta su resultado histórico como una prueba nueva del tanque.
+
+#### F2 — CAUGHT y corrección de unidades de escala (2026-11-11 UTC)
+
+Unidad del plan F1–F8 aprobado; **sin cambio de runtime**. Evidencia vinculada:
+`_work/gaso/full-fidelity-source-audit/caught-motion.json`, `caught-contract.json`
+y trial `20261111-ghidra-048`.
+
+- Se auditaron clips66..70 de14 modelos BAG1 JP A/P1, sin errores del decoder y
+  con round-trip de valores. CAUGHT70 tiene dos frames, sin eventos, metadata
+  `[0,4,0,0,0,0]`;13 son estáticos, pero Strike rota el hueso5 en sus tres ejes.
+  **No forzar frame0 universalmente**. TIRED69 tiene34 frames con movimiento.
+  El round-trip del mismo codec no sustituye aceptación en juego ni cubre B/P2.
+- `0x8002efc8` hace loop con metadata+5 cero y clamp en otro caso; CAUGHT hace
+  loop. `0x8002ec60` ajusta el ancla al cerrar el loop, no decide liberar al rival.
+  Mientras sigue flag0x80 se actualiza el clip existente; salida por estado/ritmo
+  y siguiente request, no por terminar esos dos frames.
+- BAG2 `0x8002a090` despacha request123 a78 mediante tabla `0x8005181c`, también
+  confirmado por MCP. `0x8002d06c` comparte loop/clamp, pero el perfil asigna78 a
+  fuente69/TIRED, no70. No sobrescribir slot78 globalmente: tiene otros usos.
+  Falta seleccionar CAUGHT por rival con guardas/restauración, incluidos personajes
+  BAG2 sin clip BAG1 correspondiente. La equivalencia sigue sin aceptar.
+- **Corrección de unidades:** BAG1 JP `0x8002f7c0` escribe el argumento de escala
+  R12 masked16 en43a8/43ac/43b0 y43b8/43bc/43c0. Las dimensiones escaladas de la
+  malla son **43d8/43dc/43e0**, desde actor2c/30/34 por escala/4096 truncada hacia
+  cero; ID3 añade escala al alto. Las descripciones anteriores de43b8 como
+  «dimensiones» quedan corregidas por este inicializador, no por una conjetura.
+- MCP BAG2 `0x8002d85c` confirma escala en14e4/14e8/14ec y1514/1518/151c, y
+  dimensiones reales en1534/1538/153c. **No usar estas dimensiones en la fórmula
+  del tanque `12*43b8+ajuste`**: mezclaría longitudes con escala. Los bloques14f4
+  y1504 tampoco son ternas XYZ de escala demostradas. Falta contrastar escrituras
+  posteriores y qué terna BAG2 corresponde a43b8 durante el ataque.
+- `0x8002e72c` pasa escala base43a8 al modelo; `0x8001397c` multiplica en R12.
+  Se descartó la hipótesis de que8002e64c refrescara43b8: solo envuelve8002e224,
+  constructor/interpolador de poses. Estas consultas no resuelven la escala activa.
+
+MCP sigue operativo con main BAG2 JP `SLPM_862.19`/SHAea5a1668. Los controladores
+sin definición de función en GUI se analizaron adicionalmente en el proyecto
+headless aislado, tras contrastar bytes; no se afirma MCP del overlay BAG1.
+Siguiente F2: consultar escrituras por offsets43b8 y consumidor/terna BAG2;
+cerrar selección CAUGHT y binding de partículas. No repetir búsqueda de escala
+por el render de poses ni auditar otra vez clips intactos. F3 conserva PCM/onset
+y audio sin remuestrear pendiente; F4 y aceptación siguen pendientes. Cartel GAS,
+estable, tarjetas y preferencias intactos. Goldfish no requerido: solo RE/docs,
+sin cambio productivo de herramientas, runtime, payload o manifiesto.

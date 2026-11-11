@@ -680,3 +680,49 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   No runtime/game/settings/save changes. Startup/review/manual rework and savings
   unmeasured; headless times exclude preparation. Next: native CAUGHT clip/transitions,
   BAG2 equivalent, dimension units and particles; no acceptance or100% claim.
+
+## 20261111-ghidra-048 — CAUGHT playback and scale-unit correction
+
+- Purpose: original CAUGHT versus BAG2 TIRED and native tank scale units. Retained
+  Ghidra12.1.4 GUI; MCP get_program_info confirmed SLPM_862.19 JP PSXLE32 main,
+  SHA `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+- MCP decompile8002bf04 resolved known8002bc38; callers8002c060→8002c404 only
+  confirm rendering, not reaction dispatch (limited/redundant). Decompile8002d06c
+  and get_function_by_address8002ae60 failed FUNCTION_NOT_FOUND; read_memory
+  8002d06c/32bytes matched raw payload. Missing definitions are not missing code.
+  read_memory80051897 lengths20/4 begins4e4f5051, confirming request123→78;
+  repeated identity/table queries are not new discovery. Decompile8002d85c confirms
+  initial BAG2 scale/bounds. No GUI names, analysis or selected program changed.
+- Supplementary isolated gaso-runtime-hooks inputs: native JP headerless payload
+  SHA `ec7f4b0ef8c1823e86baa72bf5813e88c0a13e560f60adc5add6e7228bb66faf`;
+  BAG2 raw slpm.bin SHA
+  `143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b`.
+  BinaryLoader base80010000; no analysis sweep. Native wrapper verifies four raw
+  memory ranges; target import independently matches32 MCP bytes at8002d06c.
+- `py -3.13 _work/gaso/trace_bag2_caught.py` imported target and read8002d06c,
+  exit0/7.556s; `--follow-up --label bag2-caught-request --addresses 0x8002a090`
+  exit0/7.121s. Only relevant dispatch branches of22226-byte output read, not a
+  full audit. No native overlay selection through MCP is claimed.
+- Native command prefix `py -3.13 _work/gaso/trace_native_tank_main.py --follow-up`:
+  `--label native-caught-transition --addresses 0x8002ec60` exit0/6.955s;
+  `--label native-caught-actor-init --addresses 0x8002f7c0` exit0/7.316s;
+  `--label native-caught-scale-consumer --addresses 0x8002e72c` exit0/7.339s;
+  `--label native-caught-scale-matrix --addresses 0x8001397c` exit0/7.282s;
+  `--label native-caught-scale-refresh --addresses 0x8002e64c` exit0/7.176s;
+  `--label native-caught-effective-scale --addresses 0x8002e224` exit0/7.249s.
+  Exact arrays/logs/decompiles retained per label. Last two disprove the scale-refresh
+  hypothesis: pose interpolation only, no43b8 writes. Record exclusion, not success
+  at identifying active scale. No need to repeat these unchanged queries.
+- Independent deterministic audit_caught_motion.py/audit_caught_contract.py bind
+  source/report/target/policy hashes,14 JP A/P1 clips, table123→70/78, policy78←69.
+  CAUGHT2frames loops,13 static and Strike bone5 differs; TIRED34frames moves.
+  Codec self-round-trip is not independent game validation. Native loop helper
+  adjusts root anchor, state/next request governs release.
+- Correction to earlier trial047/topic interpretation:43b8/bc/c0 initially hold
+  masked R12 scale, like43a8/ac/b0. Model bounds are43d8/dc/e0; BAG2 bounds1534/38/3c
+  must not replace scales14e4/e8/ec or1514/18/1c in the tank formula. Subsequent
+  writes/active mapping unresolved. Preserve previous history with this correction.
+- Outcome: useful partial playback contract and verified scale-unit correction;
+  no runtime/payload/game/save/settings change or fidelity acceptance. Preparation,
+  review/manual rework and savings unmeasured; times are execution only. Next:
+  targeted scale writes, rival-specific selection and particle bindings.
