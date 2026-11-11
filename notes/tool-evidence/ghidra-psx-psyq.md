@@ -1004,3 +1004,41 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   funcmatch omitted: slot/data audit, not USA-main equivalent search. Next: targeted
   slot1 controller/callback reachability for imports, reversible entry/release seam,
   then other profiles/partners and explicit BAG2-only skeleton adaptation.
+
+## 20261111-ghidra-059 — Slot1 routes and combat-scoped reservation candidate
+
+- Purpose: bounded existing-slot1 path audit for Heat/Strike/Gas-O, not another
+  empty-list inventory or runtime modification. Reused running Ghidra12.1.4.
+- Fresh MCP `get_program_info()` confirmed SLPM_862.19 JP PSX LE32 main SHA
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  `read_memory(address="0x8002d06c",length=32)` matched raw target main SHA
+  143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b.
+  `decompile_function_by_address(address="0x8002cf44")` succeeded: timer-segment
+  speed update, not a clip selector. `read_memory(address="0x800518ec",length=8)`
+  returned56585a5d5d000000. `read_memory(address="0x80054fe4",length=152)` showed
+  the per-side callback table; do not claim its handlers executed from that read.
+- Reused full controller8002d06c, relevant dispatcher8002a090 and existing
+  binding-0x8003190c.c (indirect character callback). Fresh MCP decompile319ac
+  failed FUNCTION_NOT_FOUND; no offline result substituted as successful MCP.
+- `py -3.13 _work/gaso/audit_slot1_routes.py` exit0/0.145204s, seven files:
+  raw main plus six system DBIs, aligned literal J/JAL, function-pointer and
+ 154c/1550-store scan. Report slot1-routes.json preserves all input hashes/context.
+  Main has seven controller calls inside dispatcher; three literal field stores.
+ 005 has dispatcher calls only;004 has direct controller calls file4b24/4c34
+  with stack-loaded slot. No inferred004 base or proof of its argument values.
+- `py -3.13 _work/gaso/audit_slot1_callbacks.py` exit0/0.198078s,72 stock character
+  modules plus24 imported pack modules: no hits for those literal forms. Report
+  slot1-callbacks.json hashes every module and imported member identity. DBI magic
+  independently matched an archived Heat module; one DBI/member per imported pack
+  asserted. Payload376287abd3ee2a13944deeafb0415da9b0f163a185dd3cad1540259596232f7e
+  and source-index hash match trial058. No source-index/live-table equivalence claim.
+- Independent struct opcode checks and MCP/raw byte comparison, not Capstone or
+  a second headless pass. Literal scans can include data and miss aliases/computed
+  offsets/indirect calls. Timer-table range beyond eight bytes not proven. funcmatch
+  omitted: JP field/call audit, not a BAG1-USA/main function-equivalence search.
+- Outcome: useful reduction of candidate routes, not proof slot1 globally free.
+  Combat005-only actor/version-scoped loan and ownership-aware release are proposed
+  requirements, not implemented behavior. No runtime/gameplay acceptance. Preflight
+  20261111T110818458438Z reused with unchanged production inputs; manual time and
+  savings unknown, reported seconds cover scripts only. Next: actual CAUGHT70 per
+  import variant and host entry/yield/retirement seam; other profiles remain open.

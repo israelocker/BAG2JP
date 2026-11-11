@@ -2011,3 +2011,51 @@ Siguiente: acotar las rutas a1 de los tres imports y el enlace/retirada reversib
 después cubrir Pander/pares y retarget solo-BAG2. Se mantienen el loop nativo de
 dosframes, la prohibición de forzarframe0 y las guardas/restauración de trial057.
 Trial058 conserva consultas, errores y límites. Sin cambios de runtime ni aceptación.
+
+#### F2 — rutas del slot1 y reserva acotada al combate (2026-11-11 UTC)
+
+Continuación de la auditoría aprobada, **sin instalar CAUGHT**. Los reportes nuevos
+`slot1-routes.json` y `slot1-callbacks.json` en
+`_work/gaso/full-fidelity-source-audit/` conservan hashes y contextos de instrucciones.
+Se reutiliza el inventario058; no se volvieron a extraer sus listas de animaciones.
+
+- Main y seis DBI de `assets/archive/system`: siete llamadas literales a8002d06c
+  en main, todas dentro del dispatcher8002a090 ya analizado. Las tres escrituras
+  literales a154c/1550 son del controlador y del inicializador8002d85c (este pone0).
+  El módulo005 llama al dispatcher, no directamente al controlador. Sin embargo,
+  **004 tiene dos llamadas directas** (offsets de fichero4b24/4c34, argumento de
+  slot cargado de pila). No se deduce que sus valores excluyan1 ni se inventa su base.
+- Los72 DBI stock de personajes y24 DBI de packs importados USA/JP no contienen
+  llamadas/saltos literales a8002a090/8002d06c, punteros literales a ellos ni stores
+  con offset154c/1550. Esto descarta esas formas concretas en esos bytes, **no**
+  aliases, offsets calculados o llamadas indirectas. Los imports se leen del payload
+  376287ab mediante el mismo índice source ligado por SHA: no es prueba de RAM actual.
+- Relectura de8002a090: el cambio nominal0→1 está guardado por ID6/Pander;
+  propagación a compañeros por IDs5/6/10/14 no pertenece a Heat0/Strike1/Gas-O9.
+  No convertir esta observación en soporte de parejas. La tabla de retorno de timer
+  800518ec empieza86,88,90,93,93,0,0,0 (MCP y raw coinciden); esos ocho bytes no
+  contienen1, pero no se demostró aquí todo rango posible de indexación.
+- MCP8002cf44 confirma que el vencimiento del reloj lee metadata/duración del
+  slot actual para calcular velocidad y siguiente segmento; no selecciona un clip
+  nuevo. El callback3190c reutilizado llama indirectamente al handler del personaje.
+  MCP319ac no está analizado (`FUNCTION_NOT_FOUND`): no afirmar agotadas esas rutas.
+
+**Candidato de integración, todavía no implementado:** usar1 únicamente durante
+combate005 para un rival importado Heat/Strike/Gas-O con identidad de actor, versión,
+tablas, entrada vacía y clip CAUGHT real verificados. No reservar1 globalmente, no
+alterar78 ni reutilizar97/WIN4. Primero preparar raw motion, longitud y metadata
+coherentes; entrar por el controlador para reiniciar una vez y dejar el loop nativo,
+no escribir frame0 cada tick ni destruir metadata vieja antes de que se consuma.
+
+La retirada debe respetar una reacción legítima nueva: liberar el control al próximo
+pedido válido, sin restaurar encima el slot previo por fuerza. Conservar el contenido
+prestado mientras current154c, previous1550, decoder830 o caches todavía lo puedan
+referenciar; verificar cualquier tabla compartida. Cambio de actor/escena/versión
+invalida la identidad y prohíbe escribir sobre el nuevo actor. Estos son requisitos
+para regresión, **no garantías existentes** ni autorización de desplegar el candidato.
+
+Siguiente unidad: auditar CAUGHT70 de Heat/Strike/Gas-O por traje/lado/región y su
+conversión en el modelo importado, con loop y metadata completos; reutilizar las rutas
+anteriores y probar entrada/cesión/restauración en el seam host antes de tocar runtime.
+004 y llamadas indirectas siguen sin certificar un slot libre global. Pander/pares y
+retarget solo-BAG2 siguen abiertos; después partículas/F3. Trial059 registra límites.
