@@ -1592,3 +1592,35 @@ por el render de poses ni auditar otra vez clips intactos. F3 conserva PCM/onset
 y audio sin remuestrear pendiente; F4 y aceptación siguen pendientes. Cartel GAS,
 estable, tarjetas y preferencias intactos. Goldfish no requerido: solo RE/docs,
 sin cambio productivo de herramientas, runtime, payload o manifiesto.
+
+#### F2 — escala de referencia y escala de dibujo BAG2 (2026-11-11 UTC)
+
+Continuación del plan aprobado, sin cambios de runtime. `scale-write-sites.json`
+y `scale-reference-sites.json` en `_work/gaso/full-fidelity-source-audit/` conservan
+el barrido determinista del main original JP y del main BAG2. Solo busca offsets
+literales: **no prueba ausencia de escrituras por alias, memcpy o módulos**.
+
+- Main BAG1: las únicas escrituras literales SW/SH a43b8/43bc/43c0 encontradas
+  pertenecen al inicializador8002f7c0 ya contrastado; otras escrituras copian43a8
+  a un actor secundario en8002d734. No hay evidencia nueva para llamar «dimensiones»
+  a esas ternas ni para sustituirlas por bbox.
+- BAG2:8003318c copia1514/1518/151c a14e4/14e8/14ec tanto en el actor principal
+  como en el secundario. Esto identifica **escala de referencia guardada** frente
+  a **escala de trabajo/dibujo**; el inicializador8002d85c establece ambas iguales.
+  No se ha probado en este análisis la frecuencia con que se llama8003318c ni que
+  ningún módulo pueda cambiar la referencia. No confundir el barrido con una traza.
+- MCP confirma identidad del main y los32 bytes de8003318c, pero su decompilado
+  devuelve FUNCTION_NOT_FOUND porque no hay función definida en esa dirección en
+  la GUI. El análisis complementario aislado `bag2-tank-scale-writes-decompile/`
+  (7.091s, exit0) aporta el consumidor; no se alteró el proyecto GUI.
+- La coincidencia literal1514 en80040e14 es de ISO9660/directorios, **no de escala**:
+  MCP del contenedor80040d9c la descarta. No aceptar todo offset coincidente como
+  referencia a actor. Trial049 registra también esta consulta irrelevante.
+
+La correspondencia estática permite diferenciar referencia y dibujo, pero aún no
+certifica igualdad dinámica del tanque: falta contrastar alias/módulos pertinentes
+y el argumento R12 de inicialización de ambos juegos. Siguiente unidad: comprobar
+el camino de carga/inicialización y los escritores por puntero a las ternas, no
+repetir el barrido directo ni los constructores de poses descartados. Selección
+CAUGHT por rival y partículas/audio siguen abiertos; F4 no iniciado. Verificación
+de esta unidad documental no implica aceptación en juego ni suite host nueva.

@@ -726,3 +726,34 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   no runtime/payload/game/save/settings change or fidelity acceptance. Preparation,
   review/manual rework and savings unmeasured; times are execution only. Next:
   targeted scale writes, rival-specific selection and particle bindings.
+
+## 20261111-ghidra-049 — Reference versus working scale
+
+- Purpose: approved F2, targeted writes to native R12 scales and BAG2 scale tuples.
+  Reused Ghidra12.1.4/JDK21 isolated project and running GUI, no startup/install.
+- Exact MCP queries: `get_program_info()` confirmed SLPM_862.19, PSX LE32 JP main
+  SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe;
+  `decompile_function_by_address(address="0x8003318c")` failed FUNCTION_NOT_FOUND;
+  `read_memory(address="0x8003318c",length=32)` succeeded, bytes
+  d0ffbd272c00bfaf2800b6af2400b5af2000b4af1c00b3af1800b2af1400b1af.
+- Complementary command: `py -3.13 _work/gaso/trace_bag2_caught.py --follow-up
+  --label bag2-tank-scale-writes --addresses 0x8003318c`, exit0/7.091s,
+  output4678bytes read completely. Input `_work/mainexe/slpm.bin` SHA
+  143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b;
+  source32 bytes independently match MCP at3318c. Trial JSON's mcp_matched_address
+  field still names its historical2d06c guard, not this new memory comparison.
+- Deterministic scans saved scale-write-sites.json and scale-reference-sites.json.
+  Native input headerless JP payload SHA
+  ec7f4b0ef8c1823e86baa72bf5813e88c0a13e560f60adc5add6e7228bb66faf.
+  Direct SW/SH scans found native43b8/bc/c0 only in init; no claim about aliases,
+  memcpy or overlays. Nearest-stack-prologue labels are hints, not function bounds;
+  native actor init is previously proven leaf2f7c0, not nearest prologue2efc8.
+- BAG2 consumer copies reference1514/1518/151c to working14e4/14e8/14ec for main
+  and secondary actors; native initializer/renderer reviewed unchanged for contrast.
+  Literal1514 candidate80040e14 was independently rejected by fresh MCP decompile
+ 80040d9c (ISO9660 directory routine); irrelevant result retained, not scale proof.
+- Outcome: useful bounded static distinction, not dynamic mapping acceptance or
+  exhaustion of writers. No need for funcmatch (no USA-main equivalent search);
+  no native overlay MCP claim. No runtime, payload, game or protected files changed.
+  Execution7.091s excludes preparation/review; rework and savings unmeasured.
+  Next: argument provenance and pointer-based scale writers, then CAUGHT selection.
