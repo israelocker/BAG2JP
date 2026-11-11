@@ -847,3 +847,20 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   801d6908 formulas. Animation translation unit (`*S>>7`) is inferred, not traced.
   No runtime edits, captures or acceptance; time savings unmeasured.
   Next: fall clamp +0x43cc scale dependence, then CAUGHT per rival.
+
+## 20261111-ghidra-053 — Native tank height ratio across characters
+
+- Purpose: owner-approved method for BAG2-only rivals; measure native tank/rival
+  height ratio on all 14 BAG1 characters. Static only.
+- MCP: `get_program_info()` confirmed SLPM_862.19 SHA ea5a1668…, 1324 functions;
+  reused running GUI, no startup. No further MCP query was needed: tables came from
+  raw USA `scus.bin` (0x80059918 names, 0x800558fc scale = JP 800516d8) and the known
+  JP Y table 801d8280.
+- Scratch: member 0 extraction via `tools/bag1import/rebuild_dfs_members.read_members`,
+  rest extents via `_work/gaso/rest_pose_extents.py`. All 14 models consumed fully.
+  Report `full-fidelity-source-audit/tank-height-ratio.json` binds DFS/model SHAs.
+- Error found and corrected: first report used +230 for the ID13 radius; fixed to
+  +600 (437).
+- Outcome: useful but non-constant ratio (distinct entries 1.119–1.228, median 1.164).
+  Translation-only rest pose; xf[0] rotation consumer not traced. Time savings
+  unmeasured. Next: BAG2-only rest heights, clamp +0x43cc, CAUGHT per rival.

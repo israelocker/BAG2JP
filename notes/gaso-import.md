@@ -1753,3 +1753,34 @@ modelo BAG2 de Heat difiere ≈2 % del de BAG1, y `r` por escala no capta esa
 diferencia; los rivales solo-BAG2 siguen sin entrada en la tabla Y (**decisión del
 dueño**). Sigue abierto: si el tope `+0x43cc` depende de escala, CAUGHT por rival,
 partículas y audio F3. Trial052 registra consultas, fallos y límites.
+
+#### F2 — altura del tanque frente al rival y rivales solo-BAG2 (2026-11-11 UTC)
+
+Ejecuta lo acordado con el dueño («okay continua con lo recomendado»), sin cambios
+de runtime. Fuente: extracción USA completa `_work/bag1_disc_full/`; la tabla de
+nombres de modelo de `scus.bin` (0x80059918) da el orden de IDs 0..13 y la tabla de
+escala USA 0x800558fc coincide con JP 800516d8. Se extrajo el miembro 0 de los 14
+`PLAYER2/P_xxxA2.DFS` (`_work/gaso/native-models/`); el de Gas-O es idéntico byte a
+byte a `character_inventory/gaso/000.bin`. Los 14 modelos se recorren completos.
+Informe con SHA por DFS/modelo: `full-fidelity-source-audit/tank-height-ratio.json`.
+
+Medida en pose de reposo (solo traslaciones, `rest_pose_extents.py`): altura del
+rival `sizeY*S/4096`, altura del tanque `tablaY*4*4480/4096`. Cociente tanque/rival:
+Heat 1.228, Strike 1.157, Frida 1.169, Hamm 1.536, Kelly 1.215, Shorty 1.119,
+Pinky 1.171, Kitty 1.146, Hiro 1.142, Gas-O 1.227, Capoeira 1.364, Robo 1.21,
+ID12 1.819, ID13 1.567.
+
+- **No es constante.** Las ocho entradas Y distintas (IDs 0, 1, 4–9) dan 1.119–1.228,
+  mediana 1.164; los doce humanoides, mediana 1.19 (1.119–1.536). El valor 390 de los
+  IDs 2, 3, 10 y 11 parece compartido y explica la dispersión (Hamm es bajo de
+  verdad: su modelo mide 1111).
+- XZ no necesita tabla: usa la escala del rival para todos (ID13 y escenario 0xb
+  usan +600; corregido en el informe, radio 437).
+- Las palabras xf[0] no nulas (0x08000000/0x10000000 en huesos simétricos) parecen
+  rotaciones de 180°/360° y no alteran la altura medida; no se ha trazado su consumidor.
+
+Para rivales que no existen en BAG1 quedan dos candidatos, ambos **aproximación**
+y no fidelidad original: (a) `Y = 1.164 × altura de reposo BAG2 del rival`;
+(b) valor compartido `390*4*r`. **Elección pendiente del dueño.** Siguiente: medir
+las alturas de reposo de los modelos solo-BAG2, el tope `+0x43cc`, CAUGHT por rival,
+partículas y audio F3. Trial053 registra la unidad; sin aceptación en juego.
