@@ -1968,3 +1968,46 @@ por traje/lado con el conversor existente, y verificar el punto de entrada/salid
 del controlador y callbacks por personaje para un slot añadido. Parejas, reflejos
 y retarget solo-BAG2 siguen abiertos; no afirmar CAUGHT stock equivalente. Reutilizar
 este contrato y el selector056, sin repetir sus búsquedas. Después partículas/F3.
+
+#### F2 — inventario de huecos existentes para CAUGHT (2026-11-11 UTC)
+
+El propietario preguntó si había espacios libres para añadir CAUGHT a todos los
+personajes y aprobó auditar primero los huecos existentes. Esto **sustituye el
+siguiente paso de conversión inmediata** del apartado anterior. Reserva sin sitio
+para crecer no equivale a lista sin entradas vacías.
+
+`reusable-slots.json` y `reusable-slot-candidates.json`, bajo
+`_work/gaso/full-fidelity-source-audit/`, ligan por SHA72 listas stock
+(18 personajes × A/B × P1/P2) y24 listas importadas (Heat/Strike/Gas-O ×4 × USA/JP).
+Las importadas se extrajeron del payload experimental376287ab con el índice source
+actual ligado por SHA y layout comprobado; no es una lectura de todos los actores
+actuales en RAM ni prueba de identidad del índice compilado.
+
+| Listas stock, idéntico resultado en sus cuatro variantes | Slots de cuatro bytes cero |
+|---|---|
+| Heat, Strike, Bi-O, Columbo, Comet, Hustle Kong, Kelly, Kitty-N, Michael Doi, Robo-Z Gold, Shorty, Sushi Boy, Tsutomu | 1,97 |
+| Hiro | 1 |
+| Pander | 97 |
+| McLoad | 1,68,96,97 |
+| Capoeira | 1,97,117 |
+| Chichi/Sally | 1,95,96,97,116,117 |
+
+Todas las24 listas importadas tienen huecos1/97 y101 entradas. Stock tiene101
+excepto Capoeira/Chichi-Sally, con118. **No existe un slot vacío común a las72
+listas stock**: Pander tiene56frames en1 e Hiro218frames en97.
+
+Un hueco no demuestra un rol muerto: el dispatcher8002a090 selecciona1 para
+Pander(ID6) si la tabla pide0 y su slot actual es0; request143 corresponde a97
+(WIN4). Otros huecos nominalmente alcanzables:68 por requests84/102,95 por141 y96
+por142.116/117 requieren revisar remaps/compañeros, no basta la tabla nominal.
+Los duplicados completos también se inventariaron, pero no se consideran libres.
+
+Recomendación pendiente de prueba: priorizar **slot1 para Heat/Strike/Gas-O** en
+vez de ampliarN o alterar78. Para el resto, escoger por perfil; Pander necesitaría
+otro candidato (97 solo tras resolver WIN4). No se ha probado todavía la ausencia
+de lectores directos, callbacks o transiciones que seleccionen esos huecos fuera
+del dispatcher. No instalar CAUGHT en ninguno por este inventario solo.
+Siguiente: acotar las rutas a1 de los tres imports y el enlace/retirada reversible;
+después cubrir Pander/pares y retarget solo-BAG2. Se mantienen el loop nativo de
+dosframes, la prohibición de forzarframe0 y las guardas/restauración de trial057.
+Trial058 conserva consultas, errores y límites. Sin cambios de runtime ni aceptación.

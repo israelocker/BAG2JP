@@ -969,3 +969,38 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
 - Next: converted native CAUGHT per current import/traje/lado and callback-safe
   entry/release seam; then pair/reflection/stock-skeleton adaptation and particles.
   No F2/F4 completion, deployment or gameplay acceptance from this documentary unit.
+
+## 20261111-ghidra-058 — Existing empty animation slots, not assumed free
+
+- Purpose: owner-approved audit of reusable entries for every character, instead of
+  assuming that exact table allocation implies no existing holes. Static only.
+- Fresh MCP `get_program_info()` confirmed existing SLPM_862.19 JP PSX LE32 main,
+  SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe;
+  `read_memory(address="0x8005180c",length=248)` succeeded. No startup or overlay claim.
+  Full returned248bytes independently match raw slpm.bin SHA
+  143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b.
+- Reused dispatcher8002a090 and role contract, not another decompile: Pander6 can
+  select slot1 from nominal0/current0; request143 maps97/WIN4. Nominal request
+  scans are not exhaustive reachability proofs, especially pairs/direct controllers.
+- `py -3.13 _work/gaso/audit_reusable_slots.py` final exit0/0.095661s:
+  reusable-slots.json covers72 stock lists and24 import-region lists; strict list
+  bounds/terminator checks, frame-zero/empty distinctions and full-entry duplicates.
+  Payload376287abd3ee2a13944deeafb0415da9b0f163a185dd3cad1540259596232f7e;
+  hashed current source index/catalog and manifest offset checked against known layout.
+  No claim that source index equals every live actor's compiled index.
+- Scratch failures retained: first MCP hex transcription length assertion, then
+  non-animation pack member misclassified by index kind; fixed by exact MCP bytes
+  and catalog model-only selection. One corrective patch failed to match and made
+  no change. Classifier first asserted wrong decompiler variable spelling; corrected
+  after reading the exact Pander branch, not by relaxing the semantic condition.
+- `py -3.13 _work/gaso/classify_reusable_slots.py` final exit0: inventory/source
+  hashes and four variants checked; Pander1=56frames and Hiro97=218frames disprove
+  a universal empty slot. Import Heat/Strike/Gas-O all have1/97 empty. Candidate1
+  deserves bounded path checking; none is yet certified free. Extra stock holes and
+  nominal requests are recorded separately. Pair/choreography tables may differ live.
+- Outcome useful structural inventory and counterexamples, not runtime safety or
+  all-character CAUGHT compatibility. Manual work/query time/savings unmeasured;
+  0.095661s covers successful audit only. Preflight110818 reused unchanged.
+  funcmatch omitted: slot/data audit, not USA-main equivalent search. Next: targeted
+  slot1 controller/callback reachability for imports, reversible entry/release seam,
+  then other profiles/partners and explicit BAG2-only skeleton adaptation.
