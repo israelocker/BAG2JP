@@ -896,3 +896,37 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   ratio 520/784=0.663 from dancer separation. WIP drop 1200/12 frames contradicted.
   Limits: normal stage only, dt not measured, camera not compared. Time unmeasured.
   Next: CAUGHT selection per rival (pairs, BAG2-only), then particles and F3.
+
+## 20261111-ghidra-056 — BAG2 hit selector and CAUGHT binding gap
+
+- Purpose: approved F2 hit-reaction routing, bounded static research; no runtime edits.
+  MCP `get_program_info()` succeeded, reused SLPM_862.19 Japanese PSX LE32 main,
+  SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe,1324functions.
+  Fresh `read_memory(address="0x80051458",length=36)` returned
+  ca01ca01ca00ca01ca01ca01cc00cb00c902ca01c800ca01ca01ca00c800cb00ca01c902.
+- Earlier queries in this unit: sites8001fff8/8002005c resolved font-width code
+  in FUN_8001ffbc, not
+  reaction routing; decompile80035554 failed FUNCTION_NOT_FOUND (raw UI/rectangle
+  argument pattern not a proven reaction issuer). Xrefs/callers to8002a090 were empty
+  or FUNCTION_NOT_FOUND in this MCP database; table xrefs80051450/54/56/58/59 empty.
+  The table-reference candidate80040bd0 is ISO9660/CdSearchFile, rejected. These
+  negative main queries do not prove no caller exists in an overlay.
+- Supplement: Capstone009 traces hashed JP005.dbi at8008f890, not MCP-loaded memory.
+  `py -3.13 _work/gaso/audit_hit_selector.py` exit0; independent word decoding and
+  full raw main/table SHA checks bind `hit-selector-contract.json` and verified.asm.
+  Main SHA143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b;
+  native JP SHAec7f4b0ef8c1823e86baa72bf5813e88c0a13e560f60adc5add6e7228bb66faf.
+  Source role maps/policy hashes also recorded; legacy78←70 overridden by78←69
+  for Heat/Strike/Gas-O; no alternate non-dance target for source70 in these maps.
+- Outcome: useful. The selected source actor indexes80051458 at8009b5ac, pending
+  request stored8009b5b4; Bi-O9=[202,1]. Consumer8009d0c0 dispatches then resets
+  pending request. Other overlay branches explicitly issue123; no global78 change.
+  Native GAS-O9 exception123→70 remains distinct. No proof of all reflection/guard
+  branches, live ordering, pair/BAG2-only role equivalence or deployed clips.
+- Time: consolidating audit0.012145s only; preceding exploration/manual rework and
+  savings unmeasured. No new headless run; prior original/controller decompiles reused.
+  Preflight20261111T110818458438Z passed0.714s, sources31match/resources no drift.
+  Next: dedicated reversible CAUGHT clip binding, pair/stock skeleton adaptation,
+  then remaining guards/restoration/particles. No runtime/gameplay acceptance.
+- funcmatch.py not rerun: this is a verified JP overlay/table path, not a USA-main
+  function-equivalence search supported by that experimental helper.

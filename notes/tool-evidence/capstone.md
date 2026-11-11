@@ -89,3 +89,33 @@ doc_kind: evidence
 - Dictamen: útil; encontró un error compartido de `anim_remap.py`.
 - Medición: tiempo y ahorro desconocidos.
 - Siguiente: revisión humana del baile; reconstruir Heat/Strike con la corrección si el propietario lo aprueba.
+
+## 20261111-capstone-009 — 2026-11-11 UTC — selector de impacto BAG2 JP
+
+- Uso real: Capstone5.0.7 MIPS32LE; `dis_005_dispatch.py` en `_work/gaso/` con
+  rangos8009cf00:8009d140,8009e000:8009e140 y después8009b400:8009b7a0,
+  8009b2c0:8009b400. Las salidas iniciales compartían destino; conservar la salida
+  consolidada no sobrescribible `hit-selector-verified.asm`, no depender de aquel
+  archivo temporal para evidencia completa. No se perdió fuente de juego.
+- Input `assets/archive/system/005.dbi`,61687bytes, SHA256
+  bc5f3045084e4b3e19009910441627977863c8b5791b5cdb716a766e68b28fb2,
+  payload tras12bytes y base JP8008f890. No usar base USA8008f6c0.
+- Barridos previos `request_tables.py`, `hit_reaction_tables.py`,
+  `hit_reaction_bag2.py`, `hit_table_refs.py`, `hit_table_refs2.py`,
+  `bag2_controller_callers.py`, `bag2_dispatcher_ptr.py` no localizaron emisor en main:
+  resultados negativos/no pertinentes, no ausencia global de llamadas. Font/ISO9660
+  y patrón de argumentos UI descartados. `find_dispatcher_overlay.py` encontró
+  JAL8002a090 en005 y008;008 no seguido. `find_request_writers.py` y
+  `find_hit_table_005.py` delimitaron selector/tabla en005.
+- Contraste independiente `py -3.13 _work/gaso/audit_hit_selector.py`: SHA completos,
+  asserts de opcode/inmediato sin decoder y tabla36bytes idéntica al MCP main.
+  Informe `full-fidelity-source-audit/hit-selector-contract.json`; consulta Ghidra
+  complementaria documentada en ghidra056. No sustituye Ghidra ni verifica el overlay
+  en RAM de una partida activa.
+- Observado:8009b5ac lee tabla80051458[ID*2],8009b5b4 guarda petición; entrada9
+  Bi-O=[202,1].8009d0c0 la despacha y consume.8009b2cc/b444 emiten123 en otras
+  condiciones. Evitar cambiar global78 o confundir peticiones con slots.
+- Dictamen: **útil** para delimitar esta ruta, no exhaustivo para reflejos, parejas
+  o CAUGHT de rivales solo-BAG2. Auditoría consolidada0.012145s; exploración,
+  preparación, retrabajo y ahorro no medidos. Ningún parche ni aceptación en juego.
+  Siguiente: enlace CAUGHT por contexto; reutilizar listing/hashes si no cambian.

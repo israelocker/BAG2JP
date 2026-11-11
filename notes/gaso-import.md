@@ -1875,3 +1875,44 @@ payloads nativo ec7f4b0e... y BAG2 143b4bf8... verificados por SHA).
   (`80075f00`) no medido. Encuadre de cámara no comparado. Sin aceptación en juego.
   Siguiente: CAUGHT por rival (incluidos solo-BAG2 y parejas), guardas/restauración,
   partículas; luego F3. Trial055 registra la unidad.
+
+#### F2 — selector de impacto BAG2 y enlace CAUGHT pendiente (2026-11-11 UTC)
+
+Contrato estático acotado, **sin cambios de runtime**. Evidencia consolidada:
+`_work/gaso/full-fidelity-source-audit/hit-selector-contract.json` y
+`_work/gaso/hit-selector-verified.asm`; trials ghidra056 y capstone009.
+
+- El selector relevante no está en el main: está en `system/005.dbi` JP,
+  payload tras12bytes, base8008f890. Los barridos negativos del main no demostraban
+  ausencia de emisor. No reutilizar la base USA8008f6c0 ni tratar el DBI de disco
+  como memoria del combate cargada en el MCP.
+- `8009b594..8009b5b4` toma el ID del actor seleccionado por S2 y lee el primer
+  byte de `80051458+ID*2`; lo guarda en la petición pendiente `+0x18` del bloque
+  `8005cf08+lado_receptor*0x24`. El segundo byte no nulo llama a80019d70 en esta
+  rama. S2 puede invertirse respecto al receptor: no confundir emisor con víctima
+  ni dar por resuelto el reflejo a partir de una sola rama.
+- La entrada9 de Bi-O es `[202,1]`, confirmada contra el main y por MCP36bytes.
+  Esta ruta usa reacción genérica202, no la excepción nativa de GAS-O9 que en
+  `8001fc84` selecciona123→CAUGHT70. **No es prueba de todos los caminos de impacto.**
+- Consumidor `8009d0a8..8009d0dc`: si la petición signed16 es no negativa, llama
+  a8002a090 con modo1, factor4096 y tiempo de `+0x1c`; luego consume `+0x18=-1`
+  y guarda la anterior en `+0x1a`. La petición no es una orden que deba reescribirse
+  cada frame. No confundir estos offsets con el contador nativo de liberación.
+- BAG2 también emite123 en8009b2cc y8009b444 bajo otras condiciones. Es incorrecto
+  afirmar que123 solo puede significar «atrapado por GAS-O» o que no existe en BAG2.
+  El rol de todas esas condiciones no queda identificado aquí; **no cambiar global78**.
+- Las políticas actuales Heat/Strike/Gas-O sobreescriben el legado78←70 por78←69
+  TIRED. El mapa de roles no-danza efectivo no conserva otro destino para fuente70.
+  Esto es una comprobación de fuentes/políticas, no una nueva auditoría del payload
+  desplegado. No se ha probado que un clip stock BAG2 equivalga a CAUGHT.
+
+Consecuencia para F4: enlazar CAUGHT por rival y solo en el contexto del ataque
+importado, conservando las reacciones stock fuera de él. No basta cambiar el número
+de petición ni congelar frame0. Los originales70 de los personajes BAG1 siguen
+disponibles en las fuentes; Strike conserva su movimiento de dos frames.
+Pendiente inmediato: establecer un enlace de clip independiente y reversible para
+los imports presentes y su pareja, y una adaptación explícita para esqueletos
+solo-BAG2; verificar capacidad/tablas, guardas de versión/emisor/víctima/reflejo,
+propagación a compañero y restauración por fin/cambio de actor/escena. Después,
+partículas y F3 PCM/onset1806/180a, sin reabrir búsquedas del selector ya resueltas.
+F2 permanece incompleto y no hay aceptación de fidelidad ni despliegue nuevo.
