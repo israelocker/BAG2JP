@@ -2101,3 +2101,62 @@ y escena como en trial059. No repetir esta extracción mientras hashes no cambie
 Después integrar únicamente el candidato acotado que pase esas pruebas, manteniendo
 abiertos parejas, partículas y F3; ninguna prueba host sustituye el flujo en juego.
 Trial060 conserva el fallo inicial, consultas y límites. Sin cambios de runtime.
+
+#### F4 parcial — política host de préstamo CAUGHT, sin integrar (2026-11-11 UTC)
+
+Primer componente C experimental en `bag2jp_caught_loan.h`, con harness real
+`tools/test/caught_loan_harness.c` y runner `tools/test/test_caught_loan.py`.
+**Solo decide acciones; no lee/escribe RAM, publica tablas, invoca el controlador,
+reproduce el loop ni está incluido en el runtime.** F2/F3 y el port F4 siguen abiertos.
+El adaptador futuro debe comprobar hechos reales, aplicar la acción atómicamente
+y solo entonces adoptar `next`; ante fallo conserva el estado anterior.
+
+- `ENTER` una vez por hit creciente no nulo: módulo005, imports Heat0/Strike1/Gas-O9
+  versión1, identidad completa de carga/actor/tablas, clip verificado, tablas
+  exclusivas, slot1 vacío, ninguna referencia y punto seguro declarado por adaptador.
+- `YIELD` ante otra reacción legítima, fin del impacto o cambio de hit; no selecciona
+  una animación previa obsoleta. `RESTORE` significa retirar contenido prestado,
+  solo tras cesión, punto seguro y cero referencias current/previous/decoder/pose;
+  bits de referencia desconocidos también bloquean. No sobrescribe78 ni fuerza frame0.
+- Pérdida de identidad, alias o binding produce `ABANDON`: reserva huérfana retenida,
+  sin restaurar/liberar/reutilizar. Un descriptor queda ligado a su primera identidad
+  incluso en IDLE; no se resetea para borrar el historial. Quiescencia y disposición
+  de descriptores descargados siguen siendo obligaciones del adaptador, no funciones
+  implementadas aquí. No se certifica slot1 como libre globalmente.
+
+Verificación del componente: RED inicial8métodos/25fallos de aserción con stub NONE;
+GREEN inicial8; regresión de replay RED1; estado final **12métodos nuevos y19pruebas
+enfocadas PASS**, compilando este header con WSL gcc C11, Wall/Wextra/Werror.
+Mutaciones finales **24/24 detectadas**, sobre copias temporales sin tocar el header.
+El primer ensayo ampliado detectó23/24: usar el mismo hit en B ocultaba la guarda
+de identidad tras la de replay. Se reforzó B con hit posterior y se conservó ese
+resultado fallido, no se borró ni se contó como PASS.
+
+**Suite completa no verde:**231tests,1failure y31errors; los32nombres coinciden con
+la primera suite de esta sesión. Hay errores de enlace/compilación en audio, shim
+y regiones, además de comprobaciones de assets; el fallo único es
+`StrikeCostumeAssetsTests.test_package_keeps_models_separate_from_texture_packs`.
+Nombres y trazas completos: `_work/gaso/caught-loan-verified-full.log` y
+`_work/gaso/caught-loan-host-policy.json`. No se alteraron esas costuras ajenas para
+ocultarlos. Tampoco las7pruebas del tanque WIP demuestran fidelidad de su geometría.
+
+**Goldfish, 2026-11-11 UTC:**2revisores en frío, spec
+`_work/goldfish/spec-caught-loan-policy.md`, solo los3archivos anteriores;
+base9d9de35, header revisado SHA
+`883a434c3d99cf0f66571fc782efd8d77504bd40b703ba764b005d60b8d9db5c`
+(reconstruido invirtiendo la corrección; no se guardó snapshot inicial de tests).
+Veredicto **CON HALLAZGOS**: ambos confirmaron pérdida del historial A→B→A al
+reasignar owner en IDLE. Reproducido por aserción fallida y corregido ligando el
+descriptor a su primera identidad; además se ampliaron referencias de entrada,
+pérdida en RETIRING, nuevos/decrecientes hits e inmutabilidad de ambos inputs en
+las cuatro acciones. Sin hallazgos refutados; adaptador/RAM/teardown no verificados.
+Re-verificación final19PASS y24mutaciones; no se lanzó una segunda revisión.
+Header tras triaje SHAaebf5bc479f9d95c01cacf77dab229ca16d73b58317e44662dd5942594f6ecfb.
+Evidencia: `_work/goldfish/caught-loan-policy-verdict.json` y reporte host anterior.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Siguiente: adaptador mínimo que pruebe punto seguro y publicación/entrada/cesión/
+retirada con memoria/controlador reales; primero regresiones host de la transacción,
+sin confundir flags sintéticos con prueba de exclusividad o referencias. Reutilizar
+clips24variantes y auditorías previas. Rutas004/indirectas, parejas, rivales stock/
+solo-BAG2, partículas y audio exacto pendientes. Sin build del juego ni despliegue.

@@ -1082,3 +1082,41 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   inputs. Manual work/query time and savings unknown;0.20786s covers final script
   only. Next: host reservation entry/yield/retirement tests, then bounded integration;
   paired and BAG2-only rivals, particles and exact audio remain unresolved.
+
+## 20261111-ghidra-061 — CAUGHT host decision seam, not guest integration
+
+- Purpose: reuse the established JP controller contract for a bounded pure-policy
+  implementation. Running Ghidra12.1.4 reused; no startup, headless or config edits.
+- Exact MCP `get_program_info()` succeeded: SLPM_862.19 Japanese PSX LE32 main,
+  SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe,
+  1324functions, entry80035d98. `read_memory(address="0x8002d06c",length=32)` returned
+  c0ffbd272400b3af219880003400b7af3c00bfaf3800beaf3000b6af2c00b5af.
+  Independent raw main SHA143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b
+  and bytes match asserted by `_work/gaso/collect_caught_loan_evidence.py`.
+- Reused prior controller/table/slot/24clip evidence, not fresh playback proof.
+  Read failures: wrong `_work/gaso/clip-table-contract.json` path (correct directory
+  full-fidelity-source-audit), log offset1210 past1207 corrected to its actual tail.
+  No inference from either read failure. funcmatch not applicable: known JP contract,
+  no BAG1 USA-main equivalent search. No Capstone or new decompile needed.
+- Preflight `D:/Dev/Tools/ghidra-mcp-python/python.exe tools/workflow/bag2_workflow.py
+  preflight --tag gaso-caught-loan-host` exit0/0.306s,20261111T120308686704Z:31sources
+  matched before adding the unincluded host header. Not a post-staging/build check.
+- Host commands/logs retained by `py -3.13 _work/gaso/run_caught_loan_tests.py <tag>
+  [unittest args...]`: red8methods/25assertion failures12.991s; green8/8.427s;
+  replay-red1assertion failure4.957s; verified19PASS13.949s (`-v tools.test.test_caught_loan
+  tools.test.test_gaso_tank tools.test.test_bag1_dancer_scale`). Real C header with
+  WSL Ubuntu gcc C11/Wall/Wextra/Werror, not a duplicate Python decision model.
+- Full `discover -s tools/test -p test_*.py` verified-full exit1/33.910s:231tests,
+  1failure31errors. All32names recorded in caught-loan-host-policy.json and full log;
+  unchanged versus first same-session full run. Not a green suite or fresh runtime.
+- Mutations: initial23/23; expanded run23/24 exposed a masked test gate, then newer
+  B-hit regression produced24/24 in21.168s. Temporary headers only; source hashes
+  and all unsuccessful/intermediate reports retained. Goldfish2reviewers found idle
+  owner-reassignment replay; reproduced RED, fixed identity-pinning and expanded
+  tests, final19PASS. Canonical topic note records CON HALLAZGOS, triaje and limits.
+- Outcome: useful intermediate policy, no guest RAM reads/writes, clip publication,
+  controller hook, decoder loop or deployment implemented. Safe-point/reference/
+  exclusivity flags are trusted observations, not proved facts. Runtime acceptance
+  and full F2-F8 remain open. Query/preparation/manual work/savings unmeasured;
+  reported command times exclude those costs. Next: transactional guest adapter
+  regression tests and actual safe-point proof, not another unchanged clip audit.
