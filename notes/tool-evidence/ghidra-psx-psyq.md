@@ -1161,3 +1161,38 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   safe-hook proof, policy composition/adoption, orphan teardown or runtime acceptance.
   Query/preparation/manual rework/savings unknown. Next: actual controller-safe
   boundary and composition, not repeat unchanged asset/slot audits. No game deployment.
+
+## 20261111-ghidra-063 — Composed CAUGHT adapter verified in host, binary unchanged
+
+- Purpose: close the two Goldfish reviews of the composed policy+transaction adapter
+  (`b1ca_apply`) with real C tests; no game/runtime integration. One bounded MCP
+  query reused the running CodeBrowser 12.1.4; no startup, configuration, headless
+  or Capstone run.
+- Fresh `get_program_info()` this unit still reports SLPM_862.19 Japanese PSX LE32
+  main, SHA `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`,
+  1324 functions, base 80000000. `read_memory(address="0x8002d4a0",length=64)`
+  returned the identical sequence with SW `8002d4b8` = `ae08154c` already used by
+  trials 047/056/062, matching the independent raw main SHA
+  `143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b`. No new
+  disassembly claim: the entry-tick order that the adapter encodes was proven by
+  executing the original `FUN_8002d06c` on production sources (probe13), not by
+  reading it again.
+- `funcmatch.py` not applicable: this seam searches no USA-main function equivalent.
+- Triage evidence, all host-only over 2 MB synthetic RAM: RED 45 cases, 38 real
+  failures against a reject-only stub and 7 pure-refusal cases allowlisted with a
+  written reason; GREEN 13/13 in 9.904 s; 42/42 mutants killed in 31.546 s across the
+  three headers (occupied-slot guardian, binding/publication order, `committed`,
+  identity, replay, poses A/B, exclusivity); 45 ASAN/UBSAN runs clean in 8.31 s;
+  full suite 250 tests, 1 failure and 31 errors, the same 32 pre-existing names and
+  none in `test_caught_*`. One equivalent mutant (`enter-binding-valid-gate`) is
+  excluded and documented because the pure policy never decides ENTER while HELD.
+- Both Goldfish verdicts were CON HALLAZGOS and their triage is recorded in
+  `_work/goldfish/caught-adapter-verdict.json`. Findings 6 and 10 on
+  `bag2jp_caught_binding.h` (span-only exclusivity comment, literal offsets) are
+  recorded open rather than editing that header and invalidating the hashes
+  verified in trial 062.
+- Outcome: composed adapter host-proven but still included by no runtime `.c` and
+  absent from `BAG2JP-codex-build`. No controller execution, safe hook, pause
+  ownership, retargeting, particles, audio, build, deployment or in-game acceptance.
+  Query/preparation/manual rework/savings unknown. Next: real hook integration and
+  the 24-native-clip run, not another inventory of slots.

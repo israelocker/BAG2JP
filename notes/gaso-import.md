@@ -2224,3 +2224,90 @@ ni permite ignorar temporales/callbacks del controlador. Probar ejecución efect
 del controlador antes de integrar; no otro inventario de clips/huecos. Parejas,
 retarget stock/solo-BAG2, partículas y F3 siguen abiertos. Sin build del juego,
 payload modificado, despliegue ni partida nuevos. Trial062 registra límites.
+
+#### F4 parcial — adaptador compuesto CAUGHT, controlador ejecutado (2026-11-11 UTC)
+
+Continuación aprobada, sin integración en el runtime. Nuevo componente C
+`mods-src/bag2jp.feature.bag1-content/bag2jp_caught_adapter.h`: `b1ca_apply()`
+compone la política ligada a identidad (`b1c_decide`) con la transacción de RAM
+pausada (`b1cb_publish`/`b1cb_restore`) de forma que RAM cambia ANTES de adoptar
+estado. Devuelve 1 si la observación se manejó y quedó coherente, 0 si la
+transición decidida no pudo completarse (nada cambió salvo la parte infalible de
+una transacción exitosa, así que el llamador reintenta en el siguiente punto
+seguro con el MISMO adaptador), y `committed` solo es 1 cuando el descriptor del
+préstamo o la tupla RAM cambiaron de verdad: `B1C_NONE` se maneja pero nunca se
+commitea.
+
+- ENTER publica los diez bytes del slot1 antes de adoptar; `binding_valid` impide
+  una segunda publicación por impacto y `b1cb_publish` sigue rechazando un slot que
+  ya no contiene la tupla vacía original. La petición de entrada es una sola por
+  impacto: el adaptador no reintenta `request_entry` (edge-triggered, sin acuse);
+  si la entrega falla, ese impacto pierde CAUGHT en silencio y la recuperación es
+  ceder y restaurar.
+- YIELD adopta RETIRING sin tocar RAM ni la petición entrante. RESTORE exige
+  binding propio, VM pausada y quiescente y la tupla aún nuestra; el fallo conserva
+  RETIRING para el siguiente punto seguro. RETIRING sin binding se adopta de vuelta
+  a IDLE en vez de bloquear para siempre. Invariante declarada y aseverada tras
+  cada escenario: `phase == B1C_IDLE` implica `!binding_valid`.
+- ABANDON es terminal para el descriptor. Ahora re-deriva la propiedad contra RAM
+  (`b1ca_owns_tuple`, independiente de current/previous porque un CAUGHT en
+  reproducción hace legítimamente current al slot1): si el slot ya no es nuestro lo
+  da por libre; si la tupla sigue exacta y solo llega `binding_intact = 0`, DEFIERE
+  para que una muestra transitoria no destruya el impacto; si puede, libera el slot
+  mediante `b1cb_restore` y solo entonces baja `binding_valid`. Un restore
+  rechazado dentro de un guest detenido deja la tupla instalada y debe el teardown
+  al llamador (fuera de alcance). Sin parada y quiescencia no se huérfana.
+- `b1ca_matches_identity` compara los siete campos que un binding puede portar
+  (actor/raw/length/metadata/count/character/side). Generación, epoch, content tag
+  y version siguen siendo del llamador: el seam no prueba autenticidad de carga.
+
+Contrato del controlador probado ejecutando `FUN_8002d06c` original sobre el
+intérprete de producción (probe13, `_work/gaso/controller-probe-probe13.txt`): el
+tick de entrada avanza el frame, dispara los eventos del clip VIEJO (sink
+`0x800319ac`) y solo después escribe `+0x154c` y decodifica en ese mismo tick; por
+eso slot1 debe estar publicado antes de que llegue el pedido. Una petición nueva
+legítima se adopta de inmediato (slot 89 limpia current/previous), CAUGHT no se
+restaura, la entrada deja `frame = 0` y `+0x1554`/`+0x1558` no se escriben. El
+evento es dependiente de ventana `(prev_frame, new_frame]` y el `next` transitorio
+depende de la longitud del clip viejo (44 frames -> 1, 1 frame -> 0).
+
+Pruebas C reales con RAM de 2 MB, no copia Python del componente: RED 45 casos, 38
+fallan con stub de rechazo puro y los 7 de rechazo puro pasan; GREEN 13 métodos /
+13 PASS en 9.904 s; 42/42 mutaciones muertas en 31.546 s sobre los tres headers
+(incluye guardián de slot ocupado, orden binding/publicación, `committed`,
+identidad, replay, poses A/B y exclusividad); 45 casos ASAN/UBSAN sin diagnósticos
+en 8.31 s. Suite completa 250 tests en 40.176 s: 1 fallo y 31 errores, mismos 32
+nombres preexistentes que la base de 237, ninguno en `test_caught_*` (+13 tests,
++8 métodos nuevos del componente). Se excluye y documenta un mutante equivalente:
+el guard `binding_valid` de ENTER es inalcanzable por la API porque la política
+pura nunca decide ENTER estando HELD; se conserva como defensa en profundidad. El
+harness empieza con `#undef NDEBUG` para que una compilación de release no lo
+convierta en verde vacío.
+
+**Goldfish - 2026-11-11 UTC:** dos revisores frescos (cobertura de tests y máquina
+de estados), spec `_work/goldfish/spec-caught-adapter.md`, base c688767, solo los
+cinco ficheros del alcance. Ambos **CON HALLAZGOS**. El revisor de estado confirmó
+que ninguna ruta adopta estado sin cambiar RAM ni cambia RAM sin adoptar, y que
+todo lo falible precede a `b1cb_commit`. Triaje: identidad sin ejercitar,
+`references` siempre 0, `incoming_reaction` siempre 0, contenido de
+`adapter.binding` nunca inspeccionado, doble ENTER por el motivo equivocado,
+`committed = 1` en `B1C_NONE`, poses, exclusividad, reintento con adaptador nuevo,
+replay del mismo `attack_id` y flags siempre favorables quedan cubiertos por
+escenarios nuevos y el mutante que cada uno mata; ABANDON deja de ser irreversible
+con una sola muestra; RETIRING sin binding ya no se bloquea. Se aceptan y
+documentan como limitaciones: `request_entry` sin acuse, identidad sin
+generación/epoch/tag/version, y dos hallazgos abiertos sobre
+`bag2jp_caught_binding.h` (el comentario de exclusividad sobredeclara comparación
+por valor y `b1cb_actor_matches` usa offsets literales) que no se tocan aquí para
+no invalidar el hash verificado de esa unidad. No se lanzó una segunda revisión.
+Los hashes revisados (adaptador `e7be285e...`, harness `d8654f4d...`) no conservan
+snapshot; los finales están en `_work/gaso/caught-adapter-host.json` y el veredicto
+en `_work/goldfish/caught-adapter-verdict.json`. Veredicto de revisor: no es
+aprobación del propietario ni permiso de despliegue.
+
+Siguiente: integrar el adaptador en el hook real (publicar antes de la petición,
+consumir la cesión y retirar tras el yield) y probarlo con los 24 clips nativos;
+después retarget de parejas y rivales solo-BAG2, partículas nativas de impacto y
+aterrizaje, y F3 de audio exacto sin remuestreo (`0x1806`/`0x180a`,
+`0x6906`/`0x690a`, presupuesto 64032). Sin build del juego, payload modificado,
+despliegue ni partida nuevos. Trial 063 registra límites.
