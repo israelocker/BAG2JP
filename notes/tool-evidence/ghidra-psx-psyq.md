@@ -621,3 +621,62 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   equivalence, particles/rival behavior, audio or owner acceptance. All saved programs
   remain in isolated task project. Next: rival-state consumer and dimension/particle
   bindings; no need to repeat completed primitive/headless trials unchanged.
+
+## 20261111-ghidra-047 — Reconnect MCP and trace the native caught request
+
+- Purpose: owner's request to reconnect Ghidra and continue approved GAS-O F2/F3.
+  Initial `get_program_info()` returned BACKEND_UNAVAILABLE at127.0.0.1:8080.
+  An earlier tasklist/name-only search was inconclusive; actual Java/javaw CIM
+  inspection found no instance before launching once. Installed Ghidra12.1.4,
+  JDK21.0.12.1+1, canonical `ghidra/BAG2JP.gpr`, wrapperPID41328/javaw15628.
+  No duplicate instance, installation, extension upgrade or configuration edit.
+- GUI recovery: closed only PID-verified Tip modal; two row-opening attempts used
+  incorrectly assumed window dimensions and did not open a program. Capture via
+  win32gui failed (module absent); first ctypes capture failed pointer conversion.
+  Explicit64-bit Win32 signatures in `_work/gaso/reconnect_ghidra_window.py` fixed
+  capture. Measured DPI-aware rect1000x750 atDPI120, scaled image640x480: row location
+  derived proportionally, not hard-coded physical coordinates. Temporary topmost,
+  WindowFromPoint/PID guards and distinct mouse events opened the row; cursor,
+  topmost and previous foreground restored. MCP NO_PROGRAM during loading, then
+  successful identity/read. The scratch script's old HWND/PID are not reusable.
+- Successful MCP queries: `get_program_info()` => `SLPM_862.19`, JP main PSXLE32,
+  entry80035d98, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  `decompile_function_by_address` at8002bd70 resolved containing8002bc38;
+  `get_function_calls(address="0x8002bc38",direction="callers",limit=12)` found
+  wrapper8002c060; decompiled wrapper,8002b5bc and8002d85c. Repeated identity and
+  bounded8002d85c read confirmed the retained connection. Pose/dimension consumers,
+  not proof of original tank freeze. Native overlay was NOT selected via MCP.
+- Supplementary isolated headless uses the existing verified wrapper
+  `py -3.13 _work/gaso/trace_native_tank_main.py --follow-up --label <label>
+  --addresses <addresses>`; exact commands and memory checks in each trial JSON/log:
+  `native-tank-rival-hit-timer`8001e030/8001f6a0/8002f780 exit0/12.394s;
+  `native-tank-hit-request-routing`8001fc84/80020478 exit0/7.276s;
+  `native-tank-hit-release-check`80024430/8002f788 exit0/7.106s.
+  Original JP main SHA9676a28c589e20829e5b43874c8534e49393337f4f5238610598b14257a778ff,
+  headerless input SHAec7f4b0ef8c1823e86baa72bf5813e88c0a13e560f60adc5add6e7228bb66faf,
+  base80010000. Each trial verifies original bytes at four known addresses.
+- Independent validation: original routing table byte8005168f=70 checked directly
+  in the hashed payload; call/field chain in existing2efc8/2ed08/2d734 decompiles
+  confirms tank writes an XZ-correction threshold, not animation-rate/slot.
+  GAS-O-specific request123 and hit timer consumers identified. Inputs/outputs and
+  hash retained in `full-fidelity-source-audit/reconnected-hit-routing.json`.
+  Timer subtraction is state-update gated, not a proven per-render-frame duration.
+- Unhelpful candidates retained:8002f780 is a tail wrapper,8002f788 empty; neither
+  establishes native dimension initialization.80024430 handles character8 sound,
+  not GAS-O release. Prior80022430 candidate is end/victory/fever state handling,
+  not established tank main. Code-mode command quoting failed before execution once,
+  corrected without side effects. No result omitted to make the trial look cleaner.
+- Previously unlogged post046 bounded reads, retained as historical evidence:
+  `native-tank-particle-binding` overlay7980/5de0 exit0/6.240s;
+  `native-tank-freeze-rate` main2eee0/32bdc exit0/6.837s;
+  `native-tank-rival-controller`2d734 exit0/8.254s;
+  `native-tank-rival-motion`2ed08/1d2d8 exit0/7.999s;
+  `native-tank-hit-transitions`22430 exit0/7.688s. Wrapper commands/inputs are in their
+  trial JSON. Mesh/texture static equality does not prove runtime VRAM/pose fidelity.
+- Outcome: MCP recovered and useful bounded native request/timer evidence; partial
+  irrelevant candidates explicitly excluded. Fresh preflight PASS0.721s at
+  `_work/workflow/20261111T024051754674Z-gaso-ghidra-reconnect/metrics.json`.
+  No runtime/game/settings/save changes. Startup/review/manual rework and savings
+  unmeasured; headless times exclude preparation. Next: native CAUGHT clip/transitions,
+  BAG2 equivalent, dimension units and particles; no acceptance or100% claim.

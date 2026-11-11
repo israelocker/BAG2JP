@@ -1497,3 +1497,54 @@ La tabla Y JP en `0x801d8280` contiene, para IDs BAG1 0..13:
 a los personajes exclusivos de BAG2. Faltan unidades de dimensiones, consumidor del
 estado rival y binding de partículas. F2 sigue
 parcial; la aceptación visual/audio y F4 siguen pendientes. No se cambió el runtime.
+
+#### F2 — Ghidra reconectado y reacción nativa identificada (2026-11-11 UTC)
+
+- MCP recuperado sin instalación ni cambio de configuración: se abrió una sola
+  instancia de Ghidra12.1.4 y el proyecto existente. `get_program_info` confirma
+  `SLPM_862.19`, main JP, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  Consultas relevantes MCP: constructor de pose `0x8002bc38` (la consulta a
+  `0x8002bd70` cae dentro), wrapper `0x8002c060`, setup `0x8002b5bc` e inicializador
+  `0x8002d85c`. Recuperación, intentos fallidos y análisis complementario registrados
+  en `20261111-ghidra-047`. La instancia queda abierta para reutilizarla.
+- Preflight PASS en0.721s: `_work/workflow/20261111T024051754674Z-gaso-ghidra-reconnect/metrics.json`.
+  Fuentes/recursos y EXE build/desplegado coinciden; no se hizo build, deploy ni captura.
+- **Corrección de interpretación:** `0x800756bc + side*0x88` es el campo `+0x34`
+  del controlador nativo que se pasa a `0x8002ed08`. Ese consumidor compara distancia
+  XZ con un umbral antes de corregir la posición. Escribir `0x7fffffff` al aterrizar
+  desactiva esa corrección ordinaria; **no prueba por sí mismo una animación congelada**.
+  El avance del clip se calcula por otros campos en `0x8002efc8`.
+- `0x8001e030` y `0x8001f6a0` consumen flag0x80 y contador signed16 de
+  `0x80087992 + side*0x14`. Restan uno en su actualización de estado/ritmo habilitada
+  por global0x8006ec30&2, no `delta` en cada frame gráfico; al agotarse ponen cero y
+  limpian flag0x80. Esto explica la condición de salida del tanque `0x801d6480`.
+  No asignar una duración fija en frames a ese contador sin contrastar sus llamadas.
+- **Reacción GAS-O explícita:** `0x8001fc84`, al procesar flag0x10, selecciona
+  request `0x7b` (123) si el atacante registrado es9, en lugar de la tabla general
+  de golpes. Pasa ese request al controlador `0x8002d734`; este lee byte en
+  `0x80051614 + 123 = 0x8005168f`, cuyo valor original JP verificado es **70**.
+  Es la ruta nativa CAUGHT, distinta de forzar TIRED/slot78 BAG2. La otra ruta
+  `0x80020478` tiene sus propios guards: no se presume idéntica en todos los modos.
+  Evidencia: `native-tank-hit-request-routing-decompile/` y
+  `full-fidelity-source-audit/reconnected-hit-routing.json` bajo `_work/gaso/`.
+- MCP `0x8002d85c` confirma dimensiones BAG2 en actor `+0x1534/+0x1538/+0x153c`,
+  derivadas de cabecera del modelo `+0x18/+0x1c/+0x20` por escalaR12, con división
+  signed truncada hacia cero. Esto identifica el destino, pero falta verificar
+  las unidades/origen de dimensiones BAG1 antes de reutilizar la fórmula del tanque.
+- Las lecturas previas `native-tank-particle-binding-decompile/` identifican emisor
+  y parámetros nativos; `textures-deployed.json` prueba píxeles y paletas originales
+  en A/P1 USA/JP, no su direccionamiento VRAM vivo ni las otras variantes.
+  `0x80022430` contiene estados de fin/victoria/fever: el antiguo rótulo «tank main»
+  no demuestra su función y no se usa para concluir la reacción del rival.
+
+Siguiente unidad F2: trazar el clip70 y sus transiciones/temporización, contrastar
+el equivalente BAG2 y completar dimensiones/binding de partículas. Conservar la
+ruta de evasión y restauración; no reemplazarla por escrituras continuas a slot78.
+F3 sigue pendiente de PCM/onset y presupuesto sin remuestrear los efectos.
+Solo investigación/documentación: F4 y aceptación de fidelidad siguen pendientes.
+Comprobación documental focal de nota/plan/log: sin incidencias en
+`_work/gaso/reconnect-docs-check.json`; estado JSON válido. Goldfish no requerido
+en esta unidad exclusivamente documental; no se cambió herramienta productiva,
+runtime, payload ni manifiesto. No se repite la suite host de entradas intactas ni
+se presenta su resultado histórico como una prueba nueva del tanque.
