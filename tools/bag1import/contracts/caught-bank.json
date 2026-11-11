@@ -1,0 +1,26 @@
+{
+  "description": "Audited BAG1 CAUGHT slot70 clips; IDs name BAG2JP BAG1-version rivals, not arbitrary skeletons.",
+  "clips": [
+    {
+      "character": 0,
+      "source": "_work/bag1_disc_full/PLAYER2/P_HEATA2.DFS",
+      "source_sha256": "46838dc1de4fe1d56416790f6d4a86a4c796da60bd07a290f389bc93924543d2",
+      "clip_bytes": 348,
+      "clip_sha256": "aba71e3806dcbb731f6bc4df87437d8845491d66ae1cf94a1671a8650db93fad"
+    },
+    {
+      "character": 1,
+      "source": "_work/bag1_disc_full/PLAYER2/P_STRIA2.DFS",
+      "source_sha256": "741ff1d9f6bcbd6aee498d426b9ebf4802f178c432574b95e2ff4089a0113cba",
+      "clip_bytes": 352,
+      "clip_sha256": "ce96572206a41ce5b73200b5d62fc387338b82341f0f43afecb7982eb28cf8c9"
+    },
+    {
+      "character": 9,
+      "source": "_work/bag1_disc_full/PLAYER2/P_GAS_A2.DFS",
+      "source_sha256": "4426eff244b408fa6ec094ddf536f61b187a99688de18f54c935d6b5d3cf5805",
+      "clip_bytes": 348,
+      "clip_sha256": "38263c28e1607d57fa5fc0ff2e5221978a1989a0e2ce19991ac771cb6b01c55a"
+    }
+  ]
+}
