@@ -1196,3 +1196,9 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   ownership, retargeting, particles, audio, build, deployment or in-game acceptance.
   Query/preparation/manual rework/savings unknown. Next: real hook integration and
   the 24-native-clip run, not another inventory of slots.
+
+## 2026-11-11 — clean-trace-mcp-20261111 — bounded controller identity/read
+
+- Purpose/version: verify existing Ghidra 12.1.4 MCP session for the clean Gas-O controller trace; `get_program_info` confirmed main `SLPM_862.19`, NTSC-J PSX little-endian, entry `0x80035d98`, SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`. No new instance/configuration, analysis or guest writes.
+- Actual queries: named decompile `FUN_8002a090` failed `FUNCTION_NOT_FOUND`; fallback bounded `read_memory(address="0x8002a090", length=64)` succeeded, main executable (not overlay). Returned bytes `28ffbd27c000b4af21a08000cc00b7af21b8a000b000b0af0680023c08f842240680033c6cf86324d400bfafd000beafc800b6afc400b5afbc00b3afb800b2af`.
+- Independent validation/limit: prior controller decompilation `_work/gaso/bag2-caught-request-decompile/8002a090.c` is historical cross-reference only; no fresh independent raw-byte comparison in this trial. Outcome: identity and bounded read verified; named lookup failed, no new timing/routing conclusion. Preparation, execution, review time and savings unmeasured; manual rework unmeasured. Next: runtime request evidence, then address-based decompile if a specific controller ambiguity remains.

@@ -5,7 +5,7 @@
  * - Emits volumetric native cryo-smoke puffs using authentic BAG1 UV table (0x801DCE4C) & TIMs
  * - Falls from above with accelerated gravity trajectory onto rival
  * - Smooth fade out upon tank break/dissolution
- * - Preserves rival standing/stunned state (no knockdown, slot 78) for all BAG2 characters
+ * - Diagnostic candidate: leaves the rival's native reaction untouched; CAUGHT is pending
  * - Uses shared matrix math and OT helpers from bag2jp_strike_shot.h
  */
 #ifndef BAG2JP_GASO_TANK_H
@@ -360,9 +360,9 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
             continue;
         }
 
-        /* Refresh the rival dancer pointer every frame so the tank follows the rival
-         * and the freeze applies to the correct character. The tank must stay
-         * anchored on top of the rival (floor contact at Y = 0). */
+        /* Follow the current rival's transform; this visual does not own the
+         * reaction animation. The floor-zero anchor is still an experimental
+         * approximation, not the native floor-field contract. */
         uint32_t opp_dancer = psx_mod_read_word(B2_DANCER_BASE + (side ^ 1u) * 8u);
         tank->opp_dancer = opp_dancer;
         if (opp_dancer < 0x80010000u || opp_dancer > GASO_DANCER_MAX_BASE) {
@@ -380,15 +380,8 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
         strike_read_matrix(opp_dancer + B2_DANCER_MTX_OFF, model_rot, model_pos);
         strike_comp_matrix(cam_rot, cam_pos, model_rot, model_pos, tank_rot, tank_pos);
 
-        /* Keep rival frozen upright inside the cryogenic tank (slot 78, no knockdown).
-         * Applies for the whole hold window so the rival never breaks out early. */
-        if (opp_dancer >= 0x80010000u && opp_dancer < 0x80800000u) {
-            if (tank->elapsed >= GASO_TANK_FALL_DUR && tank->elapsed < (GASO_TANK_FALL_DUR + GASO_TANK_HOLD_DUR)) {
-                psx_mod_write_word(opp_dancer + 0x154Cu, 78u); /* standing stunned / caught */
-                psx_mod_write_word(opp_dancer + 0x1554u, 0u);  /* freeze animation frame */
-                psx_mod_write_half(0x8005CF08u + (uint32_t)(tank->side ^ 1u) * 0x24u + 20u, 0u);
-            }
-        }
+        /* Diagnostic run: retain the native reaction. The CAUGHT adapter is not
+         * runtime-integrated yet; never force slot78 or freeze frame0 here. */
 
         /* Calculate vertical descent offset (fall trajectory from above) */
         int32_t y_drop = 0;

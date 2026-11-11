@@ -34,6 +34,9 @@ static inline int bag2_attack_fixture_tick(int enabled, uint32_t side, uint32_t 
 static inline int bag2_heat_attack_fixture_tick(int enabled, uint32_t side, uint32_t input) {
     return bag2_char_attack_fixture_tick(enabled, side, input, 0u);
 }
+static inline int bag2_gaso_attack_fixture_tick(int enabled, uint32_t side, uint32_t input) {
+    return bag2_char_attack_fixture_tick(enabled, side, input, 9u);
+}
 /* P2 CPU under attack chose dodge (0xAA) or counter (0x6E) at 0x8009AFB8; clearing the
  * command before 0x8009B0E8 consumes it leaves the native struck path. */
 static inline int bag2_char_defense_fixture_tick(int enabled, uint32_t side, uint32_t input,
@@ -55,5 +58,9 @@ static inline int bag2_char_defense_fixture_tick(int enabled, uint32_t side, uin
 static inline int bag2_heat_defense_fixture_tick(int enabled, uint32_t side, uint32_t input,
                                                  uint32_t under_attack) {
     return bag2_char_defense_fixture_tick(enabled, side, input, under_attack, 0u);
+}
+static inline int bag2_gaso_defense_fixture_tick(int enabled, uint32_t side, uint32_t input,
+                                                 uint32_t under_attack) {
+    return bag2_char_defense_fixture_tick(enabled, side, input, under_attack, 9u);
 }
 #endif

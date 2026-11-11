@@ -43,13 +43,16 @@ static uint32_t bag2_ram_dump_end(const char* size) {
 static void at_attack_input(struct CPUState* cpu, uint32_t address) {
     const char* strike_enabled = getenv("BAG2JP_TEST_STRIKE_ATTACK");
     const char* heat_enabled = getenv("BAG2JP_TEST_HEAT_ATTACK");
+    const char* gaso_enabled = getenv("BAG2JP_TEST_GASO_ATTACK");
     const char* duel_enabled = getenv("BAG2JP_TEST_HEAT_STRIKE_DUEL");
     const char* ordered_enabled = getenv("BAG2JP_TEST_ORDERED_DUEL");
     const int ordered = ordered_enabled && ordered_enabled[0] == '1' && ordered_enabled[1] == '\0';
     const int duel = duel_enabled && duel_enabled[0] == '1' && duel_enabled[1] == '\0';
     const int strike = strike_enabled && strike_enabled[0] == '1' && strike_enabled[1] == '\0';
     const int heat = heat_enabled && heat_enabled[0] == '1' && heat_enabled[1] == '\0';
-    if (address != BAG2_ATTACK_INPUT_SITE || s_on != 1 || !s_log || (!strike && !heat && !duel && !ordered)) return;
+    const int gaso = gaso_enabled && gaso_enabled[0] == '1' && gaso_enabled[1] == '\0';
+    if (s_on != 1 || !s_log || address != BAG2_ATTACK_INPUT_SITE ||
+        (!strike && !heat && !gaso && !duel && !ordered)) return;
     if (ordered) {
         static Bag2OrderedDuel sequence;
         const uint32_t side = cpu->gpr[20];
@@ -86,16 +89,18 @@ static void at_attack_input(struct CPUState* cpu, uint32_t address) {
         observed = 1;
     }
     if (strike && bag2_attack_fixture_tick(1, cpu->gpr[20], cpu->gpr[21])) {
-        fputs("test fixture: P1 Strike attack input 0x6E; not natural play\n", s_log);
-        fflush(s_log);
+        if (s_log) { fputs("test fixture: P1 Strike attack input 0x6E; not natural play\n", s_log); fflush(s_log); }
     } else if (heat && bag2_heat_attack_fixture_tick(1, cpu->gpr[20], cpu->gpr[21])) {
-        fputs("test fixture: P1 Heat attack input 0x6E; not natural play\n", s_log);
-        fflush(s_log);
+        if (s_log) { fputs("test fixture: P1 Heat attack input 0x6E; not natural play\n", s_log); fflush(s_log); }
+    } else if (gaso && bag2_gaso_attack_fixture_tick(1, cpu->gpr[20], cpu->gpr[21])) {
+        if (s_log) { fputs("test fixture: P1 Gas-O attack input 0x6E; not natural play\n", s_log); fflush(s_log); }
     } else if (heat && bag2_heat_defense_fixture_tick(1, cpu->gpr[20], cpu->gpr[21],
                    psx_mod_read_byte(cpu->gpr[29] + cpu->gpr[20] + 0x30u))) {
         /* 0x8009AF04 reads the under-attack flag at sp + side + 0x30. */
-        fputs("test fixture: P2 defense command cleared under Heat attack; not natural play\n", s_log);
-        fflush(s_log);
+        if (s_log) { fputs("test fixture: P2 defense command cleared under Heat attack; not natural play\n", s_log); fflush(s_log); }
+    } else if (gaso && bag2_gaso_defense_fixture_tick(1, cpu->gpr[20], cpu->gpr[21],
+                   psx_mod_read_byte(cpu->gpr[29] + cpu->gpr[20] + 0x30u))) {
+        if (s_log) { fputs("test fixture: P2 defense command cleared under Gas-O attack; not natural play\n", s_log); fflush(s_log); }
     }
 }
 
@@ -265,6 +270,9 @@ static void at_vblank(void) {
         }
     }
     uint32_t cur[16] = {0};
+    const uint32_t song_frame_address = 0x800892ECu;
+    const uint32_t pending_request_address = 0x8005CF20u;
+    const uint32_t request_side_stride = 0x24u;
     for (uint32_t p = 0; p < 2; ++p) {
         const uint32_t d = psx_mod_read_word(0x8005F808u + p * 8u);
         cur[p * 4 + 0] = d;
@@ -277,11 +285,26 @@ static void at_vblank(void) {
     cur[8] = psx_mod_read_word(0x8005D3D8u); cur[9] = psx_mod_read_word(0x8005D3DCu);
     cur[10] = psx_mod_read_word(0x8005D3E0u); cur[11] = psx_mod_read_byte(0x8005E6C0u);
     cur[12] = psx_mod_read_word(0x8005D2C4u);
-    int changed = 0;
-    for (int i = 0; i < 13; ++i) if (cur[i] != last[i]) changed = 1;
+    /* BAG2 song-frame counter, not BAG1's unverified beat/bar flag address.
+     * Vblank may miss a request consumed within the same game tick. */
+    cur[13] = psx_mod_read_word(song_frame_address);
+    cur[14] = psx_mod_read_half(pending_request_address);
+    cur[15] = psx_mod_read_half(pending_request_address + request_side_stride);
+    int changed = 0, event_changed = 0;
+    for (int i = 0; i < 16; ++i) {
+        if (cur[i] == last[i]) continue;
+        changed = 1;
+        if (i < 13) event_changed = 1;
+    }
     if (!changed) return;
-    fprintf(s_log, "f%06u mode%u phase %u/%u/%u fever%u | P1 ch%u anim%u req%u | P2 ch%u anim%u req%u\n",
-            frame, cur[12], cur[8], cur[9], cur[10], cur[11], cur[1], cur[2], cur[3], cur[5], cur[6], cur[7]);
+    /* Preserve legacy events: a clock-only sample is not another outcome. */
+    if (event_changed) {
+        fprintf(s_log, "f%06u mode%u phase %u/%u/%u fever%u | P1 ch%u anim%u req%u | P2 ch%u anim%u req%u\n",
+                frame, cur[12], cur[8], cur[9], cur[10], cur[11],
+                cur[1], cur[2], cur[3], cur[5], cur[6], cur[7]);
+    }
+    fprintf(s_log, "sample f%06u songframe%u pend%u/%u\n",
+            frame, cur[13], cur[14], cur[15]);
     fflush(s_log);
     for (int i = 0; i < 16; ++i) last[i] = cur[i];
 }
