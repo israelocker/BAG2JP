@@ -2160,3 +2160,67 @@ retirada con memoria/controlador reales; primero regresiones host de la transacc
 sin confundir flags sintéticos con prueba de exclusividad o referencias. Reutilizar
 clips24variantes y auditorías previas. Rutas004/indirectas, parejas, rivales stock/
 solo-BAG2, partículas y audio exacto pendientes. Sin build del juego ni despliegue.
+
+#### F4 parcial — transacción RAM CAUGHT en host, controlador pendiente (2026-11-11 UTC)
+
+Continuación aprobada, sin integración en el runtime. Nuevo componente C
+`mods-src/bag2jp.feature.bag1-content/bag2jp_caught_binding.h`: `b1cb_publish()` y
+`b1cb_restore()` validan un buffer RAM y publican/retiran la tupla del slot1
+raw4bytes/length2bytes/metadata4bytes. Todos los rechazos preceden a la escritura;
+solo esos10bytes pueden cambiar. No escriben slot/frame/pedido, ni llaman al
+controlador, ni adoptan `b1c_decide.next`. Restaurar conserva una reacción legítima
+nueva. Repetir mientras la tupla está instalada se rechaza; después de retirarla
+el primitivo puede republicar: el historial por impacto pertenece a la política
+ligada a identidad, que no se debe resetear para evitar sus guardas.
+
+- Comprueba límites/alineación, tamaños en64bits, actor/ID/lado/count/tablas,
+  tupla vacía de origen o tupla prestada exacta,2frames/cabecera metadata CAUGHT
+  y solapamientos completos/parciales/cruzados de tablas de los cuatro
+  actores cargados. La exclusividad es **conservadora**: también rechaza tablas
+  compartidas entre dos actores adicionales, aunque no sean el destinatario;
+  puede rechazar parejas ajenas. No prueba ausencia de alias en otros subsistemas.
+- `paused` y `quiescent` siguen siendo precondiciones del futuro llamador, no
+  hechos probados por booleanos. Autenticidad de clip/esqueleto, versión/generación/
+  epoch, parada exclusiva y límite real decoder/pose/controlador siguen pendientes.
+  Leer830/1494/1498 y excluir current154c/previous1550 añade guardas, no demuestra
+  quiescencia. La atomicidad solo se afirma frente al guest detenido, sin callbacks
+  ni observadores concurrentes. No libera clips ni descriptores huérfanos.
+
+Pruebas reales C con RAM de bytes, no copia Python del componente:
+RED4métodos/11aserciones fallidas con stub de rechazo; GREEN inicial16PASS.
+Final25PASS en22.215s (6métodos nuevos y los19 previos);16/16mutaciones detectadas
+en15.698s;51casos ASAN/UBSAN sin diagnósticos en10.088s. La primera ronda de16
+mutaciones dejó sobrevivir la guarda RAW porque otra condición enmascaraba el
+fixture; corregido el fixture válido y conservado el resultado fallido. Suite
+completa237tests en42.624s: **1fallo31errores**, mismos32nombres que la primera
+suite de esta unidad. No green global ni aceptación del efecto. Logs/reportes en
+`_work/gaso/caught-binding-host.json` y `caught-loan-binding-*.log`.
+
+Ejecutado además el header sobre COPIAS del dump histórico sign-intro-31, SHA
+e272fae7241f8e9e5261ad9cbe335376dee959aef53d9616a775714d4f645a9f, runtime27dfebb4,
+no atómico/no actual: actores Gas-O80256944 y Heat801a8104, ambosN101; clips
+originales70 de348bytes. Reserva de clip SINTÉTICA en la copia, no asignación libre
+probada en vivo. Publicación dentro de10bytes y retirada exacta byte a byte;
+fuente/dump intactos. `caught-binding-verified-ram-probe.json`,0.335639s excluye
+compilación/preparación; no es reproducción de la animación ni traza del MIPS.
+
+**Goldfish — 2026-11-11 UTC:** spec `_work/goldfish/spec-caught-binding.md`, base
+bcd59c3, dos revisores frescos, header revisado SHA
+e6b16c5358bff2d0ad18c12f8ce1dea9aef53a8bb4b7faf68634bd213939d84c
+con snapshot; snapshot inicial de tests no retenido. **CON HALLAZGOS**: alias entre
+actores adicionales reproducido RED y cerrado conservadoramente; fixtures de alias
+de retirada, destinos RAW/LENGTH/META, pérdida RAW/length y count extremo aislados.
+Precisado el alcance del retry. Al corregir alias se detectó además en revisión
+propia un desbordamiento del inventario con cuatro actores ajenos y owner ausente:
+reproducido ASAN RED, acotado y re-verificado51casos limpios. No se ocultó esa
+regresión ni se lanzó segunda revisión. Sin hallazgos refutados; integración real
+fuera de alcance. Header final SHA5406260b11454c0d2679b1f6556349d00e045bea4b051eed87adf29985c873ce.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Siguiente: demostrar punto de entrada/retirada real y componer política+transacción
+sin adoptar estado si falla la publicación. La lectura MCP8002d4a0 incluye
+SW8002d4b8 al slot, después de procesar el clip antiguo: **no prueba un hook seguro**
+ni permite ignorar temporales/callbacks del controlador. Probar ejecución efectiva
+del controlador antes de integrar; no otro inventario de clips/huecos. Parejas,
+retarget stock/solo-BAG2, partículas y F3 siguen abiertos. Sin build del juego,
+payload modificado, despliegue ni partida nuevos. Trial062 registra límites.

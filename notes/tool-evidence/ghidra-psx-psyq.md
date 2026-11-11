@@ -1120,3 +1120,44 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   and full F2-F8 remain open. Query/preparation/manual work/savings unmeasured;
   reported command times exclude those costs. Next: transactional guest adapter
   regression tests and actual safe-point proof, not another unchanged clip audit.
+
+## 20261111-ghidra-062 — Paused byte-RAM CAUGHT transaction, controller still pending
+
+- Purpose: next approved host adapter seam, reject partial table publication and
+  preserve a legitimate replacement reaction; no game/runtime integration.
+  Reused Ghidra12.1.4 GUI, no startup/config/headless/Capstone run required.
+- Exact MCP `get_program_info()` confirmed SLPM_862.19 Japanese PSX LE32 main,
+  SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe;
+  `read_memory(address="0x8002d4a0",length=64)` succeeded. Independent raw main
+  SHA143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b
+  matches all64bytes and SW8002d4b8 wordae08154c. Existing8002d06c decompile reused:
+  old metadata/length processing precedes new slot. Not a proved callback-safe hook.
+  `funcmatch.py` not applicable: no USA-main equivalent search in this byte-RAM seam.
+- Preflight `bag2_workflow.py preflight --tag gaso-caught-binding-host`, verified
+  Python environment, exit0/0.308s,20261111T123603008212Z,31sources matching/no drift.
+  Before the unincluded new header; not build-tree staging or post-integration proof.
+- New header is a stopped-VM byte-RAM transaction, not caller policy/controller.
+  Four loaded-actor table spans, bounds, original/borrowed tuple and sampled refs
+  are checked before ten bytes are written. Real generation/epoch/version, authentic
+  clip, exclusive stop and quiescence remain caller obligations. Conservative
+  foreign sharing rejection may reject companions; unlisted alias proof remains open.
+- C11 gcc Wall/Wextra/Werror runner `_work/gaso/run_caught_loan_tests.py`: binding-red
+  exit1/9.889s,4methods11assertion failures against reject stub; initial green16PASS.
+  Goldfish alias RED exit1/3.363s; final binding-verified25PASS/22.215s. Full
+  binding-current-full237tests exit1/42.624s,1failure31errors; all32names in
+  caught-binding-host.json equal first same-session full235, no green suite claim.
+- Mutation first16:15kills, RAW identity fixture masked by tuple guard; fixed fixture,
+  retained failed report. Final16/16kills15.698s, temporary headers only.
+  Own post-review ASAN test reproduced stack-buffer-overflow for absent owner plus
+  four foreign actors; bounded inventory fix then51ASAN/UBSAN runs clean10.088s.
+  All failed/intermediate logs retained; Goldfish two-reviewer findings/triage in
+  canonical topic and `_work/goldfish/caught-binding-verdict.json`, no repeat review.
+- Real-data host probe used immutable historical sign-intro-31 RAM SHA
+  e272fae7241f8e9e5261ad9cbe335376dee959aef53d9616a775714d4f645a9f, runtime27dfebb4,
+  and hashed348byte native Heat/Gas clips. Copied RAM plus synthetic scratch clip
+  reservation; both N101 tables publish within ten bytes and restore exactly.
+  Probe0.335639s excludes compile/prep; not a live allocation/stop/controller test.
+- Outcome: useful tested publication/retirement primitive. No controller execution,
+  safe-hook proof, policy composition/adoption, orphan teardown or runtime acceptance.
+  Query/preparation/manual rework/savings unknown. Next: actual controller-safe
+  boundary and composition, not repeat unchanged asset/slot audits. No game deployment.
