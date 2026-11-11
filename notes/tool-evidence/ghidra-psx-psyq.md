@@ -1042,3 +1042,43 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   20261111T110818458438Z reused with unchanged production inputs; manual time and
   savings unknown, reported seconds cover scripts only. Next: actual CAUGHT70 per
   import variant and host entry/yield/retirement seam; other profiles remain open.
+
+## 20261111-ghidra-060 — Original CAUGHT variants versus imported models
+
+- Purpose: verify source70 for Heat/Strike/Gas-O across costume, side and region,
+  after bounded slot1 audit059. Reused running Ghidra12.1.4; no new capture/build.
+- Fresh MCP `get_program_info()` confirmed SLPM_862.19 JP PSX LE32 main SHA
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  `read_memory(address="0x800126a4",length=32)` returned
+  1200c010213800000000828c000000000000438c000000000300601404008424,
+  independently asserted against raw main SHA143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b.
+  This verifies the metadata reader, not native overlay selection or live actors.
+- Command `py -3.13 _work/gaso/audit_caught_variants.py`: first trial failed the
+  assumption that target model parsing consumes its whole member (Heat). Diagnostic
+  probes found Heat tails5112/4520bytes and an exact converted model prefix; the
+  corrected audit requires exact native end and converted target prefix, retains
+  target tails by hash, and separately reports full-member equality. No data deleted.
+  Final trial exit0/0.20786s, report full-fidelity-source-audit/caught-variants.json.
+- Inputs:24 native PLAYER2/PLAYER4 DFS from USA/JP full extracts; original source70;
+ 24 corresponding model containers in read-only deployed payload
+  376287abd3ee2a13944deeafb0415da9b0f163a185dd3cad1540259596232f7e, current source
+  index SHA c3ebf6898662b8d6a44fe3437c7b64454b476467befdd1d24069cbb2783e544f,
+  and inventory058 SHA857e05e5e445450624719897de40844e4a5490d57194397895acaa64cccdf7b7.
+  Report records every DFS/model/list/clip/tail and parsing-helper hash. Source index
+  is not proof of current compiled index or all actor tables in RAM.
+- Results: all24 parsed model prefixes match conversion; topology/transforms equal;
+ 16 complete model members equal (Strike/Gas-O), Heat appended bytes uninterpreted.
+  CAUGHT has19tracks,2frames, no events, loop metadata byte5=0; one clip hash per
+  character across eight variants. Heat/Gas-O static, Strike bone5 changes. Clip
+  sizes348/352; scratch slot1 replacement grows lists344/348bytes, leaves the other
+ 100clips unchanged and reparses101entries. No package or asset written.
+- Independent word-based metadata offset and source hash checks; codec round-trip
+  is self-consistency, not independent runtime playback. Follow-up command
+  `py -3.13 _work/gaso/check_caught_variant_result.py` passed all24 current source
+  hashes, variant coverage, model flags, stream equality, loop and unchanged slots.
+- Outcome: useful original-clip/model compatibility evidence for these imports,
+  not entry/transition/decoder-retirement acceptance. funcmatch not applicable to
+  this data audit. Preflight20261111T110818458438Z reused unchanged production
+  inputs. Manual work/query time and savings unknown;0.20786s covers final script
+  only. Next: host reservation entry/yield/retirement tests, then bounded integration;
+  paired and BAG2-only rivals, particles and exact audio remain unresolved.

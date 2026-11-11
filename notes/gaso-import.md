@@ -2059,3 +2059,45 @@ conversión en el modelo importado, con loop y metadata completos; reutilizar la
 anteriores y probar entrada/cesión/restauración en el seam host antes de tocar runtime.
 004 y llamadas indirectas siguen sin certificar un slot libre global. Pander/pares y
 retarget solo-BAG2 siguen abiertos; después partículas/F3. Trial059 registra límites.
+
+#### F2 — CAUGHT original por variante y modelo importado (2026-11-11 UTC)
+
+`_work/gaso/full-fidelity-source-audit/caught-variants.json` liga las24 combinaciones
+Heat/Strike/Gas-O × trajeA/B × ladoP1/P2 × USA/JP con sus DFS originales, modelo y
+lista del payload desplegado376287ab. Se reutilizó el inventario058 y su índice
+source por SHA; **no se alteró el paquete ni se leyó RAM de actores actuales**.
+
+| Rival importado | CAUGHT70 bytes | Tracks / frames | Movimiento entre frames | Aumento de lista al sustituir vacío1 |
+|---|---:|---|---|---:|
+| Heat | 348 | 19 / 2 | ninguno | 344bytes |
+| Strike | 352 | 19 / 2 | hueso5 | 348bytes |
+| Gas-O | 348 | 19 / 2 | ninguno | 344bytes |
+
+Cada personaje tiene un único hash de CAUGHT entre sus ocho variantes. Metadata
+original `000004000000000000000000`, sin eventos, byte5=0: el controlador puede
+recorrer el loop de dosframes; una pose estática no justifica forzarframe0.
+El stream se decodifica con índices válidos para el modelo, sus19tracks y valores
+completos sobreviven al round-trip del codec y se comprueba el offset de metadata
+por lectura independiente de words. Round-trip no equivale a reproducción en juego.
+
+Los24 modelos conservan grafo de huesos y transformaciones originales, y el prefijo
+parseado es idéntico a convertir el modelo de su DFS correspondiente. Strike/Gas-O
+coinciden además en todos los bytes del miembro. **Heat no**: conserva5112bytes
+anexos en trajeA y4520 enB después del modelo parseado; su función no se deduce aquí.
+La primera auditoría falló al asumir fin de miembro=fin de modelo. La comprobación
+posterior identifica el prefijo convertido exacto y liga el anexo por hash; no se
+elimina ni se declara irrelevante. No copiar el miembro completo de otro personaje.
+
+Serialización solo en memoria: sustituir el vacío1 de4bytes por CAUGHT original,
+conservar101slots y reparsar produce **los otros100clips idénticos byte a byte**,
+incluido78/TIRED. Los344/348bytes son crecimiento de esa lista, no presupuesto
+completo de DFS/payload/RAM. No se generó ni instaló contenido nuevo en este ensayo.
+
+Queda lista la evidencia del clip para estos tres imports, **no** la aceptación del
+enlace ni el retarget de rivales stock/solo-BAG2. Siguiente: pruebas del seam host
+de préstamo1, entrada una vez, loop, cesión ante reacción legítima y retirada solo
+cuando current/previous/decoder/caches no lo referencien; identidad de actor/tablas
+y escena como en trial059. No repetir esta extracción mientras hashes no cambien.
+Después integrar únicamente el candidato acotado que pase esas pruebas, manteniendo
+abiertos parejas, partículas y F3; ninguna prueba host sustituye el flujo en juego.
+Trial060 conserva el fallo inicial, consultas y límites. Sin cambios de runtime.
