@@ -1714,3 +1714,42 @@ escala; (3) rivales solo-BAG2 sin entrada en la tabla Y: **sin resolver, requier
 decisión del dueño** si no aparece equivalente. Las constantes 35/100, 22/100,
 `1200*rem²` y el slot78/frame0 forzado del WIP siguen siendo inventadas y se
 sustituirán en F4. Trial051 registra consultas y límites.
+
+#### F2 — unidad node+8 y espacio tanque/bailarín (2026-11-11 UTC)
+
+Unidad estática, sin cambios de runtime. Resuelve el punto (1) anterior.
+
+- Formato común: cada hueso del archivo termina en 10 words `xf`. MCP de BAG2
+  `80022518` (único llamador de `800220b8`) copia esas 10 words **sin cambios** al
+  nodo: node+8/+c/+10 = `xf[2:5]` (escala por nodo). Hijos en +0x94/+0x98.
+- Archivos: tanque `002.bin` (SHA106a0fc2…) un hueso, `xf=[0,0,4096,4096,4096,0,…]`;
+  bailarín Gas-O `000.bin` (SHAe4197c9c…) 31 de 41 huesos con escala4096 y el resto
+  con ajustes locales. Ambos usan unidad R12 (4096=1,0) por nodo. Dentro del juego
+  original tanque y bailarín pasan por el mismo parser, así que la relación entre
+  ambos no depende de cómo trate ese parser `xf`. Las direcciones del docstring
+  (`0x80029624`) son de otra build: en el main JP cae a mitad de función (inútil).
+- Consecuencia: el vértice del bailarín se escala por `S/4096` (8001397c/80013144),
+  el del tanque por `(12*S_rival+230)/4096` en XZ y `tablaY[ID]*4/4096` en Y
+  (801d6908/80013ed4). Las traslaciones `*S>>7` del esqueleto no pueden ser las
+  del archivo (piernas de 13045 frente a rodilla12229: mismas unidades en archivo),
+  así que deben venir en otra unidad de animación; **inferido, no trazado**.
+- Comprobación de coherencia, no aceptación: altura en reposo de Gas-O
+  (`_work/gaso/rest_pose_extents.py`, sin rotaciones) 47826 unidades de archivo →
+  1354 mundo con S116; tanque sobre Gas-O mide 4480*1520/4096=1662 y radio428:
+  ≈1,23 veces la altura del rival y lo rodea. En BAG2 el root del rival (+0x810,
+  pelvis≈488) concuerda con unidades `archivo*S/4096`.
+- Fórmula BAG2 propuesta para F4 (pendiente de validar en juego): factor de vértice
+  `T_nativo(rival)*r/4096`, `r=S_BAG2_rival/S_nativo_rival`; misma `r` para altura de
+  caída4096, gravedad32 y tope, conservando así los frames de la caída.
+
+| Rival | XZ nativo | Y nativo | r | XZ BAG2 | Y BAG2 | WIP actual |
+|---|---|---|---|---|---|---|
+| Heat (0) | 1766 | 1640 | 85/128 | 0,286 | 0,266 | 0,35 / 0,22 |
+| Strike (1) | 1754 | 2120 | 82/127 | 0,276 | 0,334 | igual |
+| Gas-O (9) | 1622 | 1520 | 75/116 | 0,256 | 0,240 | igual |
+
+El WIP es ≈22 % más ancho y ≈17 % más bajo que esta fórmula para Heat. Límites: el
+modelo BAG2 de Heat difiere ≈2 % del de BAG1, y `r` por escala no capta esa
+diferencia; los rivales solo-BAG2 siguen sin entrada en la tabla Y (**decisión del
+dueño**). Sigue abierto: si el tope `+0x43cc` depende de escala, CAUGHT por rival,
+partículas y audio F3. Trial052 registra consultas, fallos y límites.

@@ -822,3 +822,28 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   tank uses R12. Tank node+8 unit, +0x43cc dependence and BAG2-only rival Y entries
   remain unverified. No runtime edits or acceptance; time/savings unmeasured.
   Next: verify tank node+8 unit and fall clamp, then CAUGHT per rival.
+
+## 20261111-ghidra-052 — Node scale unit and tank/dancer space
+
+- Purpose: approved F2, resolve tank versus dancer node+8 unit. Reused running GUI
+  and isolated headless project; no startup, install or configuration change.
+- Exact MCP: `get_program_info()` confirmed SLPM_862.19 SHAea5a1668…;
+  `decompile_function_by_address("0x800220b8")` = mesh-section pointer relocation;
+  `get_function_calls("0x800220b8", callers)` → sole caller80022518;
+  `decompile_function_by_address("0x80022518")` copies the 10 xf words verbatim to
+  node+0..+0x24 (node+8 = file scale) and recurses children +0x94/+0x98. Useful.
+- Headless native JP (payload SHAec7f4b0e…, base80010000), all exit0:
+  `--label native-tank-node-init --addresses 0x80026aec` 12.822s, mesh-header pointer
+  relocation (false positive for node+8); `--label native-tank-node-build
+  --addresses 0x80025528` primitive-packet builder (false positive for node+8, keep for
+  F4 primitives); `--label native-model-node-parser --addresses 0x80029624` 7.572s,
+  802 bytes: mid-function fragment because the address belongs to another build
+  (irrelevant, rejected). No native JP parser identified.
+- Independent checks: raw bytes of80013e20 show lwc2 IR0 + GPF sf=1 (ScaleMatrix R12).
+  Inline file scan plus `_work/gaso/rest_pose_extents.py` (new scratch, rotations
+  ignored): Gas-O000.bin 41 bones, size [17395,47826,15096]; tank002.bin xf scale4096,
+  size [2160,4480,2160].
+- Outcome: useful. Tank and dancer use the same R12 node scale; vertex ratio follows
+  801d6908 formulas. Animation translation unit (`*S>>7`) is inferred, not traced.
+  No runtime edits, captures or acceptance; time savings unmeasured.
+  Next: fall clamp +0x43cc scale dependence, then CAUGHT per rival.
