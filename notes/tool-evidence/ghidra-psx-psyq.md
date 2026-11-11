@@ -803,3 +803,22 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   (copy deleted afterwards). Then `get_program_info()` returned SHA ea5a1668… and
   `read_memory(0x80051904,20)` matched the earlier bytes. No project data or
   configuration changed. About 60s of wall time spent recovering.
+
+## 20261111-ghidra-051 — Tank versus dancer scale convention
+
+- Purpose: approved F2, decide whether native tank R12 and BAG2 dancer scale share
+  units before mapping the effect. Reused running GUI, no startup/config edits.
+- Exact MCP: `get_program_info()` SLPM_862.19 SHA ea5a1668…;
+  `decompile_function_by_address(address="0x80013144")` → FUN_80013144, same
+  formula as native 8001397c (matrix S*node>>12, bone translations *S>>7, children
+  +0x94/+0x98); `decompile_function_by_address(address="0x80023c38")` → 80023be4,
+  memory-card routine using global 800514e4: rejected as false positive.
+- No new headless run: reused saved native decompiles 801d6908, corrected 80013ed4,
+  8001397c, 8002e72c. Candidate 80013144 found by deterministic `sra ...,7`
+  cluster scan of raw `slpm.bin` SHA 143b4bf8… against native JP payload ec7f4b0e….
+- Failed attempt: reading node+8 at historical RAM actor+0x14 returned pointers;
+  layout assumption wrong, result discarded.
+- Outcome: useful. BAG2 and BAG1 dancer scale convention matches (S/128); native
+  tank uses R12. Tank node+8 unit, +0x43cc dependence and BAG2-only rival Y entries
+  remain unverified. No runtime edits or acceptance; time/savings unmeasured.
+  Next: verify tank node+8 unit and fall clamp, then CAUGHT per rival.

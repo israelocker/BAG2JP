@@ -1676,3 +1676,41 @@ El reporte anterior incluye estos campos y sus límites. Próximo contrato por
 resolver: correspondencia del espacio de escala del efecto con el bailarín
 importado, conservando proporciones/trayectoria originales; no introducir116,
 75 o1622 directamente en otro espacio sin validar el consumidor.
+
+#### F2 — convención de escala tanque/bailarín (2026-11-11 UTC)
+
+Unidad estática, sin cambios de runtime ni captura. Reutiliza decompilados ya
+guardados en `_work/gaso/`: `native-tank-lifecycle-decompile/801d6908.c`,
+`native-tank-main-corrected-decompile/80013ed4.c` (no el import rechazado
+`native-tank-main-decompile/`), `native-caught-scale-matrix-decompile/8001397c.c`
+y `native-caught-scale-consumer-decompile/8002e72c.c`.
+
+- Tanque BAG1: `801d6908` dibuja con rotación de `801d588c`, traslación X/Z del
+  rival (+0x36f4/+0x36fc) e Y de caída por slot; escala X/Z =
+  `12*rival_R12+230` (+600 en escenario 0xb o rival ID13), Y =
+  `801d8280[ID rival]<<2`. `80013ed4` aplica `escala*node>>12` a la matriz y a la
+  traslación de nodos: **R12, 4096 = 1,0**.
+- Bailarín BAG1: `8002e72c` pasa actor+0x43a8 a `8001397c`; la matriz usa
+  `S*node>>12`, pero las traslaciones de huesos usan `*S>>7`: **S/128 = 1,0**.
+- BAG2: barrido de grupos `sra ...,7` empareja nativo
+  {800133f4,8001397c,8004d5a0} con BAG2 {80012c9c,80013144,8004d83c}. MCP de
+  `80013144` muestra la misma fórmula (hijos en +0x94/+0x98 en vez de +0xe4/+0xe8).
+  **BAG2 y BAG1 comparten la convención S/128 del bailarín**, así que 75 (BAG2)
+  y 116 (BAG1) son directamente comparables como tamaño de mundo.
+- Falso positivo descartado: el literal 0x14e4 en `80023c38` (función 80023be4)
+  es la rutina de memory card con global `800514e4`, no la escala del actor.
+- Intento inválido descartado: leer node+8 del RAM histórico en actor+0x14 dio
+  punteros; actor+0x14 no es la estructura de nodo en BAG2. El valor unidad de
+  node+8 para el modelo del tanque **sigue sin verificar**.
+
+**Hipótesis de contrato (no validada):** en BAG1 el tanque XZ mide
+`(12*S+230)/4096` frente al rival `S/128` (≈0,375×rival + 230/4096). Conservar
+la proporción en BAG2 daría `12*S_bag2 + 230*r` en XZ e Y = `tabla*4*r`, con
+`r = escala BAG2 / escala nativa` del rival (Gas-O 75/116≈0,647; Strike 82/127≈0,646;
+Heat 85/128≈0,664, modelo BAG2 ~2 % distinto). La altura de caída (suelo+4096,
+gravedad 32*delta, tope +0x43cc) necesita el mismo factor. Antes de F4 falta:
+(1) unidad de node+8 en el modelo del tanque; (2) si el tope +0x43cc depende de
+escala; (3) rivales solo-BAG2 sin entrada en la tabla Y: **sin resolver, requiere
+decisión del dueño** si no aparece equivalente. Las constantes 35/100, 22/100,
+`1200*rem²` y el slot78/frame0 forzado del WIP siguen siendo inventadas y se
+sustituirán en F4. Trial051 registra consultas y límites.
