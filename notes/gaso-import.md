@@ -1784,3 +1784,56 @@ y no fidelidad original: (a) `Y = 1.164 × altura de reposo BAG2 del rival`;
 (b) valor compartido `390*4*r`. **Elección pendiente del dueño.** Siguiente: medir
 las alturas de reposo de los modelos solo-BAG2, el tope `+0x43cc`, CAUGHT por rival,
 partículas y audio F3. Trial053 registra la unidad; sin aceptación en juego.
+
+#### F2 — alturas de reposo BAG2 y regla unificada de altura (2026-11-11 UTC)
+
+Continuación de la unidad anterior, sin cambios de runtime. Script
+`_work/gaso/bag2_rest_heights.py`; informe con SHA de cada modelo:
+`full-fidelity-source-audit/bag2-rest-heights.json`. Se midieron los modelos stock
+`assets/archive/characters/<nombre>/model_a_p1/000.bin` de los slots 0..17 (tabla
+de modelos 0x80055258 del main BAG2). Los 18 se recorren completos (0 bytes
+sobrantes). Ningún modelo nativo ni BAG2 usa nodos tipo 2, así que las alturas
+nativas de la unidad anterior no cambian. Ambos juegos tienen 14-17 nodos tipo 4 con
+la misma estructura; se ignoran por igual en los dos lados. Altura BAG2 =
+`sizeY*tablaBAG2/4096` con factor de escenario 256, sin ajuste host.
+
+| Slot BAG2 | Altura BAG2 | Cociente nativo | Tanque = cociente x altura | Entrada nativa x r |
+|---|---|---|---|---|
+| 0 heat | 1029 | 1.228 | 1263 | 1191 (1.16x) |
+| 1 strike | 1296 | 1.157 | 1499 | 1789 (1.38x) |
+| 2 comet | 1114 | solo BAG2 | 1296 (mediana) | sin entrada |
+| 3 tsutomu | 703 | solo BAG2 | 819 (mediana) | sin entrada |
+| 4 kelly | 996 | 1.215 | 1211 | 1192 (1.20x) |
+| 5 shorty | 910 | 1.119 | 1018 | 891 (0.98x) |
+| 6 pander | 1080 | solo BAG2 | 1257 (mediana) | sin entrada |
+| 7 kitty_n | 1225 | 1.146 | 1403 | 1432 (1.17x) |
+| 8 hiro | 1155 | 1.142 | 1318 | 1314 (1.14x) |
+| 9 bi_o | 1178 | solo BAG2 | 1372 (mediana) | sin entrada |
+| 10 capoeira | 747 | 1.363 | 1018 | 1018 (1.36x) |
+| 11 robo_z_gold | 1077 | 1.210 | 1304 | 1133 (1.05x) |
+| 12 columbo | 276 | 1.819 | 502 | 502 (1.82x) |
+| 13 sushi_boy | 867 | solo BAG2 | 1010 (mediana) | sin entrada |
+| 14 chichi_sally | 770 | solo BAG2 | 897 (mediana) | sin entrada |
+| 15 michael_doi | 1088 | solo BAG2 | 1267 (mediana) | sin entrada |
+| 16 mcload | 651 | solo BAG2 | 758 (mediana) | sin entrada |
+| 17 hustle_kong | 894 | solo BAG2 | 1040 (mediana) | sin entrada |
+
+Conclusiones:
+
+- La opción (b) `390*4*r` **no está definida** para rivales solo-BAG2: no tienen
+  escala nativa con la que calcular r. Habría que inventar r, así que se descarta
+  como regla general.
+- Para personajes que vuelven en BAG2 con **modelo BAG2 stock**, aplicar su entrada
+  nativa x r no conserva la proporción original: Shorty quedaría 0.98x (el tanque no
+  le cubre la cabeza) y Strike 1.38x, porque esos modelos BAG2 no son el BAG1 escalado.
+- Regla propuesta unificada: `Y_tanque = cociente_nativo[personaje] x altura de reposo
+  renderizada del modelo rival real`, con cociente 1.164 (mediana de entradas
+  distintas) solo para quien no existe en BAG1. Para un modelo nativo importado
+  (Gas-O, Heat/Strike BAG1) es **algebraicamente idéntica** a `tablaY*4*r`, así que
+  no altera la fidelidad ya establecida. Para modelos stock y solo-BAG2 es una
+  aproximación que conserva la proporción tanque/cuerpo, marcada como tal.
+- Límites: pose de reposo, solo traslaciones (sin rotaciones ni escala por nodo),
+  sin nodos tipo 4, factor 256, sin ajuste host ni medida en juego. El slot 18
+  (Heat p2) no se midió. **Elección del dueño pendiente** entre esta regla y otra.
+  Siguiente: tope `+0x43cc` y caída con r, CAUGHT por rival, partículas y audio F3.
+  Trial054 registra la unidad.

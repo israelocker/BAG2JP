@@ -864,3 +864,19 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
 - Outcome: useful but non-constant ratio (distinct entries 1.119–1.228, median 1.164).
   Translation-only rest pose; xf[0] rotation consumer not traced. Time savings
   unmeasured. Next: BAG2-only rest heights, clamp +0x43cc, CAUGHT per rival.
+
+## 20261111-ghidra-054 — BAG2 stock rest heights
+
+- Purpose: finish the approved BAG2-only rival height measurement. Static only.
+- MCP: `get_program_info()` confirmed SLPM_862.19 SHA ea5a1668..., 1324 functions;
+  reused running GUI, no startup. No further MCP query: model table 0x80055258 and
+  scale table 0x80051904 read from raw `_work/mainexe/slpm.bin` (SHA 143b4bf8...),
+  both already MCP-verified in trials 049/050.
+- Scratch: `_work/gaso/bag2_rest_heights.py` (BAG1 0x3C and BAG2 0x48 mesh headers via
+  `tools/bag1import/model_bag1_to_bag2.py`). 18 BAG2 and 14 native models parse with
+  0 trailing bytes; no type-2 instances in either game, so trial053 heights hold.
+- Outcome: useful. Native entry x r is not proportion-preserving on BAG2 stock models
+  (Shorty 0.98x, Strike 1.38x) and undefined for BAG2-only rivals; proposed rule
+  ratio[ID] x real rival rest height (median 1.164 for BAG2-only) equals the native
+  formula for imported native models. Translation-only rest pose, type-4 nodes ignored,
+  no runtime check; time savings unmeasured. Next: clamp +0x43cc, CAUGHT per rival.
