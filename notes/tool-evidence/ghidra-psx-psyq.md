@@ -757,3 +757,49 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   no native overlay MCP claim. No runtime, payload, game or protected files changed.
   Execution7.091s excludes preparation/review; rework and savings unmeasured.
   Next: argument provenance and pointer-based scale writers, then CAUGHT selection.
+
+## 20261111-ghidra-050 — Scale load arguments and host writer
+
+- Purpose: finish the bounded static load-argument question, not repeat pose scans.
+  Reused running GUI and Ghidra12.1.4/JDK21 isolated project, no startup/config edits.
+- Exact MCP: `get_program_info()` confirmed SLPM_862.19 Japanese PSX LE32 main,
+  SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe;
+  `decompile_function_by_address(address="0x8002b9f4")` resolved8002b5bc;
+  `read_memory(address="0x80051904",length=48)` returned the initialized character,
+  stage-spacing and offset tables. Queries succeeded; independent raw payload bytes
+  match the returned48 bytes. This confirms a loader dependency, not live scale values.
+- Native direct JAL scan found sole main call to2f7c0 at2e108. Supplementary command
+  `py -3.13 _work/gaso/trace_native_tank_main.py --follow-up --label
+  native-tank-scale-load --addresses 0x8002de94`, exit0/7.593s; output2855bytes
+  read completely. Existing native JP payload SHA
+  ec7f4b0ef8c1823e86baa72bf5813e88c0a13e560f60adc5add6e7228bb66faf,
+  base80010000 and VerifyTankMain memory checks retained. No native GUI selection claim.
+- Independent table/source audit saved `full-fidelity-source-audit/scale-load-arguments.json`:
+  BAG1 table800516d8, BAG2 table80051904 and loader formulas. Native normal Gas-O116,
+  special divisor8; BAG2 uses a signed runtime stage factor and per-character byte.
+  Host `b1v_dancer_scale()` writes both saved/working triples with guarded Q12 adjustment;
+  current source SHA0a41b94733438d74bd9074a6beca4ec1d833af529e01f1d29252751a567e3254.
+- Bounded literal scan of original JP Gas DBI and saved Bi-O P1/P2 DBIs is not
+  exhaustive alias/memcpy analysis. P1 hits801d14ec/801d151c are pointer data, not
+  established instructions/writers; rejected as writer evidence. Hashes/hits in report.
+- Outcome: useful static load contract plus a relevant host writer omitted by MIPS-only
+  scans. Stage factor/frame order, indirect writers outside this scope and live tank
+  scaling remain unverified. No runtime edits or new gameplay/audio acceptance.
+  Preparation, manual rework and savings unmeasured;7.593s excludes those costs.
+  Next: initialized RAM evidence for stage factor and before/after-host scales, reusing
+  valid dumps and capturing only missing states; do not retrace the same load argument.
+- Subsequent independent contrast reused existing initialized RAM, not a new game:
+  sign-intro-31-ram.bin SHAe272fae7241f8e9e5261ad9cbe335376dee959aef53d9616a775714d4f645a9f
+  and adjacent metadata bind runtime27dfebb4. Stage factor256, Gas-O saved/working
+  triples75 and Heat85; same-run host log states Gas-O98→75. Added to the source
+  report. Non-atomic historical snapshot, not current-runtime or before/after proof.
+  Useful reuse avoids a duplicate capture for this historical state; time/savings
+  still unmeasured. Next: effect/dancer coordinate-scale contract, not another loader scan.
+- Later reconnection, same day: `get_program_info()` failed BACKEND_UNAVAILABLE
+  (127.0.0.1:8080 unreachable); Get-CimInstance found no java/javaw. Launched once
+  `ghidraRun.bat ghidra/BAG2JP.gpr` (javaw PID50896), closed Tip of the Day by
+  PID-guarded WM_CLOSE and opened the SLPM_862.19 row with a temporary copy of
+  `_work/gaso/reconnect_ghidra_window.py` updated with the fresh HWND and PID
+  (copy deleted afterwards). Then `get_program_info()` returned SHA ea5a1668… and
+  `read_memory(0x80051904,20)` matched the earlier bytes. No project data or
+  configuration changed. About 60s of wall time spent recovering.

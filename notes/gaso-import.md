@@ -1624,3 +1624,55 @@ el camino de carga/inicialización y los escritores por puntero a las ternas, no
 repetir el barrido directo ni los constructores de poses descartados. Selección
 CAUGHT por rival y partículas/audio siguen abiertos; F4 no iniciado. Verificación
 de esta unidad documental no implica aceptación en juego ni suite host nueva.
+
+#### F2 — argumento de carga R12 y ajuste del importador (2026-11-11 UTC)
+
+El camino de inicialización queda identificado estáticamente, sin cambiar runtime:
+`full-fidelity-source-audit/scale-load-arguments.json` y
+`native-tank-scale-load-decompile/8002de94.c` bajo `_work/gaso/`.
+
+- BAG1 JP: `8002de94` llama a `8002f7c0` con el byte de tabla `800516d8+ID`
+  dividido por1 normalmente. En la rama especial del cargador puede dividirlo
+  por8; no se identifica esa rama como combate normal por conjetura. Tabla IDs0..13:
+  `128,127,132,128,131,122,131,121,144,116,124,128,34,88`.
+  El rival Gas-O normal recibe116; con ese valor la fórmula XZ del tanque por defecto da
+  `12*116+230=1622` R12, no35% elegido manualmente. Las excepciones de IDs y escala
+  Y originales siguen aplicándose; este ejemplo no sustituye la fórmula completa.
+- BAG2: MCP de `8002b9f4` resuelve el cargador `8002b5bc`. La llamada a8002d85c
+  recibe `(character_byte * signed_stage_factor)/256`, truncado hacia cero y
+  enmascarado a16bits. La tabla de personaje empieza en80051904; MCP48bytes y
+  payload original coinciden. Gas-O/Bi-O ID9 tiene byte98, pero **98 no es por sí
+  solo la escala final**. Hay ramas para secundarios y escenario especial;
+  no asumir factor256 ni extrapolar el caso normal a ellas.
+- Un escritor relevante no pertenece al MIPS: `b1v_dancer_scale()` en
+  `mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_versions.c` modifica referencia
+  1514/18/1c y trabajo14e4/e8/ec, con `(base*q+2048)>>12`. Gas-O usaq3132 y Strike
+  3429/3434; selección/versión y caché de puntero/valor guardan la aplicación.
+  El reporte liga el source actual por SHA; no se ha editado ni demostrado aquí
+  su orden exacto respecto del frame del tanque. Una lectura solo del main omitiría
+  este ajuste. Los bbox1534/38/3c siguen sin ser escala.
+- Barrido acotado de GAS-O JP y Bi-O P1/P2: las dos coincidencias del P1 Bi-O son
+  words de punteros801d14ec/801d151c interpretables como instrucciones, **no
+  escritores probados**. No contar datos como código ni afirmar ausencia de alias
+  o memcpy. El barrido no cubre todos los overlays ni es una traza de ejecución.
+
+Siguiente comprobación: contrastar en frames inicializados el factor de escenario,
+las ternas antes/después del ajuste host y el reloj/evento del tanque, reutilizando
+RAM válida si contiene esos campos; capturar solo lo que falte y preservando las
+sesiones/configuración. No volver a buscar el argumento inicial ya identificado.
+Esto permitirá fijar el contrato de escala original frente al espacio BAG2 antes
+de F4. CAUGHT por rival, partículas y audio exacto siguen pendientes. Trial050
+registra consultas/inputs/límites; unidad documental, sin aceptación en juego.
+
+**Contraste reutilizado, sin otra captura:** el dump inicializado histórico
+`20261110T034745727209Z-gaso-sign-early/sign-intro-31-ram.bin` coincide con SHA
+`e272fae7241f8e9e5261ad9cbe335376dee959aef53d9616a775714d4f645a9f`.
+Su metadata identifica runtime27dfebb4, no el3145ba5b actual, y no es atómico.
+Factor de escenario en800af538+4 =256; Gas-O actor80256944 tiene75 en las dos
+ternas; Heat actor801a8104 tiene85. El log de esa misma ejecución registra
+`scale98 ->75` para Gas-O. Es coherente con `(98*3132+2048)>>12=75`, pero no es
+una medición antes/después del mismo frame ni demuestra todos los escenarios.
+El reporte anterior incluye estos campos y sus límites. Próximo contrato por
+resolver: correspondencia del espacio de escala del efecto con el bailarín
+importado, conservando proporciones/trayectoria originales; no introducir116,
+75 o1622 directamente en otro espacio sin validar el consumidor.

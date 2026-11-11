@@ -127,6 +127,6 @@ exija cambiar alcance o herramientas, se informa antes de adoptar una aproximaci
 | Requisito de fidelidad completa | Confirmado por petición del propietario 2026-11-10 |
 | Revisión F1–F8 | Aprobada explícitamente 2026-11-10 |
 | F1 | Inventario cerrado con carencias explícitas: report/accessory/audio-deployed; fuentes y vídeo auditados |
-| F2 | En curso: CAUGHT70 frente a TIRED78, loop y escala R12 contrastados; BAG2 referencia1514→trabajo14e4 identificado; faltan procedencia dinámica, selección por rival y partículas |
+| F2 | En curso: CAUGHT70/TIRED78, loop, escala R12 y argumentos de carga identificados; ajuste host y referencia1514→trabajo14e4 localizados; faltan contraste dinámico, selección por rival y partículas |
 | F3 | En curso: cues 0x1806/0x180a y muestras originales identificados; desplegadas resampleadas; falta PCM/onset |
 | Nueva implementación/captura | No iniciada; `d9ce984` sigue WIP |
