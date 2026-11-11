@@ -1837,3 +1837,41 @@ Conclusiones:
   (Heat p2) no se midió. **Elección del dueño pendiente** entre esta regla y otra.
   Siguiente: tope `+0x43cc` y caída con r, CAUGHT por rival, partículas y audio F3.
   Trial054 registra la unidad.
+
+#### F2 — decisión de altura y contrato de caída (2026-11-11 UTC)
+
+**Decisión del dueño (2026-11-11):** «continua con lo recomendado» aprueba la regla
+unificada de altura de la sección anterior: `Y_tanque = cociente_nativo[ID] x altura
+de reposo renderizada del rival real`, con mediana 1.164 solo para rivales que no
+existen en BAG1 (aproximación marcada). Para modelos nativos importados equivale a
+`tablaY*4*r`. Queda descartada la opción `390*4*r`. La aceptación en juego sigue pendiente.
+
+Contrato de caída, estático, sin cambios de runtime. Informe:
+`full-fidelity-source-audit/fall-contract.json` (script `_work/gaso/fall_contract.py`,
+payloads nativo ec7f4b0e... y BAG2 143b4bf8... verificados por SHA).
+
+- `+0x43cc` **no es escala**: `8002f7c0` copia ahí la Y de aparición del actor
+  (43c8/43cc/43d0 = posición inicial). El tope de `801d67a0` es el suelo del rival.
+- `801d5bb0`: el tanque nace en `suelo_rival+0x1000` con velocidad 0. `801d67a0`:
+  `v += 32*dt; y -= dt*(v+16*dt)`; al cruzar el suelo fija Y, escribe 0x7fffffff
+  (solo desactiva el recentrado XZ) y lanza el aterrizaje. **Caída y gravedad no
+  dependen del rival**; solo el suelo. Aterriza en 16 frames con dt=1 y con dt=2.
+- Conversión a BAG2: las dos constantes son unidades de mundo, así que se escalan
+  por la relación de mundo, no por r del rival. Separación normal de bailarines:
+  nativo `8002de94` ±0x310=784; BAG2 `8002b5bc` `espaciado[escenario]*4*factor/256`
+  = 520 con espaciado 130 y factor 256. Relación 0.663, coherente con r de Heat
+  85/128=0.664 y de Gas-O 75/116=0.647. Candidato F4: caída 4096x0.663 ≈ 2717,
+  gravedad 32x0.663 ≈ 21.2 (ambas x factor/256), suelo = Y de aparición del rival.
+  La duración de 16 frames se conserva.
+- Contraste con el WIP `bag2jp_gaso_tank.h`: baja 1200 unidades en 12 frames
+  (`GASO_TANK_FALL_DUR`, `y_drop` cuadrático inventado), es decir, menos de la mitad
+  de altura y 4 frames menos. Se sustituirá en F4.
+- `801d5bb0` crea **dos tanques** cuando el rival es ID10 (Capoeira, pareja) o ID5
+  con el indicador de compañero; uno en los demás casos. Los parámetros de humo
+  dependen de la escala del rival (`43bc*2`, `43bc*4+100`, contador 0x1f). Equivalencia
+  BAG2 para parejas (IDs 10/14) pendiente con CAUGHT por rival.
+- Límites: relación de mundo medida solo en escenario normal (espaciado 130);
+  escenario 5 (espaciado 86) y especial 0xb sin cubrir. Valor real de dt
+  (`80075f00`) no medido. Encuadre de cámara no comparado. Sin aceptación en juego.
+  Siguiente: CAUGHT por rival (incluidos solo-BAG2 y parejas), guardas/restauración,
+  partículas; luego F3. Trial055 registra la unidad.

@@ -880,3 +880,19 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   ratio[ID] x real rival rest height (median 1.164 for BAG2-only) equals the native
   formula for imported native models. Translation-only rest pose, type-4 nodes ignored,
   no runtime check; time savings unmeasured. Next: clamp +0x43cc, CAUGHT per rival.
+
+## 20261111-ghidra-055 — Tank fall contract and world ratio
+
+- Purpose: approved F2 clamp/fall unit. Static only; no runtime or source edits.
+- MCP: `get_program_info()` confirmed SLPM_862.19 SHA ea5a1668..., 1324 functions,
+  reused GUI. `decompile_function_by_address(address="0x8002b5bc")` succeeded and
+  gave the BAG2 dancer X formula (spacing*4*factor/256) and Y offsets.
+- Reused, not rerun: native decompiles 801d5bb0 (smoke-lifecycle), 801d67a0
+  (tank-lifecycle), 8002f7c0 (caught-actor-init), 8002de94 (tank-scale-load).
+- Scratch: `_work/gaso/fall_contract.py` replays the fall integrator and writes
+  `full-fidelity-source-audit/fall-contract.json`; payload SHAs asserted.
+- Outcome: useful. +0x43cc is the rival spawn Y, not a scale. Drop 0x1000 and gravity
+  32 are rival-independent; landing in 16 frames for dt 1 and 2. BAG2/native world
+  ratio 520/784=0.663 from dancer separation. WIP drop 1200/12 frames contradicted.
+  Limits: normal stage only, dt not measured, camera not compared. Time unmeasured.
+  Next: CAUGHT selection per rival (pairs, BAG2-only), then particles and F3.
