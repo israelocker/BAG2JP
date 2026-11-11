@@ -1916,3 +1916,55 @@ solo-BAG2; verificar capacidad/tablas, guardas de versión/emisor/víctima/refle
 propagación a compañero y restauración por fin/cambio de actor/escena. Después,
 partículas y F3 PCM/onset1806/180a, sin reabrir búsquedas del selector ya resueltas.
 F2 permanece incompleto y no hay aceptación de fidelidad ni despliegue nuevo.
+
+#### F2 — tablas de clips y enlace CAUGHT reversible (2026-11-11 UTC)
+
+Unidad estática, sin cambiar runtime. `clip-table-contract.json` bajo
+`_work/gaso/full-fidelity-source-audit/` contrasta el main y el dump histórico
+`sign-intro-31-ram.bin` de la ejecución20261110T034745727209Z. No es una captura
+atómica ni del runtime actual. Trial057 registra las consultas y los límites.
+
+- Actor BAG2: `+820` número N de clips; `+824` tabla de punteros a motions;
+  `+828` longitudes u16; `+82c` punteros a metadata. `80031d3c` y `800319fc`
+  reservan4N bytes, luego2N, alinean a4 y reservan4N. `800125fc` cuenta motions
+  hasta el terminador; `8001262c` toma frames de motion+4; `800126a4` resuelve
+  metadata mediante motion+offset y el desplazamiento guardado allí.
+- En el dump, Gas-O80256944 y Heat801a8104 tienenN101. Las101 entradas de cada
+  actor concuerdan en frames y metadata con sus motions. El final de las tablas
+  coincide exactamente con actor+14, inicio de otra reserva: **no hay capacidad
+  adicional demostrada para escribir la entrada101 en las tablas originales**.
+  Gas-O78 tiene34frames y Heat78 tiene44; no son los dos frames CAUGHT originales.
+- `800326d4` reconstruye/amplía tablas y puede copiar los mismos punteros y N al
+  compañero de8005f80c[lado*2]. El constructor31d3c crea compañeros para10/14;
+  5/6 también tienen rutas de compañero con identidad diferente. No asumir que
+  toda tabla es privada, ni que ID o lado por sí solos identifican al compañero.
+- El controlador8002d06c consulta metadata/eventos y longitud del clip anterior
+  **antes** de aplicar una nueva orden. Después mantiene reloj/interpolación;
+  metadata+5=0 hace loop mediante módulo, que exige longitud no nula. Modo1
+  reinicia al entrar; no justifica escribir frame0 en cada actualización.
+- El consumidor de pose8002bc38 usa motions+824, slots actual154c/anterior1550,
+  frame1554/siguiente1558 y caches1494/1498. El decoder800128b4 reinicializa si
+  cambia el puntero motion en su estado+830;8002ccc8 también lee+824 para root.
+  Cambiar solo el puntero metadata o el slot no constituye un enlace completo.
+
+**Diseño candidato, aún no implementado ni aceptado:** copiar las tres tablas a
+una reserva privada del actor conN+1 entradas, conservar lasN originales y añadir
+CAUGHT enN, sin tocar78 ni los mapas globales. ConN101 las tablas nuevas requieren
+1020bytes, más motion/metadata y estado de control; no es una reserva ya autorizada
+o verificada en RAM. El clip debe tener dos frames válidos, loop/eventos originales
+y conversión de esqueleto/escala comprobada. No reutilizar un hueco por conjetura.
+
+La transacción futura debe ejecutarse fuera de lecturas concurrentes del juego,
+guardar identidad/generación del actor, N y los tres punteros, y comprobar que no
+los reemplazó otro cargador. Cada compañero real requiere su enlace y su clip,
+aunque antes compartiese tablas. Liberar por fin/cambio de actor/escena sin escribir
+en memoria reciclada; antes de quitarN, ningún slot actual/anterior ni decoder/cache
+puede seguir referenciando la entrada o motion añadidos. No restaurar ciegamente
+un frame/slot viejo sobre una nueva reacción legítima. Estos son requisitos de
+seguridad, **no una implementación demostrada**.
+
+Siguiente unidad: preparar y auditar los CAUGHT70 originales para Heat/Strike/Gas-O
+por traje/lado con el conversor existente, y verificar el punto de entrada/salida
+del controlador y callbacks por personaje para un slot añadido. Parejas, reflejos
+y retarget solo-BAG2 siguen abiertos; no afirmar CAUGHT stock equivalente. Reutilizar
+este contrato y el selector056, sin repetir sus búsquedas. Después partículas/F3.

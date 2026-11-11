@@ -930,3 +930,42 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   then remaining guards/restoration/particles. No runtime/gameplay acceptance.
 - funcmatch.py not rerun: this is a verified JP overlay/table path, not a USA-main
   function-equivalence search supported by that experimental helper.
+
+## 20261111-ghidra-057 — Actor clip tables and reversible binding constraints
+
+- Purpose: approved F2, clip-table capacity and consumers before a dedicated CAUGHT
+  binding. Ghidra12.1.4 running GUI reused; `get_program_info()` confirmed Japanese
+  SLPM_862.19 PSX LE32 main,1324functions, SHA
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. No restart.
+- MCP `read_memory(address="0x8002d06c",length=32)` succeeded; bytes match the raw
+  main independently. Existing253-line controller decompile read in full and reused.
+  Fresh `decompile_function_by_address` queries succeeded at8002d85c,800319fc,
+  800326d4,80031d3c,800125fc,8001262c,800126a4,8002ccc8,8002c404,8002c060,
+  8002bc38 and800128b4. The2c404 read repeated an established renderer path to
+  reach its pose consumer; no new scale finding claimed. No new headless run.
+- Direct SW-immediate scan `py -3.13 _work/gaso/scan_clip_table_writers.py` found
+  writes828/82c in319fc/31d3c/326d4. Nearest stack prologues were candidates, then
+  confirmed by MCP decompiles; not an exhaustive alias/writer proof.
+  An attempted read of bag2-caught-actor-init-decompile/8002d85c.c failed because
+  that output does not exist; bounded filesystem search confirmed absence, then MCP
+  supplied it. A tool-log read offset1120 exceeded1055lines; corrected to1022.
+- Independent command `py -3.13 _work/gaso/audit_clip_table_contract.py` exit0,
+  0.015301s, report full-fidelity-source-audit/clip-table-contract.json. Raw main SHA
+  143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b;
+  RAM SHAe272fae7241f8e9e5261ad9cbe335376dee959aef53d9616a775714d4f645a9f,
+  metadata binds historical runtime27dfebb4, not current3145ba5b. All101 slots on
+  each of Gas-O/Heat match raw-motion frames and metadata relocation. Table end
+  equals actor+14, confirming packed reservation, not an available extra slot.
+- Useful result: count820/raw824/lengths828/metadata82c; packed4N+2N+alignment+4N.
+  Controller consumes old metadata before applying orders. Loader326d4 can share
+  tables with a companion; decoder/pose cache and previous slot prevent a naive
+  pointer-only restoration. Proposed privateN+1 tables need1020bytes atN101 plus
+  clip/state, not an implemented allocation or proof of safe runtime scheduling.
+- Limits: historical non-atomic initialized RAM, no pair actors measured; sharing
+  branch proven statically only. No current payload/pose/skeleton/transaction test.
+  Query/preparation/manual rework and savings unmeasured;0.015301s is audit only.
+  Preflight20261111T110818458438Z reused: no source/resource/runtime changes here.
+  funcmatch not applicable: actor field consumers, not a USA-main equivalent search.
+- Next: converted native CAUGHT per current import/traje/lado and callback-safe
+  entry/release seam; then pair/reflection/stock-skeleton adaptation and particles.
+  No F2/F4 completion, deployment or gameplay acceptance from this documentary unit.
