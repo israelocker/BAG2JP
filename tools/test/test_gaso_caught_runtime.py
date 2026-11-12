@@ -1,5 +1,6 @@
 """Quarantine regression, not evidence of CAUGHT playback or fidelity."""
 import os
+import re
 import subprocess
 import tempfile
 import tomllib
@@ -74,14 +75,33 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
     def test_prepared_bank_leaves_capture_and_entry_read_only(self) -> None:
         self.run_scenario(6)
 
+    def test_unsafe_actor_and_stack_pointers_are_rejected_before_reads(self) -> None:
+        self.run_scenario(7)
+
+    def test_stack_span_tracks_live_retail_or_expanded_ram(self) -> None:
+        """Accept the expanded stack, not its out-of-range tail or retail alias."""
+        self.run_scenario(8)
+
+
+MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
+
 
 class GasoCaughtManifestTest(unittest.TestCase):
     def test_unverified_reaction_is_disabled_by_default(self) -> None:
         """Prevent a default plan from activating the unfinished reaction."""
-        path = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
-        manifest = tomllib.loads(path.read_text(encoding='utf-8'))
+        manifest = tomllib.loads(MANIFEST.read_text(encoding='utf-8'))
         feature = next(f for f in manifest['feature'] if f['id'] == 'bag1-gaso-caught')
         self.assertIs(feature['default_enabled'], False)
+
+    def test_feature_activates_exactly_the_registered_plugin_ids(self) -> None:
+        """Only plan plugin ids get hooks: a renamed id would silently drop one."""
+        manifest = tomllib.loads(MANIFEST.read_text(encoding='utf-8'))
+        declared = sorted(p['id'] for p in manifest['plugin']
+                          if p['feature'] == 'bag1-gaso-caught')
+        registered = sorted(set(re.findall(
+            r'psx_mod_register_\w+_plugin\(\s*"([^"]+)"', SOURCE.read_text(encoding='utf-8'))))
+        self.assertEqual(declared, ['bag2jp.gaso_caught', 'bag2jp.gaso_caught_capture'])
+        self.assertEqual(registered, declared)
 
     def test_runtime_source_never_publishes_the_unverified_clip(self) -> None:
         """Keep the shipped default build unable to change the entry slot."""

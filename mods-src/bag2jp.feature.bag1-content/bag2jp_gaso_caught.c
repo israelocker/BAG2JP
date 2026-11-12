@@ -16,7 +16,10 @@
  * is Gas-O with the BAG1 version selected. Heat and Strike publish the same
  * request 202; their publications only invalidate the recipient's record.
  * Hooks never write guest RAM, allocate, or change CPU registers (except a2 in
- * the entry callback).
+ * the entry callback). Host-only counters (TCP mod_counters) report every
+ * producer-site call as capture_stored/capture_rejected and every take as
+ * entry_taken; the same events and the rejection reason go to
+ * bag2jp_bag1_versions.log, the only channel in builds without debug tools.
  *
  * Activation (P1) prepares the authentic 1048-byte clip bank once per process
  * in Expansion 1 (bag2jp_caught_bank.c): one allocation, a verified copy, and
@@ -54,6 +57,7 @@
 
 int bag2jp_bag1_has_version(int chr);
 int bag2jp_bag1_get_version(int chr, int side);
+void b1v_log(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 /* Producer site: sh v0,0x18(s5) publishes request202 to the recipient's
  * pending field. Instruction word verified against Ghidra raw and original
@@ -105,13 +109,31 @@ static uint8_t guest_read_byte(uint32_t addr) {
     return psx_mod_read_byte(addr);
 }
 
+/* psx_mod_read_* is the traced path (MMIO, unmapped_fatal, lockstep), so a
+ * guest pointer is read only when [addr, addr+bytes) lies in live KSEG0 main
+ * RAM (2 MiB retail, 8 MiB with expanded RAM: the 8 MiB install keeps its
+ * stack above 2 MiB), or in the scratchpad when it may hold the stack. */
+#define GASO_CS_RAM 0x80000000u
+#define GASO_CS_SCRATCHPAD 0x1f800000u
+#define GASO_CS_SCRATCHPAD_BYTES 0x400u
+
+uint32_t memory_get_ram_bytes(void);
+
+static int guest_range_ok(uint32_t addr, uint32_t bytes, int scratchpad) {
+    const uint32_t ram_bytes = memory_get_ram_bytes();
+    if (addr >= GASO_CS_RAM && bytes <= ram_bytes && addr - GASO_CS_RAM <= ram_bytes - bytes)
+        return 1;
+    return scratchpad && addr >= GASO_CS_SCRATCHPAD &&
+           addr - GASO_CS_SCRATCHPAD <= GASO_CS_SCRATCHPAD_BYTES - bytes;
+}
+
 /* ---- Producer-site capture ---- */
 
 /* Capture the original request202 source before sh v0,0x18(s5) publishes it.
  * Reads guest RAM through psx_mod_read_* since we don't have a full RAM buffer.
- * Returns 1 if a record was stored, 0 otherwise. Never writes guest RAM or CPU
- * registers. */
-static int capture_producer_source(struct CPUState *cpu) {
+ * Returns NULL if a record was stored, otherwise the rejection reason. Never
+ * writes guest RAM or CPU registers. */
+static const char *capture_producer_source(struct CPUState *cpu) {
     /* Registers visible before the original instruction executes: */
     /*   v0  = request value loaded from the source table (should be 202)   */
     /*   s2  = source side (0 or 1)                                         */
@@ -125,49 +147,50 @@ static int capture_producer_source(struct CPUState *cpu) {
     const uint32_t sp = cpu->gpr[29];
 
     /* Any later publication to this recipient supersedes an older record. */
-    if (recipient_side > 1u) return 0;
+    if (recipient_side > 1u) return "recipient side";
     captured[recipient_side].available = 0;
 
     /* Register validation */
-    if (request != GASO_CS_REQUEST) return 0;
-    if (source_side > 1u) return 0;
-    if (pending != GASO_CS_PENDING + GASO_CS_PENDING_STRIDE * recipient_side) return 0;
-    if (sp < GASO_CS_STACK_BYTES) return 0;
+    if (request != GASO_CS_REQUEST) return "request";
+    if (source_side > 1u) return "source side";
+    if (pending != GASO_CS_PENDING + GASO_CS_PENDING_STRIDE * recipient_side) return "pending";
+    if (!guest_range_ok(sp, GASO_CS_STACK_BYTES, 1)) return "stack";
 
     /* Validate original code sites haven't drifted */
-    if (guest_read_word(GASO_CS_OVERLAY_BASE_PTR) != GASO_CS_OVERLAY_BASE) return 0;
-    if (guest_read_word(GASO_CS_LOAD_CHAR_BYTE) != GASO_CS_LOAD_CHAR_BYTE_EXPECTED) return 0;
-    if (guest_read_word(GASO_CS_LOAD_DELAY_NOP) != GASO_CS_LOAD_DELAY_NOP_EXPECTED) return 0;
-    if (guest_read_word(GASO_PRODUCER_SITE) != GASO_PRODUCER_EXPECTED) return 0;
+    if (guest_read_word(GASO_CS_OVERLAY_BASE_PTR) != GASO_CS_OVERLAY_BASE ||
+        guest_read_word(GASO_CS_LOAD_CHAR_BYTE) != GASO_CS_LOAD_CHAR_BYTE_EXPECTED ||
+        guest_read_word(GASO_CS_LOAD_DELAY_NOP) != GASO_CS_LOAD_DELAY_NOP_EXPECTED ||
+        guest_read_word(GASO_PRODUCER_SITE) != GASO_PRODUCER_EXPECTED) return "code drift";
 
     /* Stack flag: reflected=2 when source==recipient, else 1 (direct) */
     const uint32_t reflected = (source_side == recipient_side) ? 1u : 0u;
     const uint32_t expected_flag = reflected ? GASO_CS_FLAG_REFLECTED : GASO_CS_FLAG_DIRECT;
-    if (guest_read_byte(sp + GASO_CS_STACK_FLAGS + recipient_side) != expected_flag) return 0;
+    if (guest_read_byte(sp + GASO_CS_STACK_FLAGS + recipient_side) != expected_flag) return "stack flag";
 
     /* Validate actors: main list at 0x8005f808, each 8 bytes */
     uint32_t actors[2];
     for (uint32_t side = 0; side < 2; ++side) {
         actors[side] = guest_read_word(GASO_CS_ACTORS + side * GASO_CS_MAIN_STRIDE);
-        if (actors[side] == 0u) return 0;
-        if (guest_read_byte(actors[side] + GASO_CS_SIDE) != (uint8_t)side) return 0;
+        if (!guest_range_ok(actors[side], GASO_CS_SIDE + 1u, 0)) return "actor pointer";
+        if (guest_read_byte(actors[side] + GASO_CS_SIDE) != (uint8_t)side) return "actor side";
     }
-    if (actors[0] == actors[1]) return 0;
+    if (actors[0] == actors[1]) return "same actor";
 
     const uint32_t recipient_actor = actors[recipient_side];
     const uint32_t source_actor = actors[source_side];
     const uint8_t recipient_char = guest_read_byte(recipient_actor + GASO_CS_CHARACTER);
     const uint8_t source_char = guest_read_byte(source_actor + GASO_CS_CHARACTER);
 
-    if (source_char >= GASO_CS_VERIFIED_TABLE_ROWS) return 0;
+    if (source_char >= GASO_CS_VERIFIED_TABLE_ROWS) return "source character";
     const uint32_t table_row = GASO_CS_TABLE + GASO_CS_TABLE_ROW_STRIDE * (uint32_t)source_char;
-    if (guest_read_byte(table_row) != request) return 0;
+    if (guest_read_byte(table_row) != request) return "request table";
 
     /* Request 202 is shared with Heat and Strike: only a direct Gas-O BAG1
      * attacker may own a record. */
-    if (reflected || source_char != GASO_CAUGHT_CHARACTER) return 0;
+    if (reflected) return "reflected";
+    if (source_char != GASO_CAUGHT_CHARACTER) return "not Gas-O";
     if (!bag2jp_bag1_has_version(GASO_CAUGHT_CHARACTER) ||
-        !bag2jp_bag1_get_version(GASO_CAUGHT_CHARACTER, (int)source_side)) return 0;
+        !bag2jp_bag1_get_version(GASO_CAUGHT_CHARACTER, (int)source_side)) return "not BAG1";
 
     /* Store the captured record (one per recipient side) */
     B1CaughtSource value = {0};
@@ -184,7 +207,7 @@ static int capture_producer_source(struct CPUState *cpu) {
     value.available = 1;
 
     captured[recipient_side] = value;
-    return 1;
+    return NULL;
 }
 
 /* ---- Entry callback: take the recipient's record once ---- */
@@ -204,6 +227,9 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
         if (!captured[side].available || captured[side].actor != actor) continue;
         /* Consume once, even while no clip is published. */
         captured[side].available = 0;
+        psx_mod_counter_add("gaso_caught.entry_taken", 1u);
+        b1v_log("gaso_caught: entry taken by side %d actor %08x, a2 %s", side + 1,
+                (unsigned)actor, GASO_CAUGHT_CLIP_PUBLISHED ? "-> 1" : "unchanged");
         if (GASO_CAUGHT_CLIP_PUBLISHED)
             cpu->gpr[GASO_CAUGHT_REG_A2] = GASO_CAUGHT_ARG_A2;
         return;
@@ -214,14 +240,23 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
 
 static void gaso_caught_capture_cb(struct CPUState *cpu, uint32_t address) {
     if (address != GASO_PRODUCER_SITE) return;
-    capture_producer_source(cpu);
+    const char *rejected = capture_producer_source(cpu);
+    psx_mod_counter_add(rejected ? "gaso_caught.capture_rejected"
+                                 : "gaso_caught.capture_stored", 1u);
+    b1v_log("gaso_caught: request %u s2=%u -> s4=%u sp=%08x %s%s",
+            (unsigned)cpu->gpr[2], (unsigned)cpu->gpr[18], (unsigned)cpu->gpr[20],
+            (unsigned)cpu->gpr[29],
+            rejected ? "rejected: " : "stored", rejected ? rejected : "");
 }
 
 /* ---- Activation: prepare the clip bank once, never repair it ---- */
 
 static void gaso_caught_activate(void) {
-    psx_mod_counter_add(b1cc_prepare(&bank) ? "gaso_caught.bank_ready"
-                                            : "gaso_caught.bank_unavailable", 1u);
+    const int ready = b1cc_prepare(&bank);
+    psx_mod_counter_add(ready ? "gaso_caught.bank_ready" : "gaso_caught.bank_unavailable", 1u);
+    b1v_log("gaso_caught: clip bank %s at %08x (%s)", ready ? "ready" : "unavailable",
+            (unsigned)bank.guest_base,
+            GASO_CAUGHT_CLIP_PUBLISHED ? "clip published" : "observe-only, a2 never changed");
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_gaso_caught) {

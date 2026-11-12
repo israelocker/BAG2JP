@@ -178,3 +178,18 @@ offset = 458823680
 file = "payload/bag1_alt.bin"
 sha256 = "c030b287a6d48623f636f051facb5e1a4ff7e11251215191765d091f18ac369e"
 expected_sha256 = "4062840bded750eaf6d4d7d1c4abf63a5e71e761b5c61c4e25c724241b9163d3"
+
+[[feature]]
+id = "bag1-gaso-caught"
+name = "Gas-O CAUGHT entry seam (experimental, observe-only)"
+description = "Prepares the BAG1 CAUGHT clip bank and observes Gas-O hits at 0x8009b5b4 and the controller entry at 0x8002d06c. Observe-only: no clip publication or reaction redirection. Enabling it changes the savestate layout. Gameplay acceptance is pending."
+group = "Gameplay"
+default_enabled = false
+
+[[plugin]]
+feature = "bag1-gaso-caught"
+id = "bag2jp.gaso_caught"
+
+[[plugin]]
+feature = "bag1-gaso-caught"
+id = "bag2jp.gaso_caught_capture"
