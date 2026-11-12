@@ -1,4 +1,5 @@
-/* Authentic immutable CAUGHT clips. No constructor or runtime activation yet. */
+/* Authentic immutable CAUGHT clips. No constructor: bag2jp_gaso_caught.c
+ * prepares the bank from its activation callback. */
 #include "bag2jp_caught_bank.h"
 #include "mod_plugins.h"
 #include <stddef.h>

@@ -15,11 +15,16 @@
  * captured[] only for a direct (non-reflected) request whose source main actor
  * is Gas-O with the BAG1 version selected. Heat and Strike publish the same
  * request 202; their publications only invalidate the recipient's record.
- * Never writes guest RAM, CPU registers (except a2 in the entry callback), or
- * allocates guest memory.
+ * Hooks never write guest RAM, allocate, or change CPU registers (except a2 in
+ * the entry callback).
  *
- * Required before GASO_CAUGHT_CLIP_PUBLISHED: authentic per-rival guest clip
- * bytes, bounded exclusive RAM access, persistent loan ownership, safe
+ * Activation (P1) prepares the authentic 1048-byte clip bank once per process
+ * in Expansion 1 (bag2jp_caught_bank.c): one allocation, a verified copy, and
+ * no retry or repair on later activations; it only reports readiness. Nothing
+ * reads the bank yet.
+ *
+ * Required before GASO_CAUGHT_CLIP_PUBLISHED: per-rival clip lookup wired into
+ * the entry, bounded exclusive RAM access, persistent loan ownership, safe
  * retirement and reset/savestate handling. Do not allocate placeholder clips
  * or publish slot1 here without a captured record.
  * See notes/gaso-import.md, caught-entry-recovery-20261111.
@@ -29,6 +34,7 @@
 #include "mod_plugins.h"
 #include "cpu_state.h"
 #include "bag2jp_caught_source.h"
+#include "bag2jp_caught_bank.h"
 
 /* No authentic clip is resident in guest RAM yet (P1). Host tests build with 1
  * to exercise the redirect; every runtime build must keep 0. */
@@ -84,6 +90,10 @@ int bag2jp_bag1_get_version(int chr, int side);
  * capture hook at 0x8009b5b4. Zero-initialised: available==0 means no record,
  * so the entry callback stays inert. */
 static B1CaughtSource captured[GASO_CAUGHT_SIDES];
+
+/* Process-lifetime: the Expansion 1 arena is never freed, so a bank prepared
+ * by one session's activation stays owned across later sessions. */
+static B1CaughtBank bank;
 
 /* ---- Guest RAM reads through the runtime API ---- */
 
@@ -207,7 +217,15 @@ static void gaso_caught_capture_cb(struct CPUState *cpu, uint32_t address) {
     capture_producer_source(cpu);
 }
 
+/* ---- Activation: prepare the clip bank once, never repair it ---- */
+
+static void gaso_caught_activate(void) {
+    psx_mod_counter_add(b1cc_prepare(&bank) ? "gaso_caught.bank_ready"
+                                            : "gaso_caught.bank_unavailable", 1u);
+}
+
 PSX_MOD_CONSTRUCTOR(bag2jp_register_gaso_caught) {
+    (void)psx_mod_register_activation_plugin("bag2jp.gaso_caught", gaso_caught_activate);
     (void)psx_mod_register_function_entry_plugin(
         "bag2jp.gaso_caught", GASO_CAUGHT_ENTRY_ADDRESS, gaso_caught_entry_cb);
     (void)psx_mod_register_instruction_plugin(

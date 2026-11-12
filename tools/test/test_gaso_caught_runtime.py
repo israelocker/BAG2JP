@@ -37,7 +37,9 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
                  '-I' + linux_path(ROOT / 'mods-src/bag2jp.feature.bag1-content'),
                  f'-DGASO_CAUGHT_CLIP_PUBLISHED={published}',
                  linux_path(ROOT / 'tools/test/gaso_caught_runtime_harness.c'),
-                 linux_path(SOURCE), '-o', binary], capture_output=True, text=True)
+                 linux_path(SOURCE),
+                 linux_path(ROOT / 'mods-src/bag2jp.feature.bag1-content/bag2jp_caught_bank.c'),
+                 '-o', binary], capture_output=True, text=True)
             if result.returncode:
                 raise AssertionError(result.stdout + result.stderr)
             cls.binaries[published] = binary
@@ -54,7 +56,7 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
     def test_unverified_callback_preserves_cpu_and_never_accesses_guest(self) -> None:
         self.run_scenario(0)
 
-    def test_reset_and_reactivation_never_allocate_or_modify_guest(self) -> None:
+    def test_reactivation_copies_authentic_bank_once_and_keeps_entry_inert(self) -> None:
         self.run_scenario(1)
 
     def test_heat_strike_and_unauthenticated_sources_never_redirect(self) -> None:
@@ -62,6 +64,15 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
 
     def test_authenticated_gaso_record_is_consumed_once(self) -> None:
         self.run_scenario(3)
+
+    def test_failed_bank_allocation_is_terminal_without_guest_writes(self) -> None:
+        self.run_scenario(4)
+
+    def test_corrupted_bank_is_reported_and_never_repaired(self) -> None:
+        self.run_scenario(5)
+
+    def test_prepared_bank_leaves_capture_and_entry_read_only(self) -> None:
+        self.run_scenario(6)
 
 
 class GasoCaughtManifestTest(unittest.TestCase):

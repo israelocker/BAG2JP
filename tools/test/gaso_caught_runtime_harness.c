@@ -1,7 +1,8 @@
 /* Compile the actual plugin against the framework ABI. Runtime APIs are a
- * counted boundary: the quarantined candidate must not write guest state, and
- * without a captured record it must not even read it. A simulated main RAM
- * drives the producer-site capture; it is not evidence of in-game routing. */
+ * counted boundary: only activation may write, and only its own Expansion 1
+ * clip bank; callbacks never write guest state, and without a captured record
+ * the entry callback must not even read it. A simulated main RAM drives the
+ * producer-site capture; it is not evidence of in-game routing. */
 #undef NDEBUG
 #include <assert.h>
 #include <stdint.h>
@@ -39,11 +40,24 @@
 #define REG_S5 21
 #define REG_SP 29
 
+#define EXPANSION1 0x9f000000u
+#define EXPANSION1_BYTES 0x100000u
+/* Arena already used by other plugins, so the bank never starts at 0. */
+#define PRIOR_ARENA_BYTES 0x34u
+
+/* The generated authentic bank, to compare what activation copies. */
+typedef struct { uint32_t character, offset, bytes; } B1CaughtBankEntry;
+#include "bag2jp_caught_bank_data.inc"
+
 static PSXModFunctionEntryCallback entry;
 static PSXModFunctionEntryCallback capture_cb;
-static PSXModActivationCallback activate, reset;
+static PSXModActivationCallback activate;
 static unsigned guest_accesses, guest_writes, allocations;
+static unsigned bank_ready, bank_unavailable;
+static int fail_allocation;
+static uint32_t expansion1_used = PRIOR_ARENA_BYTES;
 static uint8_t ram[RAM_BYTES];
+static uint8_t expansion1[EXPANSION1_BYTES];
 static int has_version = 1;
 static int versions[18][2];
 static const uint32_t actor_of[2] = {0x80100000u, 0x80102000u};
@@ -68,15 +82,23 @@ int psx_mod_register_activation_plugin(const char *id, PSXModActivationCallback 
     activate = cb;
     return 1;
 }
-int psx_mod_register_session_reset_plugin(const char *id, PSXModActivationCallback cb) {
-    assert(strcmp(id, "bag2jp.gaso_caught") == 0);
-    reset = cb;
-    return 1;
-}
+/* Bump arena like the runtime: zeroed, never freed, 0 on failure. */
 uint32_t psx_mod_alloc_guest_memory(uint32_t size, uint32_t alignment) {
-    (void)size; (void)alignment;
+    assert(size == B1CC_BANK_BYTES && alignment == 4u);
     ++allocations;
-    return 0x9f000000u;
+    if (fail_allocation) return 0;
+    const uint32_t start = expansion1_used;
+    expansion1_used += size;
+    return EXPANSION1 + start;
+}
+static int in_expansion1(uint32_t address) {
+    return address >= EXPANSION1 && address - EXPANSION1 < expansion1_used;
+}
+void psx_mod_write_byte(uint32_t address, uint8_t value) {
+    ++guest_accesses; ++guest_writes;
+    /* Only this plugin's own allocation, never the earlier owners' bytes. */
+    assert(in_expansion1(address) && address - EXPANSION1 >= PRIOR_ARENA_BYTES);
+    expansion1[address - EXPANSION1] = value;
 }
 uint32_t psx_mod_read_word(uint32_t address) {
     const uint32_t o = address & RAM_MASK & ~3u;
@@ -91,6 +113,10 @@ uint16_t psx_mod_read_half(uint32_t address) {
 }
 uint8_t psx_mod_read_byte(uint32_t address) {
     ++guest_accesses;
+    if (address >= EXPANSION1) {
+        assert(in_expansion1(address));
+        return expansion1[address - EXPANSION1];
+    }
     return ram[address & RAM_MASK];
 }
 void psx_mod_write_word(uint32_t address, uint32_t value) {
@@ -100,7 +126,10 @@ void psx_mod_write_half(uint32_t address, uint16_t value) {
     (void)address; (void)value; ++guest_accesses; ++guest_writes;
 }
 void psx_mod_counter_add(const char *name, uint32_t delta) {
-    (void)name; (void)delta;
+    assert(delta == 1u);
+    if (strcmp(name, "gaso_caught.bank_ready") == 0) ++bank_ready;
+    else if (strcmp(name, "gaso_caught.bank_unavailable") == 0) ++bank_unavailable;
+    else assert(!"unexpected counter");
 }
 int bag2jp_bag1_has_version(int chr) {
     return has_version && chr == GASO;
@@ -146,9 +175,10 @@ static void publish_with(uint32_t request, uint32_t source, uint32_t recipient,
     cpu.gpr[REG_SP] = STACK;
     ram[(STACK + 0x30u + (recipient & 1u)) & RAM_MASK] = flag;
     memcpy(&before, &cpu, sizeof cpu);
+    const unsigned writes = guest_writes, allocs = allocations;
     capture_cb(&cpu, PRODUCER);
     assert(memcmp(&cpu, &before, sizeof cpu) == 0);
-    assert(guest_writes == 0 && allocations == 0);
+    assert(guest_writes == writes && allocations == allocs);
 }
 
 /* Run the producer hook as the original publishes request202 to recipient. */
@@ -180,8 +210,9 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     cpu.gpr[REG_A1] = mode;
     cpu.gpr[REG_A2] = slot;
     memcpy(&before, &cpu, sizeof cpu);
+    const unsigned writes = guest_writes, allocs = allocations;
     entry(&cpu, ENTRY);
-    assert(guest_writes == 0 && allocations == 0);
+    assert(guest_writes == writes && allocations == allocs);
     if (memcmp(&cpu, &before, sizeof cpu) == 0) return 0;
     before.gpr[REG_A2] = 1;
     assert(memcmp(&cpu, &before, sizeof cpu) == 0);
@@ -189,6 +220,7 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
 }
 
 static void call_matrix(void) {
+    const unsigned accesses = guest_accesses, allocs = allocations;
     const uint32_t actors[] = {0, 0x80090000u, 0x801ffffcu, 0x80400000u, 0xffffffffu};
     const uint32_t slots[] = {1, 73, 89, 90, 202, 0xffffffffu};
     for (unsigned a = 0; a < sizeof actors / sizeof *actors; ++a) {
@@ -200,10 +232,55 @@ static void call_matrix(void) {
                 memcpy(&before, &cpu, sizeof cpu);
                 entry(&cpu, ENTRY);
                 assert(memcmp(&cpu, &before, sizeof cpu) == 0);
-                assert(guest_accesses == 0 && allocations == 0);
+                assert(guest_accesses == accesses && allocations == allocs);
             }
         }
     }
+}
+
+/* Repeated activation (one per session) prepares the process-lifetime bank:
+ * one allocation and one copy, then only re-verification. */
+static void activation_prepares_bank_once(void) {
+    assert(activate);
+    for (unsigned cycle = 0; cycle < 3; ++cycle) {
+        activate();
+        assert(allocations == 1);
+        assert(expansion1_used == PRIOR_ARENA_BYTES + B1CC_BANK_BYTES);
+        assert(guest_writes == B1CC_BANK_BYTES);
+        assert(memcmp(expansion1 + PRIOR_ARENA_BYTES, b1cc_data, B1CC_BANK_BYTES) == 0);
+        assert(bank_ready == cycle + 1u && bank_unavailable == 0);
+        call_matrix();
+    }
+}
+
+/* A failed allocation is terminal: no guest write and no retry. */
+static void failed_allocation_is_not_retried(void) {
+    fail_allocation = 1;
+    for (unsigned cycle = 0; cycle < 3; ++cycle) {
+        activate();
+        assert(allocations == 1 && guest_writes == 0 && guest_accesses == 0);
+        assert(bank_ready == 0 && bank_unavailable == cycle + 1u);
+        call_matrix();
+    }
+}
+
+/* A corrupted or restored-different arena is reported, never repaired. */
+static void corruption_is_reported_not_repaired(void) {
+    activate();
+    assert(bank_ready == 1);
+    const uint32_t clip = 700u;   /* Gas-O clip offset in the bank */
+    uint8_t *const byte = &expansion1[PRIOR_ARENA_BYTES + clip];
+    *byte ^= 0xffu;
+    activate();
+    assert(allocations == 1 && guest_writes == B1CC_BANK_BYTES);
+    assert(*byte == (uint8_t)(b1cc_data[clip] ^ 0xffu));
+    assert(bank_ready == 1 && bank_unavailable == 1);
+    /* A savestate restoring the authentic bytes makes it ready again. */
+    *byte = b1cc_data[clip];
+    activate();
+    assert(allocations == 1 && guest_writes == B1CC_BANK_BYTES);
+    assert(bank_ready == 2 && bank_unavailable == 1);
+    call_matrix();
 }
 
 /* Heat/Strike share request202; Gas-O BAG2, reflected Gas-O and a disabled
@@ -285,6 +362,20 @@ static void gaso_redirects_once(void) {
     }
 }
 
+/* With the bank prepared, capture and entry still neither write nor
+ * allocate, and leave the bank bytes untouched. */
+static void prepared_bank_keeps_hooks_read_only(void) {
+    activate();
+    assert(bank_ready == 1 && allocations == 1);
+    const unsigned writes = guest_writes;
+    foreign_sources_never_redirect();
+    gaso_redirects_once();
+    assert(guest_writes == writes && allocations == 1);
+    assert(memcmp(expansion1 + PRIOR_ARENA_BYTES, b1cc_data, B1CC_BANK_BYTES) == 0);
+    activate();
+    assert(bank_ready == 2 && bank_unavailable == 0);
+}
+
 int main(int argc, char **argv) {
     assert(argc == 2 && entry && capture_cb);
     switch (atoi(argv[1])) {
@@ -292,18 +383,22 @@ int main(int argc, char **argv) {
         call_matrix();
         break;
     case 1:
-        for (unsigned cycle = 0; cycle < 3; ++cycle) {
-            if (reset) reset();
-            if (activate) activate();
-            assert(allocations == 0 && guest_accesses == 0);
-            call_matrix();
-        }
+        activation_prepares_bank_once();
         break;
     case 2:
         foreign_sources_never_redirect();
         break;
     case 3:
         gaso_redirects_once();
+        break;
+    case 4:
+        failed_allocation_is_not_retried();
+        break;
+    case 5:
+        corruption_is_reported_not_repaired();
+        break;
+    case 6:
+        prepared_bank_keeps_hooks_read_only();
         break;
     default:
         return 2;
