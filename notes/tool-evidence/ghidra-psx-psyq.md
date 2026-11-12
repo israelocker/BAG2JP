@@ -1540,3 +1540,29 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   Resultado redundante exigido por el flujo; no demuestra selección ni lifetime.
   Sin fallos MCP, escrituras o cambios de sesión. Tiempo/retrabajo/ahorro no
   medidos. Siguiente: probar la consulta del banco en host y exp-8mb sin publicar.
+
+## caught-p2b-generation-20261112 - 2026-11-12 UTC
+
+- Propósito: identificar el evento de recarga por combate y el reinicio del
+  `+0x18` pendiente, para fijar la invalidación de `captured[]`, sin escribir
+  guest ni publicar. Ghidra 12.1.4/MCP, instancia existente.
+- `get_program_info()` confirmó `SLPM_862.19`, JP, PSX LE32, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`,
+  base `80000000`, entrada `0x80035d98`. Sin fallos MCP.
+- Consultas acotadas: `get_function_by_address(0x8001e0f4)`/`(0x8001e938)`,
+  `decompile_function(FUN_8001e744)` (resetea `DAT_8005d3dc=0`),
+  `decompile_function(FUN_8001e0f4)` (máquina de fases 0→1→2→3→0 y fase 3
+  reinicializa cuatro parejas controlador/actor), `disassemble_function(main)`
+  (bss `DAT_8005d3dc=0` en `0x8001ea40`), referencias a `0x8005f808`
+  (26 usos: actor fijo `0x800ddb18`/`0x80154db4` y acompañantes `+0x1728`),
+  y `FUN_8002b5bc`/`FUN_8002d85c`/`FUN_80034210`/`FUN_800342dc` ya
+  resumidos en la nota. Productor `0x8009b5b4` y entrada `0x8002d06c` no son
+  funciones definidas (overlay 005), por lo que el anclaje fue sobre estructuras.
+- Validación independiente: la decompilación de `FUN_8001e0f4` muestra la
+  asignación explícita `+0x18=-1` en `FUN_8002d85c` y `actor+4=0xff` en
+  `FUN_80034210`; `FUN_800342dc(1)` gobierna el paso a fase 3. No se repitió
+  el probe de partida ni se invocaron herramientas irrelevantes.
+- Resultado: contrato de generación definido como evento de fase 3, no como
+  identidad de puntero ni como `generation=1/tick=0`. Sin escrituras ni
+  cambios de sesión. Tiempo/retrabajo/ahorro no medidos. Siguiente: P3
+  (ciclo de vida, reset, savestate, invalidación) sin publicar.

@@ -3115,3 +3115,87 @@ mods, sin parche MIPS).
   provisional. Sin publicar el clip, sin aceptación de la animación CAUGHT ni de
   los 19 rivales (F8). Siguiente: investigar P2b (identidad/generación de carga)
   antes de cualquier escritura; no repetir estas partidas sin cambios.
+
+
+### caught-p2b-generation-20261112 - generación por carga, sin escritura
+
+- P2b se ejecutó como investigación estática (owner: «continua con lo que
+  recomiendas»). `GASO_CAUGHT_CLIP_PUBLISHED` permanece en 0; no hubo build,
+  despliegue ni partida. Solo lecturas Ghidra MCP y documentación.
+- Programa verificado: `SLPM_862.19`, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`,
+  base `0x80000000`, entrada `0x80035d98` (JP, PSX LE32). Registro de la
+  prueba en `notes/tool-evidence/ghidra-psx-psyq.md` (`caught-p2b-generation-20261112`).
+- `0x8009b5b4` (productor `sh v0,0x18(s5)`) y `0x8002d06c` (entrada del
+  controlador) no están definidos como funciones en el ejecutable principal
+  (FUNCTION_NOT_FOUND). El productor pertenece al overlay 005 (más allá del fin
+  de texto `0x8005D000`); Ghidra principal no puede decompilarlo. El anclaje
+  P2b se hace sobre las estructuras de controlador/actor.
+- `0x8005f808` es un puntero al actor del lado 0; `0x8005f80c/10/14` los
+  demás lados; `0x8005f818/1c` sus acompañantes (`+0x1728`). 26 referencias a
+  `0x8005f808`, incluyendo `FUN_8001e0f4` (READ en `0x8001e420`) y
+  `FUN_80034210` (WRITE en `0x80034230`). `0x8005f820` (controlador lado 0)
+  solo aparece como PARAM en `0x8001e418` de `FUN_8001e0f4`.
+- Máquina de fases `DAT_8005d3dc` (0/1/2/3), conducida por `FUN_8001e0f4`:
+  - fase 0 → 1: prepara selección, asigna `DAT_80089248=&0x800ddb18`,
+    `DAT_8008924c=&0x80154db4`, `DAT_8008923c=&0x8009ef40`,
+    `DAT_80089240=personaje`; llama `FUN_800342dc(0)`; pasa a 2.
+  - fase 2: espera a que `FUN_800342dc(1)` devuelva 0; entonces pasa a 3.
+  - fase 3: reinicializa las cuatro parejas controlador/actor
+    (`FUN_8002b5bc(&0x8005f820, DAT_8005f808)` y análogos), llama
+    `FUN_800997ec(*DAT_80089200)`, `FUN_800995e0()`, `FUN_8009769c()`,
+    pone `DAT_8005d3d8=1`, `DAT_8005d3e0=0`, `DAT_8005d298=0`,
+    `DAT_8005d3dc=0`, `DAT_8005d29c=0`.
+  - `FUN_8001e744` (inicio de combate) resetea `DAT_8005d3dc=0` y otros
+    globales; el arranque (`main` en `0x8001e938`) deja `DAT_8005d3dc=0`
+    (limpieza de bss). Es decir, el ciclo 0→1→2→3→0 ocurre por entrada de
+    combate, no solo al arrancar.
+- `FUN_8002b5bc(controlador, actor)`:
+  - si `actor == NULL` o `actor+4 == -1`, pone `*controlador = 0` y sale
+    (lado inactivo);
+  - en caso contrario calcula posición/escala y llama `FUN_8002d85c`.
+- `FUN_8002d85c` reinicializa el controlador en cada pareja: `*controlador =
+  actor`; `+4=0x1000`, `+6=0x400`, `+8=0x100`, `+0x14=0x8000000`,
+  **`+0x18=-1`**, `+3=1`, `+0xd=0`, `+0x10=0`; copia coordenadas y escala
+  desde `DAT_80051a70[personaje]`; escribe campos del actor
+  (`+0x810/+0x814/+0x818`, `+0x1524/+0x1528/+0x152c`, `+0x14b8/+0x14bc/
+  +0x14c0`, `+0x14e4/+0x14e8/+0x14ec`, `+0x1514/+0x1518/+0x151c`,
+  `+0x14f4..+0x1510`, `+0x1548=0`, `+0x154c=0`, `+0x1554=0`) y calcula
+  `+0x1534/+0x1538/+0x153c`.
+- `FUN_80034210()` (estado 0xb del cargador, lado ausente): asigna
+  `DAT_8005f808 = DAT_80089248` (búfer fijo `&0x800ddb18`), pone
+  `actor+4=0xff`, `DAT_8005f818 = base+0x1728`; la otra rama usa
+  `0x80154db4/+0x1728`. Limpia `DAT_8005f808[7]`, `DAT_8005f810[7]` y los
+  acompañantes `+7`. Los búferes de actor son RAM estática fija, no asignada
+  dinámicamente.
+- `FUN_800342dc(int)` es el cargador/estado gráfico (casos 0..0xe de
+  `0x80089215`); en el caso 0xb llama `FUN_80034210` si falta un lado y luego
+  `FUN_80033c10`, avanzando a 0xc/0xd/0xe. Devuelve 0 cuando ambos lados
+  faltan o `DAT_80089234>3`.
+
+Conclusiones P2b (sin escrituras ni publicación):
+
+1. No existe contador explícito de generación en el ejecutable principal. El
+   ciclo de fases `DAT_8005d3dc` (0→1→2→3→0) es el evento de recarga por
+   combate: la fase 3 es el único punto donde se reinicializan las parejas
+   controlador/actor y se pone `+0x18=-1`.
+2. La identidad del actor (`DAT_8005f808/0c/10/14`) no sirve como generación:
+   los búferes son fijos (`0x800ddb18` y `0x80154db4`, más acompañantes
+   `+0x1728`), por lo que la igualdad de punteros se repite entre combates.
+3. El personaje de cada lado se fija en fase 1 (`DAT_80089240`,
+   `DAT_8005e666`) y se mantiene hasta el siguiente ciclo; `actor+4` guarda el
+   personaje o `0xff` (lado ausente). Una captura previa queda obsoleta cuando
+   la fase 3 vuelve a ejecutarse o cuando `+0x18` se reinicia a `-1`.
+4. La regla de invalidación para `captured[]` debe basarse en el ciclo de fases
+   (reinicio de `+0x18` a `-1` / fase 3), no en la identidad del puntero ni en
+   `generation=1/tick=0`, que siguen siendo provisionales.
+5. Esto no autoriza publicar: sigue faltando probar serialización, quiescencia,
+   reset de sesión y decoder (P3), y el guard de publicación/restore.
+6. Siguiente recomendado: P3 (ciclo de vida: `session_reset`, savestate/restore,
+   invalidación), manteniendo `GASO_CAUGHT_CLIP_PUBLISHED=0` y sin tocar
+   `a2` ni tablas guest.
+
+Evidencia host previa reutilizada: P2a (20/20 host, suite sin nombres nuevos,
+dos Goldfish sin hallazgos bloqueantes, Heat BAG1 `ready` / Heat BAG2
+`rejected` en juego) y P0/P1. No se repitieron pruebas host ni partidas.
+
