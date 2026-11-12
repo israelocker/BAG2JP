@@ -1566,3 +1566,33 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   identidad de puntero ni como `generation=1/tick=0`. Sin escrituras ni
   cambios de sesión. Tiempo/retrabajo/ahorro no medidos. Siguiente: P3
   (ciclo de vida, reset, savestate, invalidación) sin publicar.
+
+## caught-p3-lifecycle-20261112 - 2026-11-12 UTC
+
+- Propósito: registrar callbacks de ciclo de vida (session_reset, savestate)
+  para invalidar captured[] tras reset/load, sin escribir guest ni publicar.
+  Análisis estático de mod_plugins.h y mod_runtime.cpp en el build tree;
+  no se usaron consultas de memoria Ghidra para este paso.
+- Framework API leído:
+  - psx_mod_register_session_reset_plugin (mod_plugins.h:39-40): limpieza host
+    antes de activar cada plan, emulación detenida, sin contexto de feature/
+    recurso, nunca mutar estado guest.
+  - psx_mod_register_savestate_plugin (mod_plugins.h:46-47): después de
+    restaurar estado guest, antes de reanudar el PC; rebindar hooks, no avanzar
+    juego.
+  - mod_reset_plugin_sessions() (mod_packages.cpp:1518-1520): itera todos los
+    plugins registrados e invoca su callback session_reset. Llamado en
+    mod_runtime.cpp:1764 y 3166.
+  - mod_invoke_savestate_plugin(plugin.id) (mod_runtime.cpp:2794): invocado
+    para cada plugin del plan después de restaurar savestate.
+- Implementación en
+  mods-src/bag2jp.feature.bag1-content/bag2jp_gaso_caught.c:
+  gaso_caught_session_reset() y gaso_caught_savestate() ponen
+  captured[].available = 0 en ambos lados; ambos registrados en
+  PSX_MOD_CONSTRUCTOR. Sin escrituras guest, sin asignaciones, sin publicación.
+  CLIP_PUBLISHED=0.
+- Prueba host: escenario 10 del harness (reset_and_savestate_invalidate_captured)
+  verifica invalidación sin writes/alloc y que enter() no consume tras invalidar.
+- Resultado: P3 callbacks implementados y verificados en host. Siguiente: estudio
+  de publica/restore quiescente con guard, sujeto a aprobación del propietario.
+  Tiempo/retrabajo/ahorro no medidos.

@@ -3199,3 +3199,29 @@ Evidencia host previa reutilizada: P2a (20/20 host, suite sin nombres nuevos,
 dos Goldfish sin hallazgos bloqueantes, Heat BAG1 `ready` / Heat BAG2
 `rejected` en juego) y P0/P1. No se repitieron pruebas host ni partidas.
 
+### caught-p3-lifecycle-20261112 - ciclo de vida, sin publicacion
+
+- P3 completado como investigacion de implementacion (no hay partida, sin escribir
+  guest, sin publicar). Se anadieron los callbacks de ciclo de vida del plugin
+  `bag2jp.gaso_caught` en `mods-src/bag2jp.feature.bag1-content/bag2jp_gaso_caught.c`:
+  - `gaso_caught_session_reset()`: se ejecuta antes de cada activacion de plan
+    (emulacion detenida, contexto host-only, nunca muta estado guest). Pone
+    `captured[].available = 0` en ambos lados para invalidad cualquier registro
+    obsoleto de la partida anterior.
+  - `gaso_caught_savestate()`: se ejecuta despues de la restauracion de estado
+    guest y antes de que el PC se reanude (rebindear hooks, no avanzar juego).
+    Igualmente pone `captured[].available = 0` para que una captura previa a la
+    carga no sobreviva al load: los buffers de actor son RAM fija y
+    `controller+0x18` se resetea a -1 en el setup de fase 3, asi que una captura
+    previa ya no coincide con ningun actor vivo.
+  - Ambos se registran en `PSX_MOD_CONSTRUCTOR` junto al plugin de activacion,
+    `function_entry` e `instruction` ya existentes. No hay escrituras guest, no
+    hay asignaciones, no hay publicacion. `GASO_CAUGHT_CLIP_PUBLISHED` sigue en 0.
+- Prueba host: escenario 10 de `gaso_caught_runtime_harness.c` verifica que
+  session_reset y savestate invalidan `captured[]` sin escrituras guest ni
+  asignaciones, y que `enter()` no consume tras invalidar. 21/21 pruebas host OK
+  (incluyendo P2a).
+- Contrato P3 documentado: los registros de captura sobreviven solo dentro de
+  un ciclo de partida (fase 3 de `DAT_8005d3dc` reinicializa parejas y pone
+  `+0x18=-1`). Siguiente: estudio de publica/restore quiescente con guard y
+  aprobacion del propietario, manteniendo CLIP_PUBLISHED=0.

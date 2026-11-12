@@ -86,6 +86,10 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """All three authentic clips, both sides, and fail-closed negatives."""
         self.run_scenario(9)
 
+    def test_reset_and_savestate_invalidate_captured(self) -> None:
+        """Session reset and savestate clear captured records without writes."""
+        self.run_scenario(10)
+
 
 MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
 

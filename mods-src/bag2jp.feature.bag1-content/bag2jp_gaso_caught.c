@@ -261,6 +261,32 @@ static void gaso_caught_capture_cb(struct CPUState *cpu, uint32_t address) {
             rejected ? "rejected: " : "stored", rejected ? rejected : "");
 }
 
+/* ---- Session reset / savestate: invalidate captured records ---- */
+
+/* Session reset runs before each plan activates, with emulation stopped and no
+ * feature/resource context; it never mutates guest state. Clearing captured[]
+ * here drops any stale record from the previous match/session so an entry take
+ * cannot consume an obsolete snapshot whose actor+0x18 was already reset to -1.
+ * The bank itself stays owned (Expansion 1 arena never freed) and needs no
+ * repair: lookup re-verifies guest bytes on every call.
+ */
+static void gaso_caught_session_reset(void) {
+    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side)
+        captured[side].available = 0;
+}
+
+/* Savestate runs after successful guest-state restore, before the restored PC
+ * resumes. Rebind host hooks here; do not advance guest gameplay. Clearing
+ * captured[] keeps an obsolete record from surviving a load: actor buffers are
+ * fixed RAM and controller+0x18 is reset to -1 at every phase-3 pair setup, so
+ * a pre-load capture no longer matches any live actor. No guest writes, no
+ * allocation, no publication.
+ */
+static void gaso_caught_savestate(void) {
+    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side)
+        captured[side].available = 0;
+}
+
 /* ---- Activation: prepare the clip bank once, never repair it ---- */
 
 static void gaso_caught_activate(void) {
@@ -273,6 +299,10 @@ static void gaso_caught_activate(void) {
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_gaso_caught) {
     (void)psx_mod_register_activation_plugin("bag2jp.gaso_caught", gaso_caught_activate);
+    (void)psx_mod_register_session_reset_plugin("bag2jp.gaso_caught",
+                                                gaso_caught_session_reset);
+    (void)psx_mod_register_savestate_plugin("bag2jp.gaso_caught",
+                                            gaso_caught_savestate);
     (void)psx_mod_register_function_entry_plugin(
         "bag2jp.gaso_caught", GASO_CAUGHT_ENTRY_ADDRESS, gaso_caught_entry_cb);
     (void)psx_mod_register_instruction_plugin(

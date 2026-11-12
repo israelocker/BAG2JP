@@ -60,6 +60,8 @@ typedef struct { uint32_t character, offset, bytes; } B1CaughtBankEntry;
 static PSXModFunctionEntryCallback entry;
 static PSXModFunctionEntryCallback capture_cb;
 static PSXModActivationCallback activate;
+static PSXModActivationCallback session_reset_cb;
+static PSXModActivationCallback savestate_cb;
 static unsigned guest_accesses, guest_writes, allocations;
 static unsigned bank_ready, bank_unavailable;
 static unsigned capture_stored, capture_rejected, entry_taken;
@@ -96,6 +98,16 @@ int psx_mod_register_instruction_plugin(
 int psx_mod_register_activation_plugin(const char *id, PSXModActivationCallback cb) {
     assert(strcmp(id, "bag2jp.gaso_caught") == 0);
     activate = cb;
+    return 1;
+}
+int psx_mod_register_session_reset_plugin(const char *id, PSXModActivationCallback cb) {
+    assert(strcmp(id, "bag2jp.gaso_caught") == 0);
+    session_reset_cb = cb;
+    return 1;
+}
+int psx_mod_register_savestate_plugin(const char *id, PSXModActivationCallback cb) {
+    assert(strcmp(id, "bag2jp.gaso_caught") == 0);
+    savestate_cb = cb;
     return 1;
 }
 /* Bump arena like the runtime: zeroed, never freed, 0 on failure. */
@@ -593,6 +605,52 @@ static void recipient_lookup_is_read_only(void) {
     assert(memcmp(expansion1 + PRIOR_ARENA_BYTES, b1cc_data, B1CC_BANK_BYTES) == 0);
 }
 
+/* A session reset or savestate restore invalidates captured[] so a stale
+ * record cannot survive a new match/load. Captured entries persist only
+ * within one match lifecycle: phase-3 pair setup resets controller+0x18 to
+ * -1 and actor buffers are fixed RAM, so a pre-reset capture no longer
+ * matches any live actor. No guest writes, no allocation, no publication. */
+static void reset_and_savestate_invalidate_captured(void) {
+    assert(activate && session_reset_cb && savestate_cb);
+    activate();
+    assert(bank_ready == 1 && allocations == 1);
+    const unsigned writes = guest_writes, allocs = allocations;
+
+    /* Store one record per recipient side. */
+    memset(versions, 0, sizeof versions);
+    versions[GASO][0] = 1;   /* source Gas-O BAG1 side 0 */
+    versions[HEAT][1] = 1;   /* recipient Heat BAG1 side 1 */
+    setup_ram(GASO, HEAT);
+    assert(publish(0, 1));   /* captured[1] available */
+    assert(recorded());
+    assert(capture_stored == 1);
+
+    /* Before reset/savestate, entry takes the record. */
+    assert(enter(1, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+    assert(entry_taken == 1);
+    assert(!recorded());   /* consumed */
+
+    /* Re-store for the reset test. */
+    assert(publish(0, 1));
+    assert(recorded());
+    session_reset_cb();
+    assert(guest_writes == writes && allocations == allocs);   /* no guest writes/alloc */
+    assert(!recorded());   /* reset invalidated */
+    assert(!enter(1, 1, HIT_SLOT));   /* no take after reset */
+    assert(entry_taken == 1);
+
+    /* Re-store for the savestate test. */
+    assert(publish(0, 1));
+    assert(recorded());
+    savestate_cb();
+    assert(guest_writes == writes && allocations == allocs);
+    assert(!recorded());   /* savestate invalidated */
+    assert(!enter(1, 1, HIT_SLOT));
+    assert(entry_taken == 1);
+
+    assert(guest_writes == writes && allocations == allocs);
+}
+
 int main(int argc, char **argv) {
     assert(argc == 2 && entry && capture_cb);
     switch (atoi(argv[1])) {
@@ -625,6 +683,9 @@ int main(int argc, char **argv) {
         break;
     case 9:
         recipient_lookup_is_read_only();
+        break;
+    case 10:
+        reset_and_savestate_invalidate_captured();
         break;
     default:
         return 2;
