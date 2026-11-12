@@ -90,6 +90,10 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """Session reset and savestate clear captured records without writes."""
         self.run_scenario(10)
 
+    def test_publication_slot1_guarded_and_restorable(self) -> None:
+        """Slot1 publication is gated by CLIP_PUBLISHED; reset/savestate clear it."""
+        self.run_scenario(11)
+
 
 MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
 

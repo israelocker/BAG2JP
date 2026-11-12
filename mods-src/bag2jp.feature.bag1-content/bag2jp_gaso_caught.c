@@ -38,6 +38,7 @@
 #include "cpu_state.h"
 #include "bag2jp_caught_source.h"
 #include "bag2jp_caught_bank.h"
+#include "bag2jp_caught_binding.h"
 
 /* The bank is resident, but no clip is bound to the recipient's slot1. Host
  * tests build with 1 to exercise the old redirect; runtime builds must keep 0. */
@@ -98,6 +99,20 @@ static B1CaughtSource captured[GASO_CAUGHT_SIDES];
 /* Process-lifetime: the Expansion 1 arena is never freed, so a bank prepared
  * by one session's activation stays owned across later sessions. */
 static B1CaughtBank bank;
+
+/* Slot1 publication / restore state, one per recipient side.
+ * Guarded by GASO_CAUGHT_CLIP_PUBLISHED: while 0 no guest write is ever
+ * issued and a2 is never changed. Publication writes the ten slot bytes
+ * (clip, frames=2, info) before the controller consumes slot 89; restore
+ * writes the original empty tuple back when the clip retires. */
+static B1CaughtBinding gaso_caught_binding[GASO_CAUGHT_SIDES];
+static int gaso_caught_published[GASO_CAUGHT_SIDES];
+
+/* Forward declarations: defined below, used by the entry callback. */
+static int gaso_caught_build_binding(uint32_t side, const B1CaughtBankClip *clip,
+                                     B1CaughtBinding *b) __attribute__((unused));
+static void gaso_caught_publish_slot1(uint32_t side) __attribute__((unused));
+static void gaso_caught_restore_slot1(uint32_t side) __attribute__((unused));
 
 /* ---- Guest RAM reads through the runtime API ---- */
 
@@ -242,10 +257,65 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
                 (unsigned)actor, GASO_CAUGHT_CLIP_PUBLISHED ? "-> 1" : "unchanged",
                 (unsigned)character, (unsigned)version, ready ? "ready" : "rejected",
                 (unsigned)clip.clip, (unsigned)clip.clip_bytes);
+        /* Construye el binding y publica slot1 (diez bytes) antes de cambiar
+         * a2. Nada se escribe mientras GASO_CAUGHT_CLIP_PUBLISHED es 0. */
+        if (GASO_CAUGHT_CLIP_PUBLISHED && !gaso_caught_published[side]) {
+            if (gaso_caught_build_binding(side, &clip,
+                                          &gaso_caught_binding[side])) {
+                gaso_caught_publish_slot1(side);
+            }
+        }
         if (GASO_CAUGHT_CLIP_PUBLISHED)
             cpu->gpr[GASO_CAUGHT_REG_A2] = GASO_CAUGHT_ARG_A2;
         return;
     }
+}
+
+/* Construye el binding del slot1 para el lado dado a partir del registro
+ * capturado y el resultado del lookup. Devuelve 0 si las tablas del actor
+ * no son legibles en guest RAM. */
+static int gaso_caught_build_binding(uint32_t side, const B1CaughtBankClip *clip,
+                                     B1CaughtBinding *b) {
+    uint32_t actor = captured[side].actor;
+    if (!guest_range_ok(actor, B1CB_ACTOR_BYTES, 0)) return 0;
+    b->actor = actor;
+    b->character = captured[side].character;
+    b->side = captured[side].side;
+    b->count = guest_read_word(actor + B1CB_COUNT);
+    b->raw_table = guest_read_word(actor + B1CB_RAW);
+    b->length_table = guest_read_word(actor + B1CB_LENGTH);
+    b->metadata_table = guest_read_word(actor + B1CB_META);
+    b->empty_raw = b->raw_table + 4u * B1CB_SLOT;
+    b->clip = clip->clip;
+    b->clip_bytes = clip->clip_bytes;
+    return 1;
+}
+
+/* Publica los diez bytes del slot1 (clip, frames=2, info) antes de que el
+ * controller consuma la entrada. Nunca escribe mientras GASO_CAUGHT_CLIP_PUBLISHED=0. */
+static void gaso_caught_publish_slot1(uint32_t side) {
+    if (!GASO_CAUGHT_CLIP_PUBLISHED || gaso_caught_published[side]) return;
+    const B1CaughtBinding *b = &gaso_caught_binding[side];
+    psx_mod_write_word(b->raw_table + 4u * B1CB_SLOT, b->clip);
+    psx_mod_write_half(b->length_table + 2u * B1CB_SLOT, (uint16_t)B1CB_FRAMES);
+    psx_mod_write_word(b->metadata_table + 4u * B1CB_SLOT, b->clip);
+    gaso_caught_published[side] = 1;
+    psx_mod_counter_add("gaso_caught.slot1_published", 1u);
+    b1v_log("gaso_caught: slot1 published side=%u clip=%08x bytes=%u", side + 1,
+            (unsigned)b->clip, (unsigned)b->clip_bytes);
+}
+
+/* Restaura la tupla vacía original del slot1 cuando el clip se retira.
+ * Nunca escribe mientras GASO_CAUGHT_CLIP_PUBLISHED=0. */
+static void gaso_caught_restore_slot1(uint32_t side) {
+    if (!GASO_CAUGHT_CLIP_PUBLISHED || !gaso_caught_published[side]) return;
+    const B1CaughtBinding *b = &gaso_caught_binding[side];
+    psx_mod_write_word(b->raw_table + 4u * B1CB_SLOT, b->empty_raw);
+    psx_mod_write_half(b->length_table + 2u * B1CB_SLOT, 0);
+    psx_mod_write_word(b->metadata_table + 4u * B1CB_SLOT, 0);
+    gaso_caught_published[side] = 0;
+    psx_mod_counter_add("gaso_caught.slot1_restored", 1u);
+    b1v_log("gaso_caught: slot1 restored side=%u", side + 1);
 }
 
 /* ---- Producer-site instruction callback ---- */
@@ -271,8 +341,11 @@ static void gaso_caught_capture_cb(struct CPUState *cpu, uint32_t address) {
  * repair: lookup re-verifies guest bytes on every call.
  */
 static void gaso_caught_session_reset(void) {
-    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side)
+    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
         captured[side].available = 0;
+        gaso_caught_published[side] = 0;
+        gaso_caught_binding[side] = (B1CaughtBinding){0};
+    }
 }
 
 /* Savestate runs after successful guest-state restore, before the restored PC
@@ -283,8 +356,11 @@ static void gaso_caught_session_reset(void) {
  * allocation, no publication.
  */
 static void gaso_caught_savestate(void) {
-    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side)
+    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
         captured[side].available = 0;
+        gaso_caught_published[side] = 0;
+        gaso_caught_binding[side] = (B1CaughtBinding){0};
+    }
 }
 
 /* ---- Activation: prepare the clip bank once, never repair it ---- */

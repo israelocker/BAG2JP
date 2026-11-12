@@ -66,6 +66,7 @@ static unsigned guest_accesses, guest_writes, allocations;
 static unsigned bank_ready, bank_unavailable;
 static unsigned capture_stored, capture_rejected, entry_taken;
 static unsigned lookup_ready, lookup_rejected;
+static unsigned slot1_published, slot1_restored;
 static unsigned log_lines;
 static char last_log[256];
 static int fail_allocation;
@@ -170,6 +171,8 @@ void psx_mod_counter_add(const char *name, uint32_t delta) {
     else if (strcmp(name, "gaso_caught.entry_taken") == 0) ++entry_taken;
     else if (strcmp(name, "gaso_caught.lookup_ready") == 0) ++lookup_ready;
     else if (strcmp(name, "gaso_caught.lookup_rejected") == 0) ++lookup_rejected;
+    else if (strcmp(name, "gaso_caught.slot1_published") == 0) ++slot1_published;
+    else if (strcmp(name, "gaso_caught.slot1_restored") == 0) ++slot1_restored;
     else assert(!"unexpected counter");
 }
 /* Mirrors every counted event to the versions log; keep the last line. */
@@ -277,12 +280,18 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     const unsigned writes = guest_writes, allocs = allocations;
     const unsigned stored = capture_stored, rejected = capture_rejected;
     const unsigned taken = entry_taken, lines = log_lines;
+    const unsigned pub_before = slot1_published;
     entry(&cpu, ENTRY);
-    assert(guest_writes == writes && allocations == allocs);
+    const unsigned took = entry_taken == taken + 1u ? 1u : 0u;
+    const unsigned published = slot1_published - pub_before;
+    /* Each slot1 publication writes 3 bytes (clip word, length half, metadata word). */
+    assert(guest_writes == writes + published * 3u && allocations == allocs);
     assert(capture_stored == stored && capture_rejected == rejected);
     assert(entry_taken == taken || entry_taken == taken + 1u);
-    assert(log_lines == lines + (entry_taken - taken));
-    if (entry_taken != taken) assert(strstr(last_log, "entry taken") != NULL);
+    /* One log line for entry taken, plus one for slot1 published when publishing. */
+    assert(log_lines == lines + took + published);
+    if (entry_taken != taken)
+        assert(strstr(last_log, published ? "slot1 published" : "entry taken") != NULL);
     if (memcmp(&cpu, &before, sizeof cpu) == 0) return 0;
     assert(entry_taken == taken + 1u);
     before.gpr[REG_A2] = 1;
@@ -461,7 +470,8 @@ static void prepared_bank_keeps_hooks_read_only(void) {
     const unsigned writes = guest_writes;
     foreign_sources_never_redirect();
     gaso_redirects_once();
-    assert(guest_writes == writes && allocations == 1);
+    assert(guest_writes == writes + (GASO_CAUGHT_CLIP_PUBLISHED ? 6u : 0u) &&
+           allocations == 1);
     assert(memcmp(expansion1 + PRIOR_ARENA_BYTES, b1cc_data, B1CC_BANK_BYTES) == 0);
     activate();
     assert(bank_ready == 2 && bank_unavailable == 0);
@@ -569,7 +579,8 @@ static void recipient_lookup_is_read_only(void) {
                          (unsigned)expected->character, version, version ? "ready" : "rejected",
                          version ? EXPANSION1 + PRIOR_ARENA_BYTES + expected->offset : 0u,
                          version ? expected->bytes : 0u);
-                assert(strstr(last_log, outcome) != NULL);
+                if (!GASO_CAUGHT_CLIP_PUBLISHED)
+                    assert(strstr(last_log, outcome) != NULL);
                 assert(!enter(recipient, 1, HIT_SLOT));
                 assert(lookup_ready == ready + version &&
                        lookup_rejected == rejected + (1u - version));
@@ -581,7 +592,8 @@ static void recipient_lookup_is_read_only(void) {
                 assert(enter(recipient, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
                 assert(lookup_ready == ready + 2u * version);
                 assert(lookup_rejected == rejected + 2u * (1u - version));
-                assert(strstr(last_log, outcome) != NULL);
+                if (!GASO_CAUGHT_CLIP_PUBLISHED)
+                    assert(strstr(last_log, outcome) != NULL);
             }
         }
     }
@@ -601,7 +613,8 @@ static void recipient_lookup_is_read_only(void) {
         has_version = 1;
         if (failure == 3) expansion1[PRIOR_ARENA_BYTES] ^= 1u;
     }
-    assert(allocations == 1 && guest_writes == B1CC_BANK_BYTES);
+    assert(allocations == 1 &&
+           guest_writes == B1CC_BANK_BYTES + (GASO_CAUGHT_CLIP_PUBLISHED ? 6u : 0u));
     assert(memcmp(expansion1 + PRIOR_ARENA_BYTES, b1cc_data, B1CC_BANK_BYTES) == 0);
 }
 
@@ -634,7 +647,8 @@ static void reset_and_savestate_invalidate_captured(void) {
     assert(publish(0, 1));
     assert(recorded());
     session_reset_cb();
-    assert(guest_writes == writes && allocations == allocs);   /* no guest writes/alloc */
+    assert(guest_writes == writes + (GASO_CAUGHT_CLIP_PUBLISHED ? 3u : 0u) &&
+           allocations == allocs);   /* no guest writes/alloc from reset */
     assert(!recorded());   /* reset invalidated */
     assert(!enter(1, 1, HIT_SLOT));   /* no take after reset */
     assert(entry_taken == 1);
@@ -643,12 +657,68 @@ static void reset_and_savestate_invalidate_captured(void) {
     assert(publish(0, 1));
     assert(recorded());
     savestate_cb();
-    assert(guest_writes == writes && allocations == allocs);
+    assert(guest_writes == writes + (GASO_CAUGHT_CLIP_PUBLISHED ? 3u : 0u) &&
+           allocations == allocs);
     assert(!recorded());   /* savestate invalidated */
     assert(!enter(1, 1, HIT_SLOT));
     assert(entry_taken == 1);
 
-    assert(guest_writes == writes && allocations == allocs);
+    assert(guest_writes == writes + (GASO_CAUGHT_CLIP_PUBLISHED ? 3u : 0u) &&
+           allocations == allocs);
+}
+
+/* Publication of slot1 is guarded by GASO_CAUGHT_CLIP_PUBLISHED: while 0 no
+ * guest write occurs on entry; while 1 the ten slot bytes are published once
+ * per recipient side and a2 becomes slot1. Reset/savestate clear published
+ * state without guest writes. Restoration point is not yet wired to a hook. */
+static void publication_slot1_guarded_and_restorable(void) {
+    assert(activate && session_reset_cb && savestate_cb);
+    activate();
+    assert(bank_ready == 1);
+
+    memset(versions, 0, sizeof versions);
+    versions[GASO][0] = 1;   /* source Gas-O BAG1 side 0 */
+    versions[HEAT][1] = 1;   /* recipient Heat BAG1 side 1 */
+    setup_ram(GASO, HEAT);
+    assert(publish(0, 1));   /* captured[1] available */
+    assert(recorded());
+
+    const unsigned writes_before = guest_writes;
+    const unsigned taken_before = entry_taken;
+    const unsigned lines_before = log_lines;
+    const unsigned pub_before = slot1_published;
+    const unsigned rest_before = slot1_restored;
+
+    /* Entry take: consume the record. With publish disabled, no slot1 write. */
+    assert(enter(1, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+    assert(entry_taken == taken_before + 1u);
+    assert(log_lines == lines_before + (GASO_CAUGHT_CLIP_PUBLISHED ? 2u : 1u));
+
+    if (GASO_CAUGHT_CLIP_PUBLISHED) {
+        assert(strstr(last_log, "slot1 published side=2 clip=") != NULL);
+        /* Three slot bytes written: clip word, length half, metadata word. */
+        assert(guest_writes == writes_before + 3u);
+        assert(slot1_published == pub_before + 1u);
+        assert(slot1_restored == rest_before);
+    } else {
+        assert(strstr(last_log, "slot1 published") == NULL);
+        assert(guest_writes == writes_before);
+        assert(slot1_published == pub_before);
+        assert(slot1_restored == rest_before);
+    }
+
+    /* Reset clears published state without guest writes. */
+    session_reset_cb();
+    assert(guest_writes == writes_before + (GASO_CAUGHT_CLIP_PUBLISHED ? 3u : 0u));
+
+    /* Savestate clears published state without guest writes. */
+    savestate_cb();
+    assert(guest_writes == writes_before + (GASO_CAUGHT_CLIP_PUBLISHED ? 3u : 0u));
+
+    /* After reset/savestate, no stale record survives. */
+    assert(!recorded());
+    assert(!enter(1, 1, HIT_SLOT));
+    assert(entry_taken == taken_before + 1u);
 }
 
 int main(int argc, char **argv) {
@@ -686,6 +756,9 @@ int main(int argc, char **argv) {
         break;
     case 10:
         reset_and_savestate_invalidate_captured();
+        break;
+    case 11:
+        publication_slot1_guarded_and_restorable();
         break;
     default:
         return 2;
