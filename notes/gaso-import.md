@@ -2,10 +2,10 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Prioridad: paneles rojos sobre GAS corregidos y ACEPTADOS por el propietario el 2026-11-10 con el candidato v2; tanque rechazado por el propietario. Historial regional, SPU, audio y aceptación parcial conservados."
-related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md"]
+summary: "A (cartel GAS) aceptado y preservado. Tanque: fidelidad F1-F8 pendiente. CAUGHT ab5480e observe-only probado; clip sin publicar. P2a verificado como diagnóstico: receptor BAG1 elegible, BAG2 rechazado; lifetime y publicación siguen sin resolver. Ver caught-p2a-lookup-20261112. Suite completa no verde."
+related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
-updated: "2026-11-10"
+updated: "2026-11-12"
 doc_kind: evidence
 ---
 
@@ -1279,10 +1279,34 @@ Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `char
   final root13 (selector), restauración `verified: true` con37 saves. No se
   repitió la canción ni se forzó ataque; no hay commit ni cambio en la
   instalación estable.
+- Checkpoint Git local `ae6a004` en `fix/gaso-tank-anchor` con 8 archivos
+  (motor `stage_geometry.py`, perfil `gaso.json`, tests, integración y esta
+  nota). Se añadió `model_bag1_to_bag2.py` por ser dependencia directa del
+  motor. Los 15 tests pasan con
+  `wsl -d Ubuntu --exec python3 -m unittest tools.test.test_stage_port tools.test.test_stage_geometry`.
+  Snapshot del árbol sucio previo en `_work/goldfish/pre-commit-dirty.patch`;
+  quedan 80 entradas sucias ajenas sin commitear. Sin push y sin cambios en
+  `BAG2JP-win`.
 - Estado: el defecto A queda eliminado según las capturas reales del juego y el propietario
   **aceptó el cambio el 2026-11-10**. El candidato v2 sigue desplegado en la instalación
   experimental `BAG2JP-exp-8mb`. El defecto B (tanque) sigue rechazado y sin trabajo hasta su
   decisión.
+
+### Revisión Goldfish del checkpoint (registro durable)
+
+- 2026-11-10. Estado revisado: commit `ae6a004` en `fix/gaso-tank-anchor`.
+  Tres revisores en frío sobre `_work/goldfish/spec-checkpoint-v2.md`; veredicto
+  `CON HALLAZGOS`. Aplicados y comprobados seis: runner real de tests
+  (`wsl -d Ubuntu --exec python3 -m unittest tools.test.test_stage_port
+  tools.test.test_stage_geometry`, `load_tests` en `test_stage_port.py:17` que
+  pytest ignora), dependencia `model_bag1_to_bag2` incluida en el alcance,
+  snapshot previo del árbol sucio, pathspecs explícitos en vez de `git add -A`,
+  evidencia corregida (`owner_acceptance`, `review_limits`, recuento de frames) y
+  tests tautológicos declarados como deuda. Refutado: nada. No verificable:
+  contenido de `BAG2JP-win` (fuera del repositorio).
+- Este registro es el previsto por `notes/goldfish-review.md`; `_work/` queda solo
+  como evidencia cruda. Veredicto de revisor: no es aprobación del propietario ni
+  permiso de despliegue.
 
 ### Tanque B — coordenadas corregidas, candidato experimental (2026-11-10 UTC)
 
@@ -1363,7 +1387,7 @@ Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `char
   tiempos, reacción y sonido originales sincronizados. Corregir opacidad ya no
   basta. Números históricos llamados «exactos» requieren código/datos/traza nativos.
 - `plans/gaso-attack-effect.md` conserva historial y propone F1–F8, audio, comparación
-  por guest frame y compatibilidad con los 19 rivales. Revisión pendiente de aprobación;
+  por guest frame y compatibilidad con los 19 rivales. Al proponerla esperaba aprobación;
   sin nueva implementación, build, despliegue ni captura de esta revisión.
 - Preflight PASS: `_work/workflow/20261110T104154528615Z-gaso-native-fidelity-plan/metrics.json`;
   HEAD `d9ce984`, índice vacío, 82 cambios previos preservados, 31 fuentes coincidentes,
@@ -1371,7 +1395,7 @@ Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `char
 - Ghidra MCP confirmó main JP `SLPM_862.19` y reproducción de cues `0x8002e2d0`
   (trial `20261110-ghidra-045`). Es una dependencia BAG2, no la identificación del
   sonido/controlador BAG1 del tanque. Escucha histórica general no valida este ataque.
-- Siguiente acción: aprobar revisión F1–F8; luego F1, inventario de identidad/región,
+- Siguiente acción histórica al proponerla: aprobar revisión F1–F8; luego F1, inventario de identidad/región,
   hashes y carencias sin repetir capturas válidas. Cartel GAS aceptado, estable,
   preferencias y tarjetas preservados. Esta unidad es exclusivamente documental:
   Goldfish no requerido aquí, sí para el siguiente cambio que lo active.
@@ -1754,6 +1778,7 @@ diferencia; los rivales solo-BAG2 siguen sin entrada en la tabla Y (**decisión 
 dueño**). Sigue abierto: si el tope `+0x43cc` depende de escala, CAUGHT por rival,
 partículas y audio F3. Trial052 registra consultas, fallos y límites.
 
+
 #### F2 — altura del tanque frente al rival y rivales solo-BAG2 (2026-11-11 UTC)
 
 Ejecuta lo acordado con el dueño («okay continua con lo recomendado»), sin cambios
@@ -1874,7 +1899,7 @@ payloads nativo ec7f4b0e... y BAG2 143b4bf8... verificados por SHA).
   escenario 5 (espaciado 86) y especial 0xb sin cubrir. Valor real de dt
   (`80075f00`) no medido. Encuadre de cámara no comparado. Sin aceptación en juego.
   Siguiente: CAUGHT por rival (incluidos solo-BAG2 y parejas), guardas/restauración,
-  partículas; luego F3. Trial055 registra la unidad.
+   partículas; luego F3. Trial055 registra la unidad.
 
 #### F2 — selector de impacto BAG2 y enlace CAUGHT pendiente (2026-11-11 UTC)
 
@@ -2312,6 +2337,49 @@ aterrizaje, y F3 de audio exacto sin remuestreo (`0x1806`/`0x180a`,
 `0x6906`/`0x690a`, presupuesto 64032). Sin build del juego, payload modificado,
 despliegue ni partida nuevos. Trial 063 registra límites.
 
+#### F4 parcial — seam real del controlador: la entrega por `+0x18` no alcanza slot1 (2026-11-11 UTC)
+
+Decisión del propietario: «Hook en controlador (Recomendado)». Sin cambios de
+runtime, build ni despliegue en esta unidad. Detalle y comandos:
+`_work/gaso/caught-seam-findings-20261111.md`.
+
+- Runtime: no hay puntero a la RAM invitada; solo `psx_mod_read/write_*`. Los
+  headers del adaptador (`uint8_t *ram`) necesitan una capa de acceso para el
+  runtime, que invalida los hashes verificados y obliga a repetir RED/GREEN/
+  mutaciones/sanitizer. Durante un vblank el invitado está parado (`paused`), pero
+  el vblank llega en límites de dispatch, también anidados: `quiescent` no está
+  probado en `b1v_vblank`.
+- Cadena de llamadas: los siete `jal 8002d06c` están dentro de `FUN_8002a090`;
+  este solo se llama desde `005.dbi` (`8009d088/d0c0/d100/e0f0`). El consumidor de la
+  petición pendiente es `8009d0a8 lh a2,0x18(s5)` (palabra `86a60018`) en
+  `FUN_80099e90`, al que se llega por puntero. El cierre estático de callees de
+  `8002a090`/`8002d06c` tiene 18 saltos indirectos sin resolver, así que no prueba
+  la no reentrada; un barrido de la pila viva buscando las direcciones de retorno
+  de `8002a090` sí sería una prueba conservadora.
+- **Bloqueo del contrato `request_entry`:** en modo 1, `FUN_8002a090` traduce la
+  petición a slot con las tablas `8005180c` (+10 sustituciones `80051838`),
+  `8005182e`, `8005181c` y `800518e4`. Leídas por MCP, ninguna da 1 en ningún rango.
+  Solo Pander (ID6) llega a slot1. Escribir en `+0x18` no puede entrar en slot1
+  para los IDs 0/1/9.
+- Seam realizable: function-entry en `0x8002d06c` (`mod_function_entry_funcs`).
+  Precedente: `0x8002C404`, que funcionó y se retiró el 05-11 solo por razones
+  visuales. El callback corre antes de que el cuerpo lea `cpu->gpr`. Para el rival,
+  con modo 1 y el slot traducido de la petición nativa del impacto (Gas-O: entrada
+  `[202,1]`): publicar slot1 y cambiar `a2=1`, sin escribir en `+0x18`.
+  `func_8002D06C` existe en el shard 09; hay scripts de codegen aislados en
+  `_work/strikedbi/{generate,stage}_lighting_entry.py`.
+- Abierto antes de implementar: el contrato nuevo del adaptador (redirección en
+  lugar de `request_entry`) con sus regresiones host; la residencia en RAM invitada
+  del clip CAUGHT auténtico por rival; la salida o temporizador de la ruta 202
+  frente al contador nativo de liberación `0x80087992+side*0x14`; y las llamadas a
+  compañeros (líneas 437/456) frente a la llamada principal (412).
+
+Siguiente: con el propietario, aprobar la redirección en la entrada del
+controlador y su contrato. Después: capa de acceso RAM con la verificación host
+completa, codegen aislado del hook, build y partida.
+
+**Aprobado por el propietario (2026-11-11):** redireccion en la entrada del controlador («Aprobar redirección (Recomendado)»): resolver primero con evidencia residencia del clip, salida/temporizador y parejas; luego contrato nuevo con verificación host completa, codegen aislado, build, despliegue exp y partida.
+
 ### 2026-11-11 — clean-trace-review-20261111: recuperación y candidato diagnóstico
 
 - Recuperada la ejecución interrumpida `20261111T161441118945Z-gaso-tank-test`: no tenía resultado ni restauración y usó el ejecutable antiguo. No es prueba limpia del ataque. Restauración exacta de los tres ajustes anteriores al cambio manual de tarjetas: `_work/gaso/clean-trace-recovery/report.json`; 41 saves sin cambios durante la recuperación, sin afirmar igualdad antes del intento antiguo.
@@ -2356,3 +2424,694 @@ Evidencia/hashes: `_work/gaso/sequence-residency-contract.json`; datos completos
 - **Contrato que debe cambiar antes del hook:** binding/adapter actual usa un solo buffer main80000000..80800000 y rechaza9f… correctamente. Siguiente seam: región de clip asignada y explícita, manteniendo guards de actores/tablas en mainRAM; no relajar rangos indiscriminadamente ni tocar heap global. Probar límites/alias/metadata/restauración y lectura real del decoder antes de publicar slot1. Exclusión de compañeros/retirada de préstamo sigue pendiente. La redirección8002d06c YA está aprobada; no pedirla de nuevo.
 
 **Siguiente acción exacta:** leer este apartado y `_work/gaso/sequence-residency-contract.json`, verificar Ghidra MCP/estado Git; diseñar y probar RED→GREEN el acceso a clip en arena asignada, sustituyendo el supuesto80400000. Antes de integrar demostrar decoder real y quiescencia/exclusión de compañeros. Mantener la secuencia/paquete aceptado intactos; la desviación de un frame queda abierta para la fidelidad, no corregir música/escenario incidentalmente. No repetir la partida limpia ni estos headless/pruebas con inputs idénticos. Después portar estados/caída/escala/partículas/sonido originales; no anunciar tanque importado ni100%.
+
+
+### owned-clip-host-contract-20261111
+CAUGHT: añadido acceso explícito a una asignación inmutable Expansion1 `9f000000..9f100000`, sin ampliar límites main-RAM de actores/tablas. APIs legacy conservadas; adapter/runtime aún NO conectados. El llamador debe demostrar procedencia, vida útil, pausa/quiescencia y retiro real; los límites del búfer no lo prueban.
+RED inicial: falta de API al compilar (no RED de comportamiento). GREEN final: 27 métodos reales C/WSL, `caught-loan-owned-clip-review-green.json`; mutaciones aisladas: baseline pasa y siete regresiones detectadas (incluye lectura fuera de clip detenida con página protegida). Suite completa: 267 métodos, 1 fallo/31 errores, mismos 32 nombres previos en `caught-adapter-full-compare-owned-clip-full.json`; NO suite verde.
+Goldfish: dos revisores nuevos; hallazgos de cobertura confirmados y corregidos: longitud completa al restaurar + republicación, límites del aperture con metadata válida, alineación/fin relativo/tail protegido y layout alternativo. Evidencia `_work/goldfish/owned-clip-verdict.json`. Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+MCP confirmó decoder `800126f8`, `800128b4`, `80012a94` con punteros relativos sin máscara de RAM. Prueba del decoder original con bus/interpreter real: primer intento no compiló (extracción incluyó texto de comentario/prototipos ausentes); segundo no enlazó por mocks duplicados del bus real; tercero enlazó pero tuvo SIGSEGV. Intentos conservados; GDB no instalado, declaraciones implícitas verificadas sin error; cuarto no enlazó libm; quinto ASAN localizó un símbolo DATA autogenerado erróneamente como función antes de entrar al decoder. Sexto detuvo esa autogeneración; séptimo detuvo un observador parity no implementado. Se definieron DATA con tipos reales y tres observadores como en tests del framework. Octavo pasó; noveno añadió controles pero confundió el campo flags+4 con conteo+6 y falló; MCP126f8 confirmó el offset y décimo pasó con flags/conteo/frame y poses no vacías bajo ASAN. Los diez intentos conservan trial/log y fuentes previas; no se modificó el framework. Original MIPS `800126f8/80012850/800128b4` ejecutado con dirty_ram_interp/memory.c reales: CAUGHT70 Heat348B/Strike352B/Gas-O348B, secuencia 0/1/0/1, poses iguales desde main-RAM y asignación Expansion1, arena sin cambios. `_work/gaso/owned-decoder-probe10/trial.json` y `owned-decoder-result.txt`. Seam aislado con servicios opcionales desactivados; no es controlador vivo, rendering ni prueba de retiro. Sin build/deploy/juego/payload modificado. Próximo: plumbear adapter de región y demostrar retiro/exclusión de compañeros antes del hook aprobado. `80400000` sigue NO reservado.
+
+
+### adapter-region-negatives-20261111
+CAUGHT: añadido `B1CaughtClipRegion` en `bag2jp_caught_adapter.h` (NULL=legacy sin cambios) y helpers `b1ca_publish`/`b1ca_restore` que despachan a `b1cb_publish_in`/`b1cb_restore_in` cuando region!=NULL. Las 3 llamadas en `b1ca_apply` (ENTER publish, RESTORE restore, ABANDON restore) usan los helpers. `b1ca_owns_tuple` sigue solo-RAM-principal (retorna -1 seguro para owned). Nuevos negativos con region!=NULL: escenario 8 restore_not_quiescent_owned, escenario 9 restore_different_region_owned, escenario 10 tables_inside_owned_region; adapter escenario 14 owned_region_negatives (kind 0 quiescent=false, kind 1 región distinta, kind 2 YIELD+retiring y restore OK mismo region). GREEN: 26 tests enfocados, suite completa 272 tests con los mismos 32 fallos baseline previos y sin regresiones. Legacy inalterado. Goldfish: dos revisores (ses_e342ba3a7ffeimqSssl5Yrlq3s safety, ses_e342ba3a6ffeYCPlxtYcPmY0Po tests); hallazgos A1/A2/A3 (alias rango, no_references, identidad de región) confirmados y corregidos con negativos. Evidencia `_work/goldfish/owned-clip-adapter-region-verdict.json`. Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue. Build/deploy/juego/payload sin cambios; tanque instalado aún aproximado, fidelidad NO aceptada; 80400000 NO reservado.
+
+
+### retire-and-partner-exclusion-20261111
+CAUGHT: añadidos escenarios 15-16 en `caught_adapter_harness.c` y 2 tests en `test_caught_adapter.py` para demostrar retiro y exclusión de compañeros con región owned antes del hook `0x8002d06c` (ya aprobado). Escenario 15 (`retire_failure_owned`, kinds 0-3): RESTORE se rechaza cuando no hay quiescencia, VM no parada, slot1 aún `current` o slot1 aún `previous`; el binding se mantiene intacto y RAM no cambia; tras corregir el defecto, el mismo adapter retira y vuelve a IDLE. Escenario 16 (`partner_exclusion_owned`, kinds 0-1): compañero cuyas tablas aliasan el área owned bloquea ENTER (identidad no coincide); compañero con tablas propias y disjoint permite el borrow. GREEN: 34 tests totales (adapter 18 + owned_clip 10 + binding 6), suite completa sin regresiones (mismos 32 fallos baseline previos). Log `_work/gaso/caught-loan-adapter-retire-partner-full.log`. Build/deploy/juego/payload sin cambios; tanque instalado aún aproximado, fidelidad NO aceptada; 80400000 NO reservado. Próximo: verificación residencia 8MB, luego aceptación en juego.
+
+
+### retire-partner-owned-mutations-20261111
+CAUGHT: extendido el coverage del retiro con región owned tras revisión Goldfish de pruebas. Escenario 17 (`retire_owned_region_defect`, kinds 4-8): identidad de región cambiada, región data NULL, tablas del actor fuera de rango (0x9f100000), clip instalado debajo de la base de la región y clip que desborda la región — todos rechazan RESTORE con VM pausada y quiescente; el mismo adapter se recupera y retira tras deshacer el defecto. Escenario 16 kinds 2-3: compañero con tablas disjoint permite borrow completo ENTER→YIELD→RESTORE; tras retiro completo el mismo owner re-borrow con nuevo hit en el mismo adapter. GREEN: 35 tests enfocados (adapter 18 + owned_clip 10 + binding 6), 0 fallos. Suite completo (discover): 275 tests, 1 fallo + 31 errores = los mismos 32 baseline previos, sin regresiones (`caught-adapter-full-compare-adapter-retire-partner-full.json`, names=32 idénticos). Goldfish pruebas: mutaciones owned añadidas son válidas; sin defecto de código en adaptador (F1/F2 resueltos en fuente). Evidencia `_work/goldfish/owned-clip-adapter-retire-partner-verdict.json`. Build/deploy/juego/payload sin cambios; tanque instalado aún aproximado, fidelidad NO aceptada; 80400000 NO reservado. Próximo: verificación residencia 8MB, luego aceptación en juego.
+
+
+### owned-clip-8mb-residence-source-20261111
+CAUGHT: residencia de la arena owned con RAM 8MB verificada por lectura de fuente del build tree (`BAG2JP-codex-build/BAG2JP/psxrecomp`), NO por ejecución en juego.
+- `mod_runtime.cpp:3552` `psx_mod_alloc_guest_memory(size, align)`: devuelve 0 dentro de host-output scope; si no, delega en `memory.c:113` `psx_mod_memory_alloc`: arena bump de `PSX_MOD_MEMORY_SIZE`=1MiB en `PSX_MOD_MEMORY_BASE`=`0x1F000000` (`mod_memory.h:23-24`), alineación potencia de 2 ≤4096, sin liberación, memset a 0, devuelve `0x9F000000+start`.
+- `psx_memory.h:60` `psx_ram_map_read`: solo pliega con `g_psx_ram_mask` direcciones físicas `< 0x00800000`; `0x1F000000+` pasa sin cambios. Con 8MB activo la ventana main es `0..7FFFFF`; no hay solapamiento con Expansion1 ni con la apertura GPU-DMA (`0x00800000`).
+- Lecturas guest: fast path `psx_cyc.h:287` solo para `phys < 0x00800000`; el resto va a `*_slow`/`psx_read_word_raw` (`memory.c:1746`), que sirve `mod_memory` antes del open bus (`1752`). Equivalente en half/byte (`2173`, `2299`) y escrituras (`2111`, `2245`, `2613`). Fuera de lo asignado, Expansion1 sigue siendo open bus (`FFFFFFFF`).
+- Snapshot/save state: `psx_mod_memory_snapshot_*` incluye la arena; `psx_mod_memory_layout_cookie` depende de `mod_memory_used`, así que la asignación debe hacerse una sola vez, con tamaño fijo y en init del plugin; asignar a mitad de partida cambiaría el cookie (riesgo de compatibilidad de saves de estado).
+- Ningún mod de `mods-src` llama hoy a `psx_mod_alloc_guest_memory` (grep), así que la arena de 1MiB está libre para este clip.
+Límites: no prueba que el plugin sea "trusted" ni que el decoder CAUGHT lea la arena en juego; probe10 lo demostró solo en el intérprete host. Build/deploy/juego/payload sin cambios; fidelidad NO aceptada; 80400000 NO reservado. Próximo: integrar el hook `0x8002d06c` (aprobado) con asignación única en init, build+deploy EXE a `BAG2JP-exp-8mb` y aceptación en juego.
+
+### caught-entry-recovery-20261111 — candidato inseguro aislado, no integración
+
+Este bloque sustituye la instrucción anterior de pasar directamente al build.
+La redirección sigue aprobada, pero el candidato posterior a aquella nota no
+implementaba sus precondiciones. Se conservó íntegro antes de corregirlo en
+`_work/gaso/caught-entry-recovery-backup/`: cuatro archivos con hashes verificados.
+
+- Defectos constatados: callback `int` frente a ABI `void`; comparación de petición
+  `202` donde llega slot traducido `89`; clip host cero marcado listo sin copiar
+  bytes auténticos al invitado; buffer RAM parcial con límites insuficientes;
+  publicación sin préstamo persistente ni restauración; reactivación incoherente.
+  **El candidato no llegó a compilarse como runtime ni a desplegarse.**
+- Corrección acotada: `bag2jp_gaso_caught.c` registra ahora un callback `void`
+  deliberadamente inerte, sin acceso RAM, asignaciones ni cambios de registros.
+  Feature `bag1-gaso-caught` desactivada por defecto y descrita como seam inactivo.
+  Incluso habilitarla no publica slot1. Esto no implementa la reacción CAUGHT.
+- RED: `_work/gaso/caught-loan-entry-recovery-red.log` demuestra ABI incompatible
+  y default incorrecto (4.982 s). GREEN: `entry-recovery-focused` verifica 38 tests
+  en 23.812 s: callback real + adaptador/binding/región owned. Compilación WSL GCC
+  `-std=c11 -Wall -Wextra -Werror` con headers reales del framework; dependencia
+  externa del build tree, no test autónomo en otro checkout.
+- El harness comprueba la CPU completa y cero accesos/asignaciones en 120 entradas
+  por matriz y tres repeticiones adicionales. No hay callbacks de reset/activación
+  registrados: esas repeticiones **no prueban** lifecycle real ni savestates.
+- Suite completa: 278 tests, 1 fallo y 31 errores; los mismos 32 nombres de la
+  baseline, comprobados en `caught-adapter-full-compare-entry-recovery-full.json`.
+  No es una suite verde. Logs completos en `_work/gaso/caught-loan-entry-recovery-*`.
+  El primer combinado usó por error `test_owned_clip` (módulo inexistente);
+  se corrigió a `test_caught_owned_clip`. El primer comparador eligió un log
+  enfocado sin fallos; se rechazó y se reutilizó el comparador canónico correcto.
+- Staging: las dos copias `.c` del build tree se sustituyeron solo tras comprobar
+  su hash anterior `31fdefde…`; ambas coinciden ahora con la canónica
+  `17ceb85d5691195b3aa4cd064a55362ebf42fd99cc870ec4d7bfb10267f5c6a6`.
+  Evidencia/hashes completos: `_work/gaso/caught-entry-recovery-report.json`.
+  No se reejecutó codegen ni se cambió el hook generado ya verificado.
+- Manifiestos del build **no sincronizados en este paso**: el paquete preloaded
+  conserva payload aceptado `376287ab…`, sin nueva feature; la copia histórica en
+  `src/mods-src/...` tiene pins antiguos `c030b287…`/`4062840b…`. No sobrescribir
+  esta divergencia sin respaldo y verificación de qué copia consume el build.
+- Ghidra MCP confirmó main JP y bytes de entrada frente al raw; el decompile de
+  esa dirección no existe en la sesión GUI. Ensayo y límite registrados en
+  `notes/tool-evidence/ghidra-psx-psyq.md`, `caught-entry-recovery-mcp-20261111`.
+- Goldfish: dos revisores nuevos, `SIN HALLAZGOS BLOQUEANTES` para **cuarentena**,
+  no para redirección. Hashes en el reporte anterior; resúmenes y triaje en
+  `_work/goldfish/gaso-caught-entry-recovery-verdict.json`. Confirmaron los límites
+  de lifecycle y respaldo; el respaldo/staging se verificó después independientemente.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Sin build de runtime, despliegue, nueva partida ni aceptación de fidelidad.
+Payload/escenario aceptados, instalación estable, configuración y saves intactos.
+**Siguiente:** conservar esta cuarentena mientras se implementa y prueba el
+contrato de redirección `modo=1/slot89 → slot1` sobre el adaptador persistente:
+identidad principal/atacante/versión, bytes auténticos por rival en guest,
+acceso RAM 8MB acotado y exclusión de compañeros, retiro quiescente y
+reset/savestate. Resolver equivalencia temporal nativa sin inventar duración;
+solo después staging reproducible de fuentes/manifiestos, build, deploy
+experimental y aceptación en juego. `80400000` sigue sin reserva.
+
+### caught-entry-contract-20261111 — composición host verificada, runtime aún inerte
+
+Objetivo acotado aprobado: publicar slot1 antes de redirigir el argumento
+`modo1/slot89→1`, usando el adaptador persistente, sin escribir `+0x18` ni
+reiniciar frames. **No es integración ni aceptación del tanque dentro del juego.**
+
+- Nuevo `bag2jp_caught_entry.h`: compone la política/binding existentes, solo
+  desde IDLE sin binding. Valida actor principal de su lado y Gas-O principal
+  contrario con lecturas acotadas. Rechaza compañeros, slots/peticiones/versiones
+  incompatibles y hechos insuficientes. Procedencia request202, versiones,
+  generación, autenticidad/residencia y propiedad de pausa siguen siendo hechos
+  que deberá demostrar el llamador del runtime, no datos inferidos del slot89.
+- Solo después de publicar correctamente los diez bytes de la tupla, cambia
+  `entry.slot=1`; conserva el mismo adaptador para replay/reintento/retirada.
+  Header experimental **no incluido** por el callback runtime. Clip/backing y
+  buffers deben seguir vivos y sin alias hasta retirar el préstamo.
+- RED real con stub que rechazaba todo: 4 tests, 13 subcasos esperados fallaron
+  en `redirect()`; sin errores de compilación. Primer GREEN enfocado: 42 tests,
+  33.145 s, WSL GCC `-std=c11 -Wall -Wextra -Werror`. Logs
+  `_work/gaso/caught-loan-entry-contract-{red,green}.log`.
+- La versión final tiene cinco tests nuevos / 60 ejecuciones C sintéticas:
+  tres rivales, ambos lados, actores por encima de 4 MiB, diez bytes escritos
+  como máximo y comparación del resto de los 8 MiB; entradas negativas sin
+  efectos; préstamo persistente, entrega repetida, retirada y nuevo attack_id.
+  No se ejecuta el controlador MIPS ni se usan clips auténticos en este fixture.
+- Suite final `entry-contract-review-final`: 283 tests, 1 fallo y 31 errores,
+  79.131 s. Los cinco tests nuevos pasan. Comparador confirma los mismos 32
+  nombres de fallo/error de baseline; **la suite completa no está verde**.
+  Reporte `_work/gaso/caught-adapter-full-compare-entry-contract-review-final.json`.
+  La primera suite, anterior al hallazgo de revisión, tuvo 282 tests y los
+  mismos 32 nombres; se conserva, no sustituye la re-verificación final.
+- Preflight pasó en 0.336 s; identidad/entrada Ghidra MCP contrastadas con raw,
+  sin inferir semántica nueva: ensayo `caught-entry-contract-mcp-20261111` en
+  `notes/tool-evidence/ghidra-psx-psyq.md`. Hashes, comandos/evidencia y límites
+  en `_work/gaso/caught-entry-contract-report.json`.
+- Goldfish: dos revisores nuevos, uno `SIN HALLAZGOS BLOQUEANTES`, otro
+  `CON HALLAZGOS` por cobertura negativa de retirada insuficiente. Confirmado
+  leyendo guards y escenario; corregido con seis casos: pausa falsa y referencias
+  reales current/previous/decoder/poseA/poseB pese a `view.references=0`.
+  Verifican descriptor, RAM, argumento y backing intactos al rechazar, y reintento
+  correcto al liberar la referencia. Re-verificados en la suite final, sin cambiar
+  producción tras revisión. Registro `_work/goldfish/caught-entry-contract-verdict.json`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Hash producción revisada `851b00b38dd6e18a51d6606f6ae954e12751667a3c664fe00b31dc3168f5902f`;
+  hashes finales de harness/test y previos a revisión en el reporte. Sigue intacto
+  el callback inerte `17ceb85d…` y la feature default off. No se hizo staging al
+  build, codegen, build runtime, deploy ni partida. Payloads, saves, ajustes e
+  instalaciones no se tocaron. Dependencias adapter/binding conservan cambios
+  anteriores aún pendientes; no confundir checkpoint WIP con checkout autocontenido.
+- Checkpoint local `2726fe4` (`WIP: verify stopped-RAM CAUGHT entry composition`):
+  solo los tres archivos nuevos de esta unidad. Los cambios previos de headers,
+  notas y otros temas se conservaron fuera del commit. Sin push ni snapshot de
+  milestone: es trabajo intermedio experimental, no resultado aceptado.
+
+**Siguiente:** reutilizar este contrato y sus tests; no repetir cuarentena ni
+inventarios. Cargar los clips auténticos por rival desde la evidencia ya existente
+y demostrar copia/residencia guest por asignación única; construir observaciones
+del runtime (main/companion, atacante/versión/procedencia/generación), cerrar
+ABANDON owned y retiro/reset/savestate real, y resolver equivalencia temporal.
+Después wiring del callback y tests de integración, manifiestos reproducibles
+con respaldo, Goldfish del cambio runtime, build/deploy experimental y aceptación
+de CAUGHT/retorno a selección. Fidelidad original del tanque/audio/tamaño/caída
+sigue pendiente. No habilitar un fixture sintético ni reservar `80400000`.
+
+### caught-clip-bank-20261111 — bytes auténticos y residencia host, sin wiring runtime
+
+- Unidad acotada: banco compartido `bag2jp_caught_bank.{h,c}` y datos generados
+  desde los DFS originales fijados por `tools/bag1import/contracts/caught-bank.json`.
+  Miembro 1, slot 70; Heat 348 B, Strike 352 B, Gas-O 348 B; offsets 0/348/700,
+  total 1048 B. Hashes de fuentes/clips coinciden con la auditoría existente;
+  reproducción exacta de bytes, incluidos los dos ceros nativos de padding.
+  Solo versión BAG1 e IDs 0/1/9, no soporte para esqueletos BAG2-only.
+- `build_caught_bank.py --check` confirma `.inc` determinista con SHA
+  `238afcd54625091017bb47e2f9913d68c5bba803fa8aa3b8fb1999d1e86bee79`.
+  Intentos iniciales de generación fallaron por miembro 0 y por asumir ausencia
+  de padding; contrastados con extractor previo y offsets originales, corregidos
+  sin transformar los clips. No son evidencia RED de comportamiento.
+- Una tentativa de asignación fija/alineada por descriptor cero inicializado;
+  fallo inicial terminal. Verifica todo el banco guest antes de exponer un clip;
+  prepare repetido/lookup nunca reasignan ni reparan/escriben memoria. Corrupción
+  rechaza salida sin modificarla; snapshot coincidente puede recuperar validez.
+  Pausa, procedencia, scope API y vida del descriptor/backing son precondiciones
+  del llamador; no resetear/copiar el descriptor para conseguir otra asignación.
+- Harness usa allocator, backing y snapshot **reales** de `memory.c`; sustituye
+  solo APIs de título. No prueba bus CPU completo, mod-manager ni savestate/reset
+  completo. 14 escenarios C y dos tests de fuente. Error de compilación inicial
+  por warnings existentes del framework conservado en `clip-bank-red`; se acotó
+  su supresión al include existente, manteniendo `-Werror` en todo código nuevo.
+  Luego stub RED: 5 tests, 14 fallos esperados; GREEN inicial: 5 pasan, 7.854 s.
+- Suite final `clip-bank-review-final`: 290 tests, siete nuevos pasan; 1 fallo y
+  31 errores, 72.126 s. Comparador confirma los mismos 32 nombres previos:
+  `_work/gaso/caught-adapter-full-compare-clip-bank-review-final.json`.
+  **Suite completa no verde**. Reporte con hashes/comandos/límites:
+  `_work/gaso/caught-clip-bank-report.json`. Primera suite de 290 preservada.
+- Goldfish: dos revisores nuevos `SIN HALLAZGOS BLOQUEANTES`. Observación menor
+  confirmada: el negativo de hash invocaba helper y no flujo completo. Cambiado
+  a `extract_clips` con fuente alterada/contrato temporal; bypass del hash solo
+  en memoria dispara el fallo esperado. Producción sin cambios tras revisión;
+  suite final re-verifica el test. Respuestas y triage:
+  `_work/goldfish/caught-clip-bank-verdict.json`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Preflight pasó en 0.307 s. MCP confirmó main JP y entrada decoder `800128b4`,
+  32 bytes iguales a raw; ensayo `caught-clip-bank-mcp-20261111` en log Ghidra.
+  No implica semántica o timing nuevos. Callback inerte SHA `17ceb85d…` y feature
+  default off intactos; banco no staged/enlazado. Sin build, deploy, partida,
+  payloads, saves o ajustes modificados. Fidelidad CAUGHT/tanque no aceptada.
+
+- Checkpoint local `bf01979` (`WIP: verify authentic CAUGHT clip bank residency`):
+  solo siete archivos nuevos de esta unidad; cambios previos y notas conservados
+  fuera del commit. Sin push ni snapshot de milestone; es protección intermedia,
+  no permiso de despliegue ni aceptación.
+
+**Siguiente:** reutilizar banco y composición host. Construir observaciones reales
+con identidad main/companion, atacante/versión/procedencia de request y generación;
+cerrar ABANDON owned y ciclo de retiro/reset/savestate, y equivalencia temporal.
+Solo después wiring/tests de integración, manifiestos con respaldo, Goldfish
+runtime, build/deploy experimental y aceptación en juego. No repetir extracción,
+inventario o cuarentena mientras hashes no cambien; `80400000` no está reservado.
+
+### caught-dispatch-context-20261111 — ABI y procedencia parcial, sin wiring runtime
+
+- Investigación acotada del dispatcher original `8002a090` y del consumidor de
+  `system/005.dbi`. **Corrección importante para el futuro wiring:** `a0` de
+  `8002d06c` es un controlador; el actor está en `word[a0]`. El `actor` de la
+  composición host anterior es una identidad ya resuelta, no ese registro CPU.
+  Controlador main `8005f820 + side*98h`, companion a `+4ch`; lista main en
+  `8005f808 + side*8`. No se ha cambiado el callback con esta información.
+- Probe scratch ejecuta bytes originales mediante `dirty_ram_interp.c` real,
+  con RAM sintética y callees observados. Dispatcher `8002a090..8002b5bc`:
+  60 casos (IDs 0/1/9/5/6, ambos lados, requests 200..204 y salida por timer).
+  Captura 84 llamadas a `8002d06c`: 60 main con RA `8002ae68`, 12 companion con
+  RA `8002afe4`, 12 con RA `8002b06c`. IDs 10/14 y otras rutas no ejercitados.
+- Traducción observada: requests 200/201/202/203/204 a slots 85/87/89/91/71;
+  al expirar timer con current 89 se solicita salida 90. Duración sintética 216,
+  length[90]=36: timer inicial 144, salida con timer cero. **No demuestra**
+  equivalencia temporal BAG1, reproducción del clip ni comportamiento en partida.
+- Segundo span, separado para no anidar el intérprete: consumidor original
+  `8009d06c..8009d0c8`, ambos lados. Diez casos 200..204 llaman al dispatcher con
+  main controller, modo 1, request original, `a3=4096` y quinto argumento 216;
+  dos negativos sin pending no lo llaman. Registros de setup del loop los aporta
+  el fixture; el loop entero no se ejecuta. Pending global sigue disponible al
+  retorno `8009d0c8`: `half[8005cf08 + side*24h +18h]`. Su limpieza nativa está
+  después de la llamada (`8009d0d4`), según contraste estático. No escribir ese
+  campo para forzar CAUGHT; no es el `+18h` del actor/controlador.
+- En la entrada al controller, el dispatcher conserva su RA exterior en
+  `word[sp+d4h]`. La combinación RA main `8002ae68`, RA exterior `8009d0c8`,
+  controlador/lista main y pending 202 permite plantear un filtro conservador.
+  Es **hipótesis de integración**, no prueba de que el atacante sea Gas-O ni de
+  exclusión de reflejos. La RA exterior fue suministrada en el fixture dispatcher;
+  el span consumidor confirmó por separado el callsite, no ejecución anidada.
+  `bag2jp_bag1_get_version` solo no basta: no comprueba active/force-stock;
+  contrastar también disponibilidad efectiva (`bag2jp_bag1_has_version`).
+- Evidencia: `_work/gaso/caught-dispatch-context-report.json`, con hashes de main,
+  overlay, intérprete y fixture. `probe3` pasó 72 spans y 94 llamadas observadas
+  en 3.557 s; transcript y fuente conservados en `dispatch-context-probe3/`.
+  `probe1` abortó por expectativa errónea RA companion `AFD8`; el JAL original en
+  `AFDC` prueba `AFE4`. Corregida la expectativa, `probe2` pasó 60 spans/84 llamadas
+  en 3.384 s. Fallo, fuente fallida y transcript inicial conservados; no fue un
+  bug runtime ni evidencia RED de una implementación. Derivador inicial guardado
+  y protegido contra sobrescribir el fixture final; comando en project-config.
+- Preflight pasó en 0.330 s, métricas en
+  `_work/workflow/20261111T222223696011Z-gaso-caught-live-contract/metrics.json`.
+  MCP confirmó main JP y tres lecturas coincidentes con raw; ensayo
+  `caught-dispatch-context-mcp-20261111` en el log Ghidra. No nuevos cambios de
+  producción: no se repitió la suite host (290 tests/32 nombres previos es evidencia
+  **histórica**), ni Goldfish: solo scratch, nota, log y estado; no se tocó archivo
+  de código/configuración sujeto a esa revisión. No hay veredicto nuevo de código.
+- Callback inerte SHA `17ceb85d…`, feature default off y banco sin wiring intactos.
+  Sin build, staging, deploy, partida, payload, saves ni ajustes modificados.
+  CAUGHT y fidelidad del tanque siguen pendientes de aceptación.
+
+**Siguiente:** usar el ABI confirmado para construir un lector de observaciones
+con tests positivos/negativos del main controller, RA/pila/pending, módulo y límites
+RAM. Resolver procedencia efectiva de Gas-O/versión y reflejos sin darla por probada
+por request 202; conservar generación/identidad. Cerrar ABANDON owned y retiro,
+reset/savestate y equivalencia temporal antes de wiring/activación; luego tests de
+integración, manifiestos con respaldo, Goldfish, build/deploy experimental y partida.
+Reutilizar estos spans y banco auténtico mientras hashes no cambien.
+
+### caught-context-reader-20261111 — lector host, no autorización del impacto
+
+- Nuevos `bag2jp_caught_context.{h,c}`: lector **solo host**, no incluido por el
+  callback ni enlazado al runtime. Recibe RAM coherente detenida y cinco registros
+  abstractos (controller, mode, slot, sp, ra); resuelve `actor=word[controller]`,
+  main/lista/lados y oponente. La salida es contexto, no `B1CaughtAttackFacts`.
+  Éxito con oponente Heat también es deliberado: request 202 no identifica Gas-O.
+- Filtro conservador: controller main fijo por lado, modo 1/slot 89, RA principal
+  `8002ae68`, RA exterior `word[sp+d4h]=8009d0c8`, pending global 202, base de
+  overlay `word[80010ce0]=8008f890` y cinco palabras originales en los dos
+  callsites. Las huellas son **parciales**, no autenticación del módulo completo
+  ni prueba de generación/procedencia. La pila completa `d8h` y ambos actores
+  `155ch` deben caber en el buffer, con tope 8MiB; suma de pila sin wrap.
+- Rechazo sin modificar salida; ninguna escritura en RAM/CPU. Precondiciones:
+  snapshot detenido/coherente, longitud real correcta y salida sin alias con
+  entradas. No son garantías de pausa real, versión efectiva, reflejos ni vida de
+  la carga; tampoco valida tablas, clips o exclusividad del préstamo.
+- Fixture C carga código de main/005 con hashes originales fijados en el runner;
+  actores, pila, pending y puntero de módulo son sintéticos. 81 escenarios:
+  16 válidos (ambos lados, actores bajos/por encima de 2MiB, dos personajes por
+  rol), 14 negativos de argumentos/RA/pila, 44 de identidad/pending/huellas y
+  siete null/límites. La ampliación de revisión añade 30 casos, total **111**:
+  pending `01cah` en ambos lados y 28 límites aislados de actor/oponente/pila.
+  Compara toda la RAM, registros de entrada y salida en rechazo.
+- RED: stub compilable, cuatro tests/16 fallos esperados en positivos, 18.491 s;
+  `_work/gaso/caught-loan-context-reader-red.{json,log}`. GREEN específico: 19
+  tests incluyendo entry/banco/callback inerte, 27.058 s, `context-reader-green`.
+  No se confunden estos tests sintéticos con entrada CAUGHT en partida.
+- Goldfish: dos revisores frescos pidieron cambios de cobertura, sin identificar
+  defecto funcional bajo las precondiciones. Se confirmaron y corrigieron: el
+  actor inválido antes discrepaba también de la lista, faltaban límites inclusivos
+  y pending con byte bajo 202. Ahora controlador/lista concuerdan al probar actor
+  inválido, hay éxito al último bloque completo y rechazo truncado, con pila baja
+  válida para aislar los actores; la pila también se prueba en su extremo exacto.
+  Cinco métodos del lector pasan después de la ampliación (20.256 s).
+  Dos mutantes temporales (sin rango de actor / pending leído a un byte) producen
+  seis fallos de aserción exigidos en ambos lados. No se modificó lógica productiva
+  tras revisión, solo claridad del contrato y pruebas. Veredicto/triage:
+  `_work/goldfish/caught-context-reader-verdict.json`; mutantes:
+  `_work/gaso/caught-context-reader-mutations.json`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Suite final del lector: 295 tests, un fallo y 31 errores (90.605 s), mismos
+  32 nombres del baseline; **suite no verde**. Los cinco métodos nuevos pasan.
+  Logs `caught-loan-context-reader-review-full.{json,log}` y comparación
+  `_work/gaso/caught-adapter-full-compare-context-reader-review-full.json`.
+- Preflight pasó en 0.344 s: métricas
+  `_work/workflow/20261111T225531101561Z-gaso-caught-context-reader/metrics.json`.
+  MCP y contraste raw en ensayo `caught-context-reader-mcp-20261111` del log
+  Ghidra; reporte `_work/gaso/caught-context-reader-report.json`.
+- Checkpoint local WIP `28aaeee`: solo los cuatro archivos nuevos del lector y
+  pruebas. No incluye ni revierte cambios previos; no push ni snapshot de hito
+  aceptado. El checkpoint no autoriza despliegue ni acredita funcionalidad CAUGHT.
+- Callback inerte SHA `17ceb85d…` y feature default off verificados sin cambios.
+  No wiring, staging, build, deploy, payload, partida, saves ni ajustes alterados.
+  CAUGHT y fidelidad del tanque siguen sin aceptación.
+
+**Siguiente:** reutilizar este lector y los spans anteriores, no reconstruirlos.
+Trazar los productores de request 202 en el overlay original para distinguir
+impacto directo Gas-O de reflejos y otros atacantes, comprobar versión efectiva
+(`has_version` más selección real, no solo `get_version`) y vincular identidad de
+carga/generación. Luego cerrar ABANDON owned y retiro/reset/savestate/timing antes
+de conectar callback/banco/composición y probar el juego experimental.
+
+### caught-hit-provenance-20261111 — origen y reflejo, sin captura runtime
+
+**Objetivo:** contrastar el productor original de request 202; esta petición y un
+oponente Gas-O no bastan para atribuirle el ataque. Investigación, no wiring.
+
+- Fuentes originales fijadas: main raw SHA `143b4bf8…` y overlay JP `005.dbi`
+  SHA `bc5f3045…`, los mismos del ensayo de contexto. Probe scratch
+  `_work/gaso/probe_hit_provenance.c`, intérprete productivo y hashes completos
+  en `_work/gaso/caught-hit-provenance-report.json`. No se reemplazaron bytes.
+- Inicialización original `8009abf4..8009acd0`: el flag local del receptor es
+  1 cuando la trayectoria procede del otro lado y el contador es impar, o 2
+  cuando procede del propio lado con contador par. El selector `8009b3a8..b7f0`
+  usa `s2 = s4 ^ 1` para flag 1 y `s2 = s4` para flag 2; `s4` es receptor.
+  No se deduce origen del rival que esté seleccionado en pantalla.
+- Defensa original `8009b454..b508`, ejecutada aparte en ambos lados: cambia
+  activo 1→2 y contador 1→2; pending del defensor es 172. Al ejecutar después
+  la inicialización, el receptor siguiente es el atacante original con flag 2.
+  La inicialización de ataque con activo/contador 1 en `8009b8fc/b908` se
+  contrastó estáticamente, no se ejecutó ese camino completo de inicio.
+- Al acertar, `8009b588` guarda el carácter de origen en estado del receptor
+  `8005e728 + side*32h + 2fh`; `8009b5b4` publica la petición de su tabla.
+  El selector borra activo del origen (`8009b52c`) y contador (`8009b7c8`)
+  antes del consumidor. Por tanto no se puede reconstruir la dirección con
+  una lectura tardía de esos dos campos.
+- Resultado final: **124 casos de selector, dos comparaciones espejo y dos
+  defensas**, sin fallo de aserción. Ambas posiciones; receptores Heat/Strike/
+  Gas-O; oponentes representados por IDs 0/1/9/8/10, sin validar sus assets;
+  contadores 1/3 directos y 2/4 de retorno. Ocho casos dejan `202` con Gas-O
+  enfrente pero origen Heat o Strike. No deben activar CAUGHT de Gas-O.
+- Gas-O contra Gas-O: los campos de identidad coinciden entre directo y
+  retorno. La comparación del fixture solo excluye 256 B de stack local del
+  productor y 8 B de puntuaciones; el retorno transfiere 200 puntos más.
+  **No son estados completos idénticos ni prueba de imposibilidad universal**;
+  sí refutan atribuir origen solo con carácter/pending y campos borrados.
+- Primer ensayo `probe1`: 120 casos pasaron en 3.734 s. `probe2` falló por una
+  expectativa excesiva de igualdad de toda RAM; `probe3` conservó ese fallo y
+  diagnosticó diferencias únicamente en puntuaciones fuera del stack. Se
+  corrigió la expectativa, no el juego: `probe4` pasó (3.918 s). Final `probe5`
+  pasó en 4.000 s con las defensas añadidas. Fuentes, logs de trial y transcritos
+  fallidos/pasados retenidos por directorio; no constituyen RED→GREEN productivo.
+- Límites: juicios/aciertos sintéticos; sonido observado sin ejecutarlo y RNG
+  fijo en cero; no combate, animador/decoder ni versión efectiva/generación de
+  carga. Los spans separados no equivalen a ejecutar una partida completa.
+- MCP Ghidra main JP y tabla de 36 B contrastados con raw: ensayo
+  `caught-hit-provenance-mcp-20261111` del log de herramienta. Preflight pasó
+  en 0.319 s, métricas
+  `_work/workflow/20261111T231944374679Z-gaso-caught-hit-provenance/metrics.json`.
+  Goldfish omitido justificadamente: solo scratch/evidencia, notas/estado y
+  referencia de comandos; ningún archivo productivo de sus rutas disparadoras.
+  Suite de 295 tests/32 fallos-errores anteriores es histórica, no repetida.
+- Callback SHA `17ceb85d…` inerte y feature default off verificados sin cambios.
+  No staging, build, deploy, payload, partida, saves, settings ni aceptación.
+
+**Siguiente:** reutilizar estos spans y resolver una captura acotada del origen
+antes de su borrado. Candidato: instrucción original `8009b5b4 = a6a20018`,
+con origen `s2`, receptor `s4` y bloque pending `s5`; observarla no debe escribir
+pending ni forzar poses. El registro tendría que validar actores, versión
+efectiva, módulo/generación, consumo único y retiro/reset/savestate antes de
+autorizar `89→1`. No está implementado. El guard host antiguo «oponente Gas-O»
+de `b1ce_main_rivals` tampoco cubre el retorno genuino de un ataque Gas-O al
+propio Gas-O: adaptar el contrato solo con origen acreditado, sin congelar
+reflejos de ataques ajenos. No excluir permanentemente el caso espejo ni
+inferir autorización de los snapshots. Después cerrar ABANDON owned y timing,
+integración, Goldfish y aceptación experimental ya aprobados.
+
+### handoff-20261112 — entrada limpia y hallazgo P0 del binario desplegado
+
+Punto de entrada para una sesión nueva: `HANDOFF.md` (raíz). Resume objetivo,
+estado por capas, contrato nativo confirmado, medidas de partida, comandos,
+pendientes y prohibiciones. Esta sección conserva el hecho nuevo que motiva el
+P0; el resto del ledger sigue siendo histórico y no se reescribe.
+
+- **Implementado hasta 2026-11-11 (WIP, sin aceptación):** `bag2jp_caught_source.{h,c}`
+  (captura/consumo host verificado con probe3: 124 llamadas, 100 aceptadas),
+  `bag2jp_caught_context.{h,c}` (lector de 111 escenarios, no enlazado),
+  `bag2jp_caught_entry.h` (composición host, no incluida por el runtime),
+  `bag2jp_gaso_caught.c` (callback de entrada `0x8002d06c` + plugin de
+  instrucción `0x8009b5b4`), y ampliación de `bag2jp_caught_adapter.h` con
+  `b1ca_reset/save_state/load_state/state_size` (128 B).
+- **Hallazgo P0 (2026-11-12, lectura de fuente + cadenas del ejecutable):** el
+  binario desplegado en `BAG2JP-exp-8mb` (SHA `BDAF4B82…`, 25 442 304 B) contiene
+  `bag2jp.gaso_caught` y `bag2jp.gaso_caught_capture`. El registro de plugins no
+  consulta la feature ni el manifest, y `captured[]` nunca se limpia: en cuanto
+  una publicación de la petición 202 pasa las validaciones (Heat, Strike o Gas-O,
+  tabla `0x80051458`), el callback escribe `gpr[6]=1` en **todas** las entradas
+  posteriores a `0x8002d06c`. No hay clip auténtico publicado, así que no puede
+  afirmarse que sea inocuo. El estado «inerte/default-off» solo vale con
+  `captured[]` vacío, que es lo único que cubren los 3 tests de
+  `test_gaso_caught_runtime`.
+- **Divergencia de staging constatada:** el build compiló
+  `BAG2JP-codex-build/BAG2JP/src/bag2jp_gaso_caught.c` (SHA `B605A188…`, captura
+  con literales); la copia canónica `mods-src/...` (SHA `A1CFEBEA…`, 8629 B) ya
+  tiene las constantes con nombre y no estaba staged (preflight la listó en
+  `sources.different`). La copia `src/mods-src/...` es el stub inerte obsoleto de
+  1085 B (`17CEB85D…`) y no se compila. El manifest desplegado es el aceptado
+  (`F76698BE…`, sin la feature), no el canónico (`6EAB9377…`, con
+  `bag1-gaso-caught` `default_enabled=false`).
+- **Tests y baseline:** `test_caught_adapter` 25/25, `test_caught_source` +
+  `test_caught_context` 10/10, `test_gaso_caught_runtime` 3/3,
+  `test_caught_integration` 4/4 (48 escenarios). Suite completa 306 tests,
+  1 fallo + 32 errores: los mismos nombres de baseline previos, no una suite
+  verde.
+- **Siguiente:** neutralizar el P0 (no escribir `a2` salvo captura autenticada
+  como Gas-O y consumida una vez, o desplegar el stub inerte), re-staging
+  canónico, `preflight`/`build`/deploy con hash y solo después partida de
+  diagnóstico. No se jugó con este binario: no hay aceptación nueva.
+
+### caught-p0-inert-20261112 — P0 neutralizado, despliegue con hash
+
+Evidencia fresca de esta sesión; lo anterior de este ledger es histórico.
+
+- **Ghidra MCP:** `get_program_info` = `SLPM_862.19` (sha256 `ea5a1668…`, 1324
+  funciones). `read_memory 0x8002d06c` = prólogo `addiu sp,sp,-0x40`; sin función
+  definida en Ghidra y 0 xrefs (entrada indirecta).
+- **Corrección de la premisa P0:** el runtime fijado (`1a3fc0db303a`) solo activa
+  hooks de función/instrucción de ids en `plan.plugins`
+  (`mod_packages.cpp:4150-4183`, `mod_runtime.cpp:368-394`); el plan incluye un
+  plugin solo si su feature del manifest está habilitada. El manifest desplegado
+  `F76698BE…` no declara `bag1-gaso-caught`, así que `BDAF4B82…` era inerte en la
+  práctica. Además el canónico solo declara `bag2jp.gaso_caught` (no
+  `bag2jp.gaso_caught_capture`) y `0x8009b5b4` no está en ningún
+  `[recompiler] mod_instruction_sites`: la captura no puede dispararse aunque se
+  active. El defecto de código era real y latente.
+- **Cambio (`mods-src/bag2jp.feature.bag1-content/bag2jp_gaso_caught.c`, SHA
+  `9989264B…`):** `GASO_CAUGHT_CLIP_PUBLISHED 0` (sin escritura de `a2` en
+  runtime); cada publicación invalida primero el registro del receptor; solo se
+  guarda origen Gas-O (char 9) BAG1 (`has_version`/`get_version` del lado),
+  directo (no reflejado); la entrada exige modo 1, slot 89 y actor principal del
+  receptor y consume el registro haya o no cambio de `a2`.
+- **Tests host:** `test_gaso_caught_runtime` compila el harness con publicación
+  0 y 1. RED contra la copia obsoleta del build tree (`B605A188…`): 5 fallos
+  (Heat/Strike redirigen). GREEN canónico 6/6; conjunto caught 52 OK. Suite
+  completa 309 tests, 1 fallo + 32 errores = mismos nombres de baseline (incluye
+  el error preexistente de compilación de `test_caught_entry` por
+  `bag2jp_caught_adapter.h` modificado); no es suite verde.
+- **Goldfish (2026-11-12, hash revisado `9989264B…`, 2 revisores fríos):**
+  veredicto CON HALLAZGOS, ninguno bloqueante para P0 inerte.
+  Aplicados: filas Heat/Strike con `versions[GASO][lado]=1` para ejercitar el
+  control de carácter; sonda no consumidora `recorded()` que distingue captura
+  guardada/rechazada también con publicación 0; 6 variantes de rechazo que deben
+  invalidar el registro. Mutantes `no_char_check` (4 fallos) y `late_supersede`
+  (2 fallos) detectados. Refutado: `bag2jp_caught_source.h:4` (consumo en
+  desajuste) no aplica, el runtime no usa `b1cs_take`. Límites (P3): registro
+  obsoleto tras fin de ronda/reset/savestate (sin plugin de reset,
+  `generation=1` fijo); `get_version` informa selección, no contenido cargado
+  (`versions.c:174-177`). Veredicto de revisor: no es aprobación del propietario
+  ni permiso de despliegue.
+- **Build y despliegue:** re-stage solo de `bag2jp_gaso_caught.c` (copia previa en
+  `_work/gaso/p0-backup/bag2jp_gaso_caught.B605A188.c`); `bag2jp_bag1_versions.c`
+  queda con drift deliberado. `preflight`/`build --tag gaso-caught-p0-inert` OK
+  (`_work/workflow/20261112T024923593725Z-gaso-caught-p0-inert/`). Exe
+  `68E3AB2E…` (25 442 304 B) desplegado en `BAG2JP-exp-8mb`, hash igual; copia
+  previa `BAG2JP.exe.bak-BDAF4B82-pre-p0`. Manifest desplegado sin cambios
+  (`F76698BE…`). `BAG2JP-win` intacto. **No se jugó:** sin evidencia en juego ni
+  aceptación.
+- **Siguiente:** partida de diagnóstico opcional; P1 banco de clips; activar solo
+  tras declarar los ids de ambos plugins en el manifest, `0x8009b5b4` en
+  `mod_instruction_sites` y P3 resuelto.
+
+### caught-p1-bank-20261112 - banco de clips enlazado (solo host)
+
+Evidencia fresca de esta sesión; no se usó Ghidra (cambio solo host/runtime de
+mods, sin parche MIPS).
+
+- **Cambio:** `bag2jp_gaso_caught.c` (SHA `2020CF47…`) registra
+  `psx_mod_register_activation_plugin("bag2jp.gaso_caught", …)`; la activación
+  llama `b1cc_prepare()` sobre un `B1CaughtBank` estático de vida de proceso y
+  solo cuenta `gaso_caught.bank_ready`/`bank_unavailable`. Una asignación de
+  1048 B en Expansion 1, copia verificada por relectura, sin reintento ni
+  reparación. Entrada/captura sin cambios (`GASO_CAUGHT_CLIP_PUBLISHED 0`); nada
+  consulta el banco todavía. Comentarios de cabecera de `bag2jp_caught_bank.{h,c}`
+  actualizados.
+- **Hechos del runtime (`1a3fc0db303a`):** la activación corre solo para
+  features habilitadas (`mod_runtime.cpp:3161`), antes de `memory_init`, que no
+  limpia la arena de mods (`memory.c:1207-1237`); la arena es un bump allocator
+  de vida de proceso incluido en el snapshot; el cookie de layout depende de
+  `mod_memory_used` (`memory.c:64,88`).
+- **Tests host:** RED contra la fuente P0: 6 fallos (escenarios 1/4/5 sin
+  activación). GREEN `test_gaso_caught_runtime` 9/9 (escenarios 0–6 × publicación
+  0/1): copia única auténtica tras 3 reactivaciones con arena previa de `0x34` B;
+  fallo de asignación terminal sin escrituras; corrupción informada y no
+  reparada; banco preparado y hooks sin escrituras ni asignaciones. Con
+  `test_caught_bank`: 16/16 (los fallos de copia los cubre solo esta suite
+  compañera). Conjunto caught 54 OK. Suite completa 311 tests, 1 fallo + 32
+  errores con el mismo conjunto de nombres que P0 (`_work/p1-full-suite.log`);
+  no es suite verde. `build_caught_bank.py --check`: 1048 B, `238afcd5…`.
+- **Goldfish (2026-11-12, 2 revisores fríos, runtime y tests):** CON HALLAZGOS,
+  ninguno bloqueante. Aplicados: staging de los archivos del banco y línea CMake
+  (sin ellos el enlace fallaba); comentarios obsoletos del banco; escenario 6
+  (hooks de solo lectura con banco preparado); arena previa no vacía; código
+  muerto de reset en el harness. Mutantes `p1_entry_writes_bank` (detectado
+  solo por el escenario 6) y `p1_bank_fixed_base` (escenarios 1/5/6) detectados.
+  Documentados: activar la feature cambia el cookie de savestate (savestates con
+  feature apagada se rechazan encendida y viceversa); un primer fallo de copia
+  deja el banco no disponible todo el proceso aunque un savestate restaure los
+  bytes; lockstep `g_ls_mode==2` en la relectura es solo diagnóstico. Veredicto
+  de revisor: no es aprobación del propietario ni permiso de despliegue.
+- **Build y despliegue:** copiados al `src/` del build tree `bag2jp_gaso_caught.c`,
+  `bag2jp_caught_bank.c` (`6C3225FF…`), `.h` (`FD9D107E…`) y `_data.inc`
+  (`238AFCD5…`), hash iguales; `CMakeLists.txt` del build tree L78 añade
+  `src/bag2jp_caught_bank.c` (copias previas en `_work/gaso/p1-backup/`). El
+  repo canónico no versiona ese cableado CMake: hueco previo, no resuelto aquí.
+  `preflight`/`build --tag gaso-caught-p1-bank` OK
+  (`_work/workflow/20261112T032006955485Z-gaso-caught-p1-bank/`). Exe
+  `01C9BD93…` (25 444 352 B) desplegado en `BAG2JP-exp-8mb`, hash igual; copia
+  previa `BAG2JP.exe.bak-68E3AB2E-pre-p1`. Manifest desplegado sin cambios
+  (`F76698BE…`, sin la feature): la activación no corre en la instalación.
+  `BAG2JP-win` intacto. **No se jugó.**
+- **Pendiente P1 en juego (requiere activar la feature):** decoder lee las poses
+  correctas y arena intacta tras reset/savestate.
+- **Siguiente:** P2 (autorización/consumo y `b1cc_lookup` por rival en la
+  entrada); requisitos de activación de la sección anterior siguen vigentes.
+
+### caught-observe-20261112 - captura y consumo observados, clip sin publicar
+
+- **Checkpoint local:** `ab5480e` (WIP): runtime, harness, driver y bloque CAUGHT
+  del manifest. Los cambios previos de hashes del payload quedan fuera del commit.
+  No implica aceptación de fidelidad ni publicación del clip.
+- **Alcance autorizado:** activar `bag1-gaso-caught` solo en exp-8mb para
+  diagnóstico. `GASO_CAUGHT_CLIP_PUBLISHED=0`: no publicar slot 1, no cambiar
+  `a2`, no escribir pending `+0x18` ni `0x80400000`, ni regenerar payload.
+- **Cambio:** manifest default-off con ambos ids `bag2jp.gaso_caught` y
+  `bag2jp.gaso_caught_capture`; activación local explícita en `mods/state.toml`.
+  Contadores host y trazas `b1v_log` para banco, captura/rechazo y consumo.
+  Punteros actor/pila limitados a RAM viva mediante `memory_get_ram_bytes()`
+  (2/8 MiB); pila también admite scratchpad. El primer filtro fijo de 2 MiB
+  rechazó dos impactos en la partida `20261112T035643119438Z-gaso-caught-observe-diag`.
+  La corrección conserva el rechazo de spans fuera de límite y registra `sp`.
+- **Evidencia fresca:** build/preflight pasados en
+  `_work/workflow/20261112T041805621128Z-gaso-caught-observe-stack/` (build 33.661 s).
+  Exe build/deploy SHA `97DE924AB300572373834E7CC66B93B46DE425CB797E585E9AF36E93420652B4`;
+  backup experimental `BAG2JP.exe.bak-AE55F0C2-pre-stack`. `versions.c` no se
+  restageó: drift deliberado de otra tarea. Instalación estable sin cambios.
+- **Partida fresca:** `_work/versus-runs/20261112T042121831233Z-gaso-caught-observe-diag2/`,
+  Gas-O BAG1 A P1 vs Heat BAG2 A P2, GasOBAG1, fixture de ataque explícita (no
+  juego natural). Banco listo `9f000000`; dos publicaciones
+  `request 202 s2=0 -> s4=1 sp=807fff28 stored`, cada una seguida de
+  `entry taken by side 2 actor 801a8104, a2 unchanged`. Fin de canción y retorno
+  observados (finish 170.0 s, salida de batalla 163.8 s). Revisión visual acotada
+  en `visual-review.json` y `diagnostic-compact.png`: selección, combate y retorno;
+  las capturas finales ya muestran selector, no poses CAUGHT. Runner conserva
+  `complete_awaiting_visual_review`; decisión separada, sin atribuirle otra aceptación.
+- **Calibración:** `20261112T041920241316Z-gaso-stack-calibration`, ocho aristas
+  revisadas y aceptadas para el hash nuevo. Se usó el bridge reversible
+  `_work/gaso/run_clean_trace_session.py`; runner directo rechazaba las rutas
+  históricas de memcards. Restauración final verificada: settings `B41A5FC8`,
+  keybinds `EAAF722E`, state `2DDB7306`; tarjetas originales preservadas.
+- **Tests:** regresión RED contra fuente previa en build tree en ambas variantes
+  de publicación; GREEN runtime+banco 19/19. Escenario 8 cubre pila alta en 8 MiB,
+  último span válido, desborde de un byte, límite 8 MiB y rechazo en retail.
+  `_work/gaso/observe-stack-{red,green,full-suite}.log`: suite completa 315 tests,
+  1 fallo + 32 errores, mismos nombres que `_work/p1-full-suite.log`; no es verde
+  (preservación de entradas Heat, KeyErrors de assets y compilación caught_entry
+  afectados por trabajo previo). No se corrigieron fallos ajenos a este alcance.
+- **Goldfish:** observe `ses_e322d4667ffeT7Kh20eTnVgsmG` y logging
+  `ses_e3220e4a9ffeT5sklla5EUdNu7`: CON HALLAZGOS, ninguno bloqueante. Aplicados
+  rangos de lectura, test de ids, no-evento en dirección ajena, atributo printf,
+  motivos de rechazo comprobados, registros crudos y texto condicionado al macro.
+  Corrección de geometría: spec `_work/goldfish/spec-gaso-caught-stack.md`, revisores
+  `ses_e3206b48fffeQKnq5MvQR1GMRI` y `ses_e3206b488ffeC0HMY0XkxIrn2W`, ambos
+  SIN HALLAZGOS BLOQUEANTES; enlace real y diagnóstico corroboran su conclusión.
+  Límites no bloqueantes: fixture scratchpad no cubre bordes, helper solo recibe
+  spans constantes 6/50 B; no generalizar su aritmética sin nueva prueba.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- **Corrección a notas históricas:** se confirmó el hook de productor vía
+  intérprete dirty-RAM sin `mod_instruction_sites`; esa lista es requisito para
+  emisiones nativas AOT, no para esta ejecución. Build con debug tools OFF:
+  el canal verificado es `bag2jp_bag1_versions.log`, no TCP `mod_counters`.
+  Ghidra MCP identificó main JP `ea5a1668…` y leyó entrada `8002d06c`; registro en
+  `notes/tool-evidence/ghidra-psx-psyq.md`. No se reanalizó overlay ni MIPS.
+- **No aceptado aún:** decoder/binding de clip, reset/savestate, equivalencia
+  temporal, fever y fidelidad visual/audio. `captured[]` y contadores son host-only,
+  no se guardan/restauran: tras load pueden describir otra línea temporal.
+  Activar cambia el cookie por +1048 B de arena; estados off/on incompatibles.
+  Fallo inicial de copia sigue terminal. Sin prueba fresca de savestates.
+- **Siguiente:** P2 `b1cc_lookup` por rival, binding y procedencia/generación;
+  conectar lifecycle P3 antes de publicar. No repetir esta captura sin cambiar
+  inputs/código/hipótesis. Checkpoint experimental no equivale a aceptación CAUGHT.
+### caught-p2-research-20261112 - selección por receptor, sin publicación
+
+- Investigación posterior a `ab5480e`; el ejecutable experimental sigue siendo
+  `97DE924A`, sin cambios de runtime ni nuevas partidas. Preflight pasó
+  (0,82 s), reporte `_work/gaso/p2-preflight.json`.
+- `bag2jp_caught_bank.c:36-45` exige versión BAG1 y solo encuentra personajes
+  0/1/9. `test_caught_bank.py` ya prueba los bytes originales (348/352/348), la
+  selección y el rechazo de BAG2/sin descriptor sin cambiar salida ni guest.
+  Es evidencia existente reutilizada, no una ejecución nueva. La versión del
+  atacante no debe usarse para seleccionar el clip del receptor: Heat BAG2 del
+  diagnóstico anterior debe quedar no soportado, no recibir un clip Heat BAG1.
+- Runtime actual: `generation=1/tick=0` sigue siendo provisional; captura y
+  consumo observe-only no autentican lifetime, identidad de tablas ni decoder.
+  Los helpers host de binding/adapter y sus cambios previos no equivalen a
+  integración runtime; no se tocaron ni se corrigieron fallos ajenos.
+- Contrato leído del framework: `mod_plugins.h:36-47` distingue limpieza host de
+  sesión y callback posterior a carga. `mod_runtime.cpp:2769-2800` recorre plugins
+  del plan tras restaurar; no guarda automáticamente sus estructuras host.
+  No se ha demostrado un evento de generación por carga de actor ni quiescencia.
+- Desglose propuesto al final de `plans/gaso-attack-effect.md`: aprobar solamente
+  P2a (lookup diagnóstico por personaje/versión del receptor, RED→GREEN, sin
+  publicación); después investigar identidad/generación y lifecycle P2b/P3.
+  F8 contra 19 rivales no se reduce a los tres perfiles del banco.
+- Ghidra MCP reutilizado para identidad y lectura acotada de entrada del
+  controlador; registro `caught-p2-research-mcp-20261112` en su log. No se repitió
+  el probe de partida ni se invocaron herramientas irrelevantes.
+- Goldfish no requerido en esta entrega: solo plan, nota, registro de herramienta
+  y estado; ningún cambio a código, manifest, payload o rutas protegidas.
+- Siguiente: obtener aprobación de P2a. Hasta entonces conservar
+  `GASO_CAUGHT_CLIP_PUBLISHED=0`, no cambiar `a2` ni tablas, sin build/despliegue.
+
+### caught-p2a-lookup-20261112 - consulta diagnóstica por receptor, sin publicar
+
+- Aprobación del propietario («Continua») al desglose P2a; alcance solo
+  diagnóstico. `GASO_CAUGHT_CLIP_PUBLISHED=0` sin cambios, sin publicar slot 1,
+  sin escribir pending `+0x18` ni tablas. P2b/P3 siguen sin contrato demostrado.
+- Implementación en `bag2jp_gaso_caught.c`: tras consumir el registro, consulta
+  `b1cc_lookup(&bank, personaje_capturado, versión_del_lado_receptor, &clip)`.
+  La versión se lee en la entrada con `bag2jp_bag1_has_version`/`get_version`
+  (guarda `personaje < 18`), nunca la elección BAG1 del atacante. Contadores
+  `gaso_caught.lookup_ready|lookup_rejected` y una sola línea de log con
+  personaje, versión, resultado, clip y bytes. Descriptor local a cero: un
+  rechazo registra `clip=00000000 bytes=0` aunque la API no limpie salidas
+  previas. Comentario de `bag2jp_caught_bank.h` corregido (ya no dice que nadie
+  lo consulta).
+- Host RED→GREEN: `_work/gaso/p2a-red.log` falla por el lookup ausente en ambas
+  variantes; `_work/gaso/p2a-green.log` y `p2a-green2.log` dejan 20/20 en
+  `test_gaso_caught_runtime` + `test_caught_bank`. Escenario 9 usa el banco real,
+  ambos lados, perfiles Heat/Strike/Gas-O BAG1, cambio de versión del receptor
+  entre captura y entrada en ambos sentidos, y rechazos por personaje no
+  admitido, capacidad ausente y banco corrupto sin asignaciones ni escrituras
+  guest nuevas. Suite completa `_work/gaso/p2a-full-suite.log`: 316 tests,
+  1 fallo/32 errores, nombres idénticos al baseline `observe-stack-full-suite.log`.
+- Goldfish (dos revisores fríos, spec `_work/goldfish/spec-gaso-caught-p2a.md`):
+  ambos `SIN HALLAZGOS BLOQUEANTES`. Sugerencias menores aplicadas: comentario
+  del header y comprobación de cambio de versión entre captura y entrada. No es
+  aprobación del propietario ni permiso de despliegue.
+- Ghidra MCP `caught-p2a-mcp-20261112`: identidad `SLPM_862.19` JP y lectura de
+  `0x8002d06c` igual al registro previo; sin escrituras. Prueba redundante exigida
+  por el flujo, no lifetime ni selección.
+- Build `_work/workflow/20261112T050545068145Z-gaso-caught-lookup-observe/`
+  (preflight/build pasados). Exe `A9296DDBF5A9DE268C297D52F19E7654D95F73C71DD6FED42D9FB58B203D4F57`
+  desplegado solo en exp-8mb; backup `BAG2JP.exe.bak-97DE924A-pre-lookup`.
+- Calibración `_work/versus-runs/20261112T050755645568Z-gaso-p2a-calibration`:
+  ocho aristas y selector revisados y aceptados para el hash nuevo.
+- Partida positiva `20261112T051100576135Z-gaso-p2a-lookup-heat-bag1`
+  (Gas-O BAG1 P1 vs Heat BAG1 P2): banco `9f000000`; dos
+  `request 202 s2=0 -> s4=1 stored` y dos tomas con
+  `a2 unchanged; lookup char=0 version=1 ready clip=9f000000 bytes=348`. Una
+  tercera petición reflejada rechazada. Fin 150,5 s, salida 144,3 s, retorno
+  root 13. Secuencia visual revisada (versus, selección, combate, fin, selector).
+- Partida negativa `20261112T051605884720Z-gaso-p2a-lookup-heat-bag2`
+  (Gas-O BAG1 P1 vs Heat BAG2 P2): dos tomas con
+  `a2 unchanged; lookup char=0 version=0 rejected clip=00000000 bytes=0`; el
+  atacante BAG1 no autoriza un receptor BAG2. Fin 170,0 s, salida 161,0 s,
+  retorno root 13; secuencia visual revisada.
+- Restauración viva comprobada tras ambas partidas: `settings.toml` `B41A5FC8`,
+  `keybinds.ini` `EAAF722E`, `mods/state.toml` `2DDB7306`; sin proceso BAG2JP.
+- Límites: el `lookup ready` acredita disponibilidad e integridad del banco, no
+  generación ni identidad de tablas del actor; `captured[].clock` sigue
+  provisional. Sin publicar el clip, sin aceptación de la animación CAUGHT ni de
+  los 19 rivales (F8). Siguiente: investigar P2b (identidad/generación de carga)
+  antes de cualquier escritura; no repetir estas partidas sin cambios.

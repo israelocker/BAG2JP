@@ -63,8 +63,9 @@ static PSXModActivationCallback activate;
 static unsigned guest_accesses, guest_writes, allocations;
 static unsigned bank_ready, bank_unavailable;
 static unsigned capture_stored, capture_rejected, entry_taken;
+static unsigned lookup_ready, lookup_rejected;
 static unsigned log_lines;
-static char last_log[160];
+static char last_log[256];
 static int fail_allocation;
 static uint32_t expansion1_used = PRIOR_ARENA_BYTES;
 static uint8_t ram[RAM_BYTES];
@@ -155,6 +156,8 @@ void psx_mod_counter_add(const char *name, uint32_t delta) {
     else if (strcmp(name, "gaso_caught.capture_stored") == 0) ++capture_stored;
     else if (strcmp(name, "gaso_caught.capture_rejected") == 0) ++capture_rejected;
     else if (strcmp(name, "gaso_caught.entry_taken") == 0) ++entry_taken;
+    else if (strcmp(name, "gaso_caught.lookup_ready") == 0) ++lookup_ready;
+    else if (strcmp(name, "gaso_caught.lookup_rejected") == 0) ++lookup_rejected;
     else assert(!"unexpected counter");
 }
 /* Mirrors every counted event to the versions log; keep the last line. */
@@ -167,7 +170,7 @@ void b1v_log(const char *fmt, ...) {
     ++log_lines;
 }
 int bag2jp_bag1_has_version(int chr) {
-    return has_version && chr == GASO;
+    return has_version && (chr == GASO || chr == HEAT || chr == STRIKE);
 }
 int bag2jp_bag1_get_version(int chr, int side) {
     assert(chr >= 0 && chr < 18 && side >= 0 && side < 2);
@@ -529,6 +532,67 @@ static void stack_range_follows_live_geometry(void) {
     assert(publish(0, 1) && recorded());
 }
 
+/* Exercise the real immutable bank through the recipient entry, not a lookup
+ * stub: the attacker's BAG1 choice must never authorize a BAG2 recipient. */
+static void recipient_lookup_is_read_only(void) {
+    activate();
+    for (uint32_t source = 0; source < 2; ++source) {
+        const uint32_t recipient = source ^ 1u;
+        for (unsigned i = 0; i < sizeof b1cc_entries / sizeof *b1cc_entries; ++i) {
+            const B1CaughtBankEntry *expected = &b1cc_entries[i];
+            for (unsigned version = 0; version < 2; ++version) {
+                memset(versions, 0, sizeof versions);
+                versions[GASO][source] = 1;
+                versions[expected->character][recipient] = (int)version;
+                setup_ram(source ? (int)expected->character : GASO,
+                          source ? GASO : (int)expected->character);
+                assert(publish(source, recipient));
+                const unsigned ready = lookup_ready, rejected = lookup_rejected;
+                assert(enter(recipient, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+                assert(lookup_ready == ready + version);
+                assert(lookup_rejected == rejected + (1u - version));
+                char outcome[128];
+                snprintf(outcome, sizeof outcome,
+                         "lookup char=%u version=%u %s clip=%08x bytes=%u",
+                         (unsigned)expected->character, version, version ? "ready" : "rejected",
+                         version ? EXPANSION1 + PRIOR_ARENA_BYTES + expected->offset : 0u,
+                         version ? expected->bytes : 0u);
+                assert(strstr(last_log, outcome) != NULL);
+                assert(!enter(recipient, 1, HIT_SLOT));
+                assert(lookup_ready == ready + version &&
+                       lookup_rejected == rejected + (1u - version));
+                /* Re-read the recipient choice at entry, in either direction;
+                 * the attacker's BAG1 choice stays unchanged throughout. */
+                versions[expected->character][recipient] = (int)(version ^ 1u);
+                assert(publish(source, recipient));
+                versions[expected->character][recipient] = (int)version;
+                assert(enter(recipient, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+                assert(lookup_ready == ready + 2u * version);
+                assert(lookup_rejected == rejected + 2u * (1u - version));
+                assert(strstr(last_log, outcome) != NULL);
+            }
+        }
+    }
+    /* Unsupported character, missing capability, then a changed bank byte. */
+    for (unsigned failure = 0; failure < 4; ++failure) {
+        const int character = failure == 0 ? 2 : failure == 1 ? 255 : HEAT;
+        setup_ram(GASO, character);
+        memset(versions, 0, sizeof versions);
+        versions[GASO][0] = versions[HEAT][1] = 1;
+        assert(publish(0, 1));
+        if (failure == 2) has_version = 0;
+        if (failure == 3) expansion1[PRIOR_ARENA_BYTES] ^= 1u;
+        const unsigned ready = lookup_ready, rejected = lookup_rejected;
+        assert(enter(1, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+        assert(lookup_ready == ready && lookup_rejected == rejected + 1u);
+        assert(strstr(last_log, "rejected clip=00000000 bytes=0") != NULL);
+        has_version = 1;
+        if (failure == 3) expansion1[PRIOR_ARENA_BYTES] ^= 1u;
+    }
+    assert(allocations == 1 && guest_writes == B1CC_BANK_BYTES);
+    assert(memcmp(expansion1 + PRIOR_ARENA_BYTES, b1cc_data, B1CC_BANK_BYTES) == 0);
+}
+
 int main(int argc, char **argv) {
     assert(argc == 2 && entry && capture_cb);
     switch (atoi(argv[1])) {
@@ -558,6 +622,9 @@ int main(int argc, char **argv) {
         break;
     case 8:
         stack_range_follows_live_geometry();
+        break;
+    case 9:
+        recipient_lookup_is_read_only();
         break;
     default:
         return 2;

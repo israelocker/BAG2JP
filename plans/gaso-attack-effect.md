@@ -130,3 +130,38 @@ exija cambiar alcance o herramientas, se informa antes de adoptar una aproximaci
 | F2 | En curso: CAUGHT70/TIRED78, loop, escala R12 y argumentos de carga identificados; ajuste host y referencia1514→trabajo14e4 localizados; faltan contraste dinámico, selección por rival y partículas |
 | F3 | En curso: cues 0x1806/0x180a y muestras originales identificados; desplegadas resampleadas; falta PCM/onset |
 | Nueva implementación/captura | No iniciada; `d9ce984` sigue WIP |
+| Entrada limpia 2026-11-12 | P0/P1 cerrados como checkpoints experimentales; `ab5480e` prueba captura/consumo observe-only, no publicación ni fidelidad. P2a añade lookup diagnóstico por receptor (positivo BAG1, negativo BAG2), sin publicar. Ver `notes/gaso-import.md#caught-observe-20261112` y `#caught-p2a-lookup-20261112`. |
+
+### Desglose CAUGHT P2/P3 (2026-11-12, P2a completado; P2b/P3 en investigación)
+
+Este desglose no modifica la aceptación F7/F8 ni autoriza publicar el clip. La
+primera entrega fue **P2a**, selección diagnóstica sin escrituras, autorizada por
+«Continua» tras la pregunta explícita de ejecutar únicamente P2a y completada el
+mismo 2026-11-12. P2b/P3 siguen en investigación; no se implementará un
+contrato de lifetime supuesto.
+
+| Paso / tamaño | Archivos y alcance | Aceptación / verificación | Blocked by |
+| --- | --- | --- | --- |
+| P2a / S | `bag2jp_gaso_caught.c`, harness y driver existentes: consultar `b1cc_lookup` usando personaje y versión del **receptor**, nunca la versión BAG1 del atacante; registrar elegible/no soportado sin publicar | RED→GREEN: Heat/Strike/Gas-O BAG1 en ambos lados; BAG2, personaje sin clip y banco corrupto rechazados. CPU/RAM sin cambios en callbacks y sin nuevas asignaciones. `py -3.13 -m unittest tools.test.test_gaso_caught_runtime tools.test.test_caught_bank`; suite completa comparada con baseline; Goldfish antes de cierre. | Completado 2026-11-12: 20/20 host, suite sin nombres nuevos de fallo, dos Goldfish sin hallazgos bloqueantes. Ver `notes/gaso-import.md` §`caught-p2a-lookup-20261112`. |
+| P2a runtime / S | Staging del único fuente cambiado, build y exp-8mb; nota canónica | `bag2_workflow.py build --tag gaso-caught-lookup-observe` con Python registrado; backups/hashes, calibración por nuevo exe; duelo receptor BAG1 positivo y BAG2 negativo con bridge existente. Mantener `GASO_CAUGHT_CLIP_PUBLISHED=0`, `a2 unchanged`, canción/selector y restauración. No prueba de decoder ni aceptación visual del clip. | Completado 2026-11-12: exe `A9296DDB`, calibración aceptada, Heat BAG1 `ready` y Heat BAG2 `rejected` en juego, restauración verificada. Sin publicar ni aceptar el clip. |
+| P2b / investigación S | Lectura de cargador, identidad de tablas y generación; nota canónica | Identificar productor y consumidor de cada identidad y el evento de recarga aunque se reutilicen direcciones. Campos constantes `generation=1/tick=0`, hashes estáticos o actor igual no sirven. Fijar seam/test y contrato antes de proponer escrituras. | P2a; contrato de carga aún no demostrado |
+| P3 / investigación S | Ciclo de vida, binding/adapter y callbacks reales, preservando cambios previos | Demostrar publicación de tupla, restauración/retiro quiescente, reset/load y decoder. Los callbacks disponibles no prueban por sí solos generación ni serialización. Especificar pruebas de invalidación/rollback antes de integrar. | P2b; ownership y quiescencia aún no demostrados |
+
+Hechos que condicionan el desglose:
+
+- `b1cc_lookup` acepta únicamente versión 1 y personajes 0/1/9. El banco es de
+  1048 bytes originales; no existe un clip BAG2 autenticado en él. P2a confirmó
+  en juego que un receptor Heat BAG2 se rechaza (`version=0`, clip 0), aunque
+  capture/take funcionen.
+- `psx_mod_register_session_reset_plugin` es limpieza host antes de activar
+  planes, incluso si omiten el plugin; no puede restaurar tablas guest.
+  `psx_mod_register_savestate_plugin` se invoca tras una restauración válida y
+  antes de reanudar PC; no serializa automáticamente `captured[]` o el adapter.
+- La compatibilidad de los 19 rivales permanece abierta. No reinterpretar BAG2
+  como BAG1, no inventar equivalencia ni reducir F8 a los tres clips existentes.
+
+Siempre: procedencia del receptor, rechazo conservador, instalación experimental,
+preservar trabajo previo y evidencia histórica. Nunca en P2a: publicar slot 1,
+cambiar `a2`, pending del actor, payload, pins o instalación estable. P2a quedó
+cerrada como diagnóstico observe-only; publicación y diseño P2b/P3 siguen
+bloqueados.

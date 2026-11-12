@@ -23,11 +23,11 @@
  *
  * Activation (P1) prepares the authentic 1048-byte clip bank once per process
  * in Expansion 1 (bag2jp_caught_bank.c): one allocation, a verified copy, and
- * no retry or repair on later activations; it only reports readiness. Nothing
- * reads the bank yet.
+ * no retry or repair on later activations. P2a looks up the recipient's clip
+ * at entry for diagnostics only: readiness is not permission to publish it.
  *
- * Required before GASO_CAUGHT_CLIP_PUBLISHED: per-rival clip lookup wired into
- * the entry, bounded exclusive RAM access, persistent loan ownership, safe
+ * Required before GASO_CAUGHT_CLIP_PUBLISHED: authenticated recipient/table
+ * generation, bounded exclusive RAM access, persistent loan ownership, safe
  * retirement and reset/savestate handling. Do not allocate placeholder clips
  * or publish slot1 here without a captured record.
  * See notes/gaso-import.md, caught-entry-recovery-20261111.
@@ -39,8 +39,8 @@
 #include "bag2jp_caught_source.h"
 #include "bag2jp_caught_bank.h"
 
-/* No authentic clip is resident in guest RAM yet (P1). Host tests build with 1
- * to exercise the redirect; every runtime build must keep 0. */
+/* The bank is resident, but no clip is bound to the recipient's slot1. Host
+ * tests build with 1 to exercise the old redirect; runtime builds must keep 0. */
 #ifndef GASO_CAUGHT_CLIP_PUBLISHED
 #define GASO_CAUGHT_CLIP_PUBLISHED 0
 #endif
@@ -228,8 +228,20 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
         /* Consume once, even while no clip is published. */
         captured[side].available = 0;
         psx_mod_counter_add("gaso_caught.entry_taken", 1u);
-        b1v_log("gaso_caught: entry taken by side %d actor %08x, a2 %s", side + 1,
-                (unsigned)actor, GASO_CAUGHT_CLIP_PUBLISHED ? "-> 1" : "unchanged");
+        /* Captured recipient identity is only a diagnostic snapshot until P2b
+         * proves its load generation. Never use the attacker's BAG1 choice. */
+        const uint32_t character = captured[side].character;
+        const uint32_t version = character < GASO_CS_VERIFIED_TABLE_ROWS &&
+            bag2jp_bag1_has_version((int)character) ?
+            (uint32_t)bag2jp_bag1_get_version((int)character, side) : 0u;
+        B1CaughtBankClip clip = {0};
+        const int ready = b1cc_lookup(&bank, character, version, &clip);
+        psx_mod_counter_add(ready ? "gaso_caught.lookup_ready" : "gaso_caught.lookup_rejected", 1u);
+        b1v_log("gaso_caught: entry taken by side %d actor %08x, a2 %s; "
+                "lookup char=%u version=%u %s clip=%08x bytes=%u", side + 1,
+                (unsigned)actor, GASO_CAUGHT_CLIP_PUBLISHED ? "-> 1" : "unchanged",
+                (unsigned)character, (unsigned)version, ready ? "ready" : "rejected",
+                (unsigned)clip.clip, (unsigned)clip.clip_bytes);
         if (GASO_CAUGHT_CLIP_PUBLISHED)
             cpu->gpr[GASO_CAUGHT_REG_A2] = GASO_CAUGHT_ARG_A2;
         return;

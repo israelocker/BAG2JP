@@ -82,6 +82,10 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """Accept the expanded stack, not its out-of-range tail or retail alias."""
         self.run_scenario(8)
 
+    def test_lookup_uses_recipient_character_and_version_without_writes(self) -> None:
+        """All three authentic clips, both sides, and fail-closed negatives."""
+        self.run_scenario(9)
+
 
 MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
 

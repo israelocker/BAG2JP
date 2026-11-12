@@ -5,11 +5,26 @@ tags: ["tools", "evidence"]
 summary: "Historial de Ghidra MCP y soporte PSX/PsyQ; no certifica identificación automática."
 related: ["notes/assets.md", "AGENTS.md"]
 created: "2026-11-06"
-updated: "2026-11-06"
+updated: "2026-11-11"
 doc_kind: evidence
 ---
 
 # Ghidra / PSX / PsyQ — historial
+
+## 2026-11-07 — ghidra-040 — controlled native-reference session check
+
+- Purpose: mandatory MCP identity check before renewing the native BAG1 FEVER2 reference. `get_program_info` confirmed JP main `SLPM_862.19`, PSX little-endian, SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`; `read_memory(address="0x80055130", length=4)` returned `11 00 23 00`, no gaps. Read-only; the native BAG1 capture is a separate runtime, not this selected binary.
+- Independent validation: unchanged archive/table evidence in ghidra-038 resolves BAG2 chr9 solo/duet entries 17/35. Outcome: redundant confirmation of unchanged evidence, not native playback or visual-fidelity proof. Time, savings and manual rework unmeasured. Next: controlled native FEVER2 recording from a blank playlist, without changing the candidate mapping.
+
+## 2026-11-07 — ghidra-039 — clean-fever session identity check
+
+- Purpose: verify the selected binary before the clean solo-fever capture. Ghidra 12.1.4 MCP `get_program_info` confirmed JP main executable `SLPM_862.19`, PSX little-endian, SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`; `read_memory(address="0x80055130", length=4)` returned `11 00 23 00`, no gaps. No analysis or game memory modified.
+- Independent validation: existing archive/table evidence in ghidra-038 still resolves chr9 solo/duet to entries 17/35. Outcome: redundant with unchanged table evidence, but mandatory session identity/query verified; not proof of visual fidelity. Time, savings and manual rework unmeasured. Next: review continuous captures and read-only loaded-candidate evidence, not another table query.
+
+## 2026-11-07 — ghidra-038 — Gas-O solo/duet fever entries
+
+- Purpose: confirm the JP chr9 choreography entries before accepting the solo-fever candidate. Ghidra 12.1.4 MCP `get_program_info` identified `SLPM_862.19`, PSX little-endian, SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`; `read_memory(address="0x80055130", length=4)` returned `11 00 23 00`, no gaps (main executable, not an overlay).
+- Independent existing check: `fever_entries.py` and the archive inventory resolve those u16 entries 17/35 to `bi_o/choreography_a` / `choreography_b`. This confirms the candidate's entry 17 targets solo only; it does not validate movement, voices or duet in-game. Outcome: useful, bounded table confirmation. Preparation/execution/review time and savings unmeasured; no manual rework. Next: full-match evidence for the unchanged experimental runtime `165a2dce…`.
 
 ## 2026-11-07 — ghidra-037 — pitch sign of tone shift (corrects ghidra-034)
 
@@ -480,6 +495,113 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
 - Independent validation: real-C DF2 host harness compiled with actual generated index type; five host tests in `_work/gaso/visual-region-tests.json` (mock runtime, not live game). Confirms exact routing/ownership properties, not character-hook coherence or stage semantics. Index has no JP resources yet; no deployment.
 - Outcome: **parcial**, useful identity/read-access confirmation; not evidence of full regional import. No MCP failure in this trial. Time, manual rework and savings unknown. Next: real JP resources and final assembled/runtime validation.
 
+## 20261110-ghidra-041 — 2026-11-10 UTC — Gas-O sign occlusion, unavailable backend
+
+- Tipo: arranque/diagnóstico bloqueado; no análisis semántico satisfactorio.
+- Versión/entorno: Ghidra 12.1.4 instalado en `D:/Dev/Tools/ghidra_12.1.4_PUBLIC`,
+  gestor de proyecto ya abierto, PID 57236, sesión Windows 2, HWND 1052560,
+  proyecto `D:/Dev/Recomp/BAG2JP/ghidra/BAG2JP.gpr`. No se lanzó otra instancia.
+- MCP exacto: `get_program_info()` primero, dos reintentos tras acciones GUI
+  acotadas y una comprobación final; todos devolvieron `BACKEND_UNAVAILABLE`, backend
+  `http://127.0.0.1:8080`. No hubo consulta de memoria/decompilación ni escritura.
+- Entradas de la tarea: escenario BAG1 JP `_work/bag1_disc_full/STAGEE/ST_GAS.DFS`,
+  SHA-256 `5da6d4a2ca56713bd88d71edcd377f4c4a0cb5fe3286184b37e73f9559f3efa9`;
+  etapa desplegada 197, SHA-256
+  `805872fadd6b214077e36dee28e2a2f234a73cf6b836767f55a0fefab5c883f6`.
+  Objetivo previsto: `SLPM_862.19` (BAG2 JP), después renderer de escenario;
+  identidad/hash y módulo cargado **no confirmados por MCP en este ensayo**.
+- Evidencia GUI: `winshot.ps1 -Ids 57236 -Out ...` capturó el gestor con el
+  programa en el árbol, no CodeBrowser; `_work/gaso/ghidra-sign-start.png` y
+  `ghidra-sign-crop.png`. `_work/inspect_ghidra_ui.ps1` no enumeró elementos;
+  `_work/open_ghidra_file.ps1` devolvió `SetForegroundWindow=False`.
+  `_work/gaso/open_existing_ghidra_program.py` envió un doble clic acotado con
+  `SendMessageTimeout` (también coordenadas DPI-aware): mensajes aceptados, pero
+  sin apertura/MCP demostrados; la primera captura posterior fue idéntica.
+- Límites: `OpenInputDesktop` de solo lectura abrió `Default`; no prueba una causa
+  UIPI. No se ejecutó GhidraGo porque su fallback podría abrir otra instancia.
+  No se instalaron componentes ni cambiaron configuración, análisis o proyecto.
+- Contraste independiente: `_work/gaso/sign-candidate-audit.json`, generado con
+  `py -3.13 _work/gaso/audit_sign_candidate.py`, acredita igualdad binaria del
+  modelo desplegado y la conversión actual; no sustituye Ghidra ni prueba el
+  renderer. Preflight en `_work/workflow/20261110T022054362906Z-gaso-sign-depth/`.
+- Dictamen: **no ejecutado / bloqueado** para análisis requerido; intentos de
+  arranque inconclusos. Éxitos históricos de otras entradas no prueban conexión
+  actual. A no corregido, B no aceptado; ningún nuevo test de juego.
+- Medición: preparación, ejecución y retrabajo no medidos; ahorro no medido.
+- Siguiente paso: recuperar CodeBrowser/backend en la sesión existente, confirmar
+  programa/región/módulo y realizar una lectura pertinente antes de parchear A.
+
+## 20261110-ghidra-042 — 2026-11-10 UTC — recovered existing CodeBrowser, Gas-O mesh parser
+
+- Propósito: desbloquear el análisis obligatorio de A sin duplicar Ghidra ni
+  modificar configuración, instalación o datos de análisis. Complementa 041:
+  aquel fallo sigue siendo histórico, pero ya no describe la conexión actual.
+- Versión/identidad: Ghidra 12.1.4, mismo javaw PID 57236/sesión 2. MCP
+  `get_program_info()` confirmó `SLPM_862.19`, PSX LE32, ejecutable BAG2 JP,
+  SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`,
+  1324 funciones. Programa principal, **no** overlay del escenario.
+- Arranque acotado: el primer `get_program_info()` devolvió `BACKEND_UNAVAILABLE`.
+  `py -3.13 _work/gaso/ghidra_ui_probe.py` verificó escritorio Default, sesión 2,
+  integridad media de ambos procesos y acceso al cursor; por tanto no se confirmó
+  el antiguo diagnóstico UIPI. `py -3.13 _work/gaso/open_ghidra_existing_input.py`
+  verificó PID/HWND/foreground, adjuntó temporalmente hilos de entrada, abrió el
+  programa con un doble clic real y restauró cursor/foreground. Primer MCP tras
+  abrir: `NO_PROGRAM`; tras capturar CodeBrowser, identidad satisfactoria. Sin
+  reinicio, nueva instancia, instalación ni escrituras MCP.
+- Evidencia: `_work/gaso/ghidra-ui-probe.json`, `ghidra-recovery-start.png`,
+  `ghidra-recovery-open.png` y miniatura `ghidra-recovery-open-small.png`.
+- Consultas MCP: `read_memory(0x80027FC8,96)` satisfactoria, sin huecos;
+  `decompile_function_by_address(0x80027FC8)` falló `FUNCTION_NOT_FOUND`.
+  `list_segments(offset=0,limit=20)` devolvió 20/26; no se utilizó como inventario
+  completo. Decompilaciones `0x800220B8` y `0x80022518`, xrefs de `0x800220B8`
+  (un llamador 0x800225BC) satisfactorios. Confirman inicialización del header
+  BAG2 de 0x48 palabras y referencias de malla, no la causa de oclusión.
+- Consultas sin utilidad práctica para A: listados `filter=80023` (13 funciones)
+  y `filter=80026` (3); decompilaciones `0x8002384C`, `0x80023FF8` y `0x80026FC8`
+  resultaron ajenas al renderer buscado. `0x80027E98` también devolvió
+  `FUNCTION_NOT_FOUND`. No se crearon funciones ni se supusieron límites.
+- Contraste independiente: conversor `model_bag1_to_bag2.py` y auditoría binaria
+  previa; `py -3.13 _work/gaso/inventory_sign_geometry.py` produjo
+  `_work/gaso/sign-geometry.json`: 32 mallas tipo 1 y un nodo tipo 3, sin instancias
+  tipo 2 en esta fuente. Se conservan vértices/transforms nativos. Hashes de fuente
+  y etapa: los de 041. Corrección regional de 041: la ruta `bag1_disc_full` usada
+  es la fuente USA; la comparación regional previa en la nota canónica informa
+  modelos USA/JP idénticos, no autoriza etiquetar esa ruta como JP.
+- Dictamen: **útil** para recuperar MCP y verificar el parser; **parcial** para A.
+  No demuestra un parche, orden OT correcto ni aceptación en juego. La captura
+  diagnóstica de paquetes GPU del candidato sin modificar se tramita por separado.
+- Medición: tiempo, retrabajo y ahorro no medidos. Próximo paso: correlacionar
+  textura/geometría GAS y paneles con paquetes/OT reales antes de modificar A.
+
+## 20261110-ghidra-043 — 2026-11-10 UTC — lecturas acotadas de emisores GAS
+- Tipo: uso real, continuación de 042 en la misma instancia recuperada, sin
+  escrituras/análisis nuevos. Ghidra 12.1.4, SLPM_862.19 main BAG2 JP, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  Identidad obtenida en 042; no se afirma overlay cargado.
+- MCP exacto: `read_memory(address="0x80027FC8",length=512)`,
+  `read_memory(address="0x800281BC",length=1024)`,
+  `read_memory(address="0x800285BC",length=1536)` y
+  `read_memory(address="0x80028BD8",length=1536)`: todos sin huecos.
+- Evidencia `_work/gaso/`, respectivamente: `sign-emitter-ghidra.json` SHA-256
+  `86d917dab824f85932dae0f7a069f56da966d33784b687c7d5cc5fa75fe76541`,
+  `sign-quad-emitter-ghidra.json`
+  `a3c741563ef977191e667f54d25e04f8a95308fc7e01fdd423be8bf45c1edbdd`,
+  `sign-ft4-emitter-ghidra.json`
+  `2a9742963b113fe3259c9cd5e9cd198211caaaf66f4d3883ec76f109fb27c09f`,
+  `sign-ft4-emitter-tail-ghidra.json`
+  `ba54eac1b8bebc27ccf4a5d4bddf194c2cef837afa785ccd813ed9e15822176e`.
+- Contraste: Capstone-006 (incluido NCLIP no decodificado), funcmatch-002 y
+  comparación byte a byte con los payloads de los ejecutables originales.
+  FT4 en 80028BDC y esquinas/profundidades coherentes con paquetes de GAS.
+  No se crearon funciones en tramos sin definición; callers/ejecución exacta
+  y causalidad de la oclusión siguen sin confirmar.
+- Dictamen: **útil** para evidencia binaria y layout local; **inconcluso** como
+  solución de A. Un candidato rojo posterior se descartó como causa al comprobar
+  que solo comparte un borde rasterizado con GAS, sin área interior común.
+  No sesgo OT ni geometría modificados. Medición de ejecución, preparación,
+  revisión/retrabajo y ahorro: no medida. Siguiente: analizar capturas tempranas
+  de la intro y localizar una superposición interior real antes del parche.
+
 ## 20261110-ghidra-044 — 2026-11-10 UTC — espacio y altura del tanque GAS-O
 - Tipo: arranque recuperado y uso real. Ghidra 12.1.4; MCP exacto:
   `get_program_info()`, `decompile_function_by_address(address="0x8002c404")`.
@@ -756,7 +878,7 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   exhaustion of writers. No need for funcmatch (no USA-main equivalent search);
   no native overlay MCP claim. No runtime, payload, game or protected files changed.
   Execution7.091s excludes preparation/review; rework and savings unmeasured.
-  Next: argument provenance and pointer-based scale writers, then CAUGHT selection.
+   Next: argument provenance and pointer-based scale writers, then CAUGHT selection.
 
 ## 20261111-ghidra-050 — Scale load arguments and host writer
 
@@ -848,6 +970,7 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   No runtime edits, captures or acceptance; time savings unmeasured.
   Next: fall clamp +0x43cc scale dependence, then CAUGHT per rival.
 
+
 ## 20261111-ghidra-053 — Native tank height ratio across characters
 
 - Purpose: owner-approved method for BAG2-only rivals; measure native tank/rival
@@ -895,7 +1018,7 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   32 are rival-independent; landing in 16 frames for dt 1 and 2. BAG2/native world
   ratio 520/784=0.663 from dancer separation. WIP drop 1200/12 frames contradicted.
   Limits: normal stage only, dt not measured, camera not compared. Time unmeasured.
-  Next: CAUGHT selection per rival (pairs, BAG2-only), then particles and F3.
+   Next: CAUGHT selection per rival (pairs, BAG2-only), then particles and F3.
 
 ## 20261111-ghidra-056 — BAG2 hit selector and CAUGHT binding gap
 
@@ -1197,6 +1320,21 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
   Query/preparation/manual rework/savings unknown. Next: real hook integration and
   the 24-native-clip run, not another inventory of slots.
 
+## 20261111-ghidra-064 — CAUGHT controller seam and request→slot tables
+
+- Purpose: owner-chosen controller-hook path. `get_program_info()` SLPM_862.19, SHA
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe, 1324 functions.
+- MCP: `get_xrefs_to` 8002d06c/8002a090 → 0 (no Ghidra functions there);
+  `get_function_by_address` 8002ae60/8002b1e4 FUNCTION_NOT_FOUND; `list_functions`
+  (1324); `read_memory` 8002ae60 (`1b b4 00 0c` = jal 8002d06c, matches raw main),
+  8005180c(0x2b), 80051838(40), 80051859(0xef), no gaps.
+- Finding: no table entry maps any mode-1 request to slot1 for IDs 0/1/9; delivery of
+  slot1 through the pending request `+0x18` is impossible. Details:
+  `notes/gaso-import.md` "seam real del controlador".
+- Independent validation: Capstone listings of the raw main and 005.dbi (capstone-010).
+  Outcome: a blocker found and a realizable seam identified; not runtime proof. Time,
+  savings and manual rework not measured. Next: owner decision on the entry redirect.
+
 ## 2026-11-11 — clean-trace-mcp-20261111 — bounded controller identity/read
 
 - Purpose/version: verify existing Ghidra 12.1.4 MCP session for the clean Gas-O controller trace; `get_program_info` confirmed main `SLPM_862.19`, NTSC-J PSX little-endian, entry `0x80035d98`, SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`. No new instance/configuration, analysis or guest writes.
@@ -1213,3 +1351,192 @@ su presencia no demuestra que una firma se haya aplicado correctamente.
 - Ghidra12.1.4; mismo nativeJP/mainJP/005 del ensayo native-timing-contract; hashes agrupados `_work/gaso/sequence-residency-contract.json` y `sequence-chart-audit.json`. MCP de esta sesión iniciado con get_program_info y bytes main contrastados según entrada anterior. Consultas nuevas exactas `decompile_function_by_address({address:"0x8002ccc8"})`, igual para80012a94/800128b4/800126f8: cuatro funciones correctas, sin truncado. Puntero raw cruza tabla824/root-motion/init/deltas sin máscara a mainRAM en esos caminos. No se llamó función guest ni escribió memoria.
 - `py -3.13 _work/gaso/trace_bag2_sequence_generator.py`: payload005 verificado/c180916e…, proceso headless aislado ya existente, -process/-noanalysis/AnalyzeGasHooks.java800997ec, salida1548B/65líneas, exit0/7.343s. Hash/CLI completo en trialJSON. Genera432 entradas por redondeo entero, default phase5. Contraste: MIPS listado original, datos del convertidor/entry197 y cálculo independiente de321 entradas.
 - Resultado Útil acotado: identifica fórmula y factibilidad estática del puntero. El test de arena/snapshots es independiente pero NO prueba decoder guest real. MCP/tiempo manual/retrabajo desconocidos; ahorro no medido. No aprobación/importación. Siguiente: acceso explícito a arena y decoder real antes del hook.
+
+
+### owned-clip-decoder-mcp-20261111
+Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862.19, Ghidra 12.1.4/MCP existente. `get_program_info` primero: SHA `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`; `decompile_function_by_address` en `0x800126f8` (repetido para preparar firma exacta), `0x800128b4`, `0x80012a94`, completos/sin truncar. Confirma inicialización, delta, rewind y root-motion con punteros relativos, no prueba ejecución real ni seguridad de retiro. Contraste independiente Capstone5.0.7 de raw main `143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b` en `800126f8..80012ccc`: llamadas/init/rewind coinciden. Contraste adicional con el decoder MIPS original y bus/interpreter de producción: tres clips, frames 0/1/0/1, poses iguales en main y Expansion1; `_work/gaso/owned-decoder-probe10/trial.json`. No equivale a retiro/controller vivo. tiempo manual/ahorro desconocidos. Resultado útil para firma/ruta estática, no aceptación runtime.
+
+## caught-entry-recovery-mcp-20261111 — 2026-11-11 UTC
+
+- Tipo: uso real acotado; Ghidra 12.1.4/MCP existente, sin nueva instancia,
+  escritura ni configuración. Main `SLPM_862.19`, NTSC-J, PSX LE32; no overlay.
+- Consultas exactas: `get_program_info()` primero confirmó SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  `decompile_function_by_address({address:"0x8002d06c"})` falló
+  `FUNCTION_NOT_FOUND`; `read_memory({address:"0x8002d06c",length:32})`
+  devolvió sin gaps `c0ffbd272400b3af219880003400b7af3c00bfaf3800beaf3000b6af2c00b5af`.
+- Contraste independiente: comparación determinista con `_work/mainexe/slpm.bin`,
+  base `80010000`, SHA `143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b`;
+  los 32 bytes coinciden. El contrato 202→89 procede de evidencia previa, no de
+  estos 32 bytes. No se sustituyó silenciosamente un decompile inexistente.
+- Dictamen: útil para identidad/acceso y verificación de entrada, no semántica
+  nueva, quiescencia ni juego. Evidencia complementaria de cuarentena:
+  `_work/gaso/caught-entry-recovery-report.json` y logs `entry-recovery-*`.
+  Ejecución MCP/preparación/revisión/retrabajo y ahorro: no medidos.
+- Siguiente: reutilizar identidad/bytes mientras no cambien inputs; implementar
+  contrato de redirección seguro antes de build/despliegue, no repetir inventarios.
+
+## caught-entry-contract-mcp-20261111 — 2026-11-11 UTC
+
+- Propósito: confirmar binario y entrada para el contrato host `89→1`, no probar
+  despacho real ni fidelidad. Instancia Ghidra 12.1.4/MCP existente, sin cambios.
+- `get_program_info()` confirmó main JP `SLPM_862.19`, PSX LE32, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  `read_memory({address:"0x8002d06c",length:32})` devolvió sin gaps
+  `c0ffbd272400b3af219880003400b7af3c00bfaf3800beaf3000b6af2c00b5af`.
+  No se pidió decompile ni se cargó otro módulo en este ensayo.
+- Contraste independiente determinista contra raw `slpm.bin`, base `80010000`,
+  SHA `143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b`:
+  32 bytes iguales; reporte `_work/gaso/caught-entry-contract-report.json`.
+- Resultado: útil como identidad/lectura acotada; no descubre semántica nueva.
+  La traducción 202→89 y disposición principal/compañero reutilizan investigación
+  anterior. Los hechos de versión/procedencia/pausa siguen a cargo del llamador.
+  Tiempo MCP/manual/retrabajo y ahorro desconocidos; no se infieren de tests.
+- Siguiente: clips auténticos y observaciones del runtime; mantener callback
+  inerte hasta verificar esas obligaciones. Sin build, deploy ni nueva partida.
+
+## caught-clip-bank-mcp-20261111 — 2026-11-11 UTC
+
+- Propósito: confirmar binario y acceso MCP a la entrada del decoder cuya evidencia
+  anterior se reutiliza para la residencia del banco CAUGHT. Ghidra 12.1.4/MCP,
+  instancia existente; main JP, sin cargar overlay ni modificar análisis/RAM.
+- Consultas: `get_program_info()` confirmó `SLPM_862.19`, PSX LE32, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`;
+  `read_memory({address:"0x800128b4",length:32})` devolvió sin gaps
+  `e0ffbd271800b2af219080001400b1af1c00bfaf1000b0af0000428e2180c000`.
+- Validación independiente: bytes idénticos al raw `_work/mainexe/slpm.bin`, base
+  `80010000`, SHA `143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b`.
+  Registro `_work/gaso/caught-clip-bank-report.json`. No decompile ni fallos MCP
+  en este ensayo; no se repite el probe decoder previo con inputs sin cambios.
+- Resultado útil para identidad/lectura acotada, no prueba nueva de semántica,
+  temporización, ciclo runtime o fidelidad. Tiempo MCP/manual, retrabajo y ahorro
+  desconocidos; los tiempos de tests no los sustituyen.
+- Siguiente: conectar observaciones y ciclo real sin activar el callback hasta
+  cerrar procedencia, exclusividad, retirada/reset/savestate y pruebas pertinentes.
+
+## caught-dispatch-context-mcp-20261111 — 2026-11-11 UTC
+
+- Propósito: confirmar el dispatcher main JP y su tabla/callsite al investigar
+  observaciones CAUGHT. Ghidra 12.1.4/MCP, instancia existente; solo lectura,
+  sin cargar overlay, cambiar análisis ni escribir RAM. `get_program_info()`:
+  `SLPM_862.19`, PSX LE32, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+- Consultas `read_memory`, sin gaps:
+  - `{address:"0x8002a090",length:32}`:
+    `28ffbd27c000b4af21a08000cc00b7af21b8a000b000b0af0680023c08f84224`.
+  - `{address:"0x8002ae50",length:24}`:
+    `212080022128e002e400a78f213000021bb4000c1000b5af`.
+  - `{address:"0x800518e4",length:16}`:
+    `5557595b4700000056585a5d5d000000`.
+- Validación independiente: tres lecturas iguales al raw `_work/mainexe/slpm.bin`,
+  base `80010000`, SHA `143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b`.
+  Registro `_work/gaso/caught-dispatch-context-report.json`; allí figuran también
+  los ensayos separados del dispatcher/consumidor y sus límites. Overlay original
+  `005.dbi` SHA `bc5f3045084e4b3e19009910441627977863c8b5791b5cdb716a766e68b28fb2`
+  se leyó fuera de Ghidra, no se representa como módulo cargado aquí.
+- Resultado útil para identidad y contraste de bytes, no prueba independiente
+  de procedencia Gas-O, reflejos, generación, ciclo de vida o timing BAG1. No fallo
+  MCP/decompile en este ensayo. Tiempo MCP/manual, retrabajo y ahorro desconocidos;
+  3.557 s del probe de intérprete no mide esos conceptos.
+- Siguiente: lector acotado y tests de observaciones con ABI confirmado, sin
+  activar el hook antes de cerrar procedencia y ciclo de vida real.
+
+## caught-context-reader-mcp-20261111 — 2026-11-11 UTC
+
+- Uso real acotado: Ghidra 12.1.4/MCP, instancia existente, main JP
+  `SLPM_862.19`, PSX LE32. `get_program_info()` confirmó SHA
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  `read_memory({address:"0x8002ae50",length:24})` devolvió sin gaps
+  `212080022128e002e400a78f213000021bb4000c1000b5af`.
+- Contraste independiente: mismos 24 bytes en `_work/mainexe/slpm.bin`, base
+  `80010000`, SHA `143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b`.
+  Evidencia `_work/gaso/caught-context-reader-report.json`. Reutiliza el ensayo
+  anterior para semántica del dispatcher; esta lectura no vuelve a probarla.
+- Resultado útil para confirmar identidad y bytes del callsite al escribir el
+  lector. No se escribió ni modificó análisis; no overlay cargado ni decompile
+  intentado en este ensayo, sin fallo MCP. No demuestra atacante, versión,
+  exclusión de reflejos, generación, ciclo de vida o aceptación en juego.
+- Medición MCP, preparación/revisión/retrabajo y referencia comparable:
+  desconocidos; ahorro no medido. Siguiente: reutilizar identidad/callsite y
+  mantener separado el contexto de llamada de la autorización del ataque.
+
+## caught-hit-provenance-mcp-20261111 — 2026-11-11 UTC
+
+- Propósito: contrastar la tabla de petición/auxiliar por personaje al investigar
+  origen y reflejos. Ghidra 12.1.4/MCP, instancia conservada; primero
+  `get_program_info()` confirmó `SLPM_862.19`, JP main PSX LE32, SHA
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+- `read_memory({address:"0x80051458",length:36})`, sin gaps:
+  `ca01ca01ca00ca01ca01ca01cc00cb00c902ca01c800ca01ca01ca00c800cb00ca01c902`.
+  Misma tabla en raw `_work/mainexe/slpm.bin`, base `80010000`, SHA
+  `143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b`;
+  contraste independiente en `_work/gaso/caught-hit-provenance-report.json`.
+- Resultado útil: identidad y tabla verificadas, confirma petición compartida
+  por varios IDs. El overlay original `005` no está cargado en este programa;
+  sus spans se ejecutaron por separado con el intérprete productivo y fuente
+  SHA `bc5f3045…`. La lectura MCP no demuestra esa semántica ni aceptación.
+- Sin fallo MCP, decompile, escritura o cambio de análisis en este ensayo.
+  Tiempo/manual rework y ahorro de MCP desconocidos; los 4.000 s de probe no
+  son medida de ahorro. Siguiente: conservar procedencia real antes del borrado,
+  sin equiparar contexto o petición 202 a autorización de CAUGHT.
+
+## caught-p0-inert-mcp-20261112 — 2026-11-12 UTC
+
+- Propósito: confirmar programa y punto de entrada antes de neutralizar el
+  runtime CAUGHT (P0). Ghidra 12.1.4/MCP, instancia existente reutilizada.
+- `get_program_info()`: `SLPM_862.19`, PSX LE32, SHA
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`, 1324
+  funciones. `read_memory({address:"0x8002d06c",length:16})` =
+  `c0ffbd27 2400b3af 21988000 3400b7af` (`addiu sp,sp,-0x40` + guardados);
+  `get_xrefs_to("0x8002d06c")` = 0 (sin función definida; entrada indirecta).
+- Validación independiente: no hacía falta otra; coincide con el contrato ya
+  registrado en `caught-entry-contract-mcp-20261111`. No se repitieron probes.
+- Resultado: útil como identidad y guardia; no aporta semántica nueva. La
+  conclusión de inercia del despliegue sale de la fuente del runtime
+  (`mod_runtime.cpp:368-394`), no de Ghidra. Sin fallos ni escrituras MCP.
+  Tiempo y ahorro desconocidos. Siguiente: ninguno para P0.
+
+## caught-observe-stack-mcp-20261112 - 2026-11-12 UTC
+
+- Propósito: identidad y lectura acotada obligatorias al reanudar la corrección
+  del filtro de pila de CAUGHT. Ghidra 12.1.4/MCP, instancia existente.
+- `get_program_info()` confirmó `SLPM_862.19`, JP, PSX LE32, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`,
+  base `80000000`, entrada `80035d98`. `read_memory(address="0x8002d06c",
+  length=16)` devolvió `c0 ff bd 27 24 00 b3 af 21 98 80 00 34 00 b7 af`, sin
+  huecos. Región: entrada del controlador en el ejecutable principal; no prueba
+  de overlay cargado. Sin escrituras ni fallos MCP.
+- Validación independiente: bytes iguales al registro P0 anterior; no se repitió
+  el análisis del contrato. Resultado: confirmación redundante de identidad
+  exigida por el flujo, no evidencia de la geometría de RAM en ejecución.
+  Tiempo, ahorro y retrabajo no medidos. Siguiente: verificar el filtro con
+  regresión de geometría y partida experimental, no con otro probe idéntico.
+
+## caught-p2-research-mcp-20261112 - 2026-11-12 UTC
+
+- Propósito: identidad y lectura acotada obligatorias antes de investigar P2;
+  instancia Ghidra 12.1.4/MCP existente, sin escrituras ni arranque duplicado.
+- `get_program_info()` confirmó `SLPM_862.19`, JP, PSX LE32, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`,
+  base `80000000`, entrada `80035d98`. `read_memory(address="0x8002d06c",
+  length=16)` devolvió `c0 ff bd 27 24 00 b3 af 21 98 80 00 34 00 b7 af`, sin
+  huecos; región: main, entrada de controlador. No prueba de overlay cargado.
+- Validación independiente: comparación con los bytes registrados en
+  `caught-observe-stack-mcp-20261112`. Resultado: confirmación redundante exigida
+  por el flujo, no semántica nueva de lifecycle o de selección del banco. Sin
+  fallos MCP. Tiempo/retrabajo/ahorro desconocidos. Siguiente: reutilizar el
+  contrato conocido; la carencia de generación debe investigarse en su cargador.
+
+## caught-p2a-mcp-20261112 - 2026-11-12 UTC
+
+- Propósito: confirmar identidad y lectura acotada obligatorias antes de P2a,
+  mediante la instancia Ghidra 12.1.4/MCP existente.
+- `get_program_info()` confirmó `SLPM_862.19`, JP, PSX LE32, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`,
+  base `80000000`, entrada `80035d98`. `read_memory(address="0x8002d06c",
+  length=16)` devolvió `c0 ff bd 27 24 00 b3 af 21 98 80 00 34 00 b7 af`,
+  sin huecos; ejecutable principal, entrada de controlador, no overlay cargado.
+- Validación independiente: bytes iguales al registro `caught-p2-research-mcp-20261112`.
+  Resultado redundante exigido por el flujo; no demuestra selección ni lifetime.
+  Sin fallos MCP, escrituras o cambios de sesión. Tiempo/retrabajo/ahorro no
+  medidos. Siguiente: probar la consulta del banco en host y exp-8mb sin publicar.

@@ -1,5 +1,6 @@
 /* Experimental immutable CAUGHT bank, prepared by the default-off
- * bag2jp.gaso_caught activation (bag2jp_gaso_caught.c); nothing looks it up yet.
+ * bag2jp.gaso_caught activation (bag2jp_gaso_caught.c); recipient lookup is
+ * diagnostic only, not clip publication.
  * One zero-initialized descriptor per process/allocation lifetime; never clear
  * or copy it to reallocate on reset. Call both APIs only on a stopped VM,
  * outside render/host-output scopes; prepare before any loan. Initial failed
