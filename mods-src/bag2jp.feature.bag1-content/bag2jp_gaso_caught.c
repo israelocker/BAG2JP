@@ -107,6 +107,12 @@ static B1CaughtBank bank;
  * writes the original empty tuple back when the clip retires. */
 static B1CaughtBinding gaso_caught_binding[GASO_CAUGHT_SIDES];
 static int gaso_caught_published[GASO_CAUGHT_SIDES];
+static uint32_t gaso_caught_publish_tick[GASO_CAUGHT_SIDES];
+static uint32_t gaso_caught_ticks;
+
+/* Clip duration in entry-callback ticks (TBD: research native tank effect
+ * length; native reference ~100 frames at 60 Hz). */
+#define GASO_CAUGHT_CLIP_DURATION 60u
 
 /* Forward declarations: defined below, used by the entry callback. */
 static int gaso_caught_build_binding(uint32_t side, const B1CaughtBankClip *clip,
@@ -231,6 +237,17 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
     int side;
     uint32_t actor;
     if (address != GASO_CAUGHT_ENTRY_ADDRESS) return;
+    /* Count every entry call as a tick for clip-duration tracking. */
+    ++gaso_caught_ticks;
+    /* Restore any published slot whose clip duration has elapsed. The
+     * retirement point is timer-based (TBD: research native tank effect
+     * length for a precise hook address). */
+    for (side = 0; side < GASO_CAUGHT_SIDES; ++side) {
+        if (gaso_caught_published[side] &&
+            gaso_caught_ticks - gaso_caught_publish_tick[side] >= GASO_CAUGHT_CLIP_DURATION) {
+            gaso_caught_restore_slot1(side);
+        }
+    }
     for (side = 0; side < GASO_CAUGHT_SIDES; ++side)
         if (captured[side].available) break;
     /* No record: leave the controller untouched without reading guest RAM. */
@@ -263,6 +280,7 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
             if (gaso_caught_build_binding(side, &clip,
                                           &gaso_caught_binding[side])) {
                 gaso_caught_publish_slot1(side);
+                gaso_caught_publish_tick[side] = gaso_caught_ticks;
             }
         }
         if (GASO_CAUGHT_CLIP_PUBLISHED)
@@ -344,6 +362,7 @@ static void gaso_caught_session_reset(void) {
     for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
         captured[side].available = 0;
         gaso_caught_published[side] = 0;
+        gaso_caught_publish_tick[side] = 0;
         gaso_caught_binding[side] = (B1CaughtBinding){0};
     }
 }
@@ -359,6 +378,7 @@ static void gaso_caught_savestate(void) {
     for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
         captured[side].available = 0;
         gaso_caught_published[side] = 0;
+        gaso_caught_publish_tick[side] = 0;
         gaso_caught_binding[side] = (B1CaughtBinding){0};
     }
 }

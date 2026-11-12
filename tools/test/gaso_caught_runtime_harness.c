@@ -281,17 +281,20 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     const unsigned stored = capture_stored, rejected = capture_rejected;
     const unsigned taken = entry_taken, lines = log_lines;
     const unsigned pub_before = slot1_published;
+    const unsigned rest_before = slot1_restored;
     entry(&cpu, ENTRY);
     const unsigned took = entry_taken == taken + 1u ? 1u : 0u;
     const unsigned published = slot1_published - pub_before;
-    /* Each slot1 publication writes 3 bytes (clip word, length half, metadata word). */
-    assert(guest_writes == writes + published * 3u && allocations == allocs);
+    const unsigned restored = slot1_restored - rest_before;
+    /* Each slot1 publication or restore writes 3 bytes (clip word, length half, metadata word). */
+    assert(guest_writes == writes + (published + restored) * 3u && allocations == allocs);
     assert(capture_stored == stored && capture_rejected == rejected);
     assert(entry_taken == taken || entry_taken == taken + 1u);
-    /* One log line for entry taken, plus one for slot1 published when publishing. */
-    assert(log_lines == lines + took + published);
+    /* One log line for entry taken, plus one for slot1 published/restored when applicable. */
+    assert(log_lines == lines + took + published + restored);
     if (entry_taken != taken)
-        assert(strstr(last_log, published ? "slot1 published" : "entry taken") != NULL);
+        assert(strstr(last_log, restored ? "slot1 restored"
+                     : published ? "slot1 published" : "entry taken") != NULL);
     if (memcmp(&cpu, &before, sizeof cpu) == 0) return 0;
     assert(entry_taken == taken + 1u);
     before.gpr[REG_A2] = 1;
@@ -721,6 +724,12 @@ static void publication_slot1_guarded_and_restorable(void) {
     assert(entry_taken == taken_before + 1u);
 }
 
+static void slot1_restored_after_clip_duration(void);
+
+/* Clip duration in entry-callback ticks (TBD: research native tank effect
+ * length for a precise hook address; matches bag2jp_gaso_cached.c). */
+#define GASO_CAUGHT_CLIP_DURATION_TEST 60u
+
 int main(int argc, char **argv) {
     assert(argc == 2 && entry && capture_cb);
     switch (atoi(argv[1])) {
@@ -760,8 +769,81 @@ int main(int argc, char **argv) {
     case 11:
         publication_slot1_guarded_and_restorable();
         break;
+    case 12:
+        slot1_restored_after_clip_duration();
+        break;
     default:
         return 2;
     }
     return 0;
+}
+
+/* Slot1 restore fires after the clip duration elapses since publication.
+ * Entry ticks accumulate; once GASO_CAUGHT_CLIP_DURATION ticks have passed,
+ * the next entry call restores slot1 (3 bytes, clears published flag).
+ * No guest writes before duration elapses; 3 writes on restore. */
+static void slot1_restored_after_clip_duration(void) {
+    assert(activate && session_reset_cb && savestate_cb);
+    activate();
+    assert(bank_ready == 1);
+
+    memset(versions, 0, sizeof versions);
+    versions[GASO][0] = 1;   /* source Gas-O BAG1 side 0 */
+    versions[HEAT][1] = 1;   /* recipient Heat BAG1 side 1 */
+    setup_ram(GASO, HEAT);
+    assert(publish(0, 1));   /* captured[1] available */
+    assert(recorded());
+
+    const unsigned writes_before = guest_writes;
+    const unsigned taken_before = entry_taken;
+    const unsigned pub_before = slot1_published;
+    const unsigned rest_before = slot1_restored;
+
+    /* Entry take publishes slot1 (when CLIP_PUBLISHED=1). */
+    assert(enter(1, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+    assert(entry_taken == taken_before + 1u);
+
+    if (GASO_CAUGHT_CLIP_PUBLISHED) {
+        assert(slot1_published == pub_before + 1u);
+        assert(slot1_restored == rest_before);
+        assert(guest_writes == writes_before + 3u);
+    } else {
+        assert(slot1_published == pub_before);
+        assert(slot1_restored == rest_before);
+        assert(guest_writes == writes_before);
+    }
+
+    /* Ticks accumulate without restore while duration not elapsed.
+     * Each enter() call increments gaso_caught_ticks by 1; restore fires
+     * when ticks - publish_tick >= DURATION, so run DURATION-1 iterations
+     * to stay below the threshold, then restore on the next entry. */
+    for (uint32_t i = 0; i + 1u < GASO_CAUGHT_CLIP_DURATION_TEST; ++i) {
+        const unsigned w = guest_writes;
+        const unsigned p = slot1_published;
+        const unsigned r = slot1_restored;
+        const unsigned l = log_lines;
+        assert(!enter(1, 1, HIT_SLOT));   /* no take, no publish/restore */
+        assert(entry_taken == taken_before + 1u);
+        assert(guest_writes == w);
+        assert(slot1_published == p);
+        assert(slot1_restored == r);
+        assert(log_lines == l);
+    }
+
+    /* Next entry: duration elapsed, restore fires (3 bytes, 1 log line). */
+    assert(!enter(1, 1, HIT_SLOT));
+    assert(entry_taken == taken_before + 1u);
+    if (GASO_CAUGHT_CLIP_PUBLISHED) {
+        assert(slot1_restored == rest_before + 1u);
+        assert(guest_writes == writes_before + (GASO_CAUGHT_CLIP_PUBLISHED ? 6u : 0u));
+        assert(strstr(last_log, "slot1 restored side=2") != NULL);
+    } else {
+        assert(slot1_restored == rest_before);
+        assert(guest_writes == writes_before);
+    }
+
+    /* After restore, published cleared: no further restore on next entry. */
+    assert(!enter(1, 1, HIT_SLOT));
+    assert(entry_taken == taken_before + 1u);
+    assert(slot1_restored == rest_before + (GASO_CAUGHT_CLIP_PUBLISHED ? 1u : 0u));
 }

@@ -94,6 +94,10 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """Slot1 publication is gated by CLIP_PUBLISHED; reset/savestate clear it."""
         self.run_scenario(11)
 
+    def test_slot1_restored_after_clip_duration(self) -> None:
+        """Slot1 restores after clip duration elapses since publication."""
+        self.run_scenario(12)
+
 
 MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
 
