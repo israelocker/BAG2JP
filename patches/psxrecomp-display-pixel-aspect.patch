@@ -1,0 +1,98 @@
+diff --git a/runtime/include/gpu.h b/runtime/include/gpu.h
+index 12e9533d..66e15353 100644
+--- a/runtime/include/gpu.h
++++ b/runtime/include/gpu.h
+@@ -305,6 +305,10 @@ int  ws_nw_extra(void);
+ /* Configured per-side reveal, excluding the world-culling safety envelope.
+  * Available before scene classification so first-frame overlays can fit. */
+ int gpu_ws_configured_x_reveal(void);
++/* Effective physical width/height of a raw display pixel for the current
++ * presentation. Returns 0 for unavailable geometry, 24-bit video or local views;
++ * callers must skip drawing rather than guess. Outputs are zero on failure. */
++int gpu_display_pixel_aspect(uint32_t *numerator, uint32_t *denominator);
+ int  ws_nw_present_width(void);
+ /* Display width (native px) the native-wide margins are derived from. */
+ int  gpu_ws_display_width(void);
+diff --git a/runtime/include/mod_plugins.h b/runtime/include/mod_plugins.h
+index 19a27ada..30e0cc3c 100644
+--- a/runtime/include/mod_plugins.h
++++ b/runtime/include/mod_plugins.h
+@@ -426,6 +426,16 @@ uint32_t psx_mod_display_width(void);
+ /* Height companion to psx_mod_display_width(); same conventions. */
+ uint32_t psx_mod_display_height(void);
+ 
++/* Read-only presentation query, on the emulation thread. Returns the reduced
++ * physical width/height ratio of a pixel in the raw display coordinate space,
++ * including projection-and-stretch or native-wide presentation. Does not apply
++ * the GTE squash to custom packets. Returns 0 (and clears outputs) for missing
++ * display geometry, 24-bit video or local-viewport configuration; skip then.
++ * The current frame classifier may still change before presentation: callers
++ * must validate transitions in-game. Not a host-window size/settings query. */
++#define PSX_MOD_DISPLAY_PIXEL_ASPECT 1
++int psx_mod_display_pixel_aspect(uint32_t *numerator, uint32_t *denominator);
++
+ /* Opt-in presentation hold for a game that retains its previous framebuffer
+  * while loading. The pure, cheap emulation-thread predicate returns HOLD
+  * only while that SAME scene remains displayed; no GPU/API recursion allowed.
+diff --git a/runtime/src/gpu.c b/runtime/src/gpu.c
+index 40641694..9414c663 100644
+--- a/runtime/src/gpu.c
++++ b/runtime/src/gpu.c
+@@ -645,6 +645,41 @@ static int ws_nw_offset(void) {
+     return ws_nw_configured_offset();
+ }
+ int gpu_ws_configured_x_reveal(void) { return ws_nw_configured_offset(); }
++int gpu_display_pixel_aspect(uint32_t *numerator, uint32_t *denominator) {
++    GpuDisplayInfo di;
++    uint64_t width, n, d, a, b;
++    int present_num = 4, present_den = 3;
++    if (numerator) *numerator = 0;
++    if (denominator) *denominator = 0;
++    if (!numerator || !denominator || numerator == denominator ||
++        ws_local_viewport_cfg) return 0;
++    if (ws_cfg_num <= 0 || ws_cfg_den <= 0) return 0;
++    memset(&di, 0, sizeof(di));
++    gpu_get_display_info(&di);
++    if (di.disabled || di.depth24 || !di.width || !di.height) return 0;
++    width = di.width;
++    /* Use the presenter's classifier, not the window/settings aspect. In
++     * native-wide the same target aspect spans more raw display columns; in
++     * squash mode the original columns are stretched into that aspect. */
++    if (!gpu_ws_present_native_43()) {
++        present_num = ws_cfg_num;
++        present_den = ws_cfg_den;
++        if (ws_native_wide_active()) {
++            int offset = ws_nw_offset();
++            if (offset < 0) return 0;
++            width += (uint64_t)offset * 2u;
++        }
++    }
++    n = (uint64_t)present_num * di.height;
++    d = (uint64_t)present_den * width;
++    a = n; b = d;
++    while (b) { uint64_t remainder = a % b; a = b; b = remainder; }
++    n /= a; d /= a;
++    if (n > UINT32_MAX || d > UINT32_MAX) return 0;
++    *numerator = (uint32_t)n;
++    *denominator = (uint32_t)d;
++    return 1;
++}
+ int ws_nw_extra(void) { return 2 * ws_nw_offset(); }
+ 
+ static uint32_t ws_view_camera_addr, ws_view_min_addr, ws_view_max_addr, ws_view_active_addr;
+diff --git a/runtime/src/mod_runtime.cpp b/runtime/src/mod_runtime.cpp
+index 29ef2bdd..8fa8e4ae 100644
+--- a/runtime/src/mod_runtime.cpp
++++ b/runtime/src/mod_runtime.cpp
+@@ -3706,6 +3706,11 @@ extern "C" uint32_t psx_mod_display_height(void) {
+     return info.height;
+ }
+ 
++extern "C" int psx_mod_display_pixel_aspect(uint32_t *numerator,
++                                            uint32_t *denominator) {
++    return gpu_display_pixel_aspect(numerator, denominator);
++}
++
+ extern "C" int psx_mod_register_function_entry_plugin(
+     const char* id, uint32_t address, PSXModFunctionEntryCallback callback) {
+     using namespace PSXRecompV4;

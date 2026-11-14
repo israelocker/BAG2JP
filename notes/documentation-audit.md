@@ -14,7 +14,7 @@ doc_kind: reference
 
 ## Auditoría de procesos reutilizables (2026-11-06)
 
-Plan aprobado: `plans/pending/reusable-import-process-audit.md`. Esta ampliación
+Plan aprobado y cerrado: `plans/archive/reusable-import-process-audit.md`. Esta ampliación
 contrasta fuentes y evidencia conservada; no ejecuta juego, conversiones sobre
 assets activos, deploy ni escucha/aceptación visual nueva. Las secciones del
 02-11 de abajo conservan el resultado de aquella revisión, no el estado actual.
@@ -101,18 +101,42 @@ revisión visual. Nunca reutilizar PIDs históricos sin comprobar la sesión act
   contrastados por SHA-256 sin discrepancias. Revisión de whitespace con
   `git -c core.whitespace=cr-at-eol diff --check` sin errores; se preservan los
   finales de línea de los archivos previamente editados.
-- Ghidra, comprobado después de la documentación: primera llamada
-  `get_program_info` devuelve `BACKEND_UNAVAILABLE` en `http://127.0.0.1:8080/`.
-  Consulta de procesos Windows sin Java/Ghidra activo. No se pudo identificar
-  binario abierto ni ejecutar consulta de lectura: **bloqueado, no validado**.
-  No se instaló, arrancó ni reconfiguró Ghidra. Evidencia en
-  `_work/process-audit/ghidra-status.json`; abrir el proyecto con el plugin MCP
-  habilitado antes de repetir `get_program_info` y una lectura acotada.
+- Ghidra: la primera comprobación falló porque estaba cerrado. Tras la indicación
+  del propietario, el agente abrió la instalación y el proyecto existentes y abrió
+  `SLPM_862.19` en CodeBrowser; **MCP validado** con `get_program_info` y lectura
+  `decompile_function_by_address` de `start` en `0x80035d98` (sin truncamiento).
+  Binario PSX little-endian, base `0x80000000`, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  La lectura incluye warnings del decompilador en el terminador; es una prueba
+  de conexión/lectura, no aceptación del juego ni análisis nuevo de overlays.
+  Sin instalaciones ni cambios de configuración. Regla permanente de verificar,
+  abrir si está cerrado y usar MCP en `AGENTS.md`; evidencia en
+  `_work/process-audit/ghidra-status.json`.
 - Checkpoint acotado a documentos sin cambios previos. El pipeline y tres digests
   que ya tenían trabajo del propietario no se incluyen en ese commit; sus versiones
   de trabajo se conservan además con hashes en
-  `_work/process-audit/preserved-working-documents/`. Plan abierto por el bloqueo
-  de Ghidra; sin refresh del snapshot pesado en este punto intermedio.
+  `_work/process-audit/preserved-working-documents/`. Plan cerrado en
+  `plans/archive/reusable-import-process-audit.md`. Sin build ni despliegue;
+  este cierre documental no constituye un nuevo milestone del runtime.
+
+## Herramientas comunitarias investigadas (2026-11-06)
+
+Por petición del propietario, `AGENTS.md` y `notes/character-pipeline.md` requieren
+usar `funcmatch.py` cuando corresponda, con advertencia explícita de validación
+incompleta. Es búsqueda por bytes enmascarados, no equivalencia semántica ni
+matching de overlays; confirmar en Ghidra. No se declara una nueva prueba del helper.
+
+Investigación online y fuentes:
+`_work/ps1-tools-research/reports/ps1_import_tools.md`, con notas de respaldo en
+`_work/ps1-tools-research/research_notes/ps1_import_tools/`. Priorizar evaluación
+de jPSXdec para XA/STR, inspección de firmas PsyQ existentes y dumpsxiso como
+contraste raw; TIMedit, spimdisasm/m2c y asm-differ solo ante una necesidad concreta.
+Se distingue capacidad upstream, uso comunitario y recomendación explícita.
+No se instaló ni ejecutó ningún candidato; no hay ahorro medido ni compatibilidad
+BAG demostrada. Emuladores diagnósticos requieren aprobación separada y no
+sustituyen la referencia nativa. No se encontró evidencia suficiente para recomendar
+instalar una skill PS1 de terceros. Próximo paso opcional: acordar un ensayo
+acotado sobre copias antes de adoptar herramientas nuevas.
 
 ## Auditoría anterior (2026-11-02)
 

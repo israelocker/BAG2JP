@@ -1,0 +1,52 @@
+format_version = 11
+id = "bag2jp.content.bag1-visuals"
+version = "1.0.0"
+name = "BAG1 visual regions"
+author = "BAG2JP"
+description = "Independent global regional choices for imported BAG1 models and stages. Songs use the existing Regional songs setting."
+resolver = "declarative"
+save_compatibility = "shared"
+
+[[target]]
+game_id = "SLPM-86219"
+disc_sha256 = "fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268"
+
+[[feature]]
+id = "regional"
+name = "BAG1 visual regions"
+description = "Requires BAG1 content with both regional payloads. Changes apply on the next asset load; they do not add character versions."
+group = "Localization"
+default_enabled = true
+
+[[option]]
+feature = "regional"
+id = "models"
+label = "Models"
+description = "Global model and character-pack region. Does not select a song or stage region."
+type = "choice"
+# Owner-approved default, independent of the stage choice.
+default = "japanese"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International"
+
+[[option]]
+feature = "regional"
+id = "stages"
+label = "Stages"
+description = "Global BAG1 stage region, independent of models and songs."
+type = "choice"
+default = "japanese"
+
+[[option.choice]]
+value = "japanese"
+label = "Japanese"
+
+[[option.choice]]
+value = "international"
+label = "International"

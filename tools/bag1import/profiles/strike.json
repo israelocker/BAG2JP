@@ -4,6 +4,13 @@
   "display_name": "Strike",
   "source_character_id": 1,
   "target_character_id": 1,
+  "source_layout": {
+    "costume_a": {"pack_directory": "PLAYER1E", "pack_number": 1, "model_directory": "PLAYER2", "model_number": 2},
+    "costume_b": {"pack_directory": "PLAYER3E", "pack_number": 3, "model_directory": "PLAYER4", "model_number": 4},
+    "side_suffixes": {"p1": "A", "p2": "B"},
+    "evidence": "SCUS_942.63 FUN_8003AE20; model tables 0x80059918 + side*14*4 + (costume*28 + character)*4",
+    "legacy_inventory_warning": "bag1-source-inventory.json names encode the earlier incorrect role assumption; PLAYER4 model is costume B, not a player-2-only model"
+  },
   "stage": "candidate",
   "exception_assessment": "pending",
   "source_animation_list": "_work/character_inventory/strike/001.bin",
@@ -14,7 +21,7 @@
     {
       "id": "semantic-animation-contract",
       "character": "strike",
-      "status": "verified",
+      "status": "pending",
       "reason": "Existing mapping uses request equality and Heat-derived event rules; semantic roles, beat timing, transitions and full target coverage are not demonstrated.",
       "evidence": {
         "file": "tools\\bag1import\\profiles\\strike-animation-policy.json",
@@ -25,8 +32,8 @@
     {
       "id": "skeleton-and-dbi-adaptation",
       "character": "strike",
-      "status": "verified",
-      "reason": "BAG1 and BAG2 Strike have 44 bones and identical link tables for both sides. Retain stock BAG2 DBI unless gameplay evidence demonstrates a narrower adaptation; the prior one-byte Heat-analogy patch is rejected.",
+      "status": "pending",
+      "reason": "Corrected costume audit: BAG1 A/B both 44 bones; BAG2 A has 44, B has 42 and a costume-dependent hand-index initializer. Prior all-costume compatibility claim invalid. A guarded runtime adaptation requires native evidence; Heat-analogy patch remains rejected.",
       "evidence": {
         "file": "_work/character_inventory/strike/structure-comparison.json",
         "sha256": "27728847f2aba2b4fb331e58dbe5b57cd4dfd57e8db628304c7032a69a30055a",
@@ -37,7 +44,7 @@
     {
       "id": "textures-and-costumes",
       "character": "strike",
-      "status": "verified",
+      "status": "pending",
       "reason": "BAG1 texture pages are identified but not retargeted and visually verified for both native BAG2 costume layouts.",
       "evidence": {
         "file": "_work/character_import/strike/retargeted_tims/retarget_report.json",

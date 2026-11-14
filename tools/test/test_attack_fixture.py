@@ -7,6 +7,53 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class AttackFixtureTests(unittest.TestCase):
+    def test_ordered_duel_stops_after_two_attacks_each(self):
+        header = ROOT / 'mods-src/bag2jp.debug.anim-trace/bag2jp_attack_fixture.h'
+        self.assertIn('bag2_ordered_duel_fixture_tick', header.read_text())
+        out = ROOT / '_work/character_import/heat/ordered-duel-tests'
+        out.mkdir(parents=True, exist_ok=True)
+        source = '''#include <stdint.h>
+#include <assert.h>
+static unsigned writes, busy;
+uint32_t psx_mod_read_word(uint32_t a) {
+ switch(a) {
+ case 0x8004E2D8:return 0x54535542; case 0x8004E2DC:return 0x4D5F415F;
+ case 0x8005D3D4:return 19; case 0x8005D2C4:return 2; case 0x8005D3D8:return 1;
+ case 0x8005D3DC:case 0x8005D3E0:return 3; case 0x8009B084:return 0xAC510020;
+ case 0x8005E6A0:return 0; case 0x8005E6A4:return 1;
+ default: assert(a==0x8005E754 || a==0x8005E786 || a==0x8005E748 || a==0x8005E77A);return busy;
+ }
+}
+uint16_t psx_mod_read_half(uint32_t a){(void)a;return 0;}
+void psx_mod_write_half(uint32_t a,uint16_t v){(void)a;(void)v;writes++;}
+''' + f'#include "{header.as_posix()}"\n' + '''
+int main(void){
+ Bag2OrderedDuel state={0,0};
+ assert(!bag2_ordered_duel_fixture_tick(0,0,0x8005CF08,100,&state));
+ assert(!bag2_ordered_duel_fixture_tick(1,1,0x8005CF2C,100,&state));
+ busy=1;assert(!bag2_ordered_duel_fixture_tick(1,0,0x8005CF08,100,&state));
+ assert(state.count==0 && writes==0);busy=0;
+ assert(bag2_ordered_duel_fixture_tick(1,0,0x8005CF08,100,&state));
+ assert(state.count==1 && writes==3);
+ assert(!bag2_ordered_duel_fixture_tick(1,0,0x8005CF08,579,&state));
+ assert(bag2_ordered_duel_fixture_tick(1,0,0x8005CF08,580,&state));
+ assert(state.count==2 && writes==6);
+ assert(!bag2_ordered_duel_fixture_tick(1,0,0x8005CF08,1060,&state));
+ assert(bag2_ordered_duel_fixture_tick(1,1,0x8005CF2C,1060,&state));
+ assert(bag2_ordered_duel_fixture_tick(1,1,0x8005CF2C,1540,&state));
+ assert(state.count==4 && writes==12);
+ assert(!bag2_ordered_duel_fixture_tick(1,1,0x8005CF2C,3000,&state));
+ assert(!bag2_ordered_duel_fixture_tick(1,0,0x8005CF08,3000,&state));
+ assert(writes==12);return 0;
+}
+'''
+        source = source.replace(header.as_posix(), '/mnt/d/' + header.as_posix()[3:])
+        (out / 'test.c').write_text(source)
+        linux = '/mnt/d/' + out.as_posix()[3:]
+        prefix = ['wsl.exe', '-d', 'Ubuntu', '--exec']
+        subprocess.run(prefix + ['gcc', '-Wall', '-Wextra', '-Werror', linux + '/test.c', '-o', linux + '/test'], check=True)
+        subprocess.run(prefix + [linux + '/test'], check=True)
+
     def test_both_sides_keep_independent_attack_guards(self):
         header = ROOT / 'mods-src/bag2jp.debug.anim-trace/bag2jp_attack_fixture.h'
         out = ROOT / '_work/character_import/heat/duel-fixture-tests'

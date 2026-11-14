@@ -38,7 +38,7 @@
       }
     ],
     "padding_texture_entry": 4,
-    "model_scale": null,
+    "model_scale": [3, 2],
     "flatten_type2": true,
     "ft4_subdivisions": [
       {
@@ -78,6 +78,7 @@
     "0x801E2618"
   ],
   "sprite_helper": "0x801DF600",
+  "fan_rotation_note": "Keep the guarded no-op at 0x801E2448: native speed*frame_delta/16. The former /2 override accelerated rotation eightfold at settled speeds. Scoped relocation correction at 0x801E23E0: fallthrough LUI must also address the score shim at 0x801E0108, not 0x80070108. Thresholds/ramp unchanged; actual cadence still needs in-game verification.",
   "patches": [
     [
       "0x801E25D8",
@@ -125,9 +126,14 @@
       "0x96830044"
     ],
     [
+      "0x801E23E0",
+      "0x3C028007",
+      "0x3C02801E"
+    ],
+    [
       "0x801E2448",
       "0x00031903",
-      "0x00031843"
+      "0x00031903"
     ]
   ],
   "functions": {

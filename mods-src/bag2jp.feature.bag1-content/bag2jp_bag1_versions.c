@@ -22,11 +22,16 @@
 #include <stdarg.h>
 #include <SDL3/SDL.h>
 #include "mod_plugins.h"
+#include "cpu_state.h"
 #include "bag2jp_bag1_alt_index.h"
 #include "bag2jp_model_region.h"
 #include "bag2jp_strike_shot.h"
 #include "bag2jp_heat_flame.h"
 #include "bag2jp_strike_bag1_draw.h"
+#include "bag2jp_gaso_tank.h"
+#include "bag2jp_bag1_hud.h"
+#include "bag2jp_bag1_leash.h"
+#include "bag2jp_bag1_center.h"
 
 #define B1V_TABLE    0x8005D418u   /* RAM copy of the DF2_ header */
 #define B1V_MAGIC    0x5F324644u   /* 'DF2_' */
@@ -134,15 +139,26 @@ static const uint16_t b1v_scale_q12[B1V_CHARS][2] = {
     [9] = { 3132u, 3132u }
 };   /* costume A, B */
 static uint32_t b1v_scaled_dancer[4], b1v_scaled_value[4];
+/* Dancer in slot 0..3 (0x8005F808 + 4*slot: P1, P1 partner, P2, P2 partner) if it plays
+ * its BAG1 version, else 0; `picked` receives the selection byte. */
+static uint32_t b1v_bag1_dancer(int slot, uint32_t* picked) {
+    const int side = slot >> 1;
+    const uint32_t d = psx_mod_read_word(B1V_DANCERS + 4u * (uint32_t)slot);
+    if (d < 0x80010000u || d >= 0x80800000u) return 0;
+    const uint32_t chr = psx_mod_read_byte(d + 4u);
+    *picked = psx_mod_read_byte(B1V_SELECTED + (uint32_t)side);
+    if (b1v_force_stock || chr >= B1V_CHARS || (*picked & B1V_CHAR_MASK) != chr
+        || !b1v_version[chr][side] || !b1v_has_alt(chr)) return 0;
+    return d;
+}
 static void b1v_dancer_scale(void) {
-    for (int slot = 0; slot < 4; ++slot) {   /* 0x8005F808 + 4*slot: P1, P1 partner, P2, P2 partner */
+    for (int slot = 0; slot < 4; ++slot) {
         const int side = slot >> 1;
         const uint32_t d = psx_mod_read_word(B1V_DANCERS + 4u * (uint32_t)slot);
         if (d < 0x80010000u || d >= 0x80800000u) { b1v_scaled_dancer[slot] = 0; continue; }
+        uint32_t picked = 0;
+        if (!b1v_bag1_dancer(slot, &picked)) continue;
         const uint32_t chr = psx_mod_read_byte(d + 4u);
-        const uint32_t picked = psx_mod_read_byte(B1V_SELECTED + (uint32_t)side);
-        if (b1v_force_stock || chr >= B1V_CHARS || (picked & B1V_CHAR_MASK) != chr
-            || !b1v_version[chr][side] || !b1v_has_alt(chr)) continue;
         const uint32_t q = b1v_scale_q12[chr][(picked >> 5) & 1u];
         const uint32_t base = psx_mod_read_word(d + B1V_SCALE_BASE);
         if (!q || base == 0 || (b1v_scaled_dancer[slot] == d && b1v_scaled_value[slot] == base)) continue;
@@ -153,6 +169,15 @@ static void b1v_dancer_scale(void) {
         }
         b1v_scaled_dancer[slot] = d; b1v_scaled_value[slot] = v;
         b1v_log("%07u dancer %d (char %u side %d) scale %u -> %u", b1v_frame, slot, chr, side + 1, base, v);
+    }
+}
+
+static void b1v_dancer_leash(void) {
+    for (int slot = 0; slot < 4; ++slot) {
+        uint32_t picked = 0;
+        const uint32_t d = b1v_bag1_dancer(slot, &picked);
+        const uint32_t radius = b1leash_apply(slot, d);
+        if (radius) b1v_log("%07u dancer %d leash radius -> %u", b1v_frame, slot, radius);
     }
 }
 
@@ -182,12 +207,29 @@ static void b1v_apply_entry(const B1AltEntry* e, uint32_t count, int japanese) {
             use_alt ? (japanese ? "BAG1 JP" : "BAG1 International") : "BAG2");
 }
 
+#define GASO_TANK_PLAY_CUE 0x8002E478u /* BAG2 JP: takes a free voice slot, then 8002e2d0 */
+
+/* Called from the 0x8002d06c entry hook (bag2jp_gaso_caught.c), where guest
+ * calls are allowed; the caller's registers are restored after each call. */
+void bag2jp_gaso_tank_play_cues(struct CPUState* cpu, uint32_t return_address) {
+    static const uint32_t cue[2] = {GASO_TANK_CUE_LOCK, GASO_TANK_CUE_BUBBLE};
+    const uint32_t pending = bag2jp_gaso_tank_take_cues();
+    for (unsigned i = 0; i < 2; ++i) {
+        if (!(pending & (1u << i))) continue;
+        const uint32_t slot = psx_mod_call_guest(cpu, GASO_TANK_PLAY_CUE, return_address,
+                                                 cue[i], ~0u, ~0u, ~0u);
+        b1v_log("%07u gaso_tank: cue %04x slot %d", b1v_frame, (unsigned)cue[i], (int32_t)slot);
+    }
+}
+
 static void b1v_vblank(void) {
     ++b1v_frame;
     b1v_model_region();
     b1v_dancer_scale();
+    b1v_dancer_leash();
     bag2jp_strike_bag1_tick(b1v_frame);
     bag2jp_heat_flame_tick(b1v_frame);
+    bag2jp_gaso_tank_tick(b1v_frame);
     if (psx_mod_read_word(B1V_TABLE) != B1V_MAGIC) return;
     const uint32_t count = psx_mod_read_word(B1V_TABLE + 4u);
     const int models_jp = b1v_region_japanese("models");
@@ -199,6 +241,46 @@ static void b1v_vblank(void) {
 }
 
 static int b1v_active;
+/* Before the native JAL, replace only the verified stack home vector's X.
+ * No PC/register edits: native initialization still writes root/base/home. */
+static void b1v_home_hook(struct CPUState* cpu, uint32_t address) {
+    if (!b1v_active || address != B1HOME_SITE) return;
+    const uint32_t stack = cpu->gpr[29];
+    if ((stack & 3u) || stack < B1LEASH_RAM_LOW || stack > B1LEASH_RAM_END - 28u ||
+        cpu->gpr[6] != stack + 16u) return;
+    for (int slot = 0; slot <= 2; slot += 2) {
+        const uint32_t ctl = B1LEASH_CTL + (uint32_t)slot * B1LEASH_CTL_STRIDE;
+        if (cpu->gpr[4] != ctl || cpu->gpr[18] != ctl) continue;
+        const uint32_t actor = psx_mod_read_word(B1V_DANCERS + (uint32_t)slot * 4u);
+        if ((actor & 3u) || actor < B1LEASH_RAM_LOW ||
+            actor > B1LEASH_RAM_END - B1HOME_ACTOR_SIZE ||
+            cpu->gpr[5] != actor || cpu->gpr[17] != actor) continue;
+        uint32_t picked = 0;
+        const uint32_t dancer = b1v_bag1_dancer(slot, &picked);
+        if (dancer && b1home_apply(slot, dancer, cpu->gpr[6]))
+            b1v_log("home: slot%d initial X widened, native tight radius retained", slot);
+    }
+}
+/* Native update seam: version and controller identity are verified per call.
+ * No register/PC changes: the original lw, clamp and pose consumer still run. */
+static void b1v_end_center_hook(struct CPUState* cpu, uint32_t address) {
+    if (!b1v_active || address != B1CENTER_SITE) return;
+    for (int slot = 0; slot <= 2; slot += 2) {
+        if (cpu->gpr[19] != B1LEASH_CTL + (uint32_t)slot * B1LEASH_CTL_STRIDE) continue;
+        const uint32_t actor = psx_mod_read_word(B1V_DANCERS + (uint32_t)slot * 4u);
+        if ((actor & 3u) || actor < B1LEASH_RAM_LOW ||
+            actor > B1LEASH_RAM_END - B1CENTER_ACTOR_SIZE || cpu->gpr[16] != actor) continue;
+        uint32_t picked = 0;
+        const uint32_t dancer = b1v_bag1_dancer(slot, &picked);
+        if (dancer && cpu->gpr[16] == dancer) b1center_apply(slot, dancer, b1v_frame);
+    }
+}
+/* The runtime permits one restore callback per plugin ID. Keep both latches. */
+static void b1v_restore(void) {
+    b1load_forget();
+    b1leash_forget();
+    b1center_forget();
+}
 static void b1v_activate(void) {
     b1v_active = 1;
     b1v_stage_version = -1;
@@ -212,6 +294,9 @@ static void b1v_reset(void) {
     b1v_stage_choice_chr = -1;
     b1v_stage_choice_version = -1;
     memset(b1v_scaled_dancer, 0, sizeof b1v_scaled_dancer);
+    b1load_forget();
+    b1leash_forget();
+    b1center_forget();
 }
 void bag2jp_bag1_set_stage_choice(int chr, int version) {
     b1v_stage_choice_chr = chr;
@@ -230,8 +315,22 @@ int bag2jp_bag1_has_version(int chr) {
         if (b1_alt_entries[i].chr == chr) return 1;
     return 0;
 }
+/* Is `offset` one of DF2_ entry `entry`'s BAG1 files? (load latch, bag2jp_bag1_load_latch.h) */
+int bag2jp_bag1_offset_is_alt(unsigned entry, uint32_t offset) {
+    for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i) {
+        const B1AltEntry* e = &b1_alt_entries[i];
+        if (e->entry == entry) return offset == e->alt_off || (e->jp_size && offset == e->jp_off);
+    }
+    return 0;
+}
+/* Stage shim (bag2jp_bag1_stage.c): does DF2_ entry `entry` point at one of its BAG1 files now? */
+int bag2jp_bag1_entry_is_alt(unsigned entry) {
+    if (psx_mod_read_word(B1V_TABLE) != B1V_MAGIC || entry >= psx_mod_read_word(B1V_TABLE + 4u)) return 0;
+    return bag2jp_bag1_offset_is_alt(entry, psx_mod_read_word(B1V_TABLE + 8u + 8u * entry));
+}
 int bag2jp_bag1_get_version(int chr, int side) {
-    return chr >= 0 && chr < B1V_CHARS && side >= 0 && side < 2 ? b1v_version[chr][side] : 0;
+    if (!b1v_active || b1v_force_stock || chr < 0 || chr >= B1V_CHARS || side < 0 || side > 1) return 0;
+    return b1v_version[chr][side];
 }
 void bag2jp_bag1_set_version(int chr, int side, int v) {
     if (chr < 0 || chr >= B1V_CHARS || side < 0 || side > 1) return;
@@ -273,6 +372,11 @@ void bag2jp_bag1_force_stock(int on) {
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_bag1_versions) {
+    (void)psx_mod_register_instruction_plugin("bag2jp.bag1_versions", 0x80093F6Cu, 0x3C0400FFu, b1hud_sprite_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.bag1_versions", B1LOAD_SITE, B1LOAD_WORD, b1load_read_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.bag1_versions", B1HOME_SITE, B1HOME_WORD, b1v_home_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.bag1_versions", B1CENTER_SITE, B1CENTER_WORD, b1v_end_center_hook);
+    (void)psx_mod_register_savestate_plugin("bag2jp.bag1_versions", b1v_restore);
     (void)psx_mod_register_vblank_plugin("bag2jp.bag1_versions", b1v_vblank);
     (void)psx_mod_register_activation_plugin("bag2jp.bag1_versions", b1v_activate);
     (void)psx_mod_register_session_reset_plugin("bag2jp.bag1_versions", b1v_reset);

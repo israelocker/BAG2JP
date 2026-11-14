@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "description": "Region-dependent members of existing BAG1 alternate entries. Each rule recomputes one output member from a regional BAG1 source; the International result must reproduce the accepted candidate byte for byte before a Japanese variant is written. Every source member that differs between regions must be consumed by a rule or listed in ignored_source_members with a reason.",
+  "bag2_disc": "D:/Games/Bust A Groove 2 (Japan)/ISO/Bust A Move 2 - Dance Tengoku Mix (Japan).bin",
+  "regions": {
+    "international": {"root": "_work/bag1_disc_full", "directories": {"1": "PLAYER1E", "2": "PLAYER2", "3": "PLAYER3E", "4": "PLAYER4"}},
+    "japanese": {"root": "_work/bag1jp_disc_full", "directories": {"1": "PLAYER1", "2": "PLAYER2", "3": "PLAYER3", "4": "PLAYER4"}}
+  },
+  "candidate_directory": "_work/stage_import/gaso/preserved_payload_entries",
+  "ignored_source_members": {
+    "pack": {"1": "label TIM, not used by BAG2 packs (stock portrait kept)", "2": "label TIM, not used by BAG2 packs", "3": "BAG1 DBI; BAG2 pack keeps a patched stock DBI"}
+  },
+  "entries": [
+    {"entry": 59, "chr": 0, "kind": 0, "class": "pack", "source": "P_HEATA1.DFS", "number": 1,
+     "rules": [{"op": "retarget", "source": 4, "member": 2}, {"op": "retarget", "source": 6, "member": 4}]},
+    {"entry": 60, "chr": 0, "kind": 1, "class": "pack", "source": "P_HEATB1.DFS", "number": 1,
+     "rules": [{"op": "retarget", "source": 4, "member": 1}, {"op": "retarget", "source": 6, "member": 3}]},
+    {"entry": 131, "chr": 0, "kind": 0, "class": "pack", "source": "P_HEATA3.DFS", "number": 3,
+     "rules": [{"op": "retarget", "source": 4, "member": 2}, {"op": "retarget", "source": 6, "member": 4}]},
+    {"entry": 132, "chr": 0, "kind": 1, "class": "pack", "source": "P_HEATB3.DFS", "number": 3,
+     "rules": [{"op": "retarget", "source": 4, "member": 1}, {"op": "retarget", "source": 6, "member": 3}]},
+    {"entry": 95, "chr": 0, "kind": 0, "class": "model", "source": "P_HEATA2.DFS", "number": 2, "rules": []},
+    {"entry": 96, "chr": 0, "kind": 1, "class": "model", "source": "P_HEATB2.DFS", "number": 2, "rules": []},
+    {"entry": 167, "chr": 0, "kind": 0, "class": "model", "source": "P_HEATA4.DFS", "number": 4, "rules": []},
+    {"entry": 168, "chr": 0, "kind": 1, "class": "model", "source": "P_HEATB4.DFS", "number": 4, "rules": []},
+    {"entry": 73, "chr": 1, "kind": 0, "class": "pack", "source": "P_STRIA1.DFS", "number": 1,
+     "rules": [{"op": "copy", "source": 4, "member": 2}, {"op": "copy", "source": 5, "member": 3}]},
+    {"entry": 74, "chr": 1, "kind": 1, "class": "pack", "source": "P_STRIB1.DFS", "number": 1,
+     "rules": [{"op": "copy", "source": 4, "member": 1}, {"op": "copy", "source": 5, "member": 2}]},
+    {"entry": 145, "chr": 1, "kind": 0, "class": "pack", "source": "P_STRIA3.DFS", "number": 3,
+     "rules": [{"op": "copy", "source": 4, "member": 2}, {"op": "copy", "source": 5, "member": 3}]},
+    {"entry": 146, "chr": 1, "kind": 1, "class": "pack", "source": "P_STRIB3.DFS", "number": 3,
+     "rules": [{"op": "copy", "source": 4, "member": 1}, {"op": "copy", "source": 5, "member": 2}]},
+    {"entry": 109, "chr": 1, "kind": 0, "class": "model", "source": "P_STRIA2.DFS", "number": 2,
+     "rules": [{"op": "convert_model", "source": 0, "member": 0}]},
+    {"entry": 110, "chr": 1, "kind": 1, "class": "model", "source": "P_STRIB2.DFS", "number": 2,
+     "rules": [{"op": "convert_model", "source": 0, "member": 0}]},
+    {"entry": 181, "chr": 1, "kind": 0, "class": "model", "source": "P_STRIA4.DFS", "number": 4,
+     "rules": [{"op": "convert_model", "source": 0, "member": 0}]},
+    {"entry": 182, "chr": 1, "kind": 1, "class": "model", "source": "P_STRIB4.DFS", "number": 4,
+     "rules": [{"op": "convert_model", "source": 0, "member": 0}]}
+  ]
+}

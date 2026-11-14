@@ -4,15 +4,17 @@
  * - Factory BAG1 PS1 colors: Metal RGB(89,89,102), Chemical Glass RGB(125,255,106)
  * - Emits volumetric native cryo-smoke puffs using authentic BAG1 UV table (0x801DCE4C) & TIMs
  * - Falls from above with accelerated gravity trajectory onto rival
- * - Smooth fade out upon tank break/dissolution
+ * - Drops on each Gas-O hit and lasts while the rival is trapped (BAG1 timing)
  * - Diagnostic candidate: leaves the rival's native reaction untouched; CAUGHT is pending
  * - Uses shared matrix math and OT helpers from bag2jp_strike_shot.h
  */
 #ifndef BAG2JP_GASO_TANK_H
 #define BAG2JP_GASO_TANK_H
 
+#include <stdatomic.h>
 #include <stdint.h>
 #include <string.h>
+#include "bag2jp_gaso_bubble.h"
 
 #define GASO_CHAR_ID        9u
 #define GASO_ATTACK_ANIM    74u
@@ -21,10 +23,40 @@
 /* Last accessed dancer field is the 32-bit animation frame at +0x1554. */
 #define GASO_DANCER_MAX_BASE (0x80800000u - 0x1558u)
 
-#define GASO_TANK_FALL_DUR  12u  /* Frames of vertical descent from above */
-#define GASO_TANK_HOLD_DUR  65u  /* Frames of locked cryo-trap confinement */
-#define GASO_TANK_FADE_DUR  15u  /* Frames of smooth evaporation fade out */
-#define GASO_TANK_TOTAL_DUR (GASO_TANK_FALL_DUR + GASO_TANK_HOLD_DUR + GASO_TANK_FADE_DUR)
+/* Lifetime follows BAG1 (reference gaso-vs-heat-autoplay, 2026-11-12, wall-clock
+ * stamps, about +-2 frames): the tank drops at the hit, stays while the rival
+ * is trapped, is cut without a fade ~0.15 s after the release, and Gas-O's next
+ * attack removes it ~0.61 s (1.43 beats) into the attack until that hit drops
+ * a new one. Measured: frame 38 at +0x1554 came 62 vblanks after the attack
+ * entry (take gaso-secondary-suppress-heat-bag1d, 2026-11-13 UTC, 0.428 s/beat)
+ * and the hit about 4 beats in, near GASO_ATTACK_END. Inferred from that one
+ * tempo: ~16 frames per beat, so 1.43 beats x 16 = 22.9 -> 23. Assumes BAG1's
+ * cut follows the beat, not wall time. */
+#define GASO_TANK_FALL_DUR    6u    /* frames of descent; BAG1 lands in ~0.1 s */
+#define GASO_TANK_RELEASE_DUR 9u    /* frames kept after the rival leaves the hit slot */
+#define GASO_TANK_CLEAR_FRAME 23u   /* Gas-O attack frame (16/beat) that clears it */
+#define GASO_TANK_MAX_DUR     1800u /* bound if the rival never leaves the hit slot */
+/* BAG1 tank sounds (JP DBI 801d6480, 801d666c and 801d7218), in Gas-O's voice
+ * bank as rebased by build_gaso_assets.py (0x1800 -> 0x6900). Lock: state -1
+ * becomes 0 on the first rhythm pulse after the drop and plays 0x1806 on the
+ * next update. Bubbles: once the landed counter exceeds 32, 0x180a plays when
+ * disarmed; it re-arms after more than 32 frames or on a 1-in-32 random draw.
+ * BAG2's beat counter stands in for BAG1's pulse flag 0x8006ec30&2. */
+#define GASO_TANK_CUE_LOCK     0x6906u
+#define GASO_TANK_CUE_BUBBLE   0x690Au
+#define GASO_TANK_CUE_LOCK_BIT   1u
+#define GASO_TANK_CUE_BUBBLE_BIT 2u
+#define GASO_TANK_BUBBLE_DELAY 0x20u
+#define GASO_TANK_BEAT_ADDR    0x8005E2D0u
+/* Rival animation while trapped: native hit slot 89, or slot1 when the
+ * CAUGHT clip is published there (bag2jp_gaso_caught.c). */
+#define GASO_TRAP_SLOT        89u
+#define GASO_TRAP_BORROWED    1u
+
+uint32_t bag2jp_gaso_caught_hits(uint32_t side);
+uint32_t bag2jp_gaso_caught_epoch(void);
+uint32_t bag2jp_gaso_caught_epoch_hits(uint32_t side);
+int bag2jp_gaso_caught_owns_slot1(uint32_t side, uint32_t actor);
 
 #define GASO_NATIVE_TANK_NUM_VERTS 41
 
@@ -128,17 +160,33 @@ static const uint8_t s_gaso_glass_quads[8][4] = {
 typedef struct {
     uint8_t active;
     uint8_t side;
+    uint8_t clear_on_attack; /* observed non-attack -> attack after this hit */
     uint32_t start_frame;
     uint32_t opp_dancer;
     int32_t target_x;
     int32_t target_y;
     int32_t target_z;
     uint16_t elapsed;
+    uint16_t released;   /* frames since the rival left the hit slot */
+    uint8_t lock_state;  /* 1 waits for a beat, 2 plays the lock cue, 0 done */
+    uint8_t bubble_armed;
+    uint16_t landed;     /* frames since the tank landed */
+    uint16_t bubble_acc;
+    uint16_t last_beat;
 } GasoTankState;
 
 static GasoTankState s_gaso_tank[2];
-static uint8_t s_gaso_attack_seen[2];
+/* Last bag2jp_gaso_caught_hits() value per recipient side; adopted without a
+ * spawn after a reset so an old hit never drops a tank. */
+static uint32_t s_gaso_hits_seen[2];
+static uint8_t s_gaso_hits_synced;
+static uint8_t s_gaso_attacking[2];
+static uint32_t s_gaso_epoch_seen;
 static uint32_t s_gaso_combat_frame;
+/* Cue requests from the VBlank tick; a function-entry hook plays them. */
+static _Atomic uint32_t s_gaso_tank_cues;
+/* PsyQ rand() recurrence with its own seed, not the game's random stream. */
+static uint32_t s_gaso_tank_seed = 1u;
 
 /* Unit circle lookup for 16-segment dispersion */
 static const int16_t s_circle_cos[16] = {
@@ -152,8 +200,12 @@ static const int16_t s_circle_sin[16] = {
 
 static void bag2jp_gaso_tank_reset(void) {
     memset(s_gaso_tank, 0, sizeof(s_gaso_tank));
-    s_gaso_attack_seen[0] = 0;
-    s_gaso_attack_seen[1] = 0;
+    memset(s_gaso_attacking, 0, sizeof(s_gaso_attacking));
+    atomic_store(&s_gaso_tank_cues, 0u);
+    for (uint32_t side = 0; side < 2; ++side)
+        s_gaso_hits_seen[side] = bag2jp_gaso_caught_hits(side);
+    s_gaso_hits_synced = 1;
+    s_gaso_epoch_seen = bag2jp_gaso_caught_epoch();
     s_gaso_combat_frame = 0;
 }
 
@@ -232,7 +284,195 @@ static inline void gaso_emit_poly_ft4(uint32_t* heap_ptr, uint32_t ot_addr,
     *heap_ptr = heap + 40u;
 }
 
+/* Gouraud POLY_G3 (7 words): opaque 0x30 or semi-transparent 0x32. */
+static inline void gaso_emit_poly_g3(uint32_t* heap_ptr, uint32_t ot_addr, int semi,
+                                     const StrikeScreenPt* p0, uint32_t c0,
+                                     const StrikeScreenPt* p1, uint32_t c1,
+                                     const StrikeScreenPt* p2, uint32_t c2) {
+    uint32_t heap = *heap_ptr;
+    uint32_t ot_head = psx_mod_read_word(ot_addr);
+
+    psx_mod_write_word(heap + 0x00u, (6u << 24) | (ot_head & 0x00FFFFFFu));
+    psx_mod_write_word(heap + 0x04u, (semi ? 0x32000000u : 0x30000000u) | (c0 & 0x00FFFFFFu));
+    psx_mod_write_word(heap + 0x08u, ((uint32_t)(uint16_t)p0->y << 16) | (uint16_t)p0->x);
+    psx_mod_write_word(heap + 0x0Cu, c1 & 0x00FFFFFFu);
+    psx_mod_write_word(heap + 0x10u, ((uint32_t)(uint16_t)p1->y << 16) | (uint16_t)p1->x);
+    psx_mod_write_word(heap + 0x14u, c2 & 0x00FFFFFFu);
+    psx_mod_write_word(heap + 0x18u, ((uint32_t)(uint16_t)p2->y << 16) | (uint16_t)p2->x);
+
+    psx_mod_write_word(ot_addr, (ot_head & 0xFF000000u) | (heap & 0x00FFFFFFu));
+    *heap_ptr = heap + 28u;
+}
+
+/* Gouraud POLY_G4 for one mesh quad in cycle order a,b,c,d (PSX order a,d,b,c):
+ * opaque 0x38 or semi-transparent 0x3A; strike_emit_poly_g4 is always 0x3A. */
+static inline void gaso_emit_quad_g4(uint32_t* heap_ptr, uint32_t ot_addr, int semi,
+                                     const StrikeScreenPt* pts, const uint8_t* q,
+                                     const uint32_t* col) {
+    static const uint8_t order[4] = { 0, 3, 1, 2 };
+    uint32_t heap = *heap_ptr;
+    uint32_t ot_head = psx_mod_read_word(ot_addr);
+
+    psx_mod_write_word(heap + 0x00u, (8u << 24) | (ot_head & 0x00FFFFFFu));
+    for (uint32_t k = 0; k < 4u; ++k) {
+        const StrikeScreenPt* p = &pts[q[order[k]]];
+        uint32_t code = k == 0u ? (semi ? 0x3A000000u : 0x38000000u) : 0u;
+        psx_mod_write_word(heap + 0x04u + k * 8u, code | (col[q[order[k]]] & 0x00FFFFFFu));
+        psx_mod_write_word(heap + 0x08u + k * 8u, ((uint32_t)(uint16_t)p->y << 16) | (uint16_t)p->x);
+    }
+
+    psx_mod_write_word(ot_addr, (ot_head & 0xFF000000u) | (heap & 0x00FFFFFFu));
+    *heap_ptr = heap + 36u;
+}
+
+/* Twice the signed screen area of a mesh face in its stored cycle order. All
+ * 40 faces wind the same way around the outward normal, so one sign marks the
+ * camera-facing side; BAG1 culls the rest with NCLIP in every primitive emitter. */
+static inline int64_t gaso_face_area(const StrikeScreenPt* pts, const uint8_t* idx, int n) {
+    int64_t a = 0;
+    for (int k = 0; k < n; ++k) {
+        const StrikeScreenPt* p = &pts[idx[k]];
+        const StrikeScreenPt* q = &pts[idx[(k + 1) % n]];
+        a += (int64_t)p->x * q->y - (int64_t)q->x * p->y;
+    }
+    return a;
+}
+
+static inline int gaso_faces_camera(const StrikeScreenPt* pts, const int* valid,
+                                    const uint8_t* idx, int n, int64_t front) {
+    for (int k = 0; k < n; ++k)
+        if (!valid[idx[k]]) return 0;
+    int64_t a = gaso_face_area(pts, idx, n);
+    return a != 0 && (a > 0) == (front > 0);
+}
+
+/* Round blob as an 8-triangle semi-transparent Gouraud fan; returns packets. */
+static inline int gaso_emit_fan(uint32_t* heap_ptr, uint32_t ot_addr, int16_t cx, int16_t cy,
+                                int32_t rx, int32_t ry, uint32_t centre, uint32_t rim) {
+    StrikeScreenPt c = { cx, cy, 0 };
+    for (uint32_t k = 0; k < 8u; ++k) {
+        uint32_t a = k * 2u, b = (k * 2u + 2u) % 16u;
+        StrikeScreenPt p0 = { (int16_t)(cx + ((rx * s_circle_cos[a]) >> 12)),
+                              (int16_t)(cy + ((ry * s_circle_sin[a]) >> 12)), 0 };
+        StrikeScreenPt p1 = { (int16_t)(cx + ((rx * s_circle_cos[b]) >> 12)),
+                              (int16_t)(cy + ((ry * s_circle_sin[b]) >> 12)), 0 };
+        gaso_emit_poly_g3(heap_ptr, ot_addr, 1, &c, centre, &p0, rim, &p1, rim);
+    }
+    return 8;
+}
+
+/* Bubble outline: 16 semi-transparent G4 segments from a black (clear, under
+ * additive blending) inner edge at 80% of the radius to the rim colour. */
+static inline int gaso_emit_ring(uint32_t* heap_ptr, uint32_t ot_addr, int16_t cx, int16_t cy,
+                                 int32_t rx, int32_t ry, uint32_t rim) {
+    for (uint32_t k = 0; k < 16u; ++k) {
+        uint32_t a = k, b = (k + 1u) % 16u;
+        int32_t oxa = (rx * s_circle_cos[a]) >> 12, oya = (ry * s_circle_sin[a]) >> 12;
+        int32_t oxb = (rx * s_circle_cos[b]) >> 12, oyb = (ry * s_circle_sin[b]) >> 12;
+        strike_emit_poly_g4(heap_ptr, ot_addr,
+                            (int16_t)(cx + oxa * 80 / 100), (int16_t)(cy + oya * 80 / 100), 0u,
+                            (int16_t)(cx + oxa), (int16_t)(cy + oya), rim,
+                            (int16_t)(cx + oxb * 80 / 100), (int16_t)(cy + oyb * 80 / 100), 0u,
+                            (int16_t)(cx + oxb), (int16_t)(cy + oyb), rim);
+    }
+    return 16;
+}
+
+/* Scale each channel by k16/16, saturating. */
+static inline uint32_t gaso_shade(uint32_t rgb, int32_t k16) {
+    uint32_t out = 0;
+    for (uint32_t s = 0; s < 24u; s += 8u) {
+        int32_t c = ((int32_t)((rgb >> s) & 0xFFu) * k16) >> 4;
+        out |= (uint32_t)(c > 255 ? 255 : c) << s;
+    }
+    return out;
+}
+
+/* Draw modes with dither: ABR0 average restores the native default; the
+ * liquid and highlights add. BAG1's cylinder averages (E1000600), but in BAG2's
+ * darker scene that halved the rival's contrast; the owner asked for BAG1's
+ * see-through look (2026-11-13), so the liquid adds a faint tint instead. */
+#define GASO_MODE_AVERAGE  0x0600u
+#define GASO_MODE_ADDITIVE 0x0620u
+#define GASO_GLASS_RGB     0x051206u /* 0xBBGGRR; x1.125..x2.25 keeps the averaged layer's mean tint */
+#define GASO_METAL_RGB     0x665959u
+#define GASO_BUBBLE_PERIOD 64u       /* frames each bubble lives */
+/* Native mesh -> BAG2 units, in percent. Matched to BAG1 on screen relative to
+ * the rival (gaso-vs-heat-autoplay 31.0 s vs gaso-liquid6-heat-bag1 3.9 s):
+ * tank height 1.42x and width 0.71x Heat's height, a margin above the head.
+ * Near-uniform, like BAG1 (on-screen width/height 0.50; mesh 0.48). Not the
+ * native 12*dim+230 / per-character Y table formula, whose BAG2 units are
+ * unresolved. */
+#define GASO_TANK_XZ_PCT   24        /* radius 1080 -> 259 units */
+#define GASO_TANK_Y_PCT    26        /* height 4480 -> 1164 units */
+#define GASO_BUBBLE_RADIUS 68        /* world units, ~26% of the tank diameter */
+#define GASO_BUBBLE_RIM    0x3C3430u /* additive faint grey-blue rim; clear centre */
+#define GASO_GLINT_RGB     0xC0C0B0u /* additive specular dot */
+
+static uint32_t gaso_tank_rand(void) {
+    s_gaso_tank_seed = s_gaso_tank_seed * 1103515245u + 12345u;
+    return (s_gaso_tank_seed >> 16) & 0x7FFFu;
+}
+
+/* Cues requested since the last call; the caller plays them from guest code. */
+static uint32_t bag2jp_gaso_tank_take_cues(void) {
+    return atomic_exchange(&s_gaso_tank_cues, 0u);
+}
+
+/* One BAG1 tank-controller update of the lock and bubble cues. */
+static void gaso_tank_sound(GasoTankState *tank) {
+    const uint16_t beat = psx_mod_read_half(GASO_TANK_BEAT_ADDR);
+    if (tank->lock_state == 2u) {
+        atomic_fetch_or(&s_gaso_tank_cues, GASO_TANK_CUE_LOCK_BIT);
+        tank->lock_state = 0;
+    } else if (tank->lock_state == 1u && beat != tank->last_beat) {
+        tank->lock_state = 2;
+    }
+    tank->last_beat = beat;
+    if (tank->elapsed < GASO_TANK_FALL_DUR) return;
+    if (++tank->landed <= GASO_TANK_BUBBLE_DELAY) return;
+    ++tank->bubble_acc;
+    if (!tank->bubble_armed) {
+        atomic_fetch_or(&s_gaso_tank_cues, GASO_TANK_CUE_BUBBLE_BIT);
+        tank->bubble_armed = 1;
+    }
+    if (tank->bubble_acc > GASO_TANK_BUBBLE_DELAY || (gaso_tank_rand() & 0x1Fu) == 0u) {
+        tank->bubble_armed = 0;
+        tank->bubble_acc = 0;
+    }
+}
+
+/* State advances even when rendering resources are unavailable. */
+static void gaso_tank_maintain(uint32_t side) {
+    GasoTankState *tank = &s_gaso_tank[side];
+    if (!tank->active) return;
+    if (tank->elapsed >= GASO_TANK_MAX_DUR) {
+        tank->active = 0;
+        return;
+    }
+    ++tank->elapsed;
+    uint32_t rival = psx_mod_read_word(B2_DANCER_BASE + (side ^ 1u) * 8u);
+    if (rival != tank->opp_dancer || rival < 0x80010000u || rival > GASO_DANCER_MAX_BASE) {
+        tank->active = 0;
+        return;
+    }
+    uint32_t anim = psx_mod_read_word(rival + 0x154Cu);
+    if (anim == GASO_TRAP_SLOT ||
+        (anim == GASO_TRAP_BORROWED && bag2jp_gaso_caught_owns_slot1(side ^ 1u, rival))) {
+        tank->released = 0;
+    } else if (++tank->released > GASO_TANK_RELEASE_DUR) {
+        tank->active = 0;
+        return;
+    }
+    gaso_tank_sound(tank);
+}
+
 static int bag2jp_gaso_tank_tick(uint32_t frame) {
+    if (s_gaso_epoch_seen != bag2jp_gaso_caught_epoch()) {
+        bag2jp_gaso_tank_reset();
+        for (uint32_t side = 0; side < 2; ++side)
+            s_gaso_hits_seen[side] = bag2jp_gaso_caught_epoch_hits(side);
+    }
     /* 1. Verify combat scene root (root 19) */
     if (psx_mod_read_word(B2_ROOT_ADDR) != 19u) {
         bag2jp_gaso_tank_reset();
@@ -240,25 +480,17 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
     }
     ++s_gaso_combat_frame;
 
-    uint32_t heap = psx_mod_read_word(B2_HEAP_ADDR);
-    uint32_t ot_addr = psx_mod_read_word(B2_OT_ADDR);
-    if (heap < 0x80010000u || heap >= 0x807E0000u) return 0;
-    if (ot_addr < 0x80010000u || ot_addr >= 0x807E0000u) return 0;
-
-    int16_t cam_rot[9];
-    int32_t cam_pos[3];
-    strike_read_matrix(B2_CAM_ROT_ADDR, cam_rot, cam_pos);
-    int32_t geom_h = (int32_t)psx_mod_read_word(B2_GEOM_H_ADDR);
-    if (geom_h <= 0 || geom_h > 4096) return 0;
-
-    uint32_t ot_slot = ot_addr + 8u;
-    int emitted = 0;
-
-    /* 2. Process attack trigger per side */
+    /* 2. Drop a tank on each Gas-O hit; Gas-O's next attack removes it. The
+     * hit count only grows for a direct hit by a BAG1 Gas-O (capture hook). */
     for (uint32_t side = 0; side < 2; ++side) {
+        uint32_t hits = bag2jp_gaso_caught_hits(side ^ 1u);
+        uint32_t new_hit = s_gaso_hits_synced && hits != s_gaso_hits_seen[side ^ 1u];
+        s_gaso_hits_seen[side ^ 1u] = hits;
+
         uint32_t chr = psx_mod_read_word(side == 0 ? B2_CHAR_P1_ADDR : B2_CHAR_P2_ADDR);
         if (chr != GASO_CHAR_ID || !bag2jp_bag1_get_version((int)GASO_CHAR_ID, (int)side)) {
-            s_gaso_attack_seen[side] = 0;
+            s_gaso_tank[side].active = 0;
+            s_gaso_attacking[side] = 0;
             continue;
         }
 
@@ -266,40 +498,67 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
         uint32_t opp_dancer = psx_mod_read_word(B2_DANCER_BASE + (side ^ 1u) * 8u);
         if (dancer < 0x80010000u || dancer > GASO_DANCER_MAX_BASE ||
             opp_dancer < 0x80010000u || opp_dancer > GASO_DANCER_MAX_BASE) {
-            s_gaso_attack_seen[side] = 0;
+            s_gaso_tank[side].active = 0;
+            s_gaso_attacking[side] = 0;
             continue;
         }
 
+        GasoTankState* tank = &s_gaso_tank[side];
         uint32_t anim = psx_mod_read_word(dancer + 0x154Cu);
         uint32_t anim_frame = psx_mod_read_word(dancer + 0x1554u);
+        uint32_t attacking = anim == GASO_ATTACK_ANIM || anim == 88u;
+        uint32_t attack_entry = attacking && !s_gaso_attacking[side];
+        s_gaso_attacking[side] = (uint8_t)attacking;
+        if (new_hit) {
+            tank->active = 1;
+            tank->side = (uint8_t)side;
+            tank->start_frame = frame;
+            tank->opp_dancer = opp_dancer;
+            tank->elapsed = 0;
+            tank->released = 0;
+            tank->clear_on_attack = 0;
+            tank->lock_state = 1;
+            tank->bubble_armed = 0;
+            tank->landed = 0;
+            tank->bubble_acc = 0;
+            tank->last_beat = psx_mod_read_half(GASO_TANK_BEAT_ADDR);
 
-        /* Attack animation slot 74 (or 88) */
-        if (s_gaso_combat_frame >= 600u && (anim == GASO_ATTACK_ANIM || anim == 88u)) {
-            if (anim_frame >= 25u && anim_frame <= 66u) {
-                if (!s_gaso_attack_seen[side]) {
-                    s_gaso_attack_seen[side] = 1;
-                    GasoTankState* tank = &s_gaso_tank[side];
-                    tank->active = 1;
-                    tank->side = (uint8_t)side;
-                    tank->start_frame = frame;
-                    tank->opp_dancer = opp_dancer;
-                    tank->elapsed = 0;
+            /* strike_read_root() is the rival's pelvis (~488); the tank must
+             * rest on the dance floor, which is Y = 0 in dancer space. */
+            StrikeVec3 target_floor = strike_read_root(opp_dancer);
+            tank->target_x = target_floor.x;
+            tank->target_y = 0;
+            tank->target_z = target_floor.z;
 
-                    /* strike_read_root() is the rival's pelvis (~488); the tank must
-                     * rest on the dance floor, which is Y = 0 in dancer space. */
-                    StrikeVec3 target_floor = strike_read_root(opp_dancer);
-                    tank->target_x = target_floor.x;
-                    tank->target_y = 0;
-                    tank->target_z = target_floor.z;
+            b1v_log("gaso_tank: spawn native mesh tank on side %u rival at (%d, %d, %d)",
+                    side ^ 1u, target_floor.x, 0, target_floor.z);
+            continue;
+        }
 
-                    b1v_log("gaso_tank: spawn native mesh tank on side %u rival at (%d, %d, %d)",
-                            side ^ 1u, target_floor.x, 0, target_floor.z);
-                }
-            }
-        } else {
-            s_gaso_attack_seen[side] = 0;
+        /* A paused/looping frame counter is not a new attack. Require an
+         * observed slot transition after the hit, not a comparison of clocks. */
+        if (!attacking) tank->clear_on_attack = 0;
+        else if (attack_entry && tank->active) tank->clear_on_attack = 1;
+        if (tank->active && tank->clear_on_attack &&
+            anim_frame >= GASO_TANK_CLEAR_FRAME) {
+            tank->active = 0;
+            b1v_log("gaso_tank: next attack clears tank on side %u", side ^ 1u);
         }
     }
+    s_gaso_hits_synced = 1;
+    for (uint32_t side = 0; side < 2; ++side) gaso_tank_maintain(side);
+
+    uint32_t heap = psx_mod_read_word(B2_HEAP_ADDR);
+    uint32_t ot_addr = psx_mod_read_word(B2_OT_ADDR);
+    if (heap < 0x80010000u || heap >= 0x807E0000u) return 0;
+    if (ot_addr < 0x80010000u || ot_addr >= 0x807E0000u) return 0;
+    int16_t cam_rot[9];
+    int32_t cam_pos[3];
+    strike_read_matrix(B2_CAM_ROT_ADDR, cam_rot, cam_pos);
+    int32_t geom_h = (int32_t)psx_mod_read_word(B2_GEOM_H_ADDR);
+    if (geom_h <= 0 || geom_h > 4096) return 0;
+    uint32_t ot_slot = ot_addr + 8u;
+    int emitted = 0;
 
     /* 3. Emit native chemical gas puffs from Gas-O's backpack nozzles during the
      * entrance (BAG1 vents a continuous dense cloud while the rival descends). */
@@ -348,27 +607,15 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
         }
     }
 
-    /* 4. Draw & maintain active cryogenic tanks using authentic BAG1 3D Mesh */
+    /* 4. Draw active cryogenic tanks using authentic BAG1 3D Mesh. */
     for (uint32_t side = 0; side < 2; ++side) {
         GasoTankState* tank = &s_gaso_tank[side];
         if (!tank->active) continue;
-
-        if (tank->elapsed < GASO_TANK_TOTAL_DUR) {
-            tank->elapsed++;
-        } else {
-            tank->active = 0;
-            continue;
-        }
 
         /* Follow the current rival's transform; this visual does not own the
          * reaction animation. The floor-zero anchor is still an experimental
          * approximation, not the native floor-field contract. */
         uint32_t opp_dancer = psx_mod_read_word(B2_DANCER_BASE + (side ^ 1u) * 8u);
-        tank->opp_dancer = opp_dancer;
-        if (opp_dancer < 0x80010000u || opp_dancer > GASO_DANCER_MAX_BASE) {
-            tank->active = 0;
-            continue;
-        }
         StrikeVec3 root = strike_read_root(opp_dancer);
         tank->target_x = root.x;
         tank->target_z = root.z;
@@ -390,168 +637,128 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
             y_drop = (int32_t)((1200u * rem * rem) / (GASO_TANK_FALL_DUR * GASO_TANK_FALL_DUR));
         }
 
-        /* Calculate fade multiplier (0..255) for smooth dissolution */
-        uint32_t alpha_scale = 255u;
-        if (tank->elapsed > (GASO_TANK_FALL_DUR + GASO_TANK_HOLD_DUR)) {
-            uint32_t fade_cur = tank->elapsed - (GASO_TANK_FALL_DUR + GASO_TANK_HOLD_DUR);
-            if (fade_cur <= GASO_TANK_FADE_DUR) {
-                alpha_scale = ((GASO_TANK_FADE_DUR - fade_cur) * 255u) / GASO_TANK_FADE_DUR;
-            } else {
-                alpha_scale = 0;
-            }
-        }
-
-        if (alpha_scale == 0) continue;
-
         /* Transform and project all 41 authentic vertices of the BAG1 native mesh:
-         * Scale factors to fit BAG2 world coordinates:
-         * Native Y: 0..4480 -> scaled by 22/100 gives 0..985 units height
-         * Native XZ: radius 1080 -> scaled by 35/100 gives radius 378 units
-         */
+         * scaled by GASO_TANK_XZ_PCT / GASO_TANK_Y_PCT. */
         StrikeScreenPt pts[GASO_NATIVE_TANK_NUM_VERTS];
         int valid[GASO_NATIVE_TANK_NUM_VERTS];
 
         for (int i = 0; i < GASO_NATIVE_TANK_NUM_VERTS; ++i) {
-            int32_t vx = tank->target_x + ((int32_t)s_gaso_native_verts[i][0] * 35) / 100;
+            int32_t vx = tank->target_x + ((int32_t)s_gaso_native_verts[i][0] * GASO_TANK_XZ_PCT) / 100;
             /* Dancer-space +Y is up; the camera supplies the screen-space flip.
              * Negating height here would put both chamber and descent below the floor. */
-            int32_t vy = tank->target_y + ((int32_t)s_gaso_native_verts[i][1] * 22) / 100 + y_drop;
-            int32_t vz = tank->target_z + ((int32_t)s_gaso_native_verts[i][2] * 35) / 100;
+            int32_t vy = tank->target_y + ((int32_t)s_gaso_native_verts[i][1] * GASO_TANK_Y_PCT) / 100 + y_drop;
+            int32_t vz = tank->target_z + ((int32_t)s_gaso_native_verts[i][2] * GASO_TANK_XZ_PCT) / 100;
 
             StrikeVec3 p = { vx, vy, vz };
             valid[i] = strike_project(&p, tank_rot, tank_pos, geom_h, &pts[i]);
         }
 
-        /* --- 1. Translucent cryo-glass chamber (8 quads), drawn first so the
-         * opaque metal rings stay in front of it. A dim chemical-green tint
-         * replaces the old additive lime wash that turned the tank into a
-         * solid green box; far side first, near side after. --- */
-        strike_emit_tpage(&heap, ot_slot, 0x0020u); /* semi-transparent blend */
-        uint32_t glass_r = (0x14u * alpha_scale) >> 8;
-        uint32_t glass_g = (0x42u * alpha_scale) >> 8;
-        uint32_t glass_b = (0x1Cu * alpha_scale) >> 8;
-        uint32_t glass_far = glass_r | (glass_g << 8) | (glass_b << 16);
-        uint32_t glass_near = (glass_r * 2u) | ((glass_g * 2u) << 8) | ((glass_b * 2u) << 16);
+        /* Cull like BAG1's NCLIP. Every stored face winds inward, so a face looks
+         * at the camera iff its screen area has the sign of det(tank_rot); this
+         * holds for any camera position and under a mirrored rival transform. */
+        int64_t front =
+            (int64_t)tank_rot[0] * ((int64_t)tank_rot[4] * tank_rot[8] - (int64_t)tank_rot[5] * tank_rot[7])
+          - (int64_t)tank_rot[1] * ((int64_t)tank_rot[3] * tank_rot[8] - (int64_t)tank_rot[5] * tank_rot[6])
+          + (int64_t)tank_rot[2] * ((int64_t)tank_rot[3] * tank_rot[7] - (int64_t)tank_rot[4] * tank_rot[6]);
+        if (front == 0) continue;
+        int32_t x_min = 0x7FFF, x_max = -0x8000;
+        for (int q = 0; q < 8; ++q) {
+            const uint8_t* f = s_gaso_glass_quads[q];
+            for (int k = 0; k < 4; ++k) {
+                if (!valid[f[k]]) continue;
+                if (pts[f[k]].x < x_min) x_min = pts[f[k]].x;
+                if (pts[f[k]].x > x_max) x_max = pts[f[k]].x;
+            }
+        }
+        if (x_max <= x_min) continue;
 
-        for (int pass = 0; pass < 2; ++pass) {
-            for (int q = 0; q < 8; ++q) {
-                uint8_t i0 = s_gaso_glass_quads[q][0];
-                uint8_t i1 = s_gaso_glass_quads[q][3];
-                uint8_t i2 = s_gaso_glass_quads[q][1];
-                uint8_t i3 = s_gaso_glass_quads[q][2];
-                if (!valid[i0] || !valid[i1] || !valid[i2] || !valid[i3]) continue;
+        /* Approximation of BAG1's GTE vertex lighting (0x8002bbe8 normals and
+         * depth cue, not reproduced): about twice as bright on the screen-left
+         * side as on the right, as in the reference frames. The additive tint
+         * keeps the previous averaged layer's median per third of the tank
+         * (gaso-bubble-aspect-heat-bag1 at 3.83 s) at full background contrast,
+         * whose spread is near BAG1's in gaso-vs-heat-autoplay at 31.0 s. */
+        uint32_t glass_col[GASO_NATIVE_TANK_NUM_VERTS];
+        uint32_t metal_col[GASO_NATIVE_TANK_NUM_VERTS];
+        for (int i = 0; i < GASO_NATIVE_TANK_NUM_VERTS; ++i) {
+            if (!valid[i]) { glass_col[i] = metal_col[i] = 0; continue; }
+            int32_t x = pts[i].x < x_min ? x_min : (pts[i].x > x_max ? x_max : pts[i].x);
+            int32_t lat = ((x_max - x) * 16) / (x_max - x_min); /* 16 = left edge */
+            int32_t ny = s_gaso_native_verts[i][1];
+            glass_col[i] = gaso_shade(GASO_GLASS_RGB, 18 + (lat * 18) / 16);
+            metal_col[i] = gaso_shade(GASO_METAL_RGB, ny >= 4354 ? 28 + lat / 2 : 8 + lat / 2);
+        }
 
-                /* Screen-space winding separates the far side from the near side. */
-                int32_t cross = (int32_t)(pts[i1].x - pts[i0].x) * (int32_t)(pts[i2].y - pts[i0].y)
-                              - (int32_t)(pts[i1].y - pts[i0].y) * (int32_t)(pts[i2].x - pts[i0].x);
-                int near_side = cross < 0;
-                if ((pass == 0) == near_side) continue;
-
-                uint32_t col = near_side ? glass_near : glass_far;
-                strike_emit_poly_g4(&heap, ot_slot,
-                                    pts[i0].x, pts[i0].y, col,
-                                    pts[i1].x, pts[i1].y, col,
-                                    pts[i2].x, pts[i2].y, col,
-                                    pts[i3].x, pts[i3].y, col);
-                emitted++;
+        /* --- Bubbles: BAG1 shows one or two round, bluish, translucent bubbles
+         * with a specular dot, rising slowly in the upper liquid. --- */
+        StrikeScreenPt bub[2];
+        int32_t bub_rx[2], bub_ry[2];
+        int bubbles = 0;
+        if (tank->elapsed >= GASO_TANK_FALL_DUR) {
+            static const int16_t lane[5] = { -300, 260, 120, -160, 360 }; /* native X */
+            uint32_t since = (uint32_t)tank->elapsed - GASO_TANK_FALL_DUR;
+            for (uint32_t b = 0; b < 2u; ++b) {
+                uint32_t lag = b * (GASO_BUBBLE_PERIOD / 2u);
+                if (since < lag) continue;
+                uint32_t age = (since - lag) % GASO_BUBBLE_PERIOD;
+                int32_t lx = lane[(((since - lag) / GASO_BUBBLE_PERIOD) * 2u + b) % 5u];
+                lx += ((int32_t)s_circle_sin[(age / 4u) % 16u] * 40) >> 12;
+                /* Rise from 83% to 90% of the liquid column (native Y 371..3758),
+                 * up against the top ring as in BAG1; the opaque ring, drawn
+                 * later, hides any overlap (radius 68 is native Y 262). */
+                int32_t ny = 371 + (3387 * (83 + (int32_t)((age * 8u) / GASO_BUBBLE_PERIOD))) / 100;
+                int32_t r = (GASO_BUBBLE_RADIUS * (int32_t)(age < 6u ? age + 2u : 8u)) / 8;
+                StrikeVec3 c = { tank->target_x + (lx * GASO_TANK_XZ_PCT) / 100,
+                                 tank->target_y + (ny * GASO_TANK_Y_PCT) / 100, tank->target_z };
+                if (!strike_project(&c, tank_rot, tank_pos, geom_h, &bub[bubbles])) continue;
+                /* Billboard radius uses depth and effective pixel aspect.
+                 * Presented roundness still requires in-game verification. */
+                if (!gaso_bubble_screen_radii(r, geom_h, bub[bubbles].z,
+                                             &bub_rx[bubbles], &bub_ry[bubbles])) continue;
+                bubbles++;
             }
         }
 
-        /* --- 2. Render Metal Base & Body Rings (24 quads) --- */
-        strike_emit_tpage(&heap, ot_slot, 0x0000u); /* Opaque standard blend */
-        /* Native Metal color: RGB(89, 89, 102) = (0x59, 0x59, 0x66) */
-        uint32_t metal_r = (0x59u * alpha_scale) >> 8;
-        uint32_t metal_g = (0x59u * alpha_scale) >> 8;
-        uint32_t metal_b = (0x66u * alpha_scale) >> 8;
-        uint32_t metal_col = metal_r | (metal_g << 8) | (metal_b << 16);
+        /* Packets are prepended to the OT slot, so the GPU draws them in reverse
+         * emission order and each draw-mode packet follows the group it governs.
+         * Draw order: additive mode, liquid tint, bubbles (clear centre,
+         * bluish outline, then glints; additive so they never darken the rival),
+         * opaque metal (covers bubbles seen from above), average mode again so
+         * later packets never inherit the additive mode. */
+        strike_emit_tpage(&heap, ot_slot, GASO_MODE_AVERAGE);
 
+        /* --- Metal base, rings and bevel (24 G4) and top cap (8 G3): opaque
+         * like BAG1 (codes 0x38/0x30). --- */
         for (int q = 0; q < 24; ++q) {
-            uint8_t i0 = s_gaso_body_quads[q][0];
-            uint8_t i1 = s_gaso_body_quads[q][3];
-            uint8_t i2 = s_gaso_body_quads[q][1];
-            uint8_t i3 = s_gaso_body_quads[q][2];
-
-            if (valid[i0] && valid[i1] && valid[i2] && valid[i3]) {
-                strike_emit_poly_g4(&heap, ot_slot,
-                                    pts[i0].x, pts[i0].y, metal_col,
-                                    pts[i1].x, pts[i1].y, metal_col,
-                                    pts[i2].x, pts[i2].y, metal_col,
-                                    pts[i3].x, pts[i3].y, metal_col);
-                emitted++;
-            }
+            if (!gaso_faces_camera(pts, valid, s_gaso_body_quads[q], 4, front)) continue;
+            gaso_emit_quad_g4(&heap, ot_slot, 0, pts, s_gaso_body_quads[q], metal_col);
+            emitted++;
         }
-
-        /* --- 3. Render Metal Top Bevel/Cap (8 triangles) --- */
         for (int t = 0; t < 8; ++t) {
-            uint8_t i0 = s_gaso_cap_tris[t][0];
-            uint8_t i1 = s_gaso_cap_tris[t][1];
-            uint8_t i2 = s_gaso_cap_tris[t][2];
-
-            if (valid[i0] && valid[i1] && valid[i2]) {
-                gaso_emit_poly_f3(&heap, ot_slot,
-                                    pts[i0].x, pts[i0].y,
-                                    pts[i1].x, pts[i1].y,
-                                    pts[i2].x, pts[i2].y,
-                                    metal_col);
-                emitted++;
-            }
+            const uint8_t* f = s_gaso_cap_tris[t];
+            if (!gaso_faces_camera(pts, valid, f, 3, front)) continue;
+            gaso_emit_poly_g3(&heap, ot_slot, 0, &pts[f[0]], metal_col[f[0]],
+                              &pts[f[1]], metal_col[f[1]], &pts[f[2]], metal_col[f[2]]);
+            emitted++;
         }
 
-        /* --- 4. Render Volumetric Cryo-Smoke Puffs (Authentic UV Table 0x801DCE4C) --- */
-        strike_emit_tpage(&heap, ot_slot, 0x001Cu); /* Authentic Gas-O TPAGE: 0x001C */
-        uint16_t clut_gaso = 0x7C00u;
-        uint32_t smoke_val = (0xD8u * alpha_scale) >> 8;
-        uint32_t smoke_col = smoke_val | (smoke_val << 8) | (((0xE8u * alpha_scale) >> 8) << 16);
-
-        for (int b = 2; b < 16; ++b) {
-            int seg = (frame * 2u + (uint32_t)b * 5u) % 8u;
-            uint8_t v_bot = s_gaso_glass_quads[seg][1];
-            uint8_t v_top = s_gaso_glass_quads[seg][0];
-
-            if (valid[v_bot] && valid[v_top]) {
-                int32_t progress = (int32_t)((frame * 3u + (uint32_t)b * 23u) % 100u);
-                int16_t cy = pts[v_bot].y - (int16_t)(((pts[v_bot].y - pts[v_top].y) * progress) / 100);
-                int16_t cx = pts[v_bot].x + (int16_t)((s_circle_cos[(frame + b) % 16] * 20) >> 12);
-
-                uint8_t sw = s_gaso_smoke_tbl[b].w;
-                uint8_t sh = s_gaso_smoke_tbl[b].h;
-                uint8_t su = (uint8_t)s_gaso_smoke_tbl[b].u;
-                uint8_t sv = (uint8_t)s_gaso_smoke_tbl[b].v;
-
-                int16_t hw = (int16_t)(sw / 2);
-                int16_t hh = (int16_t)(sh / 2);
-
-                gaso_emit_poly_ft4(&heap, ot_slot,
-                                   cx - hw, cy - hh,
-                                   cx + hw, cy - hh,
-                                   cx - hw, cy + hh,
-                                   cx + hw, cy + hh,
-                                   su, sv,
-                                   su + sw - 1, sv,
-                                   su, sv + sh - 1,
-                                   su + sw - 1, sv + sh - 1,
-                                   clut_gaso, 0x001Cu, smoke_col);
-                emitted++;
-            }
+        for (int b = 0; b < bubbles; ++b) {
+            int32_t hx = bub_rx[b] / 4, hy = bub_ry[b] / 4;
+            emitted += gaso_emit_fan(&heap, ot_slot, (int16_t)(bub[b].x + hx), (int16_t)(bub[b].y - hy),
+                                     hx < 1 ? 1 : hx, hy < 1 ? 1 : hy, GASO_GLINT_RGB, 0u);
         }
+        for (int b = 0; b < bubbles; ++b)
+            emitted += gaso_emit_ring(&heap, ot_slot, bub[b].x, bub[b].y,
+                                      bub_rx[b], bub_ry[b], GASO_BUBBLE_RIM);
 
-        /* --- 5. Air bubbles floating up inside chemical fluid --- */
-        uint32_t air_bub_val = (0xD0u * alpha_scale) >> 8;
-        uint32_t air_bub_col = air_bub_val | (air_bub_val << 8) | (air_bub_val << 16);
-        for (int b = 0; b < 8; ++b) {
-            int seg = (frame * 2u + b * 4u) % 8u;
-            uint8_t v_bot = s_gaso_glass_quads[seg][1];
-            uint8_t v_top = s_gaso_glass_quads[seg][0];
-
-            if (valid[v_bot] && valid[v_top]) {
-                int32_t bub_progress = (int32_t)((frame * 5u + b * 27u) % 100u);
-                int16_t by = pts[v_bot].y - (int16_t)(((pts[v_bot].y - pts[v_top].y) * (40 + bub_progress / 2)) / 100);
-                int16_t bx = pts[v_bot].x + (int16_t)((s_circle_cos[(frame * 2 + b * 3) % 16] * 14) >> 12);
-                int16_t b_sz = 8 + (int16_t)((b * 2) % 6);
-                strike_emit_spark(&heap, ot_slot, bx, by, b_sz, air_bub_col);
-                emitted++;
-            }
+        /* --- Liquid-filled glass (8 G4): one camera-facing translucent layer
+         * (code 0x3A) that tints what is behind it without halving it. --- */
+        for (int q = 0; q < 8; ++q) {
+            if (!gaso_faces_camera(pts, valid, s_gaso_glass_quads[q], 4, front)) continue;
+            gaso_emit_quad_g4(&heap, ot_slot, 1, pts, s_gaso_glass_quads[q], glass_col);
+            emitted++;
         }
+        strike_emit_tpage(&heap, ot_slot, GASO_MODE_ADDITIVE);
     }
 
     psx_mod_write_word(B2_HEAP_ADDR, heap);

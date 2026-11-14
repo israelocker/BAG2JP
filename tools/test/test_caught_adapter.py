@@ -79,6 +79,50 @@ class CaughtAdapterTest(unittest.TestCase):
             with self.subTest(kind=kind):
                 self.run_scenario(12, kind)
 
+    def test_owned_region_publishes_and_retires_only_main_ram_slot_bytes(self) -> None:
+        self.run_scenario(13)
+
+    def test_owned_region_negatives_quiescent_and_identity(self) -> None:
+        for kind in range(3):
+            with self.subTest(kind=kind):
+                self.run_scenario(14, kind)
+
+    def test_retire_failure_owned_requires_quiescent_stopped_unreferenced_slot(self) -> None:
+        for kind in range(4):
+            with self.subTest(kind=kind):
+                self.run_scenario(15, kind)
+
+    def test_partner_exclusion_owned_tables_inside_region_block_enter(self) -> None:
+        for kind in range(4):
+            with self.subTest(kind=kind):
+                self.run_scenario(16, kind)
+
+    def test_retire_owned_region_defects_require_region_identity(self) -> None:
+        for kind in range(4, 9):
+            with self.subTest(kind=kind):
+                self.run_scenario(17, kind)
+
+    def test_reset_on_idle_without_binding_succeeds_and_clears(self) -> None:
+        self.run_scenario(18)
+
+    def test_reset_with_installed_binding_fails_and_keeps_state(self) -> None:
+        self.run_scenario(19)
+
+    def test_save_and_load_state_roundtrip_preserves_everything(self) -> None:
+        self.run_scenario(20)
+
+    def test_save_fail_closed_for_null_and_short_output_buffers(self) -> None:
+        self.run_scenario(21)
+
+    def test_load_fail_closed_for_null_and_short_input_buffers(self) -> None:
+        self.run_scenario(22)
+
+    def test_save_load_region_metadata_not_restored(self) -> None:
+        self.run_scenario(23)
+
+    def test_save_state_exactly_128_bytes_with_region_padding_zero(self) -> None:
+        self.run_scenario(24)
+
 
 if __name__ == '__main__':
     unittest.main()

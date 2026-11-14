@@ -27,3 +27,7 @@ en CONTRIBUTING/índices/varios resúmenes. Preservar configuración y trabajo a
 Histórico separado: [handoff anterior](archive/agent-handoff-before-audit.md).
 Sus «Strike inventory only», latencias objetivo y próximos pasos ya no son
 estado actual certificado.
+
+Handoff vigente del task de Gas-O: [HANDOFF.md](../HANDOFF.md). Resume estado,
+hallazgo P0 del binario desplegado y siguiente acción exacta; no dupliques aquí
+el estado de esa tarea.

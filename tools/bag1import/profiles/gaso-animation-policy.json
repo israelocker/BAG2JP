@@ -1,0 +1,331 @@
+{
+  "schema": 1,
+  "character": "gaso",
+  "status": "proposed",
+  "source_character_id": 9,
+  "target_character_id": 9,
+  "source_cue_base": 6144,
+  "roles": [
+    {
+      "target": 67,
+      "source": 64,
+      "name": "POSE1",
+      "classification": "adaptation",
+      "reason": "Hold the original attack-2 finishing posture; no attack launch event.",
+      "hold": true
+    },
+    {
+      "target": 68,
+      "source": 60,
+      "name": "POSE2",
+      "classification": "adaptation",
+      "reason": "Hold the original standing posture instead of walking.",
+      "hold": true
+    },
+    {
+      "target": 74,
+      "source": 63,
+      "name": "ATTACK",
+      "classification": "adaptation",
+      "reason": "Use original BAG1 ATTACK1 (poison spray at frame 20); retain single type-16 projectile launch event.",
+      "required_events": [
+        [
+          16,
+          20,
+          0
+        ]
+      ]
+    },
+    {
+      "target": 76,
+      "source": 65,
+      "name": "GUARD",
+      "classification": "adaptation",
+      "reason": "Use original evasive defense, preserving the BAG2 guard-state event.",
+      "required_events": [
+        [
+          1,
+          1,
+          902
+        ]
+      ]
+    },
+    {
+      "target": 77,
+      "source": 64,
+      "name": "REFLECT",
+      "classification": "adaptation",
+      "reason": "Use the original counter-swing without launching an attack; retain reflection event.",
+      "required_events": [
+        [
+          1,
+          1,
+          903
+        ]
+      ]
+    },
+    {
+      "target": 78,
+      "source": 69,
+      "name": "TIRED",
+      "classification": "equivalent",
+      "reason": "Original BAG1 TIRED (34 frames); request IDs differ between games (BAG1 req 124 -> slot 69, not CAUGHT slot 70)."
+    },
+    {
+      "target": 79,
+      "source": 66,
+      "name": "MISS1",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 80,
+      "source": 67,
+      "name": "MISS2",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 81,
+      "source": 68,
+      "name": "MISS3",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 82,
+      "source": 66,
+      "name": "MISS4",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 83,
+      "source": 67,
+      "name": "MISS5",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 84,
+      "source": 68,
+      "name": "MISS6",
+      "classification": "adaptation",
+      "reason": "Use short original stumble/hit reactions; BAG1 has no six distinct miss actions."
+    },
+    {
+      "target": 85,
+      "source": 71,
+      "name": "DOWN1",
+      "classification": "equivalent",
+      "reason": "Original knockdown 1 with BAG2 knockdown callback 901 preserved.",
+      "required_events": [
+        [
+          1,
+          1,
+          901
+        ]
+      ]
+    },
+    {
+      "target": 87,
+      "source": 73,
+      "name": "DOWN2",
+      "classification": "equivalent",
+      "reason": "Original knockdown 2 with BAG2 knockdown callback 901 preserved.",
+      "required_events": [
+        [
+          1,
+          1,
+          901
+        ]
+      ]
+    },
+    {
+      "target": 89,
+      "source": 75,
+      "name": "DOWN3",
+      "classification": "equivalent",
+      "reason": "Original knockdown 3 with BAG2 knockdown callback 901 preserved.",
+      "required_events": [
+        [
+          1,
+          1,
+          901
+        ]
+      ]
+    },
+    {
+      "target": 93,
+      "source": 76,
+      "name": "DOWN_RECOVERY_ALT",
+      "classification": "adaptation",
+      "reason": "Original knockdown recovery with BAG2 callback 901 preserved.",
+      "required_events": [
+        [
+          1,
+          15,
+          901
+        ]
+      ]
+    }
+  ],
+  "native_transitions": [
+    [
+      5,
+      6,
+      3,
+      3
+    ],
+    [
+      9,
+      10,
+      5,
+      6
+    ],
+    [
+      11,
+      12,
+      7,
+      7
+    ],
+    [
+      15,
+      16,
+      9,
+      10
+    ],
+    [
+      17,
+      18,
+      11,
+      12
+    ],
+    [
+      19,
+      20,
+      13,
+      13
+    ],
+    [
+      23,
+      24,
+      15,
+      16
+    ],
+    [
+      25,
+      26,
+      17,
+      18
+    ],
+    [
+      27,
+      28,
+      19,
+      20
+    ],
+    [
+      29,
+      30,
+      21,
+      21
+    ],
+    [
+      33,
+      34,
+      23,
+      24
+    ],
+    [
+      35,
+      36,
+      25,
+      26
+    ],
+    [
+      37,
+      38,
+      27,
+      28
+    ],
+    [
+      39,
+      40,
+      29,
+      30
+    ],
+    [
+      41,
+      42,
+      31,
+      31
+    ]
+  ],
+  "alternate_edges": [
+    {
+      "normal_slot": 19,
+      "slot": 20,
+      "previous_slot": 11
+    },
+    {
+      "normal_slot": 17,
+      "slot": 18,
+      "previous_slot": 10
+    },
+    {
+      "normal_slot": 15,
+      "slot": 16,
+      "previous_slot": 9
+    },
+    {
+      "normal_slot": 13,
+      "slot": 14,
+      "previous_slot": 8
+    },
+    {
+      "normal_slot": 34,
+      "slot": 35,
+      "previous_slot": 26
+    },
+    {
+      "normal_slot": 32,
+      "slot": 33,
+      "previous_slot": 25
+    },
+    {
+      "normal_slot": 30,
+      "slot": 31,
+      "previous_slot": 24
+    },
+    {
+      "normal_slot": 28,
+      "slot": 29,
+      "previous_slot": 23
+    },
+    {
+      "normal_slot": 43,
+      "slot": 44,
+      "previous_slot": 39
+    },
+    {
+      "normal_slot": 41,
+      "slot": 42,
+      "previous_slot": 38
+    }
+  ],
+  "input_evidence": [
+    {
+      "file": "_work/bag1/scus.bin",
+      "sha256": "46cf25699eccd91057c61fe3c68ccd708e2c2c6ea348593e6c7b3ce3171b61c9"
+    },
+    {
+      "file": "_work/mainexe/slpm.bin",
+      "sha256": "143b4bf866bf6e47876f54c9667aa476e178b3aaa1ecf4d8a9f022c7583cc00b"
+    },
+    {
+      "file": "_work/character_inventory/gaso/001.bin",
+      "sha256": "39f6554982c5bdba54b6075e7a6ad360934d7cf2edd28db92eea003b768692d1"
+    }
+  ]
+}

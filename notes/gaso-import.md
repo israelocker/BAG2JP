@@ -2,14 +2,751 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "A (cartel GAS) aceptado y preservado. Tanque: fidelidad F1-F8 pendiente. CAUGHT ab5480e observe-only probado; clip sin publicar. P2a verificado como diagnóstico: receptor BAG1 elegible, BAG2 rechazado; lifetime y publicación siguen sin resolver. Ver caught-p2a-lookup-20261112. Suite completa no verde."
+summary: "Referencia GO+2s del propietario: candidato ±870 (ff800b28) desplegado en experimental, radio199/cámara intactos; 23 tests, 11 mutantes, Goldfish triado. Partida go-plus2-autoplay aceptada: cuerpos cerca de los puntos medios de barra, final ±870/Z0, fever y selector. Pendiente conformidad del propietario. Sin Bloque2, commit ni snapshot."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
-updated: "2026-11-12"
+updated: "2026-11-14"
 doc_kind: evidence
 ---
 
 # Gas-O — ledger canónico
+
+## Referencia GO + 2 s: candidato ±870 (2026-11-14, estado vigente)
+
+- Corrección del propietario: «la camara que tienes que tomar para la posicion inicial
+  correcta debe ser 2 segundos despues de que la palabra Go aparezca». Sustituye la referencia
+  READY (±1300). Revisión visual de `initial-anchor-autoplay` (26c21150…): ±1300 sin recortes,
+  pero a GO+2 s los cuerpos quedaban hacia el borde exterior de cada barra.
+- Limpieza conservadora aprobada («okay ve por la conservadora»): auditoría
+  `_work/gaso/drift/end-center/cleanup-2026-11-14.json`, 169.771 GB liberados;
+  `gaso-combined-ae-f2` y todas las tomas del 2026-11-14 intactas.
+- Medición `go-plus2-measure` aceptada (323 heartbeats, 0 stalls, 1909 pares audio sin
+  descartes;150 saves/configs restaurados). "Go!" visual t=26.747 s; a GO+2 s la cámara ya está
+  asentada (T=[0,692,3028], H=384). Con factor GTE 0.75 y OFX256, guías 235/727 sobre 960px
+  dan -870.11/+874.90 a Y=460: candidato simétrico `B1HOME_WIDE=870` (zoom128: 435 exacto)
+  proyecta 235.03/725.62. Modelo: `solve_go_plus2.py`, `go-plus2-measure/solution.json`.
+- TDD: test RED (exit134) antes del cambio; 23 tests PASS 12.416 s; 11/11 mutantes por
+  aserción detectados. Goldfish `ses_e257b132…` PASS condicional y `ses_e257b106…` con
+  hallazgos no bloqueantes (muestra +0.69 s tras GO+2 s; ancla Y=0/Z=0 frente a raíz animada;
+  zoom128 sin composición leash+home en host). Triaje: `_work/goldfish/triage-go-plus2-anchor.md`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Build `go-plus2` PASS; EXE `ff800b2857a43c8924473c03dc0c7df04c2658aaa9c3188bc19061b0de8900df`
+  desplegado EXE-only (respaldo `deployment-backup-go-plus2`, 5 protegidos, paquetes intactos).
+  Calibración `go-plus2-cal` aceptada (546 heartbeats, 0 stalls, 3271 pares audio sin
+  descartes), 11 imágenes revisadas, catálogo `d5340edb…` ligado.
+- Partida `go-plus2-autoplay` (Gas-O BAG1 vs Heat BAG1, escenario Gas-O, sin ataques):
+  **accepted=true**, 1999 heartbeats, 1 stall, 11975 pares audio sin descartes, residual p99
+  17.2 ms; 150 saves/configs restaurados; `owner.mp4` SHA `eafd73e9…`.
+  - GO+2 s (t=29.242 s, "Go!" en 27.242 s): cuerpos ~215 px (Gas-O) y ~735 px (Heat) frente
+    a guías 235/727; `go-plus2-autoplay/go-plus-two-annotated.jpg`. La muestra RAM más
+    cercana llega +0.88 s tarde; los homes son fijos, pero raíz/cuerpo exactos en ese
+    fotograma quedan como estimación visual.
+  - RAM 123 muestras de baile: homes ±870, radio 199; X P1 [-1084,-658], P2 [641,1091].
+    Final anim67/68 converge a [-870,312,0]/[870,520,0]; liberación INT_MAX; fever f016348.
+  - Hojas `go-plus2-match/` (baile, final, fever) sin recortes ni saltos visibles; vuelta al
+    selector verificada. Cámara nativa gira durante el baile: no se fija al HUD.
+- **Conformidad del propietario (2026-11-14):** «Si, está bien, procede», tras ver la imagen
+  anotada GO+2 s. Commit local WIP del árbol completo autorizado (alcance elegido por el
+  propietario; excluye `.agents/skills`, `tools/ffmpeg-skill` y logs sueltos). Snapshot
+  aplazado hasta cerrar el Bloque 2. Siguiente: Bloque 2 (ataques/CAUGHT/dueto/cierre).
+
+## Posiciones iniciales más separadas bajo cada barra (2026-11-14, histórico READY ±1300)
+
+- Continuación autorizada: «Okay continúa con las correcciones». Medición desde antes de
+  entrar al escenario, no desde el baile: `initial-alignment-measure3` aceptada (296 heartbeats,
+  0 stalls,1771 pares audio,0 descartes;150 saves/configs restaurados). Las dos mediciones
+  anteriores quedaron rechazadas tras errores del wrapper y se conservan como fallos.
+  Regresión mock RED→GREEN corrigió `stop_recording()` sin argumentos y el conflicto de screenshot.
+- Corrección del modelo anterior: faltaba el factor horizontal GTE16:9 de0.75. Ghidra MCP
+  (`get_program_info` primero, mainJP) verifica offset256/120 mediante lectura8002DCFC/12B.
+  En READY gf7314 de la toma aceptada, ambas anclas±700 proyectan dentro de sus barras;
+  la cámara de introducción barre distintas posiciones. `initial-alignment-solution.json`
+  calcula anclas -1305.08/+1305.07 para guías x235/727 sobre960px; candidato simétrico±1300
+  proyecta235.95/726.04. Esto es proyección del **ancla**, no del cuerpo: las raíces animadas
+  extrapoladas dan215.01/722.31. En GO la cámara cambia: no se promete alineación en todos
+  los ángulos ni se bloquea al HUD.
+- Nuevo candidato: solo `B1HOME_WIDE=1300` en `bag2jp_bag1_home.h`; mismas guardas nativas,
+  radio199 derivado de referencia520 (zoom128: home650/referencia260/radio99), cámara intacta.
+  Callback real observado RED antes del cambio;23 tests PASS13.494s y10/10 mutantes por
+  aserción. Se conserva caché obsoleto INT_MAX en la regresión de restore hacia±1300.
+  Goldfish `ses_e25996867ffeAombr17TQPTiO6` y `ses_e259950f8ffe0lYlPUPfV4jXC9`:
+  hueco de restore corregido; alineación de cuerpo y recorte pendientes de partida real.
+  Triaje/hashes: `_work/goldfish/initial-anchor-verdict.json`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Build `20261114T141530983858Z-initial-anchor` PASS31.25s; solo header staged con respaldo
+  `staging-backup-initial-anchor`, AOT sin cambios. EXE
+  `26c211504ddaac90a0578dac7664117c682947723a5ab5dae10bef93bf7217fb` desplegado EXE-only;
+  respaldo effb8edd en `deployment-backup-initial-anchor-deploy`,5 protegidos/paquetes intactos.
+  Calibración `initial-anchor-cal` en curso. Wrapper completo empieza antes del escenario y
+  termina al volver al selector; test mock de límites PASS. Falta grabación aceptada y revisión
+  READY/GO, recorte durante baile, pose final, fever y selector. Sin Bloque2, commit ni snapshot.
+
+- Antecedentes de ±700 y diagnóstico (no estado actual del candidato):
+- Petición: «Okay veo ya desde el inicio estan muy juntos, osea su posicion inicial
+  deberian estar mas separados basicamente deberian iniciar estando a la mitad de sus
+  respectivas barras de puntaje, si me dejo entender? para que asi conserven esa posición
+  inicial mas separadas, puedes revisar eso?» Sustituye pedir conformidad del centrado
+  anterior. Tras la propuesta, el propietario autorizó implementar y obtener evidencia
+  experimental grabada; esa autorización no incluye ataques/CAUGHT/dueto, commit ni snapshot.
+- Objetivo/check: en la vista inicial, situar cada bailarín bajo el punto medio de su
+  propia barra; después conservar esas nuevas referencias X/Z del escenario durante
+  baile y pose final. No centrarlos en X=0 ni fijar su proyección al HUD cuando gire la cámara.
+- Contraste fresco Ghidra MCP: `get_program_info()` identifica main JP `SLPM_862.19`
+  (`ea5a1668…`, sin overlay identificado); `decompile_function_by_address` y
+  `disassemble_function` de `0x8002B5BC` confirman tabla `0x80051918`, zoom stage+4 y
+  llamada `0x8002BA18` (`0x0C00B617`) a `FUN_8002D85C` con vector inicial en `a2=sp+0x10`.
+  `read_memory(0x80051918,12)` devuelve `82 82 82 82 82 56 82 82 82 82 82 82`;
+  caso ordinario: ±130×4×zoom/256 = ±520 a zoom256, escenario5 ±344; escenario0xB,
+  modo4, bailarines auxiliares y personajes especiales tienen rutas distintas.
+- Verificación independiente: `py -3.13 _work/gaso/drift/end-center/audit_wider_home.py`
+  contrasta tabla y palabra JAL con el EXE original y homes ±520 con el muestreo de
+  `dance-center-autoplay2`; reporte/hash de entradas en `wider-home-audit.json`.
+  Preflight `wider-home-review` pasó; esa primera revisión todavía no modificaba el runtime.
+- Revisión visual de la grabación aceptada anterior (no una nueva validación): FFmpeg
+  `probe.py` + `look.py` extraen t=0.100/1.546/139.117 s; la primera y la última muestran
+  bailarines hacia el interior de sus barras. `wider-home-score-guides.png` señala los
+  centros aproximados del interior de las barras (x235/727 sobre imagen960); no muestra
+  una modificación del juego ni una solución 3D. Cámara y pose cambian entre fotogramas.
+- Riesgo identificado: subir |home| sin otro ajuste amplía también el radio actual
+  `round(|home|*300/784)`. Preservar la correa ceñida ya verificada (199 en este escenario)
+  o recalcularla desde la escala nativa; no deshacer el recentrado al abrir la separación.
+- Medición nueva autorizada: `wider-home-camera-baseline`, runtime5258009e sin modificar,
+  run `20261114T125357316658Z-wider-home-camera-baseline`; ocho snapshots RAM8MB de solo lectura.
+  Grabación **aceptada**:71 heartbeats,0 stalls,421 pares audio,0 descartes. Cámara estable:
+  matriz8005D0F0, focal8006D98C=384, eye[13,1550,3041], target[-1,529,10].
+  `solve_wider_home.py`/`wider-home-projection.json` calcula X=-687.10/+686.87 para las guías
+  x235/727, usando alturas de referencia473/520 y offset geométrico supuesto256/120.
+  Candidato simétrico **±700**, no alineación visual aceptada: proyecta x230.40/731.72.
+- Implementación compartida experimental: `bag2jp_bag1_home.h` y callback antes del
+  JAL8002BA18 verifican versión BAG1 principal, controlador/actor/stack, stage estándar,
+  zoom y vector nativo. Solo cambian vector.X; el inicializador nativo conserva Y/Z/yaw.
+  Stage5/B, modo4, chars10/14, auxiliares y BAG2 quedan fuera. Referencia del radio derivada
+  de RAM mapea home±700 a referencia nativa±520 tanto en leash como en centro: sigue199,
+  no268. No añade caché de home ni modifica cámara. Prueba RED anterior detectó268;
+  suite leash11 PASS9.630s y callback home2 PASS en la comprobación posterior.
+- Generación nativa aislada `generate_wider_home.py`: emisor42508148…,3.742s, cambia solo
+  `SLPM_862.19_full_08.c`, añade una llamada8002BA18; no edición manual de código generado.
+  El test de registro detectó primero la falta de opt-in; añadido a `patches/BAG2JP-game.toml`.
+- Host final del cambio: home+leash13 PASS6.738s, cinco pruebas relacionadas y cinco AOT
+  aprobadas en sus ejecuciones registradas; no una ejecución única de23. Baseline y nueve
+  mutantes de home detectados por aserción. La primera mutación stageB sobrevivió por una
+  tabla sintética incompleta; corregida la tabla realista, quedó detectada.
+- Goldfish: `ses_e25d1bd64ffeMWGeFZrhwrDDw9` SIN HALLAZGOS BLOQUEANTES y
+  `ses_e25d19d55ffeTvJxXHb4HvE8Tt` CON HALLAZGOS de cobertura. Triaje en
+  `_work/goldfish/wider-home-verdict.json`: fixture18, centrado/restore real hacia700 y
+  negativos independientes corregidos; protección AOT existente contrastada y reforzada.
+  La alineación real del HUD sigue pendiente de grabación, no se deduce de tests host.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Build `20261114T131533246564Z-wider-home` PASS33.54s, tras staging con respaldo
+  `staging-backup-wider-home`. EXE `effb8edd971992655aa06ce88d05b21e65dc83b73e742265f5ebc45597612216`.
+  Despliegue EXE-only experimental verificado; respaldo5258009e en
+  `_work/gaso/deployment-backup-wider-home-deploy`, cinco archivos protegidos y paquetes intactos.
+- Calibración `20261114T131812464991Z-wider-home-cal`:150 saves/configs restaurados;
+  grabación WGC **aceptada**,484 heartbeats,0 stalls,2883 pares audio,0 descartes.
+  Selector y ocho transiciones revisados en `wider-home-cal-main.jpg`/`wider-home-cal-probes.jpg`;
+  catálogo ligado a effb8edd, digest `e87fbe8a7348c38da2650d3ddbbdfda5778b6d831d56d4a27a4e69b993d70622`.
+- Partida autorizada completada: `20261114T132537881098Z-wider-home-autoplay`, Gas-O BAG1
+  contra Heat BAG1 en GasOBAG1, sin ataques,299.531s; restauración150 saves/configs verificada.
+  `_work/recordings/wider-home-autoplay/manifest.json`: **accepted=true**, rejections vacías,
+  WGC y182 comprobaciones de ventana aprobadas;1714 heartbeats,1 tardío,59.942fps,
+  jitter p9911.27ms. **Una pausa de63ms tras gf7992**, no cero pausas; las puertas originales
+  aceptaron la toma. Productor7992→7998=211.2175ms entre muestras nominales de100ms.
+  Audio exacto del juego:44057Hz,10279 pares,0 descartes,residual p9916.01ms,ventana6.97ms;
+  owner.mp4 medido -15.3LUFS/-2.2dBTP/LRA7.1LU, sin modificar audio ni retimar video.
+- RAM y revisión propia:123 muestras de baile mantienen homes[-700,+700],radio199;
+  medianas |dx|91/73 y |z|68/63. En fase1/4 se ejercitan **anim67 P1 y anim68 P2**;
+  gf15306 raíces[-694,411,-78]/[748,512,73] convergen a gf15486/15546
+  **[-700,312,0]/[700,520,0]**. El diferente Y es de la pose, no un nuevo puesto Z.
+  Liberación nativa INT_MAX en fase1/5, fever posterior y regreso al selector comprobados.
+  Reporte `wider-home-run-analysis.json`;13 fotogramas consecutivos por intervalo inicial,
+  transición final y fase liberada en `wider-home-visual-frames.json` y hojas correspondientes.
+- **Resultado visual parcial, no aceptación final del requisito:** el inicio gf7123..7135
+  muestra más separación; Gas-O queda cerca de su guía, pero Heat todavía hacia el interior
+  de la mitad de su barra. La solución proyectiva anterior era una aproximación con offset
+  supuesto y cámara de otra toma: el snapshot nuevo mide eye[-14,1167,3209],target[-1,487,12],
+  distinto del baseline. No usar el cálculo ±687 ni los homes±700 como prueba de alineación
+  exacta en píxeles. La corrección funcional de anclas/radio/final sí quedó observada.
+  `wider-home-owner-sheet.jpg` muestra las guías aproximadas, final, fever y selector;
+  conservar candidato experimental y declarar pendiente afinar la alineación inicial.
+  Video `_work/recordings/wider-home-autoplay/owner.mp4`, logs y RAM en el run anterior.
+  Precisión±2 fotogramas estimada; calidad subjetiva del audio reservada al humano.
+  Sin Bloque2, commit ni snapshot. Siguiente: mostrar evidencia y recoger conformidad sobre
+  esta separación aproximada; si se exige coincidencia con ambas mitades, afinar proyección
+  contra la cámara real antes de otro candidato, sin introducir bloqueo al HUD.
+- Herramientas: Ghidra MCP recuperado por puente instalado, sin duplicar GUI ni instalar;
+  FFmpeg y script determinista usados sobre evidencia existente. Sin funcmatch/Capstone:
+  no se buscaban equivalentes BAG1 y Ghidra respondió. Sin modelos locales: análisis corto
+  de código nativo y proyección, no trabajo mecánico masivo. Recorder usado para medición
+  autorizada; dos revisores Goldfish convocados para este cambio de fuente. Tiempo/ahorro no medidos.
+
+## Centrado X/Z de la pose final BAG1 (2026-11-14, antecedente verificado)
+
+- Requisito del propietario tras ver la toma anterior: «al final si estan separados pero
+  deberian estar mas centrados, uno se ve mas adelante que el otro, centralos mas como
+  cuando iniciaron». La toma anterior está aceptada técnicamente, **no** como resultado visual.
+- Causa contrastada: `anim45` lleva a ambos a extremos Z opuestos y `anim68` conserva
+  el desplazamiento dentro del círculo. En gf15504: raíces `[-380,473,-275]` y
+  `[649,520,272]`, puestos iniciales X=−520/+520, Z=0. Un radio menor no aporta retorno
+  interior; el muelle BAG1 original tampoco actúa dentro del radio.
+- Corrección acotada experimental: `bag2jp_bag1_center.h`, llamada desde
+  `bag2jp_bag1_versions.c` en el sitio nativo `0x8002D818` (`0x8E660038`), después
+  del reanclaje/blend y antes del recorte y consumidor de pose. Solo principales BAG1,
+  fase `1/4`, clip68 con blend completo, actor/clamp activos, modo1/2 y sin pausa.
+  Retorno de **base X/Z**, `ceil(|error|/32)` con máximo8 unidades/eje y una vez por
+  actor/VBlank. No escribe raíz, Y, registros, radio ni cámara; excluye otros clips/fases
+  y radio ilimitado. El baile anterior y las rutas nativas de victoria/derrota quedan fuera.
+- El radio válido se deriva de RAM restaurada: tabla raw × zoom y proporción del puesto;
+  no depende del caché host del leash. Esto permite retomar un estado318 después de haber
+  cacheado la liberación INT_MAX. El leash previo no cambia. Reset/load compuesto conserva
+  `b1load_forget` y limpia el nuevo latch; se usa una sola inscripción de la API real.
+- Host: regresión RED→GREEN con las posiciones medidas, convergencia sintética en≤160
+  actualizaciones, exclusiones, punteros extremos, pausa, restauración318→INT_MAX→318,
+  pasos firmados en límites32, no modificación de Y/radio/CPU. Última suite relacionada:
+  **36 tests PASS, 9.336 s**; **8 mutantes detectados por aserción**. Evidencia en
+  `_work/gaso/drift/end-center/mutations.json`; no prueba la presentación real del juego.
+- AOT: regeneración aislada3.757s, solo cambia `SLPM_862.19_full_09.c` en sus dos
+  ocurrencias del sitio; test exige ambas. Config canónica añade solo `0x8002D818`.
+  Hooks de cámara `0x80014FB8/0x80014FD4` siguen fuera; mantener `camera_speed=2.1`.
+- Goldfish: dos revisores nuevos (`ses_e271d8a15ffeeo0UH9Gxg8XPpV`,
+  `ses_e271d6ae7ffeBo00UO3xgl062D`), ambos **CON HALLAZGOS**. Confirmados y corregidos
+  con regresiones: lectura de actor+4 antes de validar el bloque completo, caché del leash
+  obsoleto tras load, cobertura exacta de pasos y de ambas ocurrencias AOT. Corregido además
+  un fallo de compilación propio: API `savestate_load_plugin` inexistente; el callback
+  compuesto usa `psx_mod_register_savestate_plugin`. No se presenta la auto-verificación
+  posterior como otro Goldfish. Spec y triaje: `_work/goldfish/spec-bag1-end-center.md`
+  y `_work/goldfish/bag1-end-center-verdict.json`.
+  **Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.**
+- Primer build falló por esa API en30.039s; log en
+  `_work/workflow/20261114T070755808015Z-bag1-end-center/build.log`. Fuentes corregidas
+  copiadas con hash previo y respaldo nuevo en `end-center/review-fixes-build-backup`;
+   build `bag1-end-center-reviewed` **PASS, 35.514 s**, dos jobs. EXE candidato SHA-256
+   `893833b178d9bf96183bfc398a35eb1ac7d429ab2046ef2fcebea8ff9e1cda19`.
+   Métricas: `_work/workflow/20261114T071651559442Z-bag1-end-center-reviewed/metrics.json`;
+   hashes de candidato/instalaciones: `_work/gaso/drift/end-center/build-hashes.json`.
+    Es prueba de compilación/enlace, no de aceptación en partida.
+- El propietario respondió «si autorizo» al despliegue solo experimental y una partida
+  grabada sin ataques. EXE-only desplegado con hash893833b1 y respaldo del anterior3b43cff8
+  en `_work/gaso/deployment-backup-bag1-end-center/report.json`; cinco configuraciones
+  protegidas y paquetes sin cambios. No autoriza ataques, commit ni snapshot.
+  Calibración `bag1-center-calibration` completada y grabación aceptada: 597 heartbeats,
+  jitter p99 11.6 ms, audio residual p99 15.25 ms. Revisados video y diez capturas;
+  catálogo de ocho transiciones aceptado para este runtime. Restaurados 150 saves.
+- Herramientas: MCP confirmó JP `SLPM_862.19` y bytes del seam; se reutilizan el análisis
+  y la toma previa, no nuevas búsquedas masivas. Grabador y FFmpeg se usaron para la
+  calibración autorizada; la partida `bag1-center-autoplay` terminó una sola vez.
+  `funcmatch` no aporta a un equivalente ya confirmado. Ahorro no medido.
+- Partida completada en304.363s: `_work/versus-runs/20261114T072915522621Z-bag1-center-autoplay`;
+  restauración de configuraciones y150saves verificada. Finalización única del grabador
+  **RECHAZADA**, exit1/`accepted=false`:4213/10245pares de audio fuera de100ms y una
+  ventana17.92ms fuera del ajuste. No usar sus píxeles para validar gameplay ni el recentrado.
+- Diagnóstico acotado: heartbeat registra stall0.408s trasgf16008; contraste independiente
+  encuentra salto de offset de reloj real0.429s y contador audio/fotograma continuo.
+  Causa de la pausa de planificación no establecida. Evidencia:
+  `_work/gaso/drift/end-center/rejected-capture-diagnostic.json` y manifiesto original;
+  no se reparó, recortó ni relajó la puerta para aceptar esta toma.
+- Owner respondió «Si autorizo continua»: autoriza repetir con el mismo candidato,
+  sin ataques. `bag1-center-autoplay-r2` lanzada una sola vez con wrapper revisado;
+  reutiliza calibración/catálogo, EXE y puertas sin cambios. Completada304.098s en
+  `_work/versus-runs/20261114T075559301619Z-bag1-center-autoplay-r2`; configuraciones y
+  150saves restaurados/verificados. Finalización única **RECHAZADA**, exit1/accepted=false:
+  2719/10023pares de audio fuera100ms;1677heartbeats,6tardíos,59.945fps,jitterp9915.43ms,
+  stall0.343s trasgf16014. No se inspeccionaron sus píxeles para validar el centrado.
+- Contraste del reintento: offset wall/frame salta0.336s alrededor del stall, sin saltos
+  de muestras>2205 entre fotogramas consecutivos. Es recurrencia del síntoma, no causa
+  demostrada. `_work/gaso/drift/end-center/retry-rejected-diagnostic.json` conserva
+  contraste, restauración y hashes de ambas instalaciones; estable5612f03a sin cambios.
+  No se modificaron puertas ni se reparó/recortó/re-finalizó la toma para aceptarla.
+- Diagnóstico interno posterior: `py -3.13 _work/gaso/drift/end-center/replay_capture_clock.py`
+  reproduce con `HeartbeatClock`/`audio_placement` de producción exactamente0/3553,
+  4213/10245 y2719/10023 pares descartados para calibración, primera toma y reintento.
+  El control sintético sin discontinuidad pasa; saltos wall de0.343/0.408s con muestras
+  continuas son rechazados por la misma puerta, sin cambiarla ni re-finalizar originales.
+  Evidencia: `_work/gaso/drift/end-center/capture-clock-replay.json`.
+- Mecanismo confirmado del rechazo: el video usa tiempo real y el dump cuenta muestras
+  por fotograma emulado; un solo ajuste afín no representa la discontinuidad entre ambos.
+  Esto no demuestra corrupción del audio ni identifica el origen de la pausa.
+  Los dos saltos caen en fase1/5/6 (clips100/96 y95/99), fuera del recentrado fase1/4/clip68.
+  En r2 otra lectura del proceso observógf16014 a wall1794643228.7343493 dentro del hueco.
+  No basta para distinguir una pausa real del productor de un salto compartido de reloj:
+  el heartbeat y el sync carecen de marca monotónica emitida por el productor.
+- El diagnóstico anterior solo cambió `_work/` y documentación: Goldfish omitido para
+  esa fase. El owner respondió «Okay, continua» a la instrumentación interna; resultado:
+  `bag2jp_anim_trace.c` añade `bag2jp_clock_probe.csv` cada6fotogramas de audio con
+  `frame,samples,producer_ticks,producer_hz` (SDL3 performance counter, lectura antes de I/O).
+  El recorder añade `clock_observations.csv`: frame incluso repetido/ausente y brackets
+  monotónicos/civiles antes/después de leer heartbeat. Comparar deltas/frecuencia dentro
+  de cada reloj; no asumir épocas iguales entre procesos.
+- Compatibilidad: WAV, sync de dos columnas, heartbeat y puertas de aceptación sin cambios.
+  Los CSV nuevos son diagnósticos, no inputs de `HeartbeatClock`/`audio_placement` ni prueba
+  automática de pertenencia a sesión. Ausencia, fallo de apertura/escritura/cierre o copia
+  del diagnóstico avisa y no aborta la captura principal. Se conserva el probe ambiguo;
+  identidad inicial/final queda registrada, sin descartar por mtime civil si el reloj retrocede.
+- Verificación host: 39tests PASS10.159s (`test_audio_clock_probe`, `test_bag2_record`,
+  `test_anim_trace_samples`, `test_recording_window`); fixture C usa callbacks reales,
+  reloj controlado y salto343ms. Se fijan formatos antiguos y fallos opcionales. Dos baselines
+  y6mutantes por aserción pasan en `clock-probe-mutations.json` bajo
+  `_work/gaso/drift/end-center/`; fuentes copiadas, originales nunca mutadas.
+  `check_clock_probe_compile.py` valida el C completo con comando real Windows/SDL3:
+  syntax-only PASS2.568s; reporte `clock-probe-compile/report.json`. No prueba enlace ni ejecución viva.
+- Goldfish: dos revisores nuevos (`ses_e26d9a8a4ffeU1j3FIn73PieGG`,
+  `ses_e26d9a89cffeOueTP3G9cIY9FP`), ambos **CON HALLAZGOS**. Confirmados y corregidos
+  con RED→GREEN: mtime dependiente del reloj investigado y escritura diagnóstica que podía
+  abortar la captura. Añadidos frame ausente y errores header/flush/cierre. Límites no verificados:
+  coherencia concurrente del contador de muestras heredado, coste de flush y correspondencia viva.
+  Dictamen/inputs en `_work/goldfish/capture-clock-probe-verdict.json`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Staging con respaldo y compile/link de la instrumentación: `PASS`, 33.144s, enlace
+  `BAG2JP.exe` `2135d5eb6ef70755c2272c32057ad2c58bf3e2cf47c5aca45db142f8be59a780` en árbol de compilación; respaldo previo en
+  `_work/gaso/drift/end-center/staging-backup/20261114T084258Z/bag2jp_anim_trace.c`.
+- Despliegue EXE-only y corrida diagnóstica autorizados («Continua»): `deploy_verified_exe.py --tag clock-probe --preserve-canonical-feature-manifest` desplegó `2135d5eb…` en `BAG2JP-exp-8mb` (respaldo `_work/gaso/deployment-backup-clock-probe/report.json`; estable `5612f03a…` intacto). Calibración `clock-probe-calibration` (`106.143 s`, 150 saves restaurados): catálogo visualmente revisado y ligado (`reviewed_catalog_sha256: 790f91c6…`), pero video rechazado por `heartbeat jitter p99 22.7 ms > 1 frame` (audio 0 descartes). Partida `clock-probe-autoplay` (`295.946 s`, 150 saves restaurados): **RECHAZADA** por `1874/7595` pares >100 ms, ventana 1 s de `119 ms` y `capture: invalid window Z order` a los ~127.5 s (`stalls: [{after_frame: 12006, seconds: 0.292}]`).
+- Causa del fallo de audio probada (`analyze_clock_probe_autoplay.py` → `_work/gaso/drift/end-center/clock-probe-autoplay-analysis.json`): `clock_observations.csv` mantuvo `wall_minus_mono_rel_ms` en `[-0.0015, +0.2891] ms` (sin salto del reloj civil), mientras `bag2jp_clock_probe.csv` registró una pausa real del productor/emulación de **393.01 ms** entre `gf 12006` y `gf 12012` (`ds = 4409` muestras ≈ 100 ms), en `mode2 phase 1/3/3 fever0` (antes de fever y del recentrado `phase 1/4 clip 68`). El origen interno de esa pausa puntual en el emulador sigue abierto; Ghidra MCP re-establecido (`javaw` PID 63424, `SLPM_862.19` SHA `ea5a1668…`).
+- Integración WGC (`gfxcapture`) para grabar con ventanas encima (autorizada por owner): FFmpeg 8.1 (`n8.1.3-35-gf1acb0a266-20261113`) instalado en `D:\Dev\Tools\ffmpeg-wgc\ffmpeg-n8.1-latest-win64-gpl-8.1\bin\ffmpeg.exe` (`D:\ffmpeg\bin\ffmpeg.exe` intacto). `tools/test/bag2_record.py` (`--capture-backend {auto,wgc,gdigrab}`, default `auto`) y `tools/test/recording_window.py` (`require_uncovered=False`) capturan por `HWND` ignorando ventanas superpuestas y movimiento `(x, y)` sin fijar topmost ni foco, manteniendo guarda de PID, token `SetPropW`, visibilidad, no minimización y tamaño cliente (`rect[2:]`); `parse_ffmpeg_start` acepta `gdigrab` y `lavfi` con `-use_wallclock_as_timestamps 1` (`start >= 1.0e9`).
+- Verificación WGC: **45 tests host PASS en 7.162 s** (`test_recording_window`, `test_bag2_record`, `test_audio_clock_probe`, `test_anim_trace_samples`); E2E vivo con ventana Win32 `320x240` totalmente tapada (`_work/gaso/drift/end-center/wgc-e2e-smoke/`): `review_mid_wm_timer.png` mostró `gf 253 == E2E 253` y la corrida con audio obtuvo `accepted: true`, `capture_backend: "wgc"`, `jitter_p99_ms: 4.5`, `stalls: 0`, `audio dropped: 0`. Goldfish (`_work/goldfish/wgc-capture-integration-verdict.json`): dos revisores **SIN HALLAZGOS BLOQUEANTES** (`ses_e265f0a9effewK76LIUQpl6gqe`, `ses_e265f0a9cffepl5GdjBuDpqwK7`); 3 ajustes menores aplicados y re-probados.
+- Partida real del **Bloque 1** autorizada («Si procede»): `wgc-center-autoplay`
+  (`_work/versus-runs/20261114T104433736313Z-wgc-center-autoplay`, `299.291 s`,
+  `150` saves y configs restaurados/verificados) con backend `wgc` sobre `BAG2JP.exe` `2135d5eb…`:
+  - Grabación `_work/recordings/wgc-center-autoplay/manifest.json` **ACEPTADA** (exit `0`,
+    `accepted: true`, `0` rechazos): `1675` heartbeats (`0` perdidos), `jitter p99: 10.9 ms`,
+    `59.942 fps`, `0` stalls, `10011` pares de audio (`0` descartes, `44057 Hz`,
+    residual p99 `15.47 ms`, ventana `6.34 ms`), `window_guard` (`checks: 175`,
+    `require_uncovered: false`, `passed: true`), `producer_clock_copied: true`
+    (`bag2jp_clock_probe.csv` p50 `100.124 ms`, p99 `104.795 ms`, max `112.127 ms`, sin pausas;
+    `wall_minus_mono` en `[-0.0011, +0.2705] ms`), loudness `owner.mp4` `-15.3 LUFS` / `-1.1 dBTP`.
+  - Muestreo RAM/watch y hojas visuales (`_work/gaso/drift/end-center/wgc-center-sheet1.png`,
+    `wgc-center-sheet2.png`): `scale 98 -> 75`, radio `318` durante todo el baile (`gf 6582..15594`);
+    en `phase 1/4` (`gf 15402..15654`) P1 converge suavemente de `[-438, 85]` a `root [-521, 460, 1]`
+    y P2 de `[491, 226]` a `root [518, 494, 4]` sin saltos; en `gf 15658` (`phase 1/5/6`) ambos
+    liberan a `0x7FFFFFFF`, se completa el solo fever P2 (`2 Player Win`) y regresa limpio al
+    selector (`returned-selector.png`).
+  - Pendiente: conformidad visual del propietario sobre `owner.mp4`/hojas de contacto, y **Bloque 2**
+    (ataques/`CAUGHT`/`fever-duet-sync` con autorización explícita) más **cierre final**
+    (commit/snapshot). Sin commit ni snapshot todavía; estable `5612f03a…` intacto.
+- Nuevo requisito del propietario tras revisar `gf 15583` de `owner.mp4` (2026-11-14):
+  «Puedes hacer que se centren aun mas? quiza que mientras esten bailando se sigan centrando o algo
+  pero que no se alejen tanto del centro» — aclarando explícitamente que «centro» significa
+  «la posicion inicial a la cual comenzaron, no al centro o en medio de la pantalla».
+  Diagnóstico de `wgc-center-autoplay/leash-actor-samples.jsonl`: en `phase 1/3` (`124` muestras),
+  el radio `318` permitía deriva libre en `P1 X=[-838,-181], Z=[-323,331]` y
+  `P2 X=[175,858], Z=[-340,343]` porque `FUN_8002CD48` no actúa dentro de `dist <= radius`.
+- Candidato `dance-centering` (`BAG2JP.exe` `0665a9c333cea85b5dda205426ca602049b969435ab15a9bdc45a3a8da1aecc9`,
+  enlazado en build tree, **sin desplegar**):
+  1) `bag2jp_bag1_leash.h`: aprieta `B1LEASH_BAG1_RADIUS` de `480` a `300` sobre `784` (`199` para
+     `|home|=520`, `132` en escenario 5, `99` en zoom `128`).
+  2) `bag2jp_bag1_center.h`: mantiene pose final `phase 1/4` (`anim 68`, paso `ceil(|err|/32)`, máx `8`)
+     y añade centrado continuo durante baile normal `phase 1/3` (`deadzone=16`, `divisor=48`,
+     `max_step=3` hacia `(home_x, 0)`), restringido a `b1center_radius_ready` (excluye `0x7FFFFFFF`/fever),
+     `ctl+4 == 0x1000`, `anim <= 72` y `!b1center_attack_busy()` (lecturas alineadas de `0x8005E748/54/78/84`).
+     En `20261113T190419608874Z-gaso-combined-ae-f2` (`f=6658..15000`), `0x8005E748/54` fueron `(0,0)` en
+     baile normal y no-cero en ataques/cooldown; `0x8002D7A0..0x8002D8D4` y `005.dbi 0x8009A548/560/5A0`
+     verificados con Capstone (tras caída de Ghidra MCP en `decompile_function_by_address`).
+- Verificación host y compilación:
+  - `py -3.13 -m unittest -v tools.test.test_bag1_leash tools.test.test_bag1_dancer_scale tools.test.test_mod_instruction_sites tools.test.test_ap2_no_attack tools.test.test_gaso_hud_runtime tools.test.test_bag1_stage_shim`:
+    **20 PASS en 11.853 s** (RED→GREEN; incluye exclusiones de bytes vecinos de ataque, `slot 2`, `mode 1`,
+    `anim 0/72/73`, `b1v_restore` -> `b1leash_forget()` y bytes reales en `SLPM_862.19`/`005.dbi`).
+  - `py -3.13 _work/gaso/drift/end-center/check_dance_center_mutations.py`: baseline PASS + **17/17 mutantes
+    por aserción KILLED_ASSERTION** (`dance-mutations.json`).
+  - Dos revisores Goldfish en frío (`ses_e2630ff74ffeExl05RwlKv9o87` CON HALLAZGOS no bloqueantes,
+    `ses_e2630fc9dffee4DDy4W5fk3JW8` SIN HALLAZGOS BLOQUEANTES; `_work/goldfish/dance-centering-verdict.json`).
+    Aplicadas las 4 mejoras menores (quitar `b1center_axis` sin uso, añadir `b1leash_forget()` en
+    `b1v_restore()`, cubrir bytes vecinos/slot 2/bordes y fijar direcciones/offsets en `SLPM_862.19`/`005.dbi`).
+    Límite declarado: modelo host simplifica `FUN_8002C404`; falta validar suavidad visual, ataques/hitstun,
+    fever, savestates y retorno en partida real.
+    Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+  - Staging con respaldo (`_work/gaso/drift/end-center/staging-backup-dance/`) y `bag2_workflow.py build --tag dance-centering`:
+    PASS en `35.69 s` (`[5/5] Linking CXX executable BAG2JP.exe`, cero advertencias en los archivos modificados).
+- Siguiente: pedir autorización del propietario para desplegar `0665a9c3…` en experimental `BAG2JP-exp-8mb`
+  (manteniendo estable `5612f03a…` intacto) y ejecutar **una** partida autoplay grabada con WGC sin ataques
+  (con calibración vinculada al nuevo hash) para validar el centrado durante el baile y al final antes de Bloque 2.
+- Validación en juego autorizada (`dance-centering` `0665a9c3…` -> `5258009e…`, 2026-11-14):
+  - El propietario autorizó («Si procede») el despliegue experimental y la partida grabada con WGC sin ataques.
+  - Intento 1 (`0665a9c3…`): calibración `dance-center-cal` (`995443c5…`) ACEPTADA, pero la toma
+    `dance-center-autoplay` (`20261114T114849058627Z-dance-center-autoplay`) fue **RECHAZADA**
+    (`accepted: false`, `1` stall de `0.27 s` tras `gf 16026` por pausa real del productor de `369.73 ms`
+    en `bag2jp_clock_probe.csv`, `1065/10009` pares fuera de `100 ms`). Diagnóstico RAM reveló además
+    que `phase 1/4` usó `anim 67` (`req 101`, no `anim 68`) y quedó congelado en `[-473,-180]` / `[572,194]`.
+    Auditoría de 13 partidas previas en `_work/versus-runs/` confirmó que `phase 1/4` alterna entre `anim 67` y `anim 68`.
+  - Corrección `anim 67` (`B1CENTER_IDLE_ALT = 67u` en `bag2jp_bag1_center.h`): 20 tests host PASS (`9.481 s`),
+    **18/18** mutantes por aserción (`dance-mutations.json`), Goldfish en frío (`ses_e2610cb5fffeRUfZ4qT8Bng226`
+    `SIN HALLAZGOS BLOQUEANTES`, `_work/goldfish/dance-centering-anim67-verdict.json`) y build
+    `dance-centering-anim67` PASS (`33.903 s`, `BAG2JP.exe` `5258009e95c805c4cd57151417e0ea695b2e5edf1518a3d827fee58eeca7d9c1`).
+  - Despliegue EXE-only verificado a `BAG2JP-exp-8mb` (`dance-centering-anim67-deploy.json`, respaldo en
+    `_work/gaso/deployment-backup-dance-centering-anim67-deploy`, `5` archivos protegidos y paquetes intactos,
+    estable `5612f03a…` intacto). Calibración `dance-center-cal2` **ACEPTADA** (`493` heartbeats, `0` stalls,
+    `2929` pares audio) y catálogo vinculado (`560c72c55b0723684b5d113e72399c83123bd017fbcd9ba41bf6dc7de6fb40f6`).
+  - Toma final `dance-center-autoplay2` (`_work/versus-runs/20261114T120907225878Z-dance-center-autoplay2`,
+    `295.973 s`, `150` saves/configs restaurados): grabación `_work/recordings/dance-center-autoplay2/manifest.json`
+    **ACEPTADA** (`accepted: true`, `0` rechazos, `capture_backend: "wgc"`, `window_guard` `180` checks `passed: true`,
+    `1696` heartbeats, `1` perdido, `jitter p99: 10.61 ms`, `59.942 fps`, `0` stalls, `10145` pares audio,
+    `0` descartes, `44057 Hz`, `residual_p99_ms: 15.66`, `window_max_ms: 6.96`, `bag2jp_clock_probe.csv`
+    `max 205.134 ms`, `owner.mp4` `-15.2 LUFS` / `-2.0 dBTP`).
+  - Muestras RAM (`leash-actor-samples.jsonl`) e inspección visual (`dance-center-autoplay2-tiles.jpg`,
+    `dance-center-autoplay2-sheet.jpg`):
+    - En baile (`phase 1/3`, `124` muestras, radio `199`): P1 `med|dx|=94.0, med|dz|=89.5` (antes `128 / 214`);
+      P2 `med|dx|=63.0, med|dz|=66.0` (antes `130 / 177`). Ambos permanecen centrados en su columna propia.
+    - En pose final (`phase 1/4`): P1 converge de `[-502,466,-99]` (`gf 15240`) a **`[-520, 473, 0]`**
+      y P2 de `[520,513,91]` a **`[520, 520, 0]`** exactos en `gf 15360..15420`; en `gf 15480+` liberan a
+      `0x7FFFFFFF`, completan solo fever P2 y vuelven limpios al selector (`returned-selector.png`).
+  - Pendiente: conformidad visual del propietario sobre `owner.mp4` y hojas de contacto, luego **Bloque 2**
+    (ataques/`CAUGHT`/`fever-duet-sync` con autorización explícita) y cierre final (commit/snapshot). Sin commit ni snapshot.
+
+## Radio proporcional BAG1: nueva validación autorizada (2026-11-14, histórico previo al recentrado)
+
+- El owner respondió «continua» a la pregunta explícita sobre desplegar el candidato corregido
+  y repetir una partida autoplay grabada sin ataques. Autoriza esta nueva prueba, no commit.
+- Despliegue EXE-only verificado `3b43cff82d073ce2c7a29ecc377520c886e3d5d84ad258e2967bfc7427d9c89f`;
+  respaldo `exp-backup/BAG2JP.exe.16768892`, informe `_work/gaso/drift/leash-release-deploy.json`.
+  Estable y tres configuraciones protegidas sin cambios. Preflight `bag1-leash-release-run` pasó.
+- Calibración `_work/versus-runs/20261114T060342369277Z-bag1-release-calibration`: menú, selector
+  y ocho transiciones revisados en las dos hojas `release-calibration-*.jpg`; aceptación vinculada
+  al hash del nuevo runtime. Restaurados 150 saves y controles/settings/estado, verificados.
+- Toma `bag1-release-autoplay` completada: run
+  `_work/versus-runs/20261114T060817268486Z-bag1-release-autoplay`,
+  `complete_awaiting_visual_review`, 301.407 s; restauración verificada de 150 saves y de
+  keybinds/settings/estado con los hashes previos. Vigilancias de control/radio y muestreador
+  de RAM de solo lectura `_work/gaso/drift/run_leash_release_capture.py`: el enlace vivo exigió
+  los mismos 20 bytes confirmados por Ghidra y el runtime `3b43cff8…`; es muestreo no atómico,
+  no frame-exacto.
+- Grabación `_work/recordings/bag1-release-autoplay` **ACEPTADA** (`accepted=true`, 0 rechazos):
+  1930 heartbeats (1 perdido), jitter p99 12.8 ms, 59.939 fps, 0 stalls, audio residual p99
+  15.74 ms y ventana máxima 9.51 ms.
+- Vigilancias: ambos radios 440 en gf6581 y 318 en gf6582; en gf15681 el nativo libera a
+  `0x7FFFFFFF` y **no** se vuelve a sobrescribir. El log del plugin solo registra el ajuste de
+  los bailarines 0 y 2 (BAG1) con scale 98→75.
+- Muestreo de actor: 171 filas con personajes 9/0, 141 finitas con radio 318 y 22 ilimitadas
+  tras la liberación; hueco de raíz P2−P1 entre 402 y 1542 en 8 ventanas, ninguna negativa;
+  0 lecturas con heartbeat cambiado y 8 filas post-partida sin raíz.
+- Revisión visual propia: intro gf6560 (`GAS-O` vs `HEAT`), muestras de 16 a 182 s con
+  separación sostenida y HUD `GAS-O`, fin de canción con `PLAYER 2 WIN`, poses finales y
+  regreso a Character Select (186/189/191/193 s). Comparado con la hoja base
+  `_work/gaso/drift/baseline-spacing-small.jpg` y la nueva `release-spacing-sheet.jpg`.
+- Sin ataques: `request_counts` no incluye 202 y la traza no tiene líneas attack/fixture;
+  `GASO_CAUGHT_CLIP_PUBLISHED` y los hooks de cámara quedan como estaban.
+- Límites declarados: el muestreo no es atómico ni frame-exacto, el hueco es espacio de mundo
+  (no píxeles en pantalla), ±2 fotogramas por latencia sin calibrar, y la calidad subjetiva del
+  audio requiere escucha humana.
+- Observado fuera de alcance: el banner de intro muestra «BI-O Vs Heat» (arte/nombre stock del
+  slot importado 9); no es una regresión de este cambio y no se toca aquí.
+- Estado posterior: el owner pidió más centrado X/Z (sección vigente), no dio conformidad visual. Sin commit, sin snapshot y con la instalación
+  estable intacta. El artefacto de verificación antiguo `verify_leash_closeout.py` no se reutiliza
+  porque fija el despliegue previo `16768892…`.
+
+## Radio proporcional BAG1: correcciones host y partida pendiente (2026-11-14, anterior al nuevo despliegue)
+
+- El propietario autorizó la recomendación («okay continua con lo recomendado»): radio proporcional
+  BAG1, pruebas host, build/despliegue en `BAG2JP-exp-8mb` y una partida grabada sin ataques.
+  No autorizó commit; instalación estable intacta. Mantener `camera_speed=2.1` y los hooks de
+  cámara `0x80014FB8/0x80014FD4` desactivados.
+- Implementado en `bag2jp_bag1_leash.h` y `bag2jp_bag1_versions.c`: solo bailarines elegibles BAG1,
+  control por slot `0x8005F820 + slot*0x4C`, identidad del actor verificada, radio redondeado
+  `abs(home_x)*480/784`, sin ampliar radios y sin reescritura estable. El candidato corregido
+  conserva la liberación nativa y espera al radio inicializado, como se detalla abajo.
+- Build `bag1-leash` correcto; exe desplegado
+  `167688927edddccc45749b46c9259b94e4601e092756307d9d7aa36d4c4594e5`.
+  Copia anterior `3191236A…` en `_work/gaso/drift/exp-backup/`. Calibración revisada y aceptada:
+  `_work/versus-runs/20261114T052208305761Z-bag1-leash-calibration`.
+- Partida `_work/versus-runs/20261114T052416752358Z-bag1-leash-autoplay`: Gas-O BAG1 A contra
+  Heat BAG1 A, GasOBAG1; arnés alcanzó fin/regreso (`complete_awaiting_visual_review`, 300.244 s).
+  Restauración verificada de controles, settings, estado y 150 saves. Las cuatro vigilancias
+  adicionales son puesto X/radio, **no raíz/base**.
+- **Captura RECHAZADA**, `_work/recordings/bag1-leash-autoplay/manifest.json`, `accepted=false`:
+  `audio: a 1 s window is 17 ms off the fitted placement (> 1 frame; pause or drift)`.
+  Máximo 17.04 ms, 12 pares descartados, pausa host 0.125 s; guardia de ventana correcta.
+  `finalize` terminó con código 1; no se repite ni se relajan puertas. Los fotogramas extraídos
+  son diagnósticos, no evidencia de aceptación visual o de sincronía.
+- RAM, `_work/gaso/drift/leash-watch-summary.json`: ambos radios 440 en gf6563 y 318 en gf6564;
+  en gf15639 pasan a `0x7fffffff` y el plugin los vuelve a 318 en gf15640. P2 cambia puesto X
+  de 520 a 0 en gf16001. Dos pares de escrituras registrados (inicio/final), no lucha continua.
+  **Defecto confirmado y corregido en fuente/build, no en la instalación**: el plugin anulaba
+  una liberación intencionada. El overlay JP `005.dbi` genera `INT_MAX` en `0x8009CAC4/C8`
+  y lo escribe en los cuatro radios con `0x8009CB0C/10`, dos lados separados por `0x98`,
+  antes de avanzar la fase `0x8005D3DC` de 4 a 5. Requiere subfase >=6 y excluye escenarios
+  0/3/5/11. El clamp nativo `FUN_8002CD48` usa ese radio si actor+3 y ctl+0xC están activos;
+  no se midieron esas banderas ni el movimiento raíz durante la liberación. No afirmar una
+  regresión visual de fever a partir de esta captura rechazada.
+- Goldfish: primer intento sin veredicto por límite del proveedor (`REVISIÓN NO UTILIZABLE`).
+  Dos revisores en frío completaron `_work/goldfish/spec-bag1-leash.md`:
+  `ses_e2775fb72ffeguzmEO52kApfA3` y `ses_e2775d158ffeNrOOAq8ONFbwW7`, **CON HALLAZGOS**.
+  Estado revisado del header: `dc28f1fc3bb862ba7b196fd4d79b154d91d4e387644b1dd8ff0c3522565fd86d`.
+  Triaje: liberación confirmada; riesgo de interrupción durante inicialización confirmado por
+  ruta de ciclos/VBlank y reproducido en host, no en partida; swaps de radios en
+  `0x8002AD1C..2C` confirmados, efecto en ataques/pareja sin verificar. Refactor de escala sin
+  regresión encontrada; tabla `0x80051924` alimenta Y, no Z. Evidencia/triaje:
+  `_work/goldfish/bag1-leash-verdict.json`. Auto-revisión declarada de las correcciones;
+  no se atribuye un nuevo veredicto limpio ni se relanza la revisión completa por inercia.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Correcciones mínimas (`bag2jp_bag1_leash.h`, SHA-256
+  `f5bc3466ba538e27c0abbeb655b08150574748a5ad2be03f396a39a8948c5f6f`): conservar exactamente
+  `0x7fffffff`; para valores finitos exigir `radius == raw_radius*stage_zoom>>8` antes de
+  ajustar. Raw en ctl+0x3C, zoom signed16 en `*(0x80089200)+4`; rechazar puntero/zoom inválidos
+  y overrides finitos desconocidos sin cachearlos. El código generado/runtime puede entregar
+  VBlank tras los stores `0x8002D920/28` y antes del multiplicador `0x8002BA20..38`:
+  el caso host home260/raw440/zoom128 antes producía 79 por doble escalado; ahora espera220
+  y ajusta a159. No hay reproducción de esa alineación temporal en una partida real.
+- Verificación: RED de liberación e inicialización falló por sus aserciones, después GREEN;
+  suite relacionada **29 tests OK**, **8/8 mutantes detectados**. Tras corregir solo el fixture
+  para que la liberación conserve raw440, **3/3 tests focalizados OK**, 4.756 s, exit0.
+  Logs `_work/gaso/drift/leash-release-red.log`, `leash-release-green.log`, `leash-init-red.log`,
+  `leash-init-green.log`, `leash-release-final-suite.log`, `leash-release-mutants.log`,
+  `leash-release-final-fixture.log`.
+- Build `bag1-leash-release-guard` correcto (33.171 s, dos jobs), header staging idéntico;
+  candidato `3b43cff82d073ce2c7a29ecc377520c886e3d5d84ad258e2967bfc7427d9c89f`,
+  **sin desplegar ni ejecutar**. Métricas:
+  `_work/workflow/20261114T054600995931Z-bag1-leash-release-guard/metrics.json`.
+  Exp mantiene `16768892…`, la versión con los dos defectos; no confundirla con el candidato.
+- Siguiente paso: pedir autorización para desplegar el candidato corregido y realizar otra
+  partida autoplay grabada sin ataques, con calibración revisada y vigilancias de raíz/base,
+  puesto/radio y activación del clamp. Solo aceptar captura con `accepted=true`; revisar
+  separación durante baile, liberación/fever, intro/HUD, fin y selector antes de pedir conformidad.
+  Ataques, CAUGHT y pareja siguen sin probar. No commit ni snapshot de hito aceptado.
+  Fuente `CLIP_PUBLISHED=0`, build `1`, intencionado.
+- Herramientas consideradas no ejecutadas: `funcmatch.py` no corresponde a buscar un escritor
+  de overlay, ni se necesita otra equivalencia de main; no nueva captura/`bag2_shots` sin partida
+  autorizada. Modelos locales no aportaban a este razonamiento acotado; extracción/watch/hashes
+  deterministas. No se usa FFmpeg para reparar o eludir la puerta de audio rechazada.
+
+## Toma 4 aceptada y diagnóstico inicial de deriva (2026-11-14, anterior al ajuste)
+
+- Toma `gaso-latch-site-autoplay4` (exe 3191236A…, payload 847058C4…), autorizada ("si autorizo,
+  sigue con lo que recomiendas"); `manifest.json` `"accepted": true` (1916 latidos, 0 pares de audio
+  descartados, residuo p99 17.97 ms). Las tomas 1-3 fueron rechazadas por pausas de 0.3 s del host:
+  el juego del propietario "Watcher of Realms" estaba en primer plano (diagnóstico
+  `_work/gaso/slide/zorder_log.py`); al cerrarlo la toma pasó. Nunca se forzó un filtro.
+- Etiqueta HUD **PASA**: "GAS-O" con la fuente nativa BAG2, alineada a la derecha como "HEAT"
+  (`_work/gaso/cam-ws/hudlabel4-30s.png`, `hudlabel4-zoom.png`).
+- Sin ataques **PASA**: `bag2jp_bag1_versions.log` 21 líneas, 0 `gaso_tank`, 0 `request 202`. El
+  contador `bag2jp.autoplay.attack_blocked` no es visible (sin herramientas de depuración).
+- Intro **PASA con reserva**: cámara dentro del tubo, baja por el ventilador a la sala
+  (`intro4-sheet.jpg`); el primer instante (~8.8 s) muestra una zona negra arriba a la izquierda y un
+  panel gris. Arte VS "Bi-O VS Heat": fuera de alcance. Fin de canción y regreso al selector
+  alcanzados (STOP del vigilante), no inspeccionados fotograma a fotograma.
+- **Pregunta del propietario**: los bailarines BAG1 se desplazan durante el baile y acaban hombro con
+  hombro. Confirmado en video (`_work/gaso/drift/drift-sheet.jpg`: separados en 0:16, juntos en 3:02).
+- Mecánica BAG2 (Ghidra MCP SLPM_862.19): `FUN_8002ccc8` re-ancla la base (+0x14b8/+0x14c0) al cambiar
+  de clip; la raíz es base + traslación del clip × escala del bailarín >> 7 (`FUN_80012c9c`, escala
+  en +0x14e4). `FUN_8002cd48` es una correa dura: si la raíz se aleja más que el radio del puesto, la
+  recorta al borde. `FUN_8002b5bc` (llamado por `FUN_8001e0f4`): puesto X = ∓4·tabla
+  0x80051918[escenario] (130) = ±520, radio = tabla 0x80051a70[escenario] (440); ambos × zoom >> 8.
+  Control por lado: 0x8005F820 + lado×0x98 (puesto +0x28, radio +0x38).
+- Mecánica BAG1 (Capstone `_work/bag1/scus.bin`): también re-ancla (0x80031574) y aplica correa
+  (0x8003161c), pero es un muelle que resta 1/32 del desplazamiento total por fotograma; puesto
+  ±0x310 (784), radio 0x1e0 (480).
+- Proporción: separación mínima posible BAG1 = 1568 − 960 = 608 unidades (escala Gas-O 116); BAG2 =
+  1040 − 880 = 160 (escala 75). Relativo al tamaño del bailarín, BAG2 permite acercarse unas 2.5
+  veces más. La deriva neta de los clips no distingue BAG1 de BAG2 (`_work/gaso/drift/root_drift.json`:
+  mediana neta stock Heat 873, BAG1 Heat 818). **Hipótesis**: es la geometría de la correa BAG2 con
+  la deriva de las coreografías BAG1, no un error de conversión. No verificado: valores de raíz/base
+  en partida y si los bailarines stock BAG2 convergen igual (no hay toma stock).
+- Propuesta entonces pendiente (posteriormente autorizada, véase sección vigente): para lados con versión BAG1, fijar el radio a
+  la proporción BAG1 (|puesto X| × 480/784 ≈ 318) escribiendo +0x38 del control desde el plugin
+  (escritura de datos, sin hook nuevo en el exe principal). Validar con una partida grabada con
+  vigilancia de raíz/puesto/radio.
+
+## Partida grabada scale32+HUD y opt-in nativo del latch (2026-11-13, estado vigente)
+
+- Autorización del propietario ("si autorizo"): staging, build, despliegue en
+  `BAG2JP-exp-8mb` y una partida autoplay grabada sin ataques. Sin permiso de commit.
+- Staging `_work/gaso/combined-scale32-hud/` (payload `847058c4…`, solo cambian las
+  entradas 53/54/125/126 HUD y 197 miembros 11/12). El primer build falló por un
+  defecto real: `bag2jp_bag1_versions.c` no incluía `cpu_state.h` (el harness host
+  define su propio `CPUState`); corregido (versions.c `620E3D47D7F5`).
+- Partida `gaso-scale32-hud-autoplay` (exe `c391f357…`; Gas-O BAG1 A vs Heat BAG1 A,
+  escenario GasOBAG1, p1_2p y p2_2p). Grabación `_work/recordings/gaso-scale32-hud-autoplay/`
+  con `manifest.json` `"accepted": true` (solo puertas de captura/sincronía, ±2 fotogramas
+  sin calibrar). Evidencia del arnés `_work/versus-runs/20261114T040531514961Z-gaso-scale32-hud-autoplay`;
+  restauración verificada.
+  - **Sin ataques: PASA.** 0 cues `gaso_tank`, 0 `request 202` (cam95: 24 cues, 2 peticiones).
+    El contador `bag2jp.autoplay.attack_blocked` no aparece en ningún log (build sin
+    herramientas de depuración): se observa el resultado, no el disparo del hook.
+  - **Cámara del intro: PASA visualmente, con reserva.** `_work/gaso/cam-ws/new-intro-sheet.jpg`
+    y `new-intro-zoom.jpg`: desde ~8.5 s la cámara mira dentro del tubo rojo/blanco hacia
+    el ventilador, lo atraviesa y entra en la sala (~11 s); sin el vacío exterior de cam95.
+    Reserva: cuñas oscuras pequeñas los primeros ~0.4 s; sin vídeo de referencia BAG1.
+  - **Etiqueta HUD: FALLA.** `_work/gaso/cam-ws/hudlabel-30s.png`: P2 muestra `HEAT`,
+    P1 no muestra etiqueta (se dibuja el rectángulo stock, vacío en el body2 corregido).
+  - Pantalla VS muestra arte de Bi-O: fuera del alcance de este cambio.
+- **Causa del fallo HUD:** el latch `0x8001F8A4` está en el exe principal (código AOT) y
+  el runtime solo llama plugins de instrucción nativos para sitios en
+  `[recompiler] mod_instruction_sites` (`mod_plugins.h:60-69`). No estaba listado: el C
+  generado no tenía ninguna llamada `psx_mod_instruction`, el latch nunca se activaba y el
+  hook HUD declinaba. Los tests host llaman a los hooks directamente y no lo podían ver.
+- **Corrección:** `mod_instruction_sites = ["0x8001F8A4"]` en `patches/BAG2JP-game.toml`
+  (`95EEC934439D`) y en `game.toml` del árbol de build. Generación aislada
+  `_work/gaso/latch-codegen/generate_latch_site.py` (emisor `42508148…`): solo cambia
+  `SLPM_862.19_full_04.c`, y solo por el bloque estándar del sitio (llamada + dirección vía
+  `psx_mod_memory_address`, identidad sin plugin de memoria según `test_mod_runtime.cpp:829`).
+  `stage_latch_site.py` exige exactamente ese diff y guarda copias en `stage-backup/`.
+- Nueva regresión `tools/test/test_mod_instruction_sites.py` (`2006B5E4334A`): todo sitio
+  de instrucción del exe principal registrado en `mods-src` debe estar listado (y llamado en
+  el C generado del árbol de build). Dos mutantes eliminados (sin línea de config; C generado
+  anterior). Suite de 6 módulos: 26 OK.
+- **Hallazgo previo, no tocado:** los hooks de cámara BAG1 `0x80014FB8`/`0x80014FD4`
+  (`bag2jp_bag1_stage.c:369-370`, sección 2026-11-08) tampoco están listados, así que en
+  código nativo no se ejecutan. Activarlos cambiaría la cámara de todas las etapas BAG1:
+  decisión del propietario. La sonda `0x80049F94` de anim-trace reescribe su palabra de
+  código (RAM sucia) y es intencionada. Ambas figuran como excepciones en el test.
+- Build `gaso-latch-site` OK; desplegado solo el exe `3191236ACFD8B95C73D58B7572458A870E2FFCB34ECE8B3DEC3D15165E4F545F`
+  (copia del anterior en `_work/gaso/combined-scale32-hud/exp-backup/BAG2JP.exe.c391f357`).
+  **Etiqueta HUD sin validar en partida:** requiere una nueva partida grabada autorizada.
+- **Goldfish 2026-11-13 (opt-in nativo del latch)**, 1 revisor (`ses_e27b6da5affeJh2481bRiH49fo`,
+  spec `_work/goldfish/spec-gaso-latch-site.md`). Hashes revisados: `patches/BAG2JP-game.toml`
+  95EEC934439D, `test_mod_instruction_sites.py` 2006B5E4334A, `generate_latch_site.py`
+  E7FC3B57A6B5, `stage_latch_site.py` B704D8122DF1, `full_04.c` a04ca5912dc7. Veredicto:
+  **SIN HALLAZGOS BLOQUEANTES**. Confirmado: el diff generado es solo el bloque de
+  `0x8001F8A4`; no es delay slot; `psx_mod_memory_address` es identidad sin memory plugin
+  (`mod_runtime.cpp:3834-3850`); el rango de texto es `0x80010000+0x4D000`.
+  Hallazgos no bloqueantes, sin aplicar:
+  1. El `game.toml` del árbol de build difiere del canónico en `present_thread` y en
+     `buffer_ms` (45 frente a 90). Es una divergencia previa a este cambio, pero el exe
+     desplegado usa la configuración de runtime del árbol de build. Antes de cualquier
+     checkpoint, separar en `patches/BAG2JP-game.toml` esta línea de los demás cambios previos.
+  2. Si falta el árbol de build, el test omite la comprobación del C generado.
+  3. El regex de `#define` toma el primer literal hex, así que una expresión se resolvería mal.
+  4. Solo cubre `*.c` y `*.h` (no `.inc`/`.cpp` ni registros indirectos); hoy no falta ningún sitio.
+  5. El emisor no es el del árbol de build; lo mitiga la comprobación de diff exacto.
+
+  La justificación de `0x80049F94` no la pudo verificar el revisor con los archivos permitidos.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+## HUD BAG2 y revisión cam95 (2026-11-13, estado vigente)
+
+- Petición: usar para `GAS-O` sobre la barra la misma fuente que los personajes
+  BAG2. Candidato **offline**, no desplegado ni integrado en payload/build.
+- Composición literal de glifos HUD nativos, sin comprimir ni remapear sus índices
+   compartidos: G de Hustle Kong, A de Heat, S de Strike, guion/O de Bi-O.
+   S corregida: `[56,80,70,87]` (14 píxeles) más una columna transparente; el primer
+   candidato copiaba en x70 tres píxeles del contorno de la T vecina.
+  Perfil `tools/bag1import/profiles/gaso.json`: 69x7 en `[0,0,69,7]`, dentro
+  del antiguo arte de nombre BAG1 USA/JP. Conserva las paletas corporales y todos
+  los píxeles externos al destino respecto a la textura BAG1 retargeteada.
+  **Estar dentro del antiguo nombre no demuestra exclusión de UV corporales**;
+  esa auditoría sigue pendiente y bloquea la integración.
+- `tim_retarget.paste_native_glyphs` y `build_gaso_assets.build_hud_texture`
+  comparten la composición. `bag2jp_bag1_hud.h` ajusta solo el sprite Gas-O del
+  lado actual, con tres palabras guardadas de overlay005, versión/entrada activa,
+  descriptor, registro de textura y límites RAM. Mantiene CLUT/tpage/Y/colores,
+  anclaje derecho y descriptores globales Bi-O sin modificar. No acredita todavía
+  identidad del pack residente ni ejecución real del dispatcher.
+- Evidencia vigente: `_work/gaso/hud/bag2-font/corrected/{usa,jp}/`, `audit.json` y
+   `_work/goldfish/spec-gaso-hud-native-font.md`. Suite
+   `py -3.13 -m unittest tools.test.test_tim_label tools.test.test_gaso_hud tools.test.test_gaso_hud_runtime`:
+   18 tests OK (5.032s). Harness C con overlay005 original y CPU/RAM sintéticas:
+   cuatro lado/traje positivos, lados mixtos y guardas negativas; no es una partida.
+   18 contenedores comparados al candidato anterior: ocho packs cambian solo body2,
+   los otros diez no cambian. Cinco mutantes aislados del callback eliminados;
+   originales conservados. El audit exige ahora los nueve nombres exactos por región;
+   sondas independientes rechazan salidas faltantes, adicionales o renombradas.
+   También eliminado en memoria el mutante sin validación estricta del tipo de
+   espaciado: `[False]`/`[0.0]` producen exactamente dos fallos de aserción. Sin
+   modificar fuentes para las mutaciones. Son seis mutantes en dos ensayos distintos.
+- Frente a `final-build`, body2 restaura además 261 píxeles USA/277 JP por textura
+   en la antigua ranura errónea. «Fuera del rótulo intacto» se refiere a la fuente
+   BAG1 retargeteada limpia, no a aquel candidato con la ranura corporal alterada.
+- Goldfish inicial: ambos **CON HALLAZGOS** (S contaminada/inventario incompleto).
+   Corregidos y revisados en frío por dos agentes nuevos, con alcance solo de esas
+   correcciones: `ses_e296fade9ffebYDKWXqDiQDtEo` y `ses_e296f833effe2OOABfSOSFpBjU`,
+   ambos **SIN HALLAZGOS BLOQUEANTES**. El segundo sugirió los casos False/0.0:
+   añadidos y probados con mutación estrecha, sin cambiar la implementación revisada.
+   Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Auditoría UV NO terminada: `corrected/model-inventory.json` verifica el layout
+   completo de 16 miembros de modelos (USA/JP, trajes/lados y accesorios), pero
+   los cuerpos contienen 14 nodos type4. Falta resolver las primitivas texturizadas,
+   el uso de esos nodos y la selección de textura del renderer. No se certifica
+   seguridad por estar dentro del antiguo nombre. Integración bloqueada también por
+   identidad del pack residente y aceptación real pendientes.
+- **Actualización 2026-11-13: exclusión UV de body2 DEMOSTRADA offline.**
+   `audit_body_uv.py` (layout Ghidra `FUN_800220b8`/`FUN_800201b0`/`FUN_80021ff0`;
+   type4 solo dibuja F3/F4 sin textura) recorre los 16 modelos: cuerpos m0 con
+   3075 vértices texturizados, todos `tex_idx 0` (body1); accesorios m2 sin
+   primitivas texturizadas; 0 referencias a body2. Control negativo: el mismo
+   lector ve `tex_idx 1` en Heat/Strike/accesorio Bi-O stock. Informe
+   `corrected/body-uv-audit.json`. Sigue pendiente la identidad del pack residente
+   (body2 de Bi-O y Gas-O tienen geometría TIM idéntica) y la validación en juego.
+- **Ataques en autoplay 2P: causa localizada** (Capstone sobre `005.dbi`): los
+   hooks AP2 fuerzan el bloque CPU por compás y este elige ataque 0x6e con stock
+   en 0x8009afd8..0x8009b078.
+- **Actualización 2026-11-13 (tarde): arreglos implementados, solo probados en host.**
+   - Identidad del pack residente: `bag2jp_bag1_load_latch.h` (97AD496C9A3B) engancha
+     0x8001F8A4 (`lw s0,0x8(a0)` en `FUN_8001F874`, único lector de la tabla DF2_
+     junto al cargador `FUN_8001F6FC`, según xrefs Ghidra) y registra si el offset
+     leído de las entradas 53/54/125/126 es el alt. El HUD usa ese latch, no la tabla
+     RAM actual. Se borra en reset de sesión y tras cargar savestate (callback solo
+     de restauración, `mod_plugins.h:44-47`): tras cargar un estado se ve el rótulo
+     stock hasta que el pack se relea. **Bug real hallado por test nuevo:** la palabra
+     previa era 0x3C020006 en vez de 0x3C028006; el latch no habría disparado nunca.
+     Test contra los bytes del EXE original y Ghidra `read_memory` 0x8001F8A0.
+     12/12 mutantes del latch eliminados.
+   - Autoplay 2P sin ataques: `bag2jp_ap2_no_attack.h` (B534206A781D) en 0x8009AFE0
+     fuerza `$v0=0` (stock 0x1b no se modifica) si `ap2_on()` y el lado está en
+     autoplay; `$s3`/`$s5` comprobados como 0x8005E728+p*0x32 y 0x8005CF08+p*0x24
+     (0x8009AD24..AD40). Límites: omitir dos `rand()` desplaza la secuencia RNG; con
+     un solo lado en autoplay ese lado aún puede contraatacar (ruta 0x8009AF00→B074).
+     La prueba pedida usa ambos lados (máscara 3). Comentario falso de
+     `bag2jp_mods.c` corregido.
+   - Suite `py -3.13 -m unittest tools.test.test_ap2_no_attack tools.test.test_gaso_hud_runtime tools.test.test_bag1_stage_shim tools.test.test_tim_label tools.test.test_gaso_hud`: 21 OK.
+- **Cámara del intro: causa raíz = escala de mundo del escenario.** Ni FOV (H=384
+   en BAG1 y BAG2, Ghidra/Capstone) ni OT (mismo tamaño 0x1000, mismo -0x60) ni
+   geometría ausente (el domo cubre 360°). BAG2 dibuja el modelo de escenario a 1/4
+   de las unidades de cámara y BAG1 a 3/8 (nota archivada
+   `archive/bag1-stage-song-before-audit.md:46-49`; Heat usó (3,2); ratio de bailarín
+   75/116≈2/3). Con `model_scale: null`, la cámara BAG1 queda encima y fuera del domo
+   encogido. `_work/gaso/cam-ws/render_probe.py` reproduce el fotograma grabado
+   (f855) con escala 0.25 y la cámara cam95. Con modelo ×1.5 y claves nativas, las
+   claves 1..80 quedan dentro del tubo y la sala (`sc_sheet.png`), profundidad máx.
+   ~10000 < límite OT 17280. El render offline es simplificado: no sustituye la
+   prueba en juego.
+   - Perfil `profiles/stages/gaso.json` (F7D90DB832B5): `model_scale [3,2]`,
+     `camera_scale` eliminado, `camera_speed 2.1` conservado. Test
+     `test_gaso_stage_world_scaled_for_native_camera` (rojo antes, 6/6 OK en WSL).
+     Paquete `stage197` sha256 `b663417f…b2` (514396 B), igual al candidato offline.
+     Sin staging ni despliegue. `strike.json` también tiene `model_scale: null`: posible
+     mismo defecto, no investigado.
+- Goldfish 2026-11-13 (latch + AP2), spec `_work/goldfish/spec-gaso-latch-ap2.md`:
+   `ses_e28dae82dffeGA1QIDfzwCL51k` y `ses_e28dadb44ffeiK0hFxDCUalBU1`, ambos
+   **SIN HALLAZGOS BLOQUEANTES**. Aplicados: literales en el harness AP2, comentario
+   AP2 (RNG, contraataque con un lado, origen de `$s3`/`$s5`), semántica savestate,
+   duplicados de offsets alt en test. Ninguno detectó la palabra previa errónea del
+   latch (el harness copiaba la macro); la encontró el test contra el EXE. No
+   cambiado: los hooks AP2 previos usan `$s4 & 1` sin guardia p>1 (consistencia,
+   preexistente). Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Revisión del delta (fingerprint del latch, tests nuevos, perfil de escala, test
+   de escenario), spec `_work/goldfish/spec-gaso-delta-scale.md`: **Goldfish
+   omitido**, el subagente `ses_e28c65ee4ffevFPJkuDZuNqg9g` falló por límite del
+   proveedor. Sustituido por **auto-revisión declarada** (no es Goldfish): el test
+   de escenario lee el DFS binario (escala 6144, traslación ×1.5, claves de cámara
+   nativas, pistas 1+ idénticas a stock); los nodos tipo 3 siguen crudos; suelo
+   141×1.5×1/4≈52.75 frente a 141×3/8≈52.88 en BAG1; traslaciones s32 sin desborde;
+   nada depende de `camera_scale 0.95`; el test de firma falla si falta el EXE.
+   Veredicto: SIN HALLAZGOS BLOQUEANTES. Repetir Goldfish real cuando haya cupo.
+   Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- `corrected/native-index-preview.png` inspeccionada: GAS-O sin comprimir, columna
+   de espaciado limpia. Escala de grises diagnóstica de índices, NO colores de la
+   CLUT efectiva en juego. Fuentes del hook SHA256
+   `a2beb511bc1ed58b60b976355c9bc1442e704e4a4a684ac7bb8703a7ac57fbd6`.
+- Checks de cierre: estado JSON e informe coherentes; payload fuente `8a6749d0…`
+   y exe experimental `e68ba69e…` conservan hashes de cámara95, sin staging HUD.
+   `git diff --check` sobre los archivos seleccionados **no pasa**: reporta 4760
+   líneas históricas de esta nota y 1830 del log Ghidra por whitespace/CRLF del
+   árbol ya modificado. No se normaliza ni limpia trabajo anterior. Los bloques
+   nuevos se comprobaron sin espacios finales literales; no equivale a diff limpio.
+- **Corrección de la afirmación anterior sobre cámara95:** la finalización de
+  `gaso-cam95-autoplay` terminó con `manifest.json accepted=true`, pero eso solo
+  acepta la captura. Revisados 71 fotogramas consecutivos (8.287–9.453s;
+  `intro-frame-sheet.jpg` en esa grabación): desde 8.536s y hasta aproximadamente
+  8.8s persisten silueta exterior del domo/ventilador y vacío negro. **FALLA** el
+  criterio visual inicial; la proyección offline no lo certificaba.
+- **FALLA también «sin ataques»:** `events.csv` registra dos activaciones del
+  tanque, cues6906 en gf7592 y gf9436 (~25.59s y56.36s), con restauraciones
+  posteriores. La ausencia de fixtures no garantizó ausencia de ataques; causa
+  aislada después (ver «Ataques en autoplay 2P» arriba). No se lanza otra partida ni se afirma aceptación del flujo.
+- Captura revisada: exe `e68ba69e132cbec5e0a8271072c1788fe97d9b99cbdd415785d8e088a15b6a64`,
+  `review.mkv` SHA `8988a7013d2d8e6a044e0bc1ddd43ac6358913a993aedaf5336fcca3f0961d5f`;
+  59.94fps, audio exacto FLAC estéreo, 191.834s. Latencia de pantalla sin calibrar:
+  ±2 fotogramas solo estimados; juicio auditivo subjetivo y resto del flujo no
+  certificados en esta revisión.
+- Siguiente: completar auditoría UV e identidad residente del HUD; después preparar integración
+  reproducible y solicitar la autorización necesaria para validación en juego.
+  Investigar cámara/ataques internamente, conservando `camera_speed=2.1` y el
+  estado experimental anterior. Sin commit ni modificación del estable.
 
 ## Tareas Pendientes Prioritarias (Solicitadas por el Propietario)
 - [x] **Escenario: paneles rojos no deben tapar el cartel blanco GAS**. V1 falló visualmente; v2 subdivide solo tres caras nativas y no muestra el solape en las capturas reales de la intro (frames 056-074). **Aceptado por el propietario el 2026-11-10.** Véase «Revisión visual de la intro v2» al final. No confundir pruebas host/build con aceptación.
@@ -1342,6 +2079,7 @@ Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `char
   `7bd077089dd21a0af334aa2a0ec5b8bb457b1464a29c39ff468df3ac1347ac0f`.
   Sigue siendo un único efecto pese al tamaño del header; sin refactor ajeno.
   Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
 - Build de dos jobs: PASS, 41,867 s; warning clang `-mbig-obj` sin uso.
   `_work/workflow/20261110T102150722350Z-gaso-tank-space/metrics.json`.
   Desplegado **solo EXE experimental**, SHA-256
@@ -3225,3 +3963,1539 @@ dos Goldfish sin hallazgos bloqueantes, Heat BAG1 `ready` / Heat BAG2
   un ciclo de partida (fase 3 de `DAT_8005d3dc` reinicializa parejas y pone
   `+0x18=-1`). Siguiente: estudio de publica/restore quiescente con guard y
   aprobacion del propietario, manteniendo CLIP_PUBLISHED=0.
+
+### caught-retire-contract-20261112 - publicación/retiro por contrato (host), sin partida
+
+- Corrige abb8320: el restore por temporizador escribía sin comprobar que el clip
+  hubiera salido de slot1, y el redirect a2=1 ocurría aunque la publicación no se
+  hubiera hecho (slot1 vacío, longitud 0 usada como divisor).
+- Ghidra MCP (`SLPM_862.19`, sha256 `ea5a1668…851efe`; reabierto en esta sesión).
+  `0x8002d06c` no es función definida: bytes con `read_memory`, iguales a
+  `_work/mainexe/slpm.bin`, desensamblados con capstone en
+  `_work/gaso/fun_8002d06c.asm` (sha256 `b4dddc256d22bcf7…`, script `dis_8002d06c.py`):
+  - `0x8002d4b8 sw t0,0x154c(s0)` (bytes `4c 15 08 ae`): current = a2 dentro de la
+    misma llamada de entrada.
+  - `0x8002d6cc sw v0,0x1550(s0)` (bytes `50 15 02 ae`): previous = current al salir.
+  - `divu` por `length[current]` en cada tick (`0x8002d644`, `0x8002d684`) y al
+    abandonar el slot (`0x8002d494`).
+  - Conclusión: restaurar solo es seguro con current≠1 y previous≠1; «estuvo en
+    slot1» se observa en la llamada siguiente.
+- Código (`bag2jp_gaso_caught.c`, sha256 `a9a0100ffffe4192…`, fuente sigue en `CLIP_PUBLISHED 0`):
+  - la toma ejecuta `b1cb_publish_in` del contrato validado sobre una copia host
+    dispersa (lista de actores, actores listados, sus 3 tablas ≤ 0x1000 entradas,
+    palabra vacía) y replica sus 3 escrituras (palabra raw, media longitud, meta);
+  - a2=1 solo si slot1 tiene este clip para este actor; una segunda toma con el
+    clip aún publicado lo reutiliza y reinicia la espera;
+  - cada llamada de entrada revisa primero el retiro: marca «entered» si
+    current/previous==1; restaura por `b1cb_restore_in` cuando ya entró y ambos
+    salieron, o tras 60 llamadas si nunca entró; un restore rechazado (p. ej.
+    decoder `+0x830` dentro del clip) se registra una vez y se reintenta cada 8 llamadas;
+  - logs: `slot1 published … a2 -> 1`, `slot1 publish refused … (contract|unreadable)`,
+    `slot1 entered`, `slot1 restore refused … retrying`,
+    `slot1 restored … (clip left slot1|clip never started)`.
+  - Límite conocido: reset/savestate olvidan una tupla publicada sin restaurarla;
+    una publicación posterior sobre esas tablas falla cerrada (probado en host).
+- Pruebas host: `py -3.13 -m unittest tools.test.test_gaso_caught_runtime
+  tools.test.test_caught_bank` → 23 OK (harness `8189998e3dcb1550…`, test
+  `25e998dbb661571e…`), builds 0 y 1. El harness simula tablas por actor, solo
+  admite escrituras en la entrada slot1 de una tabla listada y comprueba la tupla.
+  Escenario 12 reescrito: entrada/salida en dos pasos, restore rechazado por
+  decoder con reintento acotado, nunca iniciado (59/60), reutilización, otro clip
+  y 3 publicaciones rechazadas.
+- Mutaciones (`_work/gaso/mutate_caught.py`): 7/7 detectadas (ignorar previous,
+  redirect sin publicación, sin freno de reintento, 59 llamadas, reutilización sin
+  reiniciar espera, reutilizar otro clip, restaurar sin haber entrado).
+- Suite CAUGHT completa (13 módulos, 106 pruebas): todo OK salvo `setUpClass` de
+  `test_caught_entry`, preexistente y ajeno: `caught_entry_harness.c` (2726fe4)
+  necesita el `bag2jp_caught_adapter.h` sin commitear, cuyas funciones nuevas
+  `b1ca_reset`/`b1ca_load_state` no usa (`-Werror=unused-function`); con el header
+  de HEAD tampoco compila (falta `region`). El plugin Gas-O no incluye ese header.
+- Sin validar: comportamiento en juego (pendiente partida grabada con build
+  `CLIP_PUBLISHED=1` solo en el árbol de build).
+- **Revisión Goldfish** (spec `_work/goldfish/spec-gaso-caught-retire.md`, estado
+  revisado: plugin `a9a0100f…`, harness `8189998e…`; 2 revisores en frío):
+  ambos **CON HALLAZGOS**. Triaje:
+  - Confirmado y bloqueante (A-P1 = B-B1): la reutilización de un clip publicado
+    ponía a2=1 sin releer la RAM; si el juego reescribe/mueve las tablas sin reset,
+    redirigía a un slot1 con longitud 0 (división en `0x8002d494`). Reproducido en
+    host (RED: harness línea 980, «lost» no detectado). Corregido:
+    - el retiro comprueba primero, con 12 lecturas, identidad (char/side),
+      COUNT/RAW/LENGTH/META y la tupla `(clip, 2, info)`; si cambió, registra
+      `slot1 lost side=N … (rewritten by the game)`, olvida y no escribe;
+    - la reutilización exige además el contrato en modo verify (`b1cb_plan` +
+      `b1cb_tuple`, sin escrituras); si falla, `slot1 reuse refused … (contract)`.
+  - Confirmado (A-P4/B-S1): copia byte a byte y reintento sin tope. Corregido:
+    copia por palabras alineadas (≈¼ de lecturas trazadas) y abandono sin escribir
+    tras `GASO_CAUGHT_RESTORE_TRIES 32` rechazos (`slot1 restore abandoned`);
+    la tupla abandonada apunta al banco nunca liberado con longitud 2.
+  - Confirmado (A-P5/B-N1): `word[a0]` sin `guest_range_ok`. Corregido.
+  - Confirmado (A-P2, A-P6/B): el harness no mutaba RAM con el clip publicado y
+    no comprobaba el lado. Añadidos casos: reescritura antes/después de entrar,
+    antes de la toma, solo longitud, solo meta, tablas movidas, palabra vacía
+    alterada (verify), abandono tras 32×8 llamadas; `enter()` exige
+    `slot1_holds_clip` y slot1 vacío en el otro lado.
+  - Refutado (A-P3/B-N2, stride de la lista de actores): volcado real
+    `_work/versus-runs/20261110T043326680373Z-gaso-sign-subdivision-v2-verify/sign-intro-24-ram.bin`
+    (`_work/gaso/actor_list_probe.py`): `8005f808`=Gas-O (char 9, side 0, n=101),
+    `8005f810`=Heat (char 0, side 1, n=101), `8005f80c`/`8005f814`=0; coincide con
+    el harness y el contrato.
+  - S2 (otros lectores de las tablas): capstone sobre `_work/mainexe/slpm.bin`
+    (`143b4bf866bf6e47…`, `_work/gaso/scan_slot_users.py`, salida
+    `slot_users.txt`) da 130 accesos a `0x820/824/828/82c/154c/1550`, agrupados
+    con Ghidra (`get_function_by_address`). Fuera del controlador todos indexan
+    las tablas por `current`; el único lector extra de `previous`
+    (`FUN_8002bc38`, `0x8002bc74`) solo lo compara con `current`
+    (`bne a2,v0`). Refutado para lecturas directas. Límite abierto: punteros del
+    clip guardados fuera de `0x830/0x1494/0x1498`, y tablas copiadas al
+    acompañante por `800326d4` (`8005f818/1c` no están en la lista de 4 que
+    verifica la exclusividad; en el volcado citado el acompañante tiene n=0).
+  - S3 (savestate de otro proceso con otro banco): no verificable en host;
+    límite declarado.
+  - Equivalente: el mutante «reutilizar otro clip» sobrevive tras el cambio, porque
+    la consulta va por (personaje, versión) y la comprobación de identidad olvida
+    una publicación cuyo personaje cambió; se retiró con su razón en el runner.
+- Tras las correcciones: plugin `53a09f47badf99be…`, harness `76d45c68a12beebc…`;
+  `test_gaso_caught_runtime` + `test_caught_bank` → 23 OK (builds 0 y 1);
+  mutaciones 11/11 detectadas (`mutate_caught.py` `8cf30907…`: ignorar previous,
+  redirect sin publicación, sin freno, 59 llamadas, reutilización sin reiniciar
+  espera, restaurar sin entrar, reutilizar sin verify, sin detección de pérdida,
+  pérdida sin meta, sin tope de reintentos, verify que escribe).
+- Build experimental (`CLIP_PUBLISHED 1` solo en `BAG2JP-codex-build/src`;
+  `bag2jp_bag1_versions.c` canónico no copiado a propósito): `bag2_workflow.py
+  build --tag gaso-caught-retire2`, exe `EA0C7F16AF3D16A42437B10F6D559FDEF92988EC0DAB6979D3BDF0449F99F86D`,
+  desplegado solo en exp-8mb (backup `BAG2JP.exe.bak-A9296DDB-pre-retire`;
+  ajustes en `_work/gaso/exp-backup-pre-retire/`). Calibración
+  `20261112T155020408170Z-gaso-retire2-calibration` con
+  `_work/gaso/run_clean_trace_session.py` (puente reversible de tarjetas; la
+  llamada directa a `versus_session.py` falla porque `settings.toml` apunta a
+  tarjetas de `gaso-fix5`): ocho aristas revisadas y aceptadas;
+  `settings.toml` restaurado a `B41A5FC8`.
+
+### caught-active-reuse-20261112 - segundo golpe activo, candidato sin aceptación
+
+- Ensayo `20261112T155241389733Z-gaso-retire-heat-bag1`, exe `EA0C7F16…`:
+  terminó y volvió a root13 (170,4 s de seguimiento; 312,774 s totales), pero
+  **NO es validación aceptada**: `_work/recordings/gaso-retire-heat-bag1/manifest.json`
+  tiene `accepted:false`. Conservados vídeo, audio, eventos y logs originales.
+- Dos problemas observados, no ocultados:
+  1. Reutilización activa: publicación a t132,810/gf8086, entrada gf8088 anim1;
+     segundo golpe t136,212/gf8290 rechazado por VERIFY; gf8292 anim89 y
+     restore t136,241. Trace y eventos en `_work/gaso/retire-event-review.json`.
+     La verificación llamaba al plan de **retiro**, que exige current/previous≠1
+     y ausencia de referencias: rechazaba precisamente un clip propio aún activo.
+  2. Grabación rechazada: 3079 latidos, 4 tardíos, jitter p99 11,43 ms;
+     pausa real 244 ms después de gf18018, 567/18469 pares de audio fuera del
+     ajuste, ventana máxima 34,44 ms. `_work/gaso/retire-audio-diagnostic.json`
+     localiza otra ventana a gf1621–1680 (navegación) con 34,443 ms. Recortar el
+     final por sí solo NO basta (diagnóstico: ventana 37,1 ms). Sin modificar
+     puertas ni excluir pares a mano; el vídeo queda rechazado.
+- Corrección acotada (fuente sigue `CLIP_PUBLISHED=0`): `b1cb_inspect` valida
+  identidad, límites, índices, clip y exclusividad sin exigir retiro;
+  `b1cb_plan` lo envuelve y conserva current/previous≠1 y `b1cb_no_references`.
+  Publish/restore siguen usando plan. Solo VERIFY usa inspect + tuple y no
+  escribe guest. Plugin `08db37e56877aed8…`, binding `1ad022af059b4ba8…`.
+- RED real: nuevo escenario con current=previous=1 y decoder dentro del clip
+  falla en `publish && enter` (harness línea1084), log `reuse-active-red.log`.
+  GREEN: 77 pruebas (runtime/binding/bank/adapter/loan/owned_clip), exit0,
+  `reuse-active-green.log`. Tras mejora de cobertura, binding 6/6 exit0
+  (`reuse-binding-review.log`). Mutaciones 12/12 detectadas con fallos de
+  ejecución, no errores de compilación (`reuse-mutations.log`, logs individuales
+  `mutation_*.log`). El runner anterior contaba un error de compilación como
+  kill al quitar la única llamada de slot1_intact; corregido manteniendo la
+  referencia en `0 && ...`, y ahora exige fallo de escenario.
+- Goldfish nuevo para el delta (`spec-gaso-active-reuse.md`, 2 revisores):
+  A **SIN HALLAZGOS BLOQUEANTES**, B **CON HALLAZGOS** (solo cobertura menor).
+  Ambos confirman guardas de escritura intactas. Hallazgo confirmado/aplicado:
+  probar rechazo de publicación por decoder/pose con **tupla todavía vacía**,
+  para que una tupla ya publicada no oculte la falta de guarda. Harness binding
+  `93e7e1734eb2143a…`; runtime `c9ecd822c7eca7b9…`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Build `gaso-active-reuse` pasó preflight/build; exe
+  `11102F81E6B5B732696A0246986727808C4B449AF8B1B655D72B6189425BF1D8`,
+  solo exp-8mb; backup previo `BAG2JP.exe.bak-EA0C7F16-retire2`. Guarda 1 solo
+  en árbol de build; ningún cambio en estable. Calibración
+  `20261112T161103659501Z-gaso-active-reuse-calibration`: selector y ocho aristas
+  inspeccionados en `reuse-cal-grid.png` y aceptados para ese hash.
+- Nueva prueba en curso: `_work/gaso/run_recorded_retire.py` (wrapper del harness
+  y puente reversible, no cambio de motor ni de grabador). Arranca grabación al
+  gameplay y la detiene tras el primer selector comprobado por RAM, incluyendo
+  0,5 s de imagen de retorno antes de STOP. Captura íntegra de ese intervalo,
+  no montaje de audio. No pretende validar la navegación que queda fuera del
+  intervalo. Hash wrapper `ece11fdaf1d08199…`; sintaxis y 3 tests host de límites
+  comprobados (selector detiene, otro estado continúa, captura terminada no se
+  sobrescribe), `reuse-capture-boundary-tests.log`, exit0. Ejecución viva
+  pendiente. Tag `gaso-active-reuse-heat-bag1`, log `_work/gaso/reuse-run.log`.
+- Siguiente: exigir manifest accepted=true; comprobar segundo golpe en anim1,
+  retiro posterior, fin y selector; revisar fotogramas y audio. No pedir
+  conformidad ni commit (paso7) antes de tener esa evidencia. Límites anteriores
+  de compañeros, generación, savestate entre procesos y latencia siguen abiertos.
+- Resultado del nuevo ensayo `20261112T161312762561Z-gaso-active-reuse-heat-bag1`:
+  harness exit0, 301,425s; seguimiento171,1s, fin observado160,5s, retorno root13.
+  Ajustes verificados tras el puente: settings `B41A5FC8A597`, keybinds
+  `EAAF722E480D`, state `EE35AB929773`; 67 saves originales comprobados por el
+  harness. El wrapper detuvo la captura en `returned-selector`, no `song-end`.
+- El trace sí corrige el fallo: primer golpe gf7385 y segundo gf7589 con Heat
+  en anim1; ningún `reuse refused`. Retiro t9,966/gf7804–7805, posterior anim90;
+  petición reflejada rechazada t132,918/gf15175. Datos en
+  `_work/gaso/gaso-active-reuse-heat-bag1-event-review.json`. Esto es evidencia
+  de logs, NO aceptación visual ni fidelidad de audio.
+- `finalize` exit0, manifest `accepted:true` **solo de sincronización**:
+  1716 latidos, 5 tardíos, jitter12,45ms, 0 pausas; audio44058Hz,
+  10267 pares/0 descartes, ventana8,24ms. Pero la inspección de contenido
+  (`look.py`, tiempos0,5/1,9/2,94/3,4/6,35/10,1/167/170s) muestra **otro juego
+  tapando BAG2JP en todos esos fotogramas**. La captura no sirve como evidencia
+  de BAG2JP aunque sus puertas temporales hayan pasado. No se cambia el
+  manifiesto técnico ni se atribuyen al juego imágenes de otra aplicación.
+  Dictamen separado: `_work/gaso/reuse-visual-review.json`,
+  `gameplay_evidence_accepted:false`. No se revisan más imágenes de esa sesión
+  ajena ni se entregan como vídeo del ataque.
+- **Bloqueo actual (paso5, antes de conformidad/commit):** hace falta ventana
+  BAG2JP visible, completa y sin cubrir durante combate→selector. No cerrar,
+  mover ni interferir con la sesión ajena para forzar una grabación. Alternativa
+  futura: captura directa del render, solo si se demuestra imagen no negra y
+  sincronización; PrintWindow de screenshots no demuestra vídeo válido.
+  No relanzar otra partida a ciegas con la misma oclusión. Sin commit; candidato
+  experimental `11102F81…` permanece instalado, fuente canónica guardada en0.
+- Owner autoriza corregir el bloqueo: foco y Always on Top **solo al grabar**,
+  para «todas las ventanas que necesites grabar». Helper genérico
+  `tools/test/recording_window.py` integrado en `bag2_record.py`, sin imponer
+  ese estado a ventanas no seleccionadas ni cambiar la instalación de juego.
+  Pruebas/restricciones/fallos del ensayo y vídeo de ventana propia en
+  `notes/tool-evidence/bag2-record.md`, entrada foreground/topmost temporal.
+  Goldfish en curso (`_work/goldfish/spec-recording-window-focus.md`);
+  no relanzar runtime/build/calibración sin cambios. Tras validar el grabador,
+  reanudar partida con exe11102F81 y entregar únicamente vídeo revisado del juego.
+- Corrección del grabador verificada en host:31 pruebas/7mutantes; Goldfish
+  2×CON HALLAZGOS con correcciones aplicadas y verificadas (cookies de ventana,
+  popups, cancelaciones/cierre y estado atómico antes de finalize). Detalle y
+  hashes en el log del grabador. Windows puede negar foreground: se aborta sin
+  grabar otra aplicación, sin forzar teclas ni cambiar opciones globales.
+- Nueva partida en curso con la protección, tag `gaso-pinned-reuse-heat-bag1`,
+  log `_work/gaso/pinned-reuse-run.log`; se reutilizan exe11102F81 y calibración.
+  Siguiente: finalize solo tras cierre/restauración; verificar guard passed=true,
+  manifest accepted=true **y** píxeles de BAG2JP; después revisar ataques/fin/retorno.
+- `gaso-pinned-reuse-heat-bag1` falló al empezar a grabar por foco de teclado
+  denegado; ajustes/saves restaurados, sin nueva aceptación. El criterio final
+  es el de PowerToys solicitado: pedir foco una vez, mantener topmost descubierto,
+  no requerir monopolizar el teclado. Prueba Win32 v6 grabó la ventana correcta
+  sin foco de teclado y restauró estados;31tests/7mutantes siguen verdes.
+  Helper/grabador finales `42e6c1d…`/`7c783595…`.
+- Integración actual: `gaso-topmost-reuse-heat-bag1`, log
+  `_work/gaso/topmost-reuse-run.log`. No repetir capturas anteriores ni calificarlas
+  de aceptadas. Seguir hasta evidencia real visible/sincronizada y solo entonces
+  consultar conformidad/commit; exe11102F81 y fuente guard0 sin cambio.
+- Chequeo temprano de la captura actual a1s (`topmost-early-check.png`): sí se
+  ve BAG2JP, Gas-O/Heat y escenario correcto; sin oclusión en ese fotograma.
+  No equivale aún a validar la partida ni la sincronización/restauración final.
+- **Cierre del paso 5 (evidencia grabada) de `gaso-topmost-reuse-heat-bag1`**:
+  manifiesto `accepted=true`, 1481 latidos (4 perdidos), jitter p99 13,2 ms,
+  59,939 fps, audio 44056 Hz/8881 pares/0 perdidos/ventana 9,59 ms, 20 eventos;
+  `window_guard` `passed=true` con 157 comprobaciones y `focus_acquired=false`,
+  `recording_state=closed`; ajustes B41A5FC8A597/EAAF722E480D/EE35AB929773 y
+  71 saves originales restaurados (verificado por el harness). Evidencia:
+  `_work/recordings/gaso-topmost-reuse-heat-bag1/` (`owner.mp4`, `raw.mkv`,
+  `review.mkv`, `events.json`, `stills/`) y run
+  `_work/versus-runs/20261112T172921464652Z-gaso-topmost-reuse-heat-bag1`.
+- **Revisión visual propia (fotograma a fotograma)**: láminas en
+  `_work/gaso/sheets/` (`first-catch.png`, `second-catch.png`, `retire.png`
+  y recortes `key-catches.png`/`key-rival.png`; generadas con
+  `_work/gaso/make_sheets.py`). Confirmado: (1) es BAG2JP, Gas-O vs Heat en
+  GasOBAG1, sin aplicación ajena; (2) en el primer golpe (≈3,02 s) el rival tras
+  el pilar verde recibe impacto y su medidor junto a «HEAT» pasa de 300 a 180;
+  (3) en torno al retiro (gf7714–7715, ≈9,76–10,16 s) se ve a Gas-O **agarrar y
+  lanzar al rival**, que cae al suelo, es decir el clip CAUGHT en acción, y el
+  actor vuelve a su animación propia después; (4) el HM pasa a anim90 y la
+  partida vuelve al selector (root13). No verificado por mí: el significado
+  exacto del valor del medidor y el «eye-flash» de reacción (no identificado con
+  certeza en las láminas); ambos quedan como observación, no como aceptación.
+- Estado: **pendiente solo la conformidad del propietario y el commit del paso 7**.
+  Fuente canónica sigue en `GASO_CAUGHT_CLIP_PUBLISHED 0`; exp-8mb conserva el
+  ejecutable `11102F81…BF1D8`. Nada commiteado.
+
+### caught-bag1-reference-20261112 - referencia BAG1 nativa con autoplay
+
+Petición del owner: «los timings varian»; grabar en BAG1 Gas-O vs Heat en el
+escenario GAS-O con el mismo ataque y comparar fotograma a fotograma.
+
+- Herramienta: `_work/gaso/native-reference/bag1_reference_session.py`
+  (`boot`/`keys`/`shot`/`ram`/`record`/`close`/`finalize`). Aislamiento de
+  `native_session.py` (6 ficheros respaldados, tarjetas copiadas, saves
+  verificados al cerrar). Audio exacto con el driver SDL `disk` (S16LE 44100,
+  colocado por ajuste tamaño/tiempo + `asetrate` a la tasa medida), sin mezcla
+  temporal (`smooth-presentation` off), ventana 1280×960, captura ddagrab con
+  sellos de pared, RAM BAG1 en el mismo reloj. `finalize` solo tras `close`
+  (el driver bloquea el raw).
+- Autoplay BAG1 (modo 2P, sin parchear el exe): de `bag1_decomp.txt`,
+  `FUN_80021c6c` busca en el compás la última pulsación y `FUN_8002a048` elige
+  grupo por el botón final (`DAT_8006914c>>4`); la tabla normal común
+  `@80055f00` tiene comandos de un solo botón: × → paso 3 (nivel 0, válido
+  siempre), △ → 0x6e ataque, □ → 0xaa esquiva, ○ → paso 1. Corrección: en los
+  bytes de comando 0x10/0x20/0x40/0x80 son ↑→↓← y 1/2/4/8 son △○×□ (el
+  docstring de `dump_bag1_commands.py` los tenía al revés). El bot pulsa en cada
+  frontera de compás × para P1 (X) y P2 (N), y △ (A) para Gas-O en los compases de
+  ataque. Las tablas solo no se cubren (no hace falta para esta ventana).
+- Toma: `runs/20261112T163101-bag1-reference/gaso-vs-heat-autoplay/`
+  (`owner.mp4`, `raw.mkv`, `ram.csv`, `events.json`, `manifest.json`,
+  `check/`). Guarda de ventana `passed` (200 comprobaciones); RAM: los dos
+  jugadores con paso válido (bit 0x4) en todos los compases; ataques en los
+  tiempos 20 y 28 (`p1_attacks` 2→1→0); golpe a Heat en el tiempo 24
+  (`p2_flags` 0x10→0x92→0x80), segundo aviso en el 32, libre en el 40 (36,87 s),
+  vuelve a puntuar en el 44. **`accepted=false`**: 56,1 fps (umbral propio 59,5);
+  ddagrab no pasa de ~58 fps ni sobre el escritorio (a 144 Hz da ~97 fps con
+  huecos de hasta 35 ms). Los tiempos de abajo usan sellos de pared: precisión
+  estimada ±2 fotogramas.
+- Medición: `tank_timing.py` (fracción de píxeles verdes por fotograma);
+  bordes idénticos en `raw.mkv` y `owner.mp4` de ambos juegos. Origen T0 =
+  primer fotograma con tanque.
+
+  | Evento (desde T0) | BAG1 nativo | BAG2 (`gaso-topmost-reuse-heat-bag1`) |
+  |---|---|---|
+  | Tanque 1 visible | 0 (29,983 s) | 0 (2,367 s) |
+  | Tanque 1 desaparece | +2,35 s (~5,5 tiempos) | +0,90 s |
+  | Entre tanques | Heat fuera, **misma pose de atrapado**, 1,10 s | Heat fuera **con estrellas de aturdimiento**, 2,12 s |
+  | Tanque 2 visible | +3,45 s | +3,02 s |
+  | Tanque 2 desaparece | +7,03 s (dura 3,58 s) | +4,33 s (dura 1,32 s) |
+  | Tras el tanque 2 | de pie ~0,2 s y baila en el compás siguiente (+8,6 s); sin caída | estrellas hasta ~+5,5 s, caída al suelo ~+6,5–7,1 s, de pie ~+7,5 s (retiro slot1 +7,58 s) |
+
+  Tempo comparable (BAG1 0,428 s/tiempo; tanques a 3,4–3,5 s en ambos). La
+  duración total del castigo es parecida (~7,0–7,6 s), pero en BAG2 el tanque
+  dura 2,6× menos, aparece un estado de aturdimiento con estrellas que en BAG1
+  no se ve y hay una caída al suelo final que BAG1 no muestra en esta toma.
+  Láminas: `check/attack-sheet.png`, `bag1-between-tanks.png`,
+  `bag1-release.png`, `bag2-attack-sheet.png`, `compare-sheet.png`; vídeo
+  lado a lado `check/compare-bag1-left-bag2-right.mp4` (izq. BAG1 con su audio,
+  der. BAG2; T0 a los 2 s).
+- No verificado: la causa en BAG2 de la vida corta del tanque y de las
+  estrellas/caída (falta contrastar con Ghidra el temporizador del tanque y el
+  estado del receptor); la pulsación BAG1 cae una frontera de compás antes del
+  golpe (ataque en el tiempo 20 → golpe en el 24), no medida aún en BAG2.
+- Siguiente: decidir con el owner si se corrige la duración del tanque y la
+  reacción del rival antes del commit del paso 7.
+
+### caught-tank-timing-candidate-20261112 - candidato host, no aceptado
+
+- El owner eligió corregir antes del commit («Continua»). La siguiente
+  validación grabada está dentro del ciclo solicitado; el commit sigue sin permiso.
+- Cambio experimental en `bag2jp_gaso_caught.c`/`bag2jp_gaso_tank.h`: contador
+  por receptor al consumir la entrada directa de Gas-O BAG1; el visual detecta
+  cambios, sostiene el tanque en slots 89/1 y corta tras abandonar la reacción.
+  Se eliminó la vida fija HOLD65. No se escriben pending+0x18 ni 0x80400000.
+  Las constantes nuevas (descenso6, salida9, borrado por anim-frame38) son
+  aproximaciones de la toma, NO contrato nativo demostrado ni fidelidad aceptada.
+  El borrado al siguiente ataque aún debe contrastarse con código nativo.
+- Evidencia host previa: 26 tests OK (`test_gaso_caught_runtime`16 y
+  `test_gaso_tank`10, 7,426 s). Cuatro mutantes finales detectados; el primer
+  intento de no-clear falló compilando por variable sin uso y NO cuenta como
+  detección funcional; su variante posterior falló la aserción del escenario7.
+- Build `20261112T222731773660Z-gaso-tank-bag1-timing/metrics.json`:
+  `status=passed`, fase build41,09s. Comprobado al retomar; no demuestra partida
+  ni despliegue. Staging solo `src/bag2jp_gaso_caught.c` y `src/bag2jp_gaso_tank.h`;
+  backup `_work/gaso/build-src-backup-pre-tank-timing/`. Canónico guard0;
+  guard1 solo en build/src. `bag2jp_bag1_versions.c` no se copió a propósito.
+- Goldfish: dos primeros intentos `ses_e2e1fdeafffeC4lGSrOjRRO4On` y
+  `ses_e2e1fd3c9ffeRUXsp6pSU5OZGy` fallaron por cuota sin emitir hallazgos:
+  REVISIÓN NO UTILIZABLE. Spec `_work/goldfish/spec-gaso-tank-timing.md`.
+  Se solicitaron dos revisores en frío nuevos al retomar; veredicto pendiente.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Herramientas consideradas: Ghidra MCP verificado (log propio); shell/JSON
+  para evidencia objetiva; subagentes para Goldfish exigido. FFmpeg/grabador
+  se reservan para la validación real, no se repite vídeo con runtime anterior.
+  Funcmatch no corresponde: aún no se busca equivalencia main BAG1→BAG2;
+  el origen del timer pendiente está en overlay005. Sin tarea mecánica masiva
+  adicional que justifique un modelo GPU local durante esta revisión acotada.
+- Pendiente: triar Goldfish, corregir/reverificar hallazgos antes de desplegar;
+  identificar estrellas y salida90 (aún intactas), contrastar tiempos nativos,
+  grabar nueva prueba con audio y manifest aceptado. Sin commit ni aceptación.
+
+#### Goldfish y regresiones al retomar
+
+- Revisores nuevos `ses_e2e158122ffexvgA8TIKPBQ57T` y
+  `ses_e2e15676fffeNAguDiUb4yuAzn`: ambos CON HALLAZGOS. Estado revisado:
+  candidato de build anterior; los cambios siguientes NO están en ese exe.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Confirmados y corregidos: `released` no se reiniciaba al volver al trap;
+  filtros de personaje/versión conservaban el tanque; sustitución de rival
+  válido heredaba el visual. Cuatro regresiones nuevas fallaron con aserciones
+  antes del fix (`_work/gaso/tank-goldfish-red.log`); después 30 tests OK.
+- Confirmado y corregido: slot1 ajeno prolongaba el tanque. Regresión RED
+  `_work/gaso/tank-slot1-red.log`; consulta de solo lectura
+  `bag2jp_gaso_caught_owns_slot1(side,actor)` exige guard1, publicación,
+  identidad de actor y tuple original intacta. Test runtime comprueba propietario,
+  lado/actor inválidos y ausencia de escrituras. GREEN final
+  `_work/gaso/tank-goldfish-green2.log`: 31 tests OK/10,398s (16 runtime/15 tanque).
+- Confirmados aún ABIERTOS: heurística `anim_frame < elapsed` no prueba inicio
+  posterior; retornos por heap/OT/cámara congelan reloj; coherencia savestate
+  dentro de root19; pérdida de hit con puntero temporalmente inválido. Descartar
+  el hit con identidad inválida es conservador, pero no prueba fidelidad temporal.
+  El hilo único evita carrera concurrente; orden real hook/tick NO verificado.
+  Faltan P2, máximo, intercalado y savestate. Ningún hallazgo refutado.
+- SHA256 post-fix tanque `AA3475B55A651D9084DEBF7C5DDAACFB38A3CF78A48B2762BCF2D0713955FE74`;
+  caught `9B5B8D64D1D5F62955C079C4203C985408276091EBC9868ABAEDDE3A7D9E20D6`.
+  Whitespace: diff--check ordinario detecta CRLF previos en líneas del candidato;
+  `git -c core.whitespace=cr-at-eol diff --check -- <rutas del cambio>` pasa.
+  No se normalizaron archivos completos ni se cambió config Git.
+- No nuevo staging/build/deploy tras estos fixes. El build verde de41,09s está
+  obsoleto respecto a la fuente actual. No suite global nueva ni prueba en juego;
+  estos 31 casos verifican solo las costuras host. Guard canónico sigue0.
+- Próximo acotado: reemplazar la heurística de ataque por una transición demostrada
+  y resolver reset/savestate antes de reconstruir; mantener abiertas procedencia
+  de tiempos, estrellas y salida90. No repetir Goldfish del mismo checkpoint.
+
+#### caught-tank-state-20261112 - transición observada y descarte al cargar
+
+- Objetivo acotado: eliminar `anim_frame < elapsed` y descartar estado host
+  obsoleto tras reset/savestate; aceptación de esta costura mediante regresiones
+  del header/callback reales. No equivale a aceptación del ataque.
+- Preflight `20261112T231544516747Z-gaso-tank-state` pasó. Git previo conservado
+  en `_work/gaso/tank-state-start-status.txt`; sin staging a build ni despliegue.
+- Nuevo visual: adopta la familia74/88 presente al golpe y solo arma borrado
+  cuando después observa no-ataque->ataque. Un frame pausado o un bucle de la
+  misma animación no se convierte en otro ataque al envejecer el tanque.
+  Límite explícito: no detecta reinicio74->74 sin una muestra no-ataque intermedia.
+  El umbral38 sigue siendo aproximación experimental, no contrato BAG1 demostrado.
+- `gaso_caught_forget()` incrementa epoch host en reset y savestate; el visual
+  lo adopta descartando tanque y golpes contados anteriores aun con root19.
+  No reconstruye un tanque activo del savestate: falla cerrado. Conserva el
+  límite previo del tuple publicado en RAM al cargar; no lo repara ni escribe.
+- Observación de golpes/transiciones y mantenimiento se ejecutan antes de las
+  puertas gráficas heap/OT/cámara. Fallar dibujo no pausa liberación ni límite.
+- RED `_work/gaso/tank-state-red.log`: 19 casos, cuatro fallos de aserción nuevos
+  (epoch, ataque pausado, transición sin dibujo, límite sin dibujo). GREEN
+  `_work/gaso/tank-state-green2.log`: 35 tests OK/11,001s (19 tanque/16 callback,
+  callbacks compilados guard0 y1). El escenario8 antiguo simulaba «ataque
+  anterior» solo con elapsed5; se corrigió para generar un golpe real durante
+  anim74/frame100, acorde con su requisito. Primer GREEN falló solo ese fixture;
+  se conserva `_work/gaso/tank-state-green1.log`, no se declara éxito de ese run.
+- Ghidra MCP verificado, consulta decompile8002d06c falló FUNCTION_NOT_FOUND;
+  read_memory8002d4a0/48 sí pasó. Alcance/límites en log ghidra-psx-psyq.
+  No se repitió FFmpeg/grabador porque este tramo es host y el runtime no cambió.
+  Funcmatch no pertinente a un cambio de estado host sin búsqueda de equivalentes.
+- Suite global y Goldfish estrecho de esta corrección nueva en curso; no repite
+  la revisión completa del candidato. Spec `_work/goldfish/spec-gaso-tank-state.md`.
+  Fuentes canónicas guard0; build anterior obsoleto; sin commit.
+
+##### Triaje y verificación del estado
+
+- Goldfish estrecho: `ses_e2ded1025ffe2iyj2HVsVxV3w4` y
+  `ses_e2ded1018ffeQw2Cl9xfiQE2pw`, ambos CON HALLAZGOS. Verifican por lectura
+  la transición y el mantenimiento antes del render; no ejecutaron pruebas.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Hallazgo confirmado/corregido: callback->golpe nuevo->primer tick perdía el
+  golpe. RED `_work/gaso/tank-epoch-window-red.log`. El callback guarda ahora
+  `epoch_hits[]`; el visual toma ESA frontera, no el contador posterior al tick.
+  El reset ordinario fuera de combate adopta golpes actuales sin silenciar el
+  primer golpe futuro. Test añadido de salida real root13 y reentrada root19.
+- Segundo hallazgo confirmado/corregido: el caso sin render no probaba cuándo
+  se observaba el flanco. Ahora exige `clear_on_attack` durante frame37 sin
+  render y la desactivación en frame38 AÚN sin render; luego restaura dibujo.
+- GREEN final `_work/gaso/tank-state-green3.log`: 37 tests OK/11,067s
+  (21 tanque,16 callback; callback guard0/1). Mutaciones reales sobre copias
+  `_work/gaso/tank-epoch-mutations/`: sin incremento epoch y sin snapshot del
+  callback mueren por aserción, no por compilación (3,159s/3,172s).
+  Script reproducible `_work/gaso/check_tank_epoch_mutations.py` conserva copias,
+  logs y resultados; no modifica fuente ni entorno global.
+- Primera suite completa `_work/gaso/tank-state-full-suite.log`: 363 tests,
+  1 fallo y32 errores/108,716s. Comparación literal de33 nombres con baseline
+  `_work/gaso/p2a-full-suite.log` sin añadidos ni retirados; reporte
+  `_work/gaso/tank-state-suite-comparison.json`. No es suite verde.
+  Se inició antes del último fix de epoch: NO prueba por sí sola el estado final.
+  Nombres completos en logs, grupos: stage_audio, stage_shim, visual_regions,
+  caught_entry, heat_announcer/costume/dbi_face_patch, strike_bag1_fx/costume/
+  texture_contract; fallo `test_package_keeps_models_separate_from_texture_packs`.
+- Repetición completa sobre fuentes finales en
+  `_work/gaso/tank-state-final-full-suite.log`, en curso al escribir este bloque.
+  Hashes finales `_work/gaso/tank-state-final-source-hashes.json`. Whitespace
+  con `core.whitespace=cr-at-eol` pasa; sin cambios de configuración Git.
+- Límites aún abiertos: orden hook/tick real, impactos con puntero temporalmente
+  inválido, reinicios sin observar no-ataque, P2 y fidelidad6/9/38. No se reconstruye
+  visual de un estado cargado. Estrellas/salida90 siguen intactas; son el siguiente
+  tramo de investigación nativa. No reabrir un gate de autorización ya concedido
+  para investigar: commit sí necesita permiso; guard1/despliegue y partida no se
+  hicieron en este tramo. No repetir revisión completa sin cambio/evidencia nuevos.
+- Cierre de la repetición: **365 tests,1 fallo/32 errores,106,422s**. Los33
+  nombres coinciden exactamente con baseline p2a; sin nombres añadidos/retirados
+  en `_work/gaso/tank-state-final-suite-comparison.json` (incluye lista completa).
+  No se afirma que el repositorio esté verde ni se arreglaron fallos ajenos.
+  Checker documental de ambas notas: issues vacíos en
+  `_work/gaso/tank-state-docs-check.json`. El próximo tramo es localizar en
+  overlay005 los productores de estrellas y salida, no otra ronda de tests
+  idénticos. Mantener salida90 hasta contrastar el contrato y la decisión previa.
+
+#### caught-secondary-effect-20261112 - origen estático, sin parche
+
+- Objetivo de este tramo: localizar productor de partículas y salida90 sin
+  tocar comportamiento. Preflight gaso-stars-research pasó; estado Git previo
+  `_work/gaso/stars-research-start-status.txt`. Sin nuevo build/deploy/partida.
+- **Dos canales diferentes:** tabla main80051458 tiene fila Gas-O `[202,1]`.
+  Primera columna entrega request202 -> motion89; segunda columna1 se carga
+  en0058009b5d0 y llama `80019d70(rival,1)` en8009b5e4. Redirigir el motion a
+  CAUGHT NO elimina este canal. Tabla compartida: Heat/Strike también `[202,1]`;
+  deshabilitarla globalmente dañaría golpes ajenos/stock/reflejos.
+- Selector secundario en **actor+1724**. 19d70 lo guarda y selector1 llama
+  **8001a8fc**: inicializa8 registros de48B desde actor+15a0, fases angulares
+  separadas0x200. **80019e34** comprueba selector y despacha selector1 a
+  **8001ab8c**, independiente del slot de animación actual. Este último rota/
+  expande partículas, usa sprites de atlas y desvanece tras edad80 con paso4;
+  alterna grupos de partículas y parámetros de sprite. Es el candidato concreto
+  del efecto observado; **no se ha demostrado aún la identidad gráfica exacta
+  del bitmap de las estrellas** ni el orden live respecto al hook CAUGHT.
+- **Caída90:** no la crea ese efecto secundario. Reutilizado decompile verificado
+  de dispatcher8002a090: request202 guarda índice2, tiempo=max(1,duraciónPendiente
+  -2*len(salida90)); modo0 descuenta delta8006d994, y al expirar usa tabla
+  800518ec[2]=90 (excepto ramas especiales45/46,84/85). 0058009c144 escribe
+  pendiente+1c a partir de tabla temporal. Es salida nativa BAG2, todavía intacta.
+  No confundir marcador3 de005 con duración idéntica a BAG1.
+- Evidencia nueva `_work/gaso/stars-research-report.json`: hashes main/005,
+  cuatro regiones MCP=raw, palabras callsite, hashes de4 decompiles y tiempos.
+  MCP obligatorio sí usado; dos consultas sin función/una función ajena están
+  registradas junto con éxitos en ghidra-psx-psyq. Capstone: scan8 candidatos,
+  independiente pero no exhaustivo; no sustituye Ghidra ni evidencia visual.
+- Riesgo para el siguiente hook:8009b5e8 (delay-slot JAL) es `move a1,s0`;
+  cambiar a1 antes del JAL sería sobrescrito. Además la publicación slot1 puede
+  ser rechazada DESPUÉS de ese punto; no suprimir ahí sin probar propiedad y
+  fallback. No se ha elegido ni aplicado una escritura nueva de actor.
+- Herramientas pertinentes: Ghidra MCP+headless aislado, Capstone/hash para
+  contraste; se reutilizó decompile005 y timing previo sin reejecutarlos.
+  FFmpeg/grabador se reservan para prueba real; no hubo nueva toma que analizar.
+  Funcmatch no aplica a este routing ya localizado, sin búsqueda de equivalente.
+  Goldfish omitido justificadamente: solo notas y evidencia en _work, ninguna
+  ruta ejecutable tools/mods/patches modificada EN ESTE tramo. Fuente previa
+  host-verificada sigue guard0; build antiguo obsoleto. No commit.
+- Próximo: confirmar sprite/efecto visible con asset o evidencia runtime ya
+  existente, y diseñar supresión solo para receptor con CAUGHT publicado propio
+  (fallar cerrado si no lo está), manteniendo Heat/Strike/stock/reflejos. Antes
+  de quitar salida90, contrastar la decisión previa de conservarla; no convertir
+  una investigación en permiso para cambiar silenciosamente ese contrato.
+
+#### caught-secondary-suppression-20261112 - candidato host guard0
+
+- Objetivo: identificar el sprite y suprimir el canal secundario solo después
+  de publicar/verificar CAUGHT propio. Preflight gaso-secondary-suppress pasó;
+  Git previo en `_work/gaso/secondary-suppress-start-status.txt`.
+- Asset encontrado: `assets/archive/system/010/001.tim`, miembro1 deDFS010,
+  SHA2560039c3d39da4e86452b63028d70e575a38514f8a07d2026ca23318881821431f;
+  SHA1 coincide con _container y PNG con _png_sha1. TIM4bpp, imagen512,256 de
+  256x256 (UVbase0,0). UV72,56/16x16 del renderer impar contiene **estrella**;
+  cicloCLUT8..11 produce naranja/rojo. Extracción directa desde TIM, no solo
+  el PNG histórico: `_work/gaso/secondary-star-palettes.png` y
+  `secondary-star-identity.json` (hashes,100 píxeles no cero).
+- Búsqueda de atlas: contacto reducido de100 PNGs del sistema; system000 era
+  fuente/paleta, irrelevante. Pillow avisó de transparencia de paleta durante
+  esa hoja exploratoria; la evidencia final usa bytes TIM/CLUT originales.
+  Lectura de assets/archive/system/_container.json falló porque no existe;
+  se usó el manifiesto correcto system/010/_container.json. No se alteró asset.
+- Límite: correspondencia estática sprite/UV/paleta, **no nueva captura de juego**
+  ni demostración del descriptor54c50 cargado. MCP solo ve su inicialización.
+- Cambio en `bag2jp_gaso_caught.c`: tras publish/VERIFY y redirecta2=1,
+  `gaso_caught_suppress_secondary(side,actor)` exige owns_slot1 vivo, rango
+  completo hasta+1726 y selector1; escribe solo halfword0 en actor+1724.
+  Guard0 permanece canónico. Rechazo de lookup/binding/VERIFY conserva efecto.
+  No hooks nuevos, llamada guest, tabla global, pending+18 ni timer/salida90.
+- **Consecuencia audiovisual conocida:** selector1 agrupa8 partículas Y la
+  petición del sonido genérico0x0e desde1ab8c. Desactivarlo elimina ese canal
+  entero; NO es una corrección exclusivamente visual. Fidelidad del audio y
+  que el controlador posterior conserve selector0 están pendientes de partida.
+- RED `_work/gaso/secondary-suppress-red.log`: el caso positivo guard1 falla
+  por no suprimir; negativos/guard0 conservan comportamiento. Primer GREEN
+  falló el whitelist antiguo de solo tuple; se extendió a una excepción exacta
+  (main actor,+1724,width2,value0,previo1,guard1), no a escrituras arbitrarias.
+  GREEN `_work/gaso/secondary-suppress-green2.log`: **39 tests OK/11,273s**
+  (18 runtime/21 tanque). Casos positivos ambos lados, re-hit activo, vecino
+  superior y atacante intactos, otros selectores0/2/21 conservados. Negativos:
+  receptorBAG2, binding inválido, Heat/Strike/Gas-O BAG2 y reflejo.
+- Goldfish estrecho `_work/goldfish/spec-secondary-suppress.md`, revisión nueva
+  de este helper/callsite/tests, no del candidato completo. Primer revisor
+  ses_e2db2dc0cffdwxzW6BeIflKmLd: SIN HALLAZGOS BLOQUEANTES; señaló límites
+  de cobertura (rango al límite RAM, VERIFY rechazado con selector1, reproducción
+  real del controlador). Segundo revisor y suite global en curso.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Herramientas: MCP/lecturas relevantes contrastadas; PIL/struct para recorte
+  reproducible sin manipular ventanas con TIMedit. Capstone/headless previos
+  reutilizados; no otra extracción idéntica. FFmpeg/grabador no corresponden
+  aún: no hubo nueva partida/captura. Sin trabajo masivo que justifique GPUlocal.
+  Sin staging/build/deploy/commit; no presentar esta supresión como aceptada.
+
+##### Triaje final de la supresión
+
+- Segundo Goldfish ses_e2db2dbffffeZVY0tjBI6rwSzF: CON HALLAZGOS de cobertura,
+  no bug funcional confirmado. Se aplicaron ambos: caso15 recoloca el receptor
+  en el último actor alineado cuyo campo cabe y en el siguiente word fuera de
+  RAM; caso14 incluye pérdida de tuple tras publicación y otro golpe con selector1.
+  Esa ruta conserva feedback nativo. El segundo revisor tampoco ejecutó pruebas.
+  No se repitió la revisión del mismo checkpoint tras corregir cobertura.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- GREEN final `_work/gaso/secondary-suppress-final-targeted.log`: **40 tests
+  OK/12,598s** (19 runtime en guard0/1,21 tanque). Hashes de fuentes/tests finales
+  en secondary-suppress-final-hashes.json. SelectorfueraRAM no se lee/escribe;
+  canario de alias en80000000 queda intacto. No se relajó el guard de producción.
+- `_work/gaso/check_secondary_mutations.py`:3 mutantes sobre copias detectados
+  por aserción real (no compilación): sin clear5,456s, selectores ajenos2,898s,
+  sin rango de campo3,130s. Resultados/logs en secondary-suppress-mutations/;
+  no se modificó código canónico para ejecutarlos.
+- Suite completa secondary-suppress-full-suite.log:367 tests,1 fallo/32errores,
+  105,634s. Mismos33 nombres que baseline p2a, sin añadidos/retirados; listado en
+  secondary-suppress-suite-comparison.json. Corresponde a la misma implementación
+  antes de añadir cobertura límite/pérdida de tuple y comentario de cabecera;
+  esos cambios finales se verificaron con los40 casos. No suite global verde.
+- Próximo ciclo: preparar staging/build experimental de estas fuentes con
+  backup y guard1 solo en build/src; conservar divergencia intencional de
+  bag1_versions y no tocar estable. Después grabar validación de tanque/estrellas
+  y audio, comparar con BAG1, preservando salida90 hasta resolver decisión previa.
+  La supresión completa del canal incluye0x0e: declarar esa diferencia al evaluar
+  audio; no afirmar que un PASS host prueba la escucha ni la reproducción real.
+
+#### caught-clear-frame23-20261113 - corte del tanque al siguiente ataque
+
+- `GASO_TANK_CLEAR_FRAME` 38→23: inferencia de una toma a 0,428 s/beat (~16
+  frames `+0x1554` por beat); BAG1 corta 0,61 s ≈ 1,43 beats tras iniciar el
+  ataque. Supone que el corte BAG1 sigue el beat. 40 tests host OK
+  (`_work/gaso/clear-frame23-targeted.log`); Goldfish
+  ses_e2d7dd90affemn6N7733AOEA75 SIN HALLAZGOS BLOQUEANTES, notas aplicadas.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Build `gaso-clear-frame23b` (exe `7340f010…`), toma aceptada
+  `gaso-clear-frame23-heat-bag1`. Desde el inicio del tanque, BAG1/BAG2:
+  tanque1 2,35/2,32 s; hueco 1,10/1,11 s; tanque2 +3,45/+3,43; fin tanque2
+  +7,03/+7,18. Tras el tanque2 BAG2 aún difiere: salida90 (Heat cae y se
+  levanta en +8,3; BAG1 baila en +7,1). Decisión del propietario pendiente.
+
+#### caught-tank-liquid-20261113 - interior translúcido con burbujas
+
+Petición del propietario: el interior se veía verde, opaco, "como un escáner
+láser"; en BAG1 es líquido translúcido con burbujas.
+
+- Evidencia nativa reutilizada (decompiles JP ya contrastados,
+  `native-tank-primitives-decompile/`): los cinco emisores hacen NCLIP y
+  descartan caras traseras; cilindro G4 0x3A con E1000600 (ABR0), metal G4 0x38
+  y tapa G3 0x30 opacos. Causas del aspecto anterior: dos capas de cristal (cara
+  delantera y trasera), modo E1 aplicado a primitivas equivocadas (la OT antepone
+  paquetes: la GPU dibuja en orden inverso), metal semitransparente, 8 cuadrados
+  `strike_emit_spark` y humos que saltaban de segmento cada frame.
+- Cambio en `bag2jp_gaso_tank.h` (solo render): culling por signo de
+  `det(tank_rot)` (todas las caras están enrolladas hacia dentro; vale con
+  cámara encima y rival reflejado); una capa de cristal ABR0; metal/tapa
+  opacos; orden GPU: E1 promedio, cristal, E1 aditivo, burbujas, brillos, metal,
+  E1 promedio restaurado. Burbujas: 1-2, anillo de 16 segmentos aditivo con
+  centro transparente y brillo, al 83-90 % de la columna, radio 110 por
+  profundidad (redondas desde cualquier ángulo). Color del cristal despejado de
+  la mezcla 50 % de BAG1 (blancos teñidos 153,185,150 y mediana 47,90,44 en
+  31,0 s): `0x204422` ×1,1..×2,25 con degradado lateral. La iluminación GTE
+  nativa no se reproduce: es aproximación.
+- Tests: escenarios 21 (OT en orden GPU, modos, colores, conteos exactos),
+  22 (rival reflejado) y 23 (cámara encima: 0 cristal, 8 tapa). 43 tests OK
+  (`_work/gaso/liquid-targeted.log`); 9/9 mutantes detectados
+  (`_work/gaso/liquid-mutants-r4.log`).
+- Goldfish `_work/goldfish/spec-gaso-liquid.md`, 2 revisores
+  (ses_e2d5d31c7ffeFr9ucWJM2db1si, ses_e2d5d2510ffeGO1RZVVFnYM2SY): CON
+  HALLAZGOS. Aplicados: signo de culling invertido con cámara sobre el tanque
+  (→ determinante), estado aditivo heredado (→ E1 final), burbujas sobre el metal
+  (→ metal al final), radio de burbuja que se anulaba con el rival girado,
+  comentario 66-79 %, huecos de test (reflejo, culling de metal/tapa, color del
+  brillo). Refutado: hash distinto al del spec (solo se restauraron fines de
+  línea; contenido idéntico). Tras el triaje cambiaron además el estilo de
+  burbuja y el color; verificados con tests, mutantes y partida, no con una
+  segunda ronda Goldfish. Riesgo residual en `strike_project` compartido
+  (int16 sin clamp cerca del plano cercano), fuera de alcance.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Partida: build `gaso-liquid6`, exe `2d471918…` en exp-8mb (copia
+  `BAG2JP.exe.bak-7340F010-pre-liquid`), calibración
+  `20261113T025831301330Z-gaso-liquid6-calibration` revisada y aceptada. Toma
+  **aceptada** `gaso-liquid6-heat-bag1`: 1704 latidos, 0 parones, 0 pares de
+  audio descartados, jitter p99 12,8 ms. Tomas intermedias: liquid2/3
+  aceptadas (aspecto superado), liquid4/5 rechazadas por audio/jitter
+  (5b aceptada, color aún saturado). Mediana dentro del tanque ahora
+  (54,91,56) frente a BAG1 (47,90,44); antes (31,109,50). Corte del tanque1
+  revisado fotograma a fotograma: limpio, sin restos. Hojas en
+  `_work/gaso/liquid-review/liquid6-*.png`.
+- Diferencias que quedan: borde de burbuja algo más cian que en BAG1; sin puff
+  lateral de humo ocasional de BAG1; un fotograma de la caída deja ver la base
+  verde. Juicio visual final del propietario pendiente; sin commit.
+
+##### Ajuste de proporciones/bordes y diagnóstico de aspecto (2026-11-13)
+
+- A petición del propietario, candidato con escala XZ24%/Y26% (radio259,
+  altura1164, antes378/985); burbuja radio68, borde `0x3c3430`, interior
+  transparente hasta80% del radio (antes110/`0x704c28`/65%). Se busca más
+  margen sobre cabeza/pies y menos anchura relativa, no se ha implementado la
+  fórmula nativa por personaje. Comparación visual en
+  `_work/gaso/liquid-review/phone-3-proportions.jpg` y `phone-4-bubbles.jpg`.
+- Host:44 tests dirigidos pasaron; `liquid-mutants-r5.log` registra10/10
+  mutantes detectados y restauración del header. Al elevar la cámara de21/22
+  a4000, todas las tapas quedaron visibles: el mutante sin culling de tapa
+  sobrevivió inicialmente. Se añadió escenario24 (cámara bajo el suelo a-2000,
+  cero tapas) y volvió a detectarse. Ese log registra códigos de retorno,
+  no conserva stderr de cada mutante; no confundirlo con prueba visual.
+- Build `gaso-liquid7` pasó33,489s. Exe experimental
+  `ca4a31c69dea1359b525a04bd40d70381bb8335897af53f607f514173915cfb6`;
+  backup `BAG2JP.exe.bak-2D471918-pre-liquid7`. Copia activa del header:
+  build/src/bag2jp_gaso_tank.h; no se toca la copia histórica bajo src/mods-src.
+  Calibración `20261113T033425778903Z-gaso-liquid7-calibration` revisada/aceptada.
+- Tomas preservadas: liquid7 RECHAZADA (1 parón,419 pares de audio descartados,
+  ventana98ms); liquid7b RECHAZADA (cierre inseguro: invalid window Z order y
+  FFmpeg sin salida limpia); liquid7c **captura ACEPTADA**,1707 latidos,0
+  descartados,0 parones, jitter p99 12,1ms, residual de audio p99 15,94ms.
+  Los errores PowerShell al resumir ErrorRecord en7b no prueban fallo del juego;
+  el motivo de rechazo se tomó del manifest. No se borró ninguna toma.
+- Revisión visual previa: primera caída y corte en hojas `l7-onset-sheet.png`,
+  `l7-onset-zoom.png`, `l7-clear-sheet.png`; cristal presente en la ampliación,
+  corte limpio. La nueva altura/anchura se aproxima más a la referencia, pero
+  las burbujas siguen ovaladas y su borde aún es más definido que en BAG1.
+  **No hay conformidad del propietario ni aceptación global de fidelidad.**
+- Continuación interna: Ghidra MCP confirmó main JP `SLPM_862.19`, SHAea5a1668;
+  `8002dc9c` fija GeomOffset256,120 y H384. La lectura de consumidores de
+  cámara no identifica aún un contrato público para consultar el aspecto efectivo.
+  El log de la partida dice `mod selected fixed display aspect 16:9` y
+  `GTE X-squash + stretched present`; settings.toml4:3 no es fuente suficiente.
+- Diagnóstico de host **aislado**, no parche de producción:
+  `py -3.13 _work/gaso/check_bubble_aspect.py`, informe
+  `_work/gaso/bubble-aspect-host.json`. Con header SHA58fcae3d… sin modificar,
+  anillo real18×22 unidades. Bajo la hipótesis de scanout512×240 a16:9,
+  ancho/alto presentado0,682. Prototipo con radio horizontal compensado por el
+  aspecto explícito:26×22→0,985 a16:9 y34×22→0,966 a4:3. Comprueba aritmética,
+  no detecta el aspecto en ejecución, no demuestra scanout de liquid7c ni
+  suavidad nativa. No se aplicó una constante6/5 fija a producción.
+- Herramientas consideradas: Ghidra y scripts deterministas usados; grabación/
+  FFmpeg nuevos omitidos en esta continuación por reutilizar la toma aceptada y
+  no estar implementada la siguiente corrección. Funcmatch no aplica (no se
+  buscan equivalentes entre ejecutables), modelos locales no aportan a esta
+  cuenta pequeña; Goldfish sí aplica a los cambios de header/tests.
+- Siguiente: integrar una corrección de aspecto con contrato verificable (sin
+  asumir16:9 de settings), probar radio y grosor/color del borde con valores
+  independientes, mantener fuente guard0 y salida90. Una nueva prueba en juego
+  requiere autorización del propietario según AGENTS; no hay nuevo commit.
+
+- Goldfish del ajuste: spec `_work/goldfish/spec-gaso-liquid7-scale.md`, dos
+  revisores `ses_e2cdf75f6ffebXgVLCEIhrtrnk` y
+  `ses_e2cdf75f2ffeoFhw6T882rOxcN`, ambos **CON HALLAZGOS**, header revisado
+  SHA58fcae3d4aae78255b9ed46f15254878545936f8bd995a8765db339ecf37e00c.
+  Confirmado/corregido: prueba de radio/grosor/color dependía de producción o
+  no existía; nuevo `check_bubble_rim_geometry()` fija centro248,647, radios
+  exteriores9,11/interiores7,8 y color literal0x3c3430, incluido el segundo
+  extremo del segmento. Nombre del test ya no afirma redondez. Orden de
+  contorno antes de brillo protegido con `glint_seen`. No se ha corregido el
+  comentario excesivo de redondez del header ni su aspecto real; se mantiene
+  como límite explícito junto con cobertura adicional de crecimiento/vista rasante.
+  Las cámaras21/22 y24 son complementarias, no se confirmó ocultación de fallo.
+  Re-verificación:44 tests/exit0/11,514s (`liquid7-rim-targeted.log`), tres
+  mutantes de radio/grosor/color compilados correctamente y detenidos por
+  aserciones en copias aisladas (`bubble-rim-mutations.json`); fuente canónica
+  sin modificar. Triaje `_work/goldfish/gaso-liquid7-scale-verdict.json`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+##### Integración de aspecto dinámico (2026-11-13, candidato solo host)
+
+- Objetivo: compensar píxeles no cuadrados sin asumir16:9; sin tocar tanque,
+  color/grosor, clips/duración, pins ni settings. No nueva partida/despliegue.
+- Descartados márgenes existentes: view_x_margin solo funciona en native-wide2,
+  no en squash/stretch1 de liquid7c; x_margin además incluye guards de culling.
+- Nueva API de solo lectura `psx_mod_display_pixel_aspect`→
+  `gpu_display_pixel_aspect`: ratio físico reducido ancho/alto a partir del
+  display vivo, clasificador4:3 y aspecto configurado; native-wide añade columnas.
+  Falla cerrado con salidas0 para display ausente/desactivado/depth24, viewport
+  local configurado, null/alias y valores inválidos/no representables.
+- `patches/psxrecomp-display-pixel-aspect.patch`: gpu.h,mod_plugins.h,gpu.c,
+  mod_runtime.cpp, previamente limpios. No incluye main/renderer ajenos. Replay
+  desde pin1a3fc0db303adcef9b6999747f90c30fb25da50f coincide normalizado con
+  los4 archivos (`framework-aspect-patch-check.json`); reverse-check pasa.
+  Primer ensayo dentro de `_work` fue no-op de git apply detectado por bytes;
+  ensayo válido fuera del repo en Temp/opencode, no solo por exit0.
+- Nuevo `bag2jp_gaso_bubble.h`: ry=floor(r*H/z), rx=floor(ry*den/num), límites
+  2..96 antes de narrowing/multiplicación extrema; consulta por dibujo, sin cache.
+  Sin macro API, omite burbujas solamente. Comentario ya no promete redondez.
+  Header principal cambia6 líneas CRLF por LF, sin normalización global.
+- RED API6 aserciones y RED integración7 en3 tests registrados en
+  `display-pixel-aspect-red.log`/`bubble-aspect-integration-red.log`.
+  Primer GREEN dejó1 fallo de fixture dinámico: la subida cambia centro647→646
+  al segundo tick. Expectativa fijada, radios sin relajar; log fallido preservado.
+- GREEN49 tests/exit0/16,684s (`bubble-aspect-integration-green2.log`), API17
+  escenarios,4:3/16:9/21:9/native-wide, cambio entre ticks, fallback y límites.
+  Cuerpos reales de query/API con inputs simulados; **no renderer enlazado ni
+  clasificador real en partida**. gpu.c y mod_runtime.cpp completos pasan
+  sintaxis gcc/g++ WSL (aspect-gpu-syntax.log/aspect-mod-runtime-syntax.log).
+  Mutantes3 plugin+3 API por aserciones, sin errores de compilación contados
+  (`bubble-aspect-mutations.json`), más3 radio/grosor/color revalidados
+  (`bubble-rim-mutations.json`, reporte actualizado al candidato).
+- Goldfish: spec `_work/goldfish/spec-gaso-bubble-aspect.md`,2 revisores en frío
+  ses_e2cc8c443ffe3taK7q38QPsUy8 y ses_e2cc8c43fffepP2qMhfT5xinej, veredicto
+  **CON HALLAZGOS**. Confirmado/corregido: aspecto configurado inválido era
+  aceptado con clasificación4:3; nueva prueba17 falla antes de mover validación
+  de positividad fuera de la rama. RED `display-pixel-aspect-native43-invalid-red.log`.
+  Final49 tests/exit0/15,521s con18 casos API (`bubble-aspect-integration-final-host.log`).
+  Parche final SHA0a25564a1bbb4e8c293ff76a97332098a41a5bdb5661febd58c24ef2e7e337da
+  reproducido de nuevo contra el pin; el cambio no altera el target de las
+  mutaciones anteriores, que se conservan como evidencia de esa revisión.
+- Hallazgo de enlace/staging confirmado y comprobado en costura real: copia de
+  ambos headers a build/src con backup `_work/gaso/build-stage-aspect-backup`,
+  equality de bytes y hashes protegidos de bag1_versions/caught sin cambiar;
+  CAUGHT0 canónico/1 solo build. Build `gaso-bubble-aspect-host-link` PASÓ,
+  134,975s/dos jobs, métricas `20261113T044756561876Z-gaso-bubble-aspect-host-link`.
+  Exe candidato **solo build**
+  `752e21f0d5479217943212e075859bc0c7428d7a31bc9e659962fbdc06bb8246`.
+  llvm-nm del objeto bag1_versions tiene `U psx_mod_display_pixel_aspect`;
+  el exe define ésta y gpu_display_pixel_aspect (aspect-plugin-references.log,
+  aspect-linked-symbols.log). Por tanto el plugin nuevo no quedó en fallback
+  compilado sin API. No es prueba de ABI binaria con runtimes viejos: reconstruir
+  runtime/plugin juntos; fallback macro solo es compatibilidad de fuente.
+- Límites Goldfish: clasificador puede cambiar antes de presentar; aún no prueba
+  píxeles finales ni suavidad. Dependencias native-wide preexistentes hacen
+  aritmética int para aspectos extremos; alcanzabilidad de configuración inválida
+  no demostrada. No se amplía alcance a hardening general ni se promete seguridad
+  integral para cualquier positivo. Triaje `gaso-bubble-aspect-verdict.json`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- No despliegue ni nueva partida; exp-8mb conserva SHAca4a31c6 y stable intacto
+  por alcance (sin escrituras). Próximo: **autorización para desplegar el candidato
+  en experimental y validar en juego grabado con audio exacto**, con recalibración
+  por exe nuevo, comparación BAG1/4:3/16:9 y revisión frame a frame antes de pedir
+  conformidad. Salida90 y commit siguen pendientes de permiso explícito.
+
+- Autorización2026-11-13: propietario respondió «continua» a la pregunta explícita
+  de desplegar este candidato solo en exp-8mb y validar grabado. Se interpreta
+  como permiso para ese despliegue/prueba, **no** commit ni aceptación visual.
+
+##### Validación grabada del aspecto dinámico (2026-11-13)
+
+- Despliegue autorizado completado: exp-8mb ejecuta752e21f0…; backup del exe
+  ca4a31c6 y5 archivos protegidos en `_work/gaso/deployment-backup-bubble-aspect`.
+  Primer intento se bloqueó por manifest distinto: build f76698be… omite la
+  feature CAUGHT; instalado586c8019… coincide exactamente con el canónico. Se
+  preservó instalado, sin copiar paquetes. Nuevo helper de `_work` requiere
+  hashes de exe/metrics, no sesiones activas, backup nuevo, copia temporal y
+  replace final; excepción de manifest exige igualdad canónica.3 pruebas sandbox
+  pasan (`aspect-deploy-helper-tests.log`). No se generaliza como tooling aceptado.
+- Fallo de ejecución: tras bloqueo, la consola siguió y calibró exe viejo
+  (`20261113T064802635528Z-gaso-bubble-aspect-calibration`). **No aceptada/reutilizada**.
+  Se añadió fail-fast a invocación. Calibración nueva correcta
+  `20261113T065139538691Z-gaso-bubble-aspect-calibration-new`, revisión visual de
+  2P/selector aceptada. El catálogo se reutilizó en4:3: mismo exe/controles y
+  menú nativo4:3 idéntico; no se reutilizó calibración del exe anterior.
+- Toma **ACEPTADA** `gaso-bubble-aspect-heat-bag1`:1705 latidos,1 perdido tarde,
+  1 parón68ms trasgf12012 (fuera de ambos ataques inspeccionados), audio0 pares
+  descartados/residual p9916,31ms/ventana6,72ms; manifiesto accepted=true.
+  Review SHA24efff99c7914d8fd239c80f126d2f2b0ff54173b6a33aaa0234b07a6609ec25.
+  No se presenta como captura sin parones ni como conformidad humana.
+- Revisión: spawn loggf7190/t2,813, descenso visible~2,862; corte1 loggf7329/
+  t5,129, desaparición visible~5,195; salida2 corte visible10,033. Hojas
+  onset/clear/release2-consecutive.jpg en `_work/gaso/aspect-review`, revisadas
+  fotograma a fotograma. Ambos cortes limpios; caída final slot90 se conserva.
+  La latencia visual es~3-4 fotogramas frente a etiquetas en esas fronteras:
+  ±2 era estimación no calibrada, no una garantía que estas tomas demuestren.
+- Comparación a edad de tanque~1,016s: BAG1 t31,0, liquid7c t3,9 y nuevo t3,83
+  (spawns7c2,884/nuevo2,813 según events.json, no resta wall-start de events.csv).
+  Burbujas visualmente más redondas y mismas proporciones altas del tanque;
+  bordes **aún más definidos que BAG1**, sin promesa de coincidencia exacta.
+  phone-proportions.jpg/phone-bubbles.jpg mostradas por read para el móvil.
+  Primera hoja recortó mal porque stills son1280×720, no1920×1080; corregida
+  con escala medida antes de concluir. Release2 se ordenó numéricamente al
+  cruzar9→10s (orden léxico era incorrecto); ampliado crop para seguir cámara.
+- Flujo completo16:9: salida de combate160,4s, retorno root13 en170,2s;
+  selector visible en170s (`end-flow.jpg`), Gas-O/Heat BAG1 A. No validación
+  separada de fever solo/duet; audio subjetivo pendiente de escucha humana.
+- Ensayo complementario4:3: wrapper `_work/gaso/run_recorded_native43.py`
+  añade override widescreen=false solo dentro de IsolatedFiles, exige backup y
+  settings4:3, restaura después. native43/native43b **RECHAZADAS** por audio:
+  2557 pares/ventana102,66ms/parón322ms;1129 pares/parones337+43ms. No más
+  reintentos ni modificación de gates. Causa concreta de pausas no identificada;
+  disco libre435,8GB. **4:3 sigue sin validación de captura aceptada**.
+- 5 archivos protegidos (settings,keybinds,input,game_options,state) coinciden
+  con sus hashes previos al despliegue; restablecimiento de tarjetas originales
+  verificado por harness en todas las sesiones (125/127/129 saves según run).
+  Stable no se tocó. Fuentes canónicas guard0, sin commit ni nueva aceptación.
+- Evidencia consolidada `_work/gaso/aspect-runtime-review.json`; vídeo exacto:
+  `_work/recordings/gaso-bubble-aspect-heat-bag1/owner.mp4`. Herramientas:
+  Ghidra MCP identidad/8002c404, grabador+FFmpeg look/frames+Pillow usados;
+  funcmatch no aplica (no matching MIPS), modelos locales omitidos en extracción
+  determinista pequeña. Goldfish de producción reutilizado (sin cambio en
+  runtime/plugin); auxiliares nuevos solo `_work` exentos por lista cerrada.
+- Próximo: conformidad del propietario **solo sobre este aspecto16:9** con
+  diferencia de borde declarada.4:3, slot90 y commit continúan pendientes; no
+  interpretar una respuesta sobre aspecto como autorización de commit.
+
+##### Líquido aditivo más traslúcido (2026-11-13, candidato solo host+build)
+
+- Petición del propietario tras ver phone-bubbles/proportions: líquido verde «un
+  poco más traslúcido», como BAG1. Simulación `_work/gaso/aspect-review/
+  phone-translucency-sim.jpg` mostrada y aprobada con «Okay continúa» (permiso
+  para cambio y pruebas host; **no** despliegue, partida ni commit).
+- Medición (`translucency-sim.json`): dispersión p90-p10 R por tercio BAG1
+  118/90/71 frente a BAG2 actual 55/59/48. ABR0 fija peso de fondo0,5; la PS1 no
+  ofrece valor entre0,5 y1,0. Invertido ABR0 sobre new-frame.png (error medio
+  0,384) y simulado tinte aditivo: 108/119/81, medianas por tercio conservadas.
+- Cambio `bag2jp_gaso_tank.h`: vidrio 0x3A bajo ABR1 con `GASO_GLASS_RGB`
+  0x051206 y el mismo sombreado lateral; orden GPU E1 aditivo, tinte, anillos,
+  destellos, metal, E1 0x600 (siempre, ya no condicionado a burbujas). Se aparta
+  a propósito del modo promedio nativo de BAG1 (comentado en el código).
+- Pruebas: harness exige ningún 0x3A en ABR0, tinte en límites literales, E1
+  completo 0x620/0x600 y degradado izquierda>derecha. RED10 fallos
+  (`liquid-additive-red.log`); GREEN49 tests (`liquid-additive-green2.log`).
+  Mutantes7/7 muertos (`liquid-additive-mutations.json`).
+- Goldfish: `_work/goldfish/spec-gaso-liquid-additive.md`, 2 revisores, **CON
+  HALLAZGOS** sin defectos bloqueantes; triados en
+  `_work/goldfish/gaso-liquid-additive-verdict.json` (pruebas de degradado/E1,
+  datos de evidencia, comentario x1.125). Solapes de burbujas y saturación del
+  destello quedan para la revisión grabada.
+- Build `gaso-liquid-additive` pasó en 34,7s, exe
+  7dfebd76338bdd3be14d2367ea48cba4550733d309fc6f4f323e16f61fbf5ac7. Header
+  staged con backup `_work/gaso/build-stage-liquid-backup`; build guard1.
+  exp-8mb sigue en752e21f0. **No desplegado.**
+- Autorización «Si, continúa» (2026-11-13) para desplegar 7dfebd76 en exp-8mb y
+  grabar. Desplegado con `deploy_verified_exe.py` (backup
+  `_work/gaso/deployment-backup-liquid-additive`, manifest canónico preservado).
+  Calibración `20261113T075551784541Z-gaso-liquid-additive-calibration` aceptada.
+- Tomas `gaso-liquid-additive{,-b}-heat-bag1` **RECHAZADAS** por audio (989 y
+  1169 pares); parones del juego de 301ms en gf7992 y 253ms en gf16026. El flujo
+  terminó (selector a los 170s) y la restauración se verificó; los 5 archivos
+  protegidos están intactos. Los fotogramas siguen continuos en el trace: la
+  emulación se congela en tiempo real. No es atribuible al cambio: hay parones
+  ≥200ms en ~7968-7998 y ~12006-12012 desde liquid4/5/7 y native43, con exes
+  distintos. Hipótesis sin probar: `b1m_filter` (`bag2jp_bag1_stage.c:204-222`)
+  lee el FLAC de BAG1 con fread/drflac_seek en el callback XA; un seek por
+  desajuste del cursor podría bloquear. Fotograma orientativo de la toma b
+  (`phone-liquid-additive.jpg`, t3,899): visualmente cerca de BAG1. **No es
+  validación.**
+- Diagnóstico del parón (owner «Okay continúa», opción 1): `b1m_filter` registra,
+  solo con `BAG2JP_TEST_B1M_TIMING=1`, los seeks y las lecturas FLAC ≥5ms con hora
+  UTC. Pruebas `test_bag1_stage_audio` 5/5; el arnés no definía
+  `b1s_is_gaso_bag1` (fallo previo en el árbol de trabajo): se añadió un stub y
+  el caso «stage 9 stock → sin sustitución». Mutantes 3/3. Goldfish
+  `spec-b1m-timing-diagnostic.md`: CON HALLAZGOS no bloqueantes; se añadió el
+  flag `open=` y la cobertura del stub. Pendiente separar en el commit los demás
+  cambios sin confirmar de stage.c. Build `b1m-timing-diagnostic-2`, exe 23015cb8
+  (incluye el líquido), desplegado con backup `deployment-backup-b1m-timing`.
+  Calibración `20261113T082744116114Z` aceptada.
+- Toma `gaso-b1m-timing-heat-bag1` **ACEPTADA**: 1706 latidos, 5 tardíos, 1
+  parón de 132ms en gf12012, 10 pares descartados (dentro del gate). **Pero el
+  diagnóstico no se activó**: `versus_session.py:144-147` filtra las variables
+  `BAG2JP_*` salvo una lista fija. Sin líneas de tiempos; la hipótesis FLAC
+  sigue sin probar.
+- Revisión de la toma aceptada (líquido aditivo): spawn gf7148/t2,828, tanque
+  visible ~2,905 (cae) y completo ~2,951. Corte 1 en log t5,146, visible 5,203,
+  limpio. Corte 2 tras restore t9,848, visible ~10,054, limpio. Selector a los
+  170s. Hojas `b1m-onset/clear/release2.jpg` y comparación
+  `phone-liquid-accepted.jpg` (t3,844, edad ~1,016s): el rival se ve con
+  contraste completo bajo un tinte verde, cerca de BAG1. Las burbujas mantienen
+  el borde más nítido que BAG1. Los 5 archivos protegidos están intactos.
+- Herramientas: Ghidra MCP ya verificado esta sesión (SLPM_862.19); no se
+  consultó de nuevo porque el cambio es solo el modo de mezcla del plugin, sin
+  código MIPS. funcmatch/modelos locales no aplican; Pillow/numpy para medir.
+- Próximo: conformidad del propietario sobre el líquido (16:9). Para el parón:
+  añadir `BAG2JP_TEST_B1M_TIMING` a la allowlist de `versus_session.py`
+  (tools/**, con Goldfish) y repetir la toma con la variable. 4:3, slot90 y
+  commit siguen pendientes.
+
+##### Deslizamiento del rival atrapado (2026-11-13, solo investigación)
+
+- Owner: Heat atrapado se desliza a la izquierda; debería quedarse quieto.
+- Evidencia de vídeo (toma aceptada `gaso-b1m-timing-heat-bag1`,
+  `_work/gaso/slide/slide-grid.jpg`, `after-grid.jpg`): el tanque con Heat se
+  acerca a Gas-O de forma continua desde 3,5s; a los 10,5s Heat cae junto a
+  Gas-O y a los 12s ya está de nuevo en su sitio. Spawn X 513 → 311 entre
+  capturas. Referencia BAG1 (`bag1/bag1-grid.jpg`, 29,5-34,5s): el rival
+  queda en una pose fija y no se mueve.
+- Descartado: el clip CAUGHT publicado no lleva traslación. Los 3 clips del
+  banco (`b1cc_data`, 2 fotogramas) tienen raíz constante
+  (`motion_codec.decode`).
+- Trace: Heat vuelve a bailar dentro del tanque (P2 anim 49 → 2 → 7), y Gas-O
+  sigue en anim 78. Ghidra: `FUN_8002ccc8` re-ancla la base `+0x14b8/+0x14c0` a
+  `root(+0x810) - traslación/2` en cada cambio de animación. Capstone: la
+  función 0x8002a090..0x8002b5bc (sin definir en Ghidra) recoloca a la pareja
+  en los estados 10/14. Ahí la base del otro bailarín se interpola
+  (`0x800436e4`, peso `+0x1546`) hacia la del atacante más `±0x154 ×
+  escala`, y su `+0x810` se copia relativo al atacante.
+- Hipótesis, sin prueba en tiempo de ejecución: la lógica de pareja/pasos de
+  BAG2 sigue moviendo al rival mientras está atrapado. Falta un registro por
+  fotograma de base, raíz, estado `+4` y anim de ambos bailarines durante la
+  captura; eso exige una partida autorizada.
+- Arreglo propuesto, no implementado: mientras el tanque retiene al rival,
+  fijar la base al valor del spawn y, opcionalmente, mantener la pose CAUGHT
+  como BAG1. Primero pruebas de host.
+
+###### Corrección del diagnóstico y candidato de anclaje (2026-11-13)
+
+- Autorización: «okay cotninua» y posteriores «Continua» para el diagnóstico
+  grabado y el arreglo propuesto. No autoriza commit ni implica conformidad.
+- **Corrige la explicación anterior:** el reloj nativo `800892EC` no es el
+  contador global `fNNNNNN` del watch/recorder. Al alinearlos correctamente,
+  Heat permanece en anim1 durante la captura, no vuelve a bailar. `actor+4`
+  es ID de personaje (Heat=0), **no estado de animación**. La hipótesis de
+  recolocación de pareja no quedó acreditada. Los clips tienen raíz constante,
+  pero no nula: Heat (20,1443,-17), según el decoder.
+- Diagnóstico `20261113T085539682518Z-gaso-slide-diag-heat-bag1`: la toma fue
+  **RECHAZADA** por jitter/audio; sus datos RAM son diagnósticos, no validación
+  audiovisual. Tabla corregida `_work/gaso/slide/heat-table-f.txt`: raíz X
+  513→99 entre f7593 y f8008. Cada reinicio de la pose de dos fotogramas
+  vuelve a iniciar la mezcla (peso 0x500) y desplaza la base aproximadamente
+  cuatro unidades. Ghidra MCP `FUN_8002ccc8` confirma el reanclaje desde raíz
+  mezclada menos traslación decodificada. La pose constante no evita ese bucle.
+- Harness: `versus_session.py --watch-extra ADDR:SIZE,...` permite columnas
+  diagnósticas, valida RAM/alineación/solapamientos y rechaza >32 watches antes
+  de crear el run. La allowlist incluye `BAG2JP_TEST_B1M_TIMING`. 54 pruebas
+  host y 8 mutantes válidos en `watch-extra-green2.log`/`mutations2.json`.
+  El primer intento de mutantes estaba contaminado por un error del test de
+  sys.argv: no cuenta. Goldfish anterior CON HALLAZGOS; duplicados/límite
+  temprano corregidos. Los cambios ajenos contra HEAD quedan fuera de alcance.
+  Tras la corrección, la falta de líneas de tiempos no demuestra por sí sola
+  que el diagnóstico siga inerte: también puede no haber seeks/lecturas lentas.
+- Candidato: `gaso_caught_hold` fija base X/Z mientras la anim1 pertenece a
+  nuestra publicación. Independiente de la vida del tanque, no modifica altura
+  ni slot90; libera el ancla al perder ownership/slot o reset/epoch. Guard0
+  canónico permanece intacto. RED 1/29 en `hold-red.log`; GREEN ampliado
+  56/56 en `hold-review-green.log`; siete mutantes históricos y otros tres
+  de los huecos del review detectados por assertions (`hold-review-mutations.json`).
+- Goldfish: primer revisor agotó cuota sin resultado (no cuenta); dos revisores
+  nuevos CON HALLAZGOS, sin defecto bloqueante confirmado. Se añadieron pruebas
+  para ambos lados, reemplazo con ownership válido, epoch con ancla activa y
+  republicación. Persistido en `_work/goldfish/gaso-caught-hold-verdict.json`.
+  **Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.**
+- Build `gaso-caught-hold`: exe
+  `5ab1082ed4cf79298dfa881b74e8e4ba65a4776efd629b2c8179402abe89412c`,
+  staged con backup `build-stage-hold-backup`, desplegado solo a exp-8mb;
+  backup `deployment-backup-gaso-caught-hold` conserva 23015cb8. Manifiesto
+  canónico preservado, paquetes sin cambios. Calibración revisada/aceptada
+  `20261113T091527203162Z-gaso-hold-calibration`.
+- Toma **ACEPTADA** `gaso-caught-hold-heat-bag1`, run
+  `20261113T091728443684Z`: 1706 latidos, 3 tardíos, p99 14ms, un parón de
+  42ms en f12006, cero pares de audio descartados. 419 fotogramas en anim1:
+  raíz X 513→503 inicialmente; después oscila 503/505, Z=97 constante.
+  **Elimina la deriva acumulativa, no toda oscilación.** No declarar inmovilidad
+  exacta ni aceptación definitiva. P1/P2 verificados por punteros en el watch.
+- Revisión propia: caída 2,898–2,982s; corte primero 5,249s; segunda caída
+  6,298–6,366s; caída final desde ~9,905s, tanque desaparece ~10,020s sin
+  residuos. Hojas `hold-frames-{7244,7383,7448,7664,7678}.jpg`, de un fotograma
+  por muestra; vista general `hold-contact.jpg`. Selector a 170s. Restauración
+  verificada de ajustes y 145 saves originales; cinco hashes protegidos iguales.
+- Vídeo corto: `_work/gaso/slide/gaso-hold-attacks.mp4` (1,5–12,5s del owner).
+  Completo: `_work/recordings/gaso-caught-hold-heat-bag1/owner.mp4`.
+  Latencia pantalla/log sin calibrar (±2 fotogramas solo estimación); juicio
+  subjetivo de audio pendiente de humano. No nueva prueba 4:3 ni fever.
+- Siguiente: eliminar la mezcla/reanclaje residual de la pose en el seam nativo
+  sin fijar huesos/raíz después del render; primero regresión host. Candidato
+  desplegado queda experimental. Conformidad del líquido, slot90 y commit
+  pendientes. No snapshot nuevo: no se cerró un hito de aceptación.
+- Herramientas: Ghidra MCP obligatorio usado y verificado en SLPM_862.19
+  ea5a1668; recorder/FFmpeg y harness local usados. funcmatch no aplica (no se
+  buscan equivalentes BAG1); modelos locales no aportan al razonamiento de
+  orden/blending y no se cargan durante la prueba GPU. bag2_run/report/shots no
+  se repiten: wrapper seguro existente y frames del recorder cubren este seam.
+
+###### Pose con clamp nativo: sin oscilación periódica (2026-11-13)
+
+- Autorizado por «Okay continúa». Metadata+5=1 conserva el último fotograma;
+  +5=0 envuelve y causa reanclaje periódico. MCP confirmó SLPM_862.19 ea5a1668
+  y32 bytes en8002d06c; decompile directo FUNCTION_NOT_FOUND. Se reutilizó el
+  headless existente, contrastado con bytes/SHA143b4bf8, sin modificar Ghidra.
+- Ensayo `_work/gaso/slide/run_clamped_controller.py`, WSL, trials
+  `clamp-native-1`/`clamp-native-rehit`: MIPS original con intérprete real,
+  callees raíz/render observados, NO ejecutados.200ticks: original101
+  reanclajes/peso1280; clamp1 reanclaje inicial/peso4096/frame1. Re-hit añade1
+  reanclaje explícito; otros200ticks sin bucle. Pedido de salida90 funciona.
+- Generador mantiene extracción/hashes originales; modifica una copia solo en
+  metadata+5 (tres bytes en banco; mismas poses/tamaños/offsets/eventos). Binding
+  exige1 y rechaza banco looping, sin ampliar autorización de escritura/retiro.
+  Fixtures actualizados. Se retiraron únicamente pin/estado/caller/constantes
+  privados añadidos por esta tarea; candidato anterior respaldado. Dos tests
+  ahora exigen que el visual no sobrescriba coordenadas, incluso ante reemplazo,
+  ambos lados, epoch y republicación. No se borró trabajo previo ajeno.
+- RED banco3fallos/perfil (`clamp-red.log`), RED no-pin2fallos
+  (`clamp-no-pin-red.log`); GREEN **122 tests dirigidos**, no suite global,
+  `clamp-host-green.log` (bank/binding/owned/adapter/loan/runtime/tank/bubble/
+  aspect/audio/codec). Generador `--check` pasa.
+- Goldfish2 revisores CON HALLAZGOS sin bloqueante confirmado. Faltaba re-hit y
+  render real: se añadieron al ensayo/toma; re-hit resultó un límite real.
+  `_work/goldfish/gaso-clamp-last-verdict.json`.
+  **Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.**
+- Build `gaso-clamp-last` pasa32,34s, exe
+  `e165817cf49e83a246b8157cba299e2382307f206ea39057175e19933b350c49`.
+  Warning de flag `-Wa,-mbig-obj` no usado, no atribuido al arreglo. Staging
+  binding/banco/tank en `build-stage-clamp-backup`. Deploy exe-only exp-8mb,
+  manifiesto preservado, backup5ab1082e `deployment-backup-gaso-clamp-last`.
+  Calibración `20261113T094443009320Z-gaso-clamp-calibration` revisada/aceptada.
+- Toma **ACEPTADA** `gaso-clamp-last-heat-bag1`, run
+  `20261113T094636858580Z`:1706latidos/1tardío/p99 13,4ms/0parones/0pares audio
+  descartados.420filas anim1 f7233..7652. Tras mezcla inicial, f7255..7436 raíz
+  exactamente(511,100), base(505,106), peso4096/frame1; después del segundo golpe,
+  f7459..7652 raíz(507,103), base(501,109), peso4096/frame1. **Sin oscilación ni
+  deriva entre golpes; re-hit recoloca(-4,+3).** Rangos con transiciones:
+  X505..513/Z97..103. Inmovilidad exacta de toda la secuencia NO aceptada.
+- El primer helper lanzó assertion al exigir peso4096 durante la nueva entrada
+  del re-hit: no fue rechazo del grabador. Se separaron episodios y se muestran
+  rangos completos/estables en `gaso-clamp-last-heat-bag1-summary.json`, sin
+  ocultar el cambio entre golpes ni modificar gates.
+- Revisión de17frames por hoja: caída~2,820..2,888s, corte~5,152s, segunda caída
+  ~6,227..6,288s; salida90~9,840s, tanque fuera~10,006s. Hojas
+  `clamp-frames-{7232,7372,7436,7653,7668}.jpg`/`clamp-contact.jpg`. Selector170s;
+  ajustes/149saves restaurados,5hashes protegidos iguales, staged3archivos igual
+  al canónico. Guard0 sigue intacto. Audio subjetivo/4:3/fever sin nueva aceptación;
+  latencia ±2frames solo estimación. Vídeo `_work/gaso/slide/gaso-clamp-attacks.mp4`
+  (1,5..12,5s); completo `_work/recordings/gaso-clamp-last-heat-bag1/owner.mp4`.
+- Siguiente: investigar reentrada explícita sobre CAUGHT ya activo sin tocar
+  timers. Caller8002a090 renueva duración en controlador+44 antes del entry;
+  modo1 reinicia pose/reanclaje aunque sea el mismo clip. Evaluar preservación
+  solo tras VERIFY de publicación viva, con regresión de duración/velocidad/
+  salida90; **no cambiar de modo sin esa prueba**. Investigación interna
+  autorizada; no commit, aceptación definitiva ni snapshot nuevo.
+
+###### Reentrada compatible: candidato host, sin aceptación (2026-11-13)
+
+- Objetivo: evitar el reanclaje del segundo golpe sin tocar timers. Ghidra
+  (SLPM_862.19 ea5a1668): el modo1 de8002d06c fija frame0, reinicia mezcla,
+  copia param5 en +1c/+20, limpia +0a/+0b, copia el frame en +24 y llama a
+  entry8003190c solo si byte+0d==0; el modo0 avanza sin reanclar. El caller
+  8002a090 renueva +44 y pasa -0x8000000.
+- Cambio acotado en `gaso_caught_can_continue`: solo tras VERIFY de una
+  publicación viva, misma identidad/clip, slot1 actual y anterior, frame1,
+  mezcla4096, cap a3=4096, velocidad fija idéntica en stack/controlador,
+  rate=-speed, tick=-1, +0a=+0b=0 y +24=0 (lo que modo1 escribe). Entonces a1 1→0; a2 sigue
+  redirigiendo a slot1. Entrada inicial, ambos lados y todo rechazo conservan
+  modo1. Span del controlador 0x24→0x28. Guard0 canónico intacto; no hay
+  escrituras a actor, controlador ni pending+18.
+- Diferencia conocida, no ocultada: modo0 no reinicia +10 (acumulador
+  sub-frame), ni +20 (contador que desciende en cada llamada), ni ejecuta
+  los callbacks de entrada 8003190c (incluido el cue nativo de Gas-O 0x782).
+  El
+  ensayo MIPS original (`probe_continue_controller.c`) demuestra 10 avances
+  compatibles: sin reanclaje extra, frame1/mezcla4096, rate y velocidad
+  intactos, +20 descontando, +44 conservado y salida90 explícita; los callees
+  de render/raíz solo se observan, no se ejecutan.
+- Evidencia host: **125 tests dirigidos** verdes (`rehit-host-green5.log`);
+  13/13 mutantes muertos por aserción (`rehit-mutations.json`), incluidos los
+  tres guardas nuevos. Escenario17 aísla identidad, lookup BAG1 y VERIFY;
+  escenario18 repite el avance en el lado espejo. Los 2 revisores Goldfish
+  previos dieron hallazgos P2 (callbacks/timers y cobertura) ya atendidos aquí;
+  revisión delta en curso.
+- Build `gaso-rehit-preserve` (exe `c330ef1b…`, 31,4s) se hizo **antes** de los
+  tres guardas nuevos: quedó obsoleto y no se desplegó. exp-8mb sigue con
+  `e165817c` (sin candidato). Antes de cualquier toma hay que reconstruir.
+- Revisión Goldfish delta (2026-11-13): el revisor detectó que modo1
+  escribe +24=0, no 1; la guarda se corrigió a +24=0 (GASO_CAUGHT_ENTRY_FRAME_COPY).
+  También exigió declarar +10 y el cue 0x782, ya incorporados arriba.
+  El span 0x28 no introduce lectura insegura. Escenario17 aísla identidad,
+  lookup BAG1 y el contrato de RAM; su mutante compuesto (ignore_reuse_contract)
+  mata la prueba. 14/14 mutantes muertos.
+- Límite: el escritor de 0x810 no está identificado: en el main exe solo hay
+  dos stores (bloque de char 0x0a en8002b320 y spawn en8002d934), ninguno
+  aplicable, y tampoco aparece en el overlay de Heat ni en el payload. La toma
+  mostró -2 en X al entrar y -2 durante la mezcla, con ancla -4/+3. Modo0 evita
+  el reanclaje, pero un salto residual de 2 unidades solo se mide en juego.
+- Siguiente: desplegar solo con autorización del propietario y grabar el
+  segundo golpe con watch de controlador +0a/+0b/+20/+24 y de 0x810/0x14b8;
+  sin esa grabación no hay conformidad ni commit.
+
+###### Reentrada modo0 en juego: sin salto, pero cambia el audio (2026-11-13)
+
+- Autorizado por «continúa» tras pedir build/despliegue/toma. Build
+  `gaso-rehit-mode0` 35,9s, exe `18590587d44e20eee729d9bd8b15ed54eda8ec6bd9d65d7320ce79cb8035e85f`
+  (staging: solo override CLIP_PUBLISHED=1; deriva previa de `bag1_versions.c`
+  ya existía en el build del clamp y no se tocó). Deploy exe-only en exp-8mb;
+  backup `e165817c` en `_work/gaso/deployment-backup-gaso-rehit-mode0/`.
+- `settings.toml` de exp-8mb apuntaba a tarjetas de `gaso-fix5` (escrito 1s
+  tras cerrar el juego de la toma del clamp, después de la restauración
+  verificada). Se restauró el baseline `2ac29271…` de esa toma; copia del
+  estado anterior `settings.toml.stale-b41a5fc8`. Tras las tres corridas sigue
+  `2ac29271…`; 149 saves verificados.
+- Calibración `20261113T130247604851Z-gaso-rehit-calibration`: 9 capturas de
+  aristas revisadas (`rehit-calibration-sheet.jpg`) y aceptada.
+- Corrida 1 sin `BAG2JP_TEST_GASO_ATTACK=1`: no hubo ataque; grabación
+  RECHAZADA (el juego cerró antes del STOP). Corrida r2 con fixture: RAM válida
+  pero grabación RECHAZADA (orden Z durante menús). r3: grabador iniciado 15s
+  tras `stage-selected.png` y STOP al capturar `returned-selector.png`
+  (`_work/gaso/slide/stop_on_selector.ps1`): **ACEPTADA**, 1595 latidos,
+  0 parones, 0 pares de audio descartados, p99 12,4ms.
+- RAM r2 y r3 idénticas (`rehit-watch-r3.txt`): primer golpe f7226 (modo1
+  nativo, mezcla 1280→4096); re-hit f7430: +44 13→216 y +20 sigue
+  descontando (f7ffff36→f7ffff34) = **modo0 activo**. f7248..7644: raíz
+  (511,100), base (505,106), mezcla 4096, frame1, +08 word 0x100 (+0a/+0b=0),
+  +24=0, rate/speed/tick intactos. Salida90 natural f7645 al agotarse +44.
+- Vídeo: re-hit 12,04..12,30s sin cambio de pose/posición mientras cae el
+  tanque (`r3-heat-7430.jpg`); salida 15,62..15,89s normal (`r3-heat-7645.jpg`).
+  Canción terminada (144,7s) y vuelta al selector observadas.
+- **Hallazgo de audio** (`compare_rehit_audio.py`, `rehit-audio-*.txt/json`):
+  dumps alineados por frame contra la toma del clamp (re-hit en modo1). Primer
+  golpe (modo1 en ambas): diferencia <= -32 dB en toda la ventana. Re-hit: igual
+  hasta +36 frames, luego contenido distinto de +42 a ~+130 frames (0,7-2,2s),
+  sin desfase temporal (lag 0) y con modo1 hasta ~18 dB más fuerte: **modo0
+  omite un sonido nativo del re-hit**, coherente con los callbacks 8003190c
+  omitidos. Identidad exacta del sonido sin verificar; juicio subjetivo pendiente
+  del propietario: `_work/gaso/slide/rehit-ab-native-vs-mode0.mp4` (4s modo1,
+  luego 4s modo0). Corte de ataques `gaso-rehit-mode0-attacks.mp4`; completo
+  `_work/recordings/gaso-rehit-mode0-heat-bag1-r3/owner.mp4`.
+- Nuevo en r3: dos `request 202 s2=1 -> s4=1 rejected: reflected` (f8966,
+  f13170), rechazo por diseño de la captura; esa lógica no cambió.
+- Límites: ±2 frames estimado; no se midió 4:3; escritor de 0x810 sigue sin
+  identificar (en r3 no se movió). Sin commit ni conformidad.
+- Siguiente: decisión del propietario entre (a) aceptar modo0 sin ese sonido,
+  (b) volver a modo1 y aceptar el salto, o (c) investigar qué sonido emite
+  8003190c en la reentrada para conservarlo sin reanclaje.
+
+## Plan A-E aprobado y nombre HUD candidato (2026-11-13)
+
+El propietario aprobó A sonido, B nombre del marcador, C ventilador, D cámaras,
+E eventos por puntaje. Precisó D dos veces: **importar el movimiento de cámaras
+del escenario de Gas-O de BAG1 únicamente, manteniendo la distancia de BAG2**;
+no basta suavizar la intro actual y no se cambian los demás escenarios.
+La investigación sigue sin otra autorización; despliegue/partida grabada y commit
+mantienen sus permisos separados. No sigue abierto el antiguo gate de elegir A/B/C
+del sonido: se aprobó investigarlo y corregirlo.
+
+- **A, WIP previo, no cerrado:** se añadió cola/reproducción de cues rebased
+  6906/690a. Host54 y build872e6753 pasaron; no desplegado ni Goldfish del audio.
+  El reemplazo del pulso nativo por cambio de beat y su temporización aún requieren
+  contraste: no se declaran fidelidad ni sonido correcto. Sigue el resampling de
+  muestras documentado en la auditoría del audio. Re-hit sin resolver.
+- **Corrección de lectura:** 8003190c es un dispatcher de eventos del actor,
+  no el reproductor de sonido. En 8002d06c los códigos 779/782 se envían solo
+  si el actor receptor es char9. Heat (char0) recibe1/4/12d/3e9 en esa entrada.
+  Por tanto, las menciones anteriores a «cue782 perdido en Heat» no prueban la
+  identidad del sonido que falta. No reproducir782 como si fuera un cue de audio.
+- **B, causa comprobada:** el primer intento draw_gaso_label solo pasó
+  py_compile; al ejecutarlo falló NameError(parse). También infería el recuadro
+  desde todos los píxeles blancos y escribía en ambas texturas: no era seguro.
+  Sustituido por transferencia 4bpp compartida, sin fuente inventada/PIL/numpy en
+  producción. El arte nativo sí existe en member5: USA100x17, JP116x17,
+  idéntico entre ambos trajes/lados dentro de cada región.
+- HUD nativo: overlay005 SHA bc5f3045084e4b3e19009910441627977863c8b5791b5cdb716a766e68b28fb2,
+  payload base8008f890 tras quitar12bytes. FUN80093de0 consume descriptor de
+  6bytes: u/v/width/height y u16 índice de textura. Para char9 ambos trajes,
+  8009e6d6/8009e742 = `20 70 2d 07 01 00`: recuadro[32,112,77,119), body2.
+  Perfil gaso.json guarda los rectángulos; body1 no se modifica. Se reduce el
+  arte regional por vecino más cercano centrado y se remapean sus índices a la
+  fila gris stock preservando cero transparente/negro no cero.
+- Pruebas: RED de funciones ausentes; GREEN12 en0,217s
+  (`_work/gaso/hud/label-final-green.log`), 8 combinaciones USA/JP×A/B×P1/P2,
+  formatos/truncamientos/nibbles/transparencia y píxeles exteriores intactos.
+  Cinco mutantes terminan por aserción (`label-mutations.json`), no por error de
+  importación. Builder real:18 contenedores, solo cambia member3(P1)/2(P2) de
+  los packs, resto byte-idéntico frente al mismo builder sin la copia del nombre.
+  Rebuild tras corregir formatos produce los mismos18 bytes de candidatos:
+  `_work/gaso/hud/final-build/report.json`; hashes finales de fuentes/tests en
+  `final-source-hashes.json`. Preview `label-preview.png`: stock/USA/JP.
+- **Goldfish B:** 2 revisores, CON HALLAZGOS. Longitud declarada del bloque
+  podía superar el archivo aunque el slice tuviera suficientes píxeles:
+  confirmado, regresión RED2 fallos y corregido (12tests finales verdes).
+  Segundo hallazgo, no verificable aquí: HUD selecciona CLUT compartida, no la
+  CLUT corporal. La correspondencia RGB/orden de esa CLUT con la referencia
+  usada por el remapeo queda pendiente; el preview NO la demuestra. No cerrar
+  colores ni legibilidad hasta comprobar la CLUT efectiva/partida grabada.
+  Registro `_work/goldfish/gaso-hud-label-verdict.json`; hash final del copiador
+  db5a7a02f89f48703aff4888f5df27758451ed1d93fd0d3f551f8d6908d06a7d.
+  **Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.**
+- Herramientas: MCP main confirmado y consumidor overlay complementado en
+  headless, trial HUD en ghidra-psx-psyq.md; decodificación MIPS Capstone y
+  omisión motivada TIMedit en sus logs. No nuevo juego/video ni copia a paquetes
+  instalados. exp sigue18590587; candidato de audio build872e6753 separado.
+- **Siguiente unidad C:** revisar el parche801E2448 y update801E22C8 del
+  perfil de escenario gaso.json contra BAG1 nativo antes de ajustar velocidad.
+  D/E siguen pendientes; A/B quedan candidatos sin aceptación. No commit/snapshot.
+
+## C: ventilador, divisor y lectura del nivel corregidos offline (2026-11-13)
+
+- Objetivo/check: recuperar el cálculo original del giro y su dependencia del
+  nivel de puntaje, sin tocar cámaras/geometría/otros eventos. Se conserva todo
+  como candidato offline; no hay permiso implícito de despliegue/partida/commit.
+- BAG1 USA ST_GAS member0 SHA
+  0d3a49731d5d44f62e108ce925aa37fafc044896a3e7ce5ab80f1efdc430a320:
+  update801E22C8 multiplica speed801E5562 por delta800774E8 y divide entre16
+  (SRA v1,v1,4 en801E2448, word00031903), con redondeo signed hacia cero,
+  acumulación u16 en801E5560 y propagación de la matriz a nodos12..15.
+  Los topes son80 para nivel1 y200 para nivel2; la rampa incrementa por update.
+  JP STAGE/ST_GAS member0 SHA
+  fdb6129c1aeba87c94116c6c27c1f2c94cfd6e55bed989b3604e8f5930222356
+  usa SRA a0,v1,4 en offset de archivoCB8. No se le asignó la VA de USA.
+- El perfil portado alteraba la división a2 (00031843), conservando el mapeo
+  de delta a8006D994: en velocidades asentadas el avance de la fórmula es8x.
+  **No es una medición de RPM ni de cadencia efectiva.** Se sustituye ese
+  override por guard/no-op00031903→00031903 para rechazar drift de entrada.
+- RED inicial: dos fallos de4tests (`_work/gaso/hud/fan-red.log`); primer
+  candidato d5a9f702 conservaba solo la división nativa,20tests verdes,
+  dos bytes distintos. **Ese candidato queda incompleto, no usar para deploy.**
+- Goldfish2 revisores, CON HALLAZGOS: reveló un fallo previo que los tests
+  de constantes no cubrían. Al entrar por nivel1, el LUI801E23E0 quedaba8007;
+  el LB común, ya reubicado a offset0108, leía80070108 en vez del shim801E0108.
+  Ruta tomada tenía otro LUI correcto en el delay slot801E23C0. Confirmado en
+  decompile/MIPS generado; no es un efecto del divisor ni una hipótesis visual.
+- Corrección acotada en el perfil: patch guardado801E23E0,
+  3C028007→3C02801E. Excepción concreta de reubicación en este perfil, sin
+  cambiar el motor compartido para todos los personajes. Si se corrige el
+  tracking de flujo general, este guard obliga a revisar/eliminar el adaptador.
+  No se afirmó que se hubiera auditado toda la reubicación del escenario.
+- Nuevo RED para las dos rutas: un fallo (`level-path-red.log`); GREEN final
+  **21tests** de stage_port/stage_geometry/gaso_stage_fan, sin cambio de criterios
+  de aceptación. Guard de divisor y de LUI probado con fuente alterada.
+  `test_gaso_stage_fan.py` ejecuta el generador real, no otro motor de giro.
+- Prueba independiente con intérprete PSXRecomp instalado:
+  `wsl.exe -d Ubuntu --exec python3 /mnt/d/Dev/Recomp/BAG2JP/_work/gaso/stage-fan/run_interpreter_probe.py`.
+  Ejecuta instrucciones originales y portadas del tramo de update, sin render
+  ni llamadas externas:144casos por variante (niveles0/1/2,8 velocidades,
+  deltas-1..4 y wrap u16). RAM80070108 envenenada con2 para exponer el fallo.
+  Nativo coincide con fórmula/topes; port anterior NO; candidato final coincide.
+  3,122s compilación/ejecución, hashes/código en `stage-fan/interpreter/report.json`.
+  No demuestra FPS reales ni ejecución completa del escenario.
+- Candidato final `stage-fan/candidate-v2/stage197.dfs` SHA
+  00d613392023b33655dfce425cfda0f6a7cbd536e17a74bbadd6776a7f7d02e6,
+  514396bytes. Contra el generador previo a C (baseline0a994860) solo cambian
+  **3bytes en2 instrucciones del member0**. Los otros12miembros y demás bytes
+  del DBI son idénticos: conserva cartel GAS/cámaras/geometría/audio.
+  No se repaquetó payload ni se tocó manifiesto o instalación; exp sigue18590587.
+- Goldfish registro `_work/goldfish/gaso-stage-fan-verdict.json`. La objeción
+  de comparar solo un slice se contrasta además con el contenedor entero y el
+  intérprete; la cadencia/RPM queda no verificable sin prueba real.
+  **Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.**
+- Herramientas: Ghidra MCP main JP + headless de ambos updates, Capstone y
+  producción-interpreter; logs por herramienta. Unicorn no está instalado en
+  Python Windows (ModuleNotFoundError); no se instaló, se reutilizó el intérprete
+  disponible. No se ejecutó funcmatch: aquí se compara overlay, no equivalentes
+  de funciones main BAG1→BAG2. Tiempo/manual/ahorro global desconocidos.
+- Siguiente **D**: inventariar movimiento de cámaras específico de Gas-O BAG1
+  (intro y baile, dónde están sus tablas/control) y definir la adaptación que
+  conserve la distancia BAG2, no copiar acercamientos nativos ni tocar otros
+  escenarios. El punto E debe incluir la lectura correcta del shim por todas
+  las rutas: el hallazgo C no certifica el resto de eventos. A/B siguen WIP.
+
+## D: cámara del escenario Gas-O BAG1 con distancia BAG2 (2026-11-13, candidato offline)
+
+- Objetivo/check: importar el movimiento de cámara de Gas-O BAG1 (intro member6,
+  150 claves) en stock track 0, escalando posiciones (no ángulos) a distancia
+  BAG2. No se cambian los demás escenarios. Se conserva como candidato offline;
+  no hay permiso implícito de despliegue/partida/commit.
+- Inventario (inventario-v2.json):
+  - GASO USA member6: 1 track, 150 claves, radio 8479→4864 (BAG1, más cercano).
+  - GASO JP member6: idéntico a USA (mismo SHA 99b04764…).
+  - Common banks G_COMM_E/G_COMMON: 21 tracks cada uno (baile compartido).
+  - Stock 012.bin: track 0 intro (165 claves, radio 16429→3869, BAG2 distance);
+    tracks 1-27 baile (radio ~1000-3500, BAG2 distance).
+- build_stage_package.py: tras construir/remuestrear la cámara (cam_speed=2.1,
+  150→165 claves), escala componentes X/Y/Z de cada clave por camera_scale.
+  Ángulos (índices 3-5) sin cambios. camera_scale=1.0 = sin escalado (identidad).
+- gaso.json: `"camera_scale": 1.94` (16429/8479 ≈ 1.94, iguala distancia de inicio
+  del intro BAG2). Sólo afecta a gaso; ningún otro stage profile usa != 1.0.
+- Prueba `test_gaso_camera_positions_scaled_to_bag2_distance` en
+  tools/test/test_stage_port.py: remuestrea la nativa igual que el constructor,
+  compara posiciones escaladas (3 componentes) y ángulos idénticos. 22 tests
+  verdes (stage_port + stage_geometry + gaso_stage_fan).
+- Sólo cambian los bytes de position del intro camera track; el resto del DBI
+  (baile, geometría, texturas, audio, modelo) es byte-idéntico al build previo a D.
+- No se repaquetó payload ni se tocó manifiesto o instalación; exp sigue 18590587.
+- Cadencia/visual no verificables sin prueba real en juego. Necesita permiso del
+  owner para deploy y grabación.
+- Goldfish spec: _work/goldfish/spec-gaso-stage-camera.md. Revisión en frío
+  pendiente (no es aprobación ni permiso de despliegue).
+- Siguiente **E**: verificar eventos de puntaje en stage 9 (B1ST shim 0x801E0100)
+  con grabación aceptada; auditar rutas de lectura del shim. A/B/C siguen WIP.
+
+## E: eventos de puntaje en stage 9 / B1ST shim (2026-11-13, candidato offline)
+
+- Objetivo/check: verificar que el shim B1ST en 0x801E0100 se ejecute correctamente
+  en stage 9 (Gas-O BAG1), escribiendo beat flags, score level, previous level, y
+  reseteando el ventilador del escenario en nuevo partido. No se cambian los demás
+  escenarios. Se conserva como candidato offline; no hay permiso implícito de
+  despliegue/partida/commit.
+- bag2jp_bag1_stage.c: b1s_vblank acepta stage_id == 9 (línea 55) junto con 0 y 1.
+  Stage 9 requiere adicionalmente b1s_is_gaso_bag1() (entrada 197 -> ALT) y magic
+  B1ST presente en 0x801E0100 (prueba de residencia).
+- En nuevo partido: score level (shim+8) y previous level (shim+9) se resetean a 0;
+  stage fan angle/speed (0x801DECC0/0x801DECC2) se resetean a 0 (solo stage 9).
+- En cambio de beat: beat flags bit 0 y bit 4 escritos en shim+4; score level
+  calculado desde best score vs umbrales de dance de BAG2.
+- Stage 9 sin Gas-O BAG1 seleccionado: vblank no hace nada (flags/level se quedan en 0).
+- port_bag1_stage.py: escribe magic 'B1ST' en SHIM - B2_BASE (offset 0x51F0 en DBI).
+- gaso.json globals: 0x80068704 (beat flags, 4B) -> 0x801E0104; 0x80068714 (score
+  level, 1B) -> 0x801E0108; 0x800979D0 (previous level, 1B) -> 0x801E0109.
+- Pruebas: test_bag1_stage_shim.py cubre stage 9 (con Gas-O BAG1 y sin él);
+  test_stage_port.py verifica magic B1ST en el build de gaso. 23 tests verdes
+  (stage_port + stage_geometry + gaso_stage_fan + bag1_stage_shim).
+- No se repaquetó payload ni se tocó manifiesto o instalación; exp sigue 18590587.
+- No hay aceptación en juego: requiere permiso del owner para deploy y grabación.
+- Goldfish spec: _work/goldfish/spec-gaso-stage-score-events.md. Revisión en frío
+  pendiente (no es aprobación ni permiso de despliegue).
+- Siguiente **F**: recorded take con permiso explícito del owner (BAG2JP_TEST_GASO_ATTACK='1'
+  + stop_on_selector.ps1). A/B/C/D/E siguen como candidatos offline sin aceptar.
+
+## Reanudación 2026-11-13 (tarde): deriva de fuentes y estado real de exp
+
+- Preflight `gaso-resume-20261113`: deriva mods-src vs `BAG2JP-codex-build/BAG2JP/src`
+  en 3 archivos. Diffs en `_work/workflow/drift-20261113/`.
+  - `bag2jp_gaso_caught.c`: build=1, mods-src=0 en `GASO_CAUGHT_CLIP_PUBLISHED`.
+    Intencional y ya registrado (`retire_evidence.source_clip_published=false`,
+    `experimental_clip_published=true`). No se toca.
+  - `bag2jp_bag1_versions.c`: mods-src añade guardas `!b1v_active || b1v_force_stock`
+    en `bag2jp_bag1_get_version` (registrado en `completed_this_session`). Aún no
+    está en el build; entra en el próximo candidato combinado.
+  - `bag2jp_bag1_alt_index.h`: **inconsistente**. mods-src (SHA 5EE8FE4F, tag
+    `0x9418D707`, 10:48) colapsa `jp_off/jp_size` a `alt_off/alt_size` y reubica
+    offsets; no coincide con ninguna salida de payload en `_work`. El build usa
+    C3EBF689 (tag `0x376287AB`) = `_work/gaso/sign-subdivision-v2-candidate/payload-out`,
+    que coincide con el DUMMY desplegado. No se propaga el de mods-src: compilarlo
+    contra el DUMMY actual leería offsets erróneos y perdería las variantes JP.
+    Pendiente: identificar su origen o restaurarlo desde el payload-out (decisión
+    del owner antes de sobrescribir).
+- **Estado real de exp-8mb distinto del anotado arriba**: el exe instalado es
+  `872e6753...` (build `gaso-tank-sound` 08:57, compilado con CLIP_PUBLISHED=1),
+  no `18590587`. Pasos `gaso-deploy-f` (10:43-10:44) y la grabación
+  `_work/recordings/gaso-attack-take` (exe 872e6753, `accepted: true`, 0 eventos,
+  gf 5862-13050) existen sin registro en esta nota ni permiso F localizado en
+  `current-state.json`. Hubo otra partida hasta 11:45 (logs de exp). Sin revisar
+  aún; no cuenta como aceptación.
+
+
+- Goldfish D (cámara a distancia BAG2), 2026-11-13, 2 revisores fríos sobre
+  `_work/goldfish/spec-gaso-stage-camera.md`: **CON HALLAZGOS**.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+  - Confirmado y corregido: las llaves son s16 ojo xyz + objetivo xyz (no ángulos);
+    el código escalaba el ojo respecto al origen (radio k0 24438 en vez de ~16430).
+    `build_stage_package.py` (38D63F21C47D) ahora escala la distancia ojo-objetivo,
+    conserva el objetivo, valida llaves de 12 bytes y desborde s16; `new_track_len`
+    fuera del bucle. Prueba reescrita sin reimplementar la fórmula
+    (`test_stage_port.py` BB6857E91DC2): radio k0 = stock (±1 %), objetivo nativo,
+    ratio 1.94 y dirección en k0/klast, pistas de baile stock idénticas, Heat/Strike
+    sin `camera_scale`. Verde 23/23; roja con la fórmula antigua (ratio 1.487).
+  - Pendiente del owner: `camera_speed=2.1` agota las 150 llaves nativas hacia el
+    fotograma 71 de 165; el resto de la intro (~57 %) queda fija en la última llave.
+  - Sin verificar offline: encuadre/FOV, recorte cercano/lejano, transición a pista 1.
+    Falta la evidencia `_work/gaso/stage-camera/shared-green.log` citada en la spec.
+  - Alcance: el diff de `gaso.json` (F0A47B2272AB) incluye también parches del
+    ventilador (C) y `strike.json` cambios fuera de D.
+- Goldfish E (eventos de puntaje), 2026-11-13, 2 revisores fríos sobre
+  `_work/goldfish/spec-gaso-stage-score-events.md`: **CON HALLAZGOS** (sin bugs).
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+  - Corregido: `b1s_is_gaso_bag1` aceptaba cualquier offset ≠ stock/0; ahora usa
+    `bag2jp_bag1_entry_is_alt(197)` (nuevo en `bag2jp_bag1_versions.c` 6267D0BB3673),
+    que compara con `alt_off`/`jp_off` exactos del índice. Comentario de cabecera de
+    `bag2jp_bag1_stage.c` (5F19F0EDA312) actualizado a stage 9.
+  - Pruebas no vacías (`test_bag1_stage_shim.py` 8BEE2721B4CA, usa la búsqueda e índice
+    reales): ventilador precargado ≠0 y puesto a 0 en stage 9; stages 0/1/2 no tocan el
+    ventilador; bit 0x40 fin de canción; reinicio tras salir de root 0x13; stage 9 con
+    offset stock, otro offset, 0 o sin 'B1ST' deja centinelas intactos. Roja con la
+    detección antigua y sin el reinicio del ventilador. `gcc -fsyntax-only -Wall` limpio.
+  - Riesgos para la toma F: un fotograma con root ≠ 0x13 a mitad de partida reinicia
+    nivel y ventilador; los hooks de cámara (`b1s_*` camera) ahora también actúan en
+    stage 9; las globales beat flags/prev level no las lee el código nativo de Gas-O
+    (inofensivas). Orden setup/vblank/primer beat y revancha: solo en juego.
+  - El índice `bag2jp_bag1_alt_index.h` de mods-src sigue inconsistente (ver arriba): la
+    detección exacta depende de que el índice compilado corresponda al DUMMY desplegado.
+
+### Origen de `alt_index.h` 0x9418D707 y uso del exe 872e6753 (2026-11-13)
+
+- Autor: sesión OpenCode `ses_e326378fbffeMXgcnTfyc4Dfkb` ("Ejecutar P0 CAUGHT runtime
+  con Ghidra"), tras la autorización del propietario a las 10:43:04 ("si autorizo,
+  continua") de desplegar en exp-8mb y grabar F. Evidencia: copia de solo lectura de la
+  base de OpenCode y `_work/workflow/drift-20261113/ses_e326378f-cmds-*.txt`.
+- 10:44 build `gaso-deploy-f` -> exe 872e6753 (árbol de build en ese momento:
+  `CLIP_PUBLISHED=1`, cue de tanque A WIP 0x6906/0x690a, guardas existentes); copiado a
+  exp-8mb sin copia de seguridad del exe anterior (18590587).
+- 10:45 `build_stage_package.py --profile gaso` ->
+  `_work/gaso/stage-fan/candidate-v2-with-camera/stage197.dfs` e7a47c4c (ventilador C +
+  cámara D con la fórmula antigua, escalada respecto al origen: el error que luego
+  encontró Goldfish).
+- 10:48 un script `py -3.13 -c` reconstruyó el payload de forma contigua (offsets
+  reubicados, `jp_off/jp_size` colapsados a `alt_off/alt_size`) y reescribió a mano el
+  header de **mods-src**: 0x9418D707 son los 8 primeros hex del SHA de ese payload
+  contiguo (9418d707cc55...), visto en el manifest de exp a las 11:05. No fue
+  `make_alt_entries_exact.py` (no hay `alt_report.json`). Ese payload ya no existe.
+- 10:49-11:12 el juego salía al arrancar con payloads contiguos (9418d707, luego
+  806ccdd0, 6338560 bytes): el exe compilado conserva los offsets antiguos.
+- 11:14 `_work/gaso/stage-camera/patch_payload_inplace.py`: parche in situ de la entrada
+  197 sobre 376287ab. Verificado hoy: payload de exp 6ff5aa89, mismo tamaño (10016768),
+  896 bytes distintos, todos dentro del hueco de la entrada 197 (0x849800-0x8C715C);
+  contenido = e7a47c4c. El manifest de exp quedó obsoleto (`sha256`/`expected_sha256` =
+  c67e575d, de un parche sobre la base equivocada); el juego arrancó igualmente.
+- Grabaciones: 11:15-11:24 aceptada pero en RETRY/QUIT todo el rato (la sesión lo
+  admitió); 11:34-11:36 `_work/recordings/gaso-attack-take` aceptada, gf 5862-13050,
+  0 eventos; sin revisión fotograma a fotograma ni conformidad del propietario.
+- Estado: el header de mods-src no corresponde a ningún payload existente; payload y
+  manifest de mods-src siguen en 376287ab. Recomendación: restaurar el header de mods-src
+  desde `_work/gaso/sign-subdivision-v2-candidate/payload-out` (C3EBF689, 0x376287AB) y
+  regenerar con `make_alt_entries_exact.py` en el build combinado A-E. Exp contiene la
+  cámara D defectuosa (corregida en fuente, sin desplegar). `camera_speed` 2.1 se deja
+  como está por decisión del propietario (2026-11-13).
+
+### Build combinado A-E regenerado con el estándar (2026-11-13)
+
+Orden del propietario: rehacer bien lo que hizo la otra sesión con el procedimiento
+estándar. Directorio `_work/gaso/combined-ae/`.
+- `stage197.dfs` 28bff4ac (ventilador C + cámara D corregida) con
+  `build_stage_package.py --profile gaso`; `compose_spec.py` -> `spec.json` (30 filas,
+  base 376287ab); `make_alt_entries_exact.py` -> payload c2129468 (10016768 bytes,
+  4891 sectores), header 3f091c60 (tag 0xC2129468), `expected_sha256` 9a16bfba.
+- `verify_payload.py` ok: base_rel 0x1B538000, cabe en DUMMY, layout idéntico al header
+  base C3EBF689 (jp no colapsado), 2030 bytes distintos solo en 53/54/125/126 (nombre HUD
+  B, un miembro) y 197 (miembro 0: 2 instrucciones del ventilador; miembro 12: cámara).
+- Staging con respaldos en `backup/00-07`: header, payload y manifest de mods-src
+  (solo línea `sha256`); en el build tree header, `bag2jp_bag1_stage.c`,
+  `bag2jp_bag1_versions.c` y manifest preloaded (= mods-src c0f567ba).
+- Build `gaso-combined-ae`: exe 3519b5ad; `check_payload_manifest.py` 3/3 copias OK.
+- Host: 23 tests OK.
+
+Goldfish 2026-11-13, payload combinado A-E, estado: payload c2129468, header 3f091c60,
+manifest c0f567ba, exe 3519b5ad; 2 revisores; veredicto CON HALLAZGOS (sin bloqueantes).
+Spec `_work/goldfish/spec-gaso-combined-ae-payload.md`.
+- Confirmado (H1): el manifest del build tree ganó además el bloque `bag1-gaso-caught`
+  y 2 plugins (`default_enabled = false`); es el mismo contenido que mods-src y exp ya
+  tenían, pero no estaba en el spec. La descripción dice "observe-only, no clip
+  publication" y el build tree compila con `GASO_CAUGHT_CLIP_PUBLISHED=1`: exp activa la
+  feature, así que este exe publica el clip igual que 872e6753 (experimental, toma F
+  autorizada). Pendiente: corregir la descripción cuando se decida publicar.
+- Refutado como riesgo (H2): estados intermedios del manifest (786e49d8, ef1d63d7) sin
+  respaldo; el resultado final se comparó contra los originales respaldados
+  (586c8019/f76698be) y solo difiere en lo descrito.
+- Refutado: un revisor atribuyó `sra 1->4` a la cámara D; es el ventilador C (divisor
+  nativo /16). La cámara está solo en el miembro 12.
+- Menor: `compose_spec.py` dice "C+D+E" (E vive en el exe y la firma B1ST ya estaba en
+  la base); copia vieja sin uso en `src/mods-src/` del build tree.
+- Pendiente en vivo: carga del payload, ventilador por nivel, cámara, nombre HUD
+  (intl/JP), savestates antiguos con offsets iguales y contenido distinto.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+### Toma F grabada sobre build combinado A-E (`gaso-combined-ae-f2`, 2026-11-13)
+
+- Despliegue experimental en `D:/Games/Bust A Groove 2 (Japan)/BAG2JP-exp-8mb`
+  (respaldo previo en `_work/gaso/combined-ae/exp-backup/`: exe `872E6753`,
+  `settings.toml` `2AC29271`, `keybinds.ini` `EAAF722E`, `mods/state.toml` `EE35AB92`,
+  `manifest.toml` `CE5ACB6F`, `bag1_alt.bin` `6FF5AA89`): exe `3519b5ad`,
+  `manifest.toml` `c0f567ba`, `bag1_alt.bin` `c2129468`;
+  `check_payload_manifest.py` en exp 1/1 OK.
+- Calibración previa aceptada: `_work/versus-runs/20261113T182646483322Z-gaso-combined-ae-probe`
+  (94.9 s, `restoration.verified: true`, 8 bordes verificados visualmente en
+  `_work/gaso/combined-ae/probe-sheet.jpg`).
+- Toma 1 (`gaso-combined-ae-f`, `_work/versus-runs/20261113T185258565946Z-gaso-combined-ae-f`,
+  303.655 s, `restoration.verified: true`): `bag2_record.py finalize` RECHAZADA
+  (`accepted: false`, salida 1) por 1 stall de 0.202 s tras `gf=16008` que desplazó
+  1206/11543 pares de audio (`residual_p99_ms=158.85`, `window_max_ms=158.68`).
+  Conservada como diagnóstico; no se usa como evidencia aceptada.
+- Toma 2 (`gaso-combined-ae-f2`, `_work/versus-runs/20261113T190419608874Z-gaso-combined-ae-f2`,
+  302.383 s, `restoration.verified: true`, 150 saves originales):
+  `py -3.13 tools/test/bag2_record.py finalize --tag gaso-combined-ae-f2` -> **ACCEPTED**
+  (salida 0, `manifest.json` `accepted: true`):
+  - `owner.mp4` (`_work/recordings/gaso-combined-ae-f2/owner.mp4`, SHA-256 `165f2984...`),
+    `review.mkv` (`ce98190e...`), `raw.mkv` (`7fddb116...`), 41 eventos.
+  - Reloj: 1923 latidos (`gf=6150..17682`), 5 tardíos, jitter p99 14.72 ms, 59.944 fps,
+    1 stall menor de 0.125 s tras `gf=16014` durante Fever 1; `window_guard.passed: true`
+    (202 checks).
+  - Audio (`bag2jp_audio.wav`, `-15.2 LUFS`, `-0.58 dBTP`): `offset_s=-102.595789`,
+    `rate_hz=44056`, 11515 pares, 8 descartados, `residual_p99_ms=17.07 ms`,
+    `window_max_ms=12.6 ms`.
+- Revisión por ítem sobre la grabación aceptada (hojas en `_work/gaso/combined-ae/f2-sheets/`):
+  - A (audio tanque/re-hit): `gaso_tank` disparó `cue 6906` (`gf=7474`, `7681`; `vt=22.094s`,
+    `25.534s`) y `cue 690a` (`gf=7491..7857`, 14 líneas en `versions.log`), y
+    `bag2_report.py` registró `0x6906x2` y `0x690ax3` en `cues phase 0`; los picos RMS
+    del WAV suben a 8654 (`vt=22.5s`, pico 31733) y 9634 (`vt=26.0s`, pico 31722)
+    inmediatamente tras ambos `0x6906`. Falta escucha humana subjetiva y el sonido
+    faltante del re-hit de Heat sigue sin identificarse.
+  - B (HUD `GAS-O`): visible y legible en P1 (`tank1.jpg`, `tank2.jpg`, `lvl2.jpg`)
+    con tinte verde-amarillo; correspondencia exacta de CLUT y pantalla VS (que sigue
+    mostrando `Bi-O vs Heat` en `gf=6652`) pendientes.
+  - C (ventilador): `bag2jp_watch.log` verifica aceleración de `801DECC2`: `0 -> 0x80`
+    (`gf=11188..11442`) y `0x80 -> 0x200` (`gf=13856..14622`) con avance suave del
+    ángulo `801DECC0`, y giro visible en `intro.jpg`.
+  - D (cámara intro stage Gas-O BAG1): `intro.jpg` (`gf=6850..7000`, `vt=9.165..14.177s`)
+    muestra el descenso limpio desde el domo superior pasando por ventilador y paneles
+    hasta encuadrar a Gas-O y Heat sin clipping; mantiene el tramo final quieto por
+    `camera_speed=2.1` (dejado así por decisión del owner).
+  - E (eventos de puntaje B1ST): `B1ST` (`0x54533142`) activo desde `gf=6452` (`root=13`);
+    nivel `0->1` en `gf=11187` (`sc=0x2DD2`) y `1->2` en `gf=13855` (`sc=0x6612`),
+    flags `['0', '1', '11', '40', '41']`; `lvl2.jpg` confirma letreros `GAS` iluminados
+    y paneles alternos en nivel 2.
+  - F (ataque CAUGHT y flujo completo): 2 capturas con tanque translúcido verde, líquido
+    ascendente y burbujas sobre Heat (`gf=7453..7593` y `gf=7657..7875`, `slot1`
+    publicado/restaurado `clip=9f000000`, `bytes=348`), ataque de Heat (`gf=15148..15278`),
+    rechazo por reflejo (`gf=15349`), Fever 1 (`gf=15659..17142`) y retorno limpio al
+    selector de personaje (`songend.jpg`, `vt=3:06s`, `return_root=13`).
+- Estado de aceptación: grabación técnica aceptada (`manifest.json`), pendiente de
+  conformidad visual/auditiva del propietario. Commit no autorizado. `CLIP_PUBLISHED=1`
+  permanece solo en build tree experimental (`mods-src/bag2jp_gaso_caught.c` sigue en 0).

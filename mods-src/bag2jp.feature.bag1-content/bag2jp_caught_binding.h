@@ -29,7 +29,8 @@ enum { B1CB_BASE = 0x80000000u, B1CB_MAX_RAM = 0x800000,
        B1CB_COUNT = 0x820, B1CB_RAW = 0x824, B1CB_LENGTH = 0x828, B1CB_META = 0x82c,
        B1CB_DECODER = 0x830, B1CB_POSE_A = 0x1494, B1CB_POSE_B = 0x1498,
        B1CB_CURRENT = 0x154c, B1CB_PREVIOUS = 0x1550, B1CB_SLOT = 1,
-       B1CB_INFO_BYTES = 12, B1CB_FRAMES = 2,
+        B1CB_INFO_BYTES = 12, B1CB_FRAMES = 2,
+        B1CB_HOLD_OFFSET = 5, B1CB_HOLD_LAST_FRAME = 1,
        B1CB_OWNED_BASE = 0x9f000000u, B1CB_OWNED_BYTES = 0x100000 };
 typedef struct { size_t offset, size; } B1CaughtSpan;
 typedef struct {
@@ -74,9 +75,7 @@ static int b1cb_actor_matches(const uint8_t *ram, const B1CaughtBinding *b,
         b1cb_read(ram, a.offset+B1CB_LENGTH, 4) == b->length_table &&
         b1cb_read(ram, a.offset+B1CB_META, 4) == b->metadata_table &&
         b1cb_read(ram, a.offset+B1CB_CURRENT, 4) < b->count &&
-        b1cb_read(ram, a.offset+B1CB_PREVIOUS, 4) < b->count &&
-        b1cb_read(ram, a.offset+B1CB_CURRENT, 4) != B1CB_SLOT &&
-        b1cb_read(ram, a.offset+B1CB_PREVIOUS, 4) != B1CB_SLOT;
+        b1cb_read(ram, a.offset+B1CB_PREVIOUS, 4) < b->count;
 }
 static int b1cb_disjoint(const B1CaughtWritePlan *p, B1CaughtSpan extra) {
     for (unsigned i = 0; i < 3; ++i)
@@ -147,8 +146,11 @@ static int b1cb_clip_metadata(const uint8_t *data, const B1CaughtBinding *b,
     uint64_t relative = b1cb_read(data, (size_t)tail, 4);
     uint64_t info = tail+relative;
     if (relative < 4 || relative % 4 || info+B1CB_INFO_BYTES > p->clip.size) return 0;
+    /* The runtime bank clamps at the last frame (+5). Looping this two-frame
+     * static pose repeatedly reanchors a partially blended root in BAG2. */
     for (unsigned i = 0; i < B1CB_INFO_BYTES; ++i)
-        if (data[(size_t)info+i] != (i == 2 ? 4 : 0)) return 0;
+        if (data[(size_t)info+i] !=
+            (i == 2 ? 4 : i == B1CB_HOLD_OFFSET ? B1CB_HOLD_LAST_FRAME : 0)) return 0;
     p->info = b->clip + (uint32_t)info;
     return 1;
 }
@@ -166,7 +168,9 @@ static int b1cb_no_references(const uint8_t *ram, const B1CaughtWritePlan *p) {
     }
     return 1;
 }
-static int b1cb_plan(const uint8_t *ram, size_t bytes, const B1CaughtBinding *b,
+/* Read-only identity/layout inspection also applies while slot1 is active.
+ * It is NOT permission to publish or restore: b1cb_plan adds retirement guards. */
+static int b1cb_inspect(const uint8_t *ram, size_t bytes, const B1CaughtBinding *b,
                       int paused, const B1CaughtClipRegion *region, B1CaughtWritePlan *p) {
     if (!ram || !b || !paused || !bytes || bytes > B1CB_MAX_RAM || b->side >= 2 ||
         (b->character != 0 && b->character != 1 && b->character != 9)) return 0;
@@ -183,12 +187,19 @@ static int b1cb_plan(const uint8_t *ram, size_t bytes, const B1CaughtBinding *b,
     }
     if (b1cb_overlap(p->clip, p->actor) || b1cb_overlap(p->empty, p->actor) ||
         b1cb_overlap(p->clip, p->empty) || b1cb_read(ram, p->empty.offset, 4) ||
-        !b1cb_clip_metadata(data, b, p) || !b1cb_no_references(ram, p) ||
+        !b1cb_clip_metadata(data, b, p) ||
         !b1cb_exclusive(ram, bytes, b, p)) return 0;
     p->raw = p->tables[0].offset+4*B1CB_SLOT;
     p->length = p->tables[1].offset+2*B1CB_SLOT;
     p->metadata = p->tables[2].offset+4*B1CB_SLOT;
     return 1;
+}
+static int b1cb_plan(const uint8_t *ram, size_t bytes, const B1CaughtBinding *b,
+                      int paused, const B1CaughtClipRegion *region, B1CaughtWritePlan *p) {
+    return b1cb_inspect(ram, bytes, b, paused, region, p) &&
+        b1cb_read(ram, p->actor.offset+B1CB_CURRENT, 4) != B1CB_SLOT &&
+        b1cb_read(ram, p->actor.offset+B1CB_PREVIOUS, 4) != B1CB_SLOT &&
+        b1cb_no_references(ram, p);
 }
 static int b1cb_tuple(const uint8_t *ram, const B1CaughtWritePlan *p,
                        uint32_t raw, unsigned length, uint32_t meta) {

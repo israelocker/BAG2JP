@@ -33,6 +33,7 @@ static B1CaughtBinding setup(void) {
     put32(ACTOR + 0x154c, 73); put32(ACTOR + 0x1550, 73);
     put32(CLIP, 32); put16(CLIP + 4, 2);
     put32(CLIP + 32, 16); put16(INFO + 2, 4);
+    ram[INFO - 0x80000000u + 5] = 1; /* runtime hold-last-frame metadata */
     B1CaughtBinding b = {ACTOR, RAW, LENGTH, META, COUNT, 9, 0,
                          EMPTY, CLIP, CLIP_BYTES};
     return b;
@@ -92,7 +93,7 @@ static void invalid_entry(int field) {
     case 17: put32(CLIP + 32, 0xfffffffcu); break;
     case 18: put16(CLIP + 4, 0); break;
     case 19: put16(INFO + 2, 5); break;
-    case 20: ram[INFO - 0x80000000u + 5] = 1; break;
+    case 20: ram[INFO - 0x80000000u + 5] = 0; break; /* looping bank is refused */
     case 21: put16(INFO + 10, 1); break;
     case 22: b.length_table = RAW; put32(ACTOR + 0x828, RAW); break;
     case 23: b.clip = RAW; break;
@@ -136,8 +137,25 @@ static void retirement(int field) {
     default: assert(0);
     }
     memcpy(before, ram, sizeof ram);
+    /* Read-only inspection accepts an active owned tuple, but not changed
+     * identity/tables/tuple, shared tables, or a running guest. Publish/restore
+     * below must still reject every one of these retirement cases. */
+    B1CaughtWritePlan plan;
+    const int inspected = b1cb_inspect(ram, sizeof ram, &b, field != 8, NULL, &plan) &&
+        b1cb_tuple(ram, &plan, CLIP, 2, INFO);
+    assert(inspected == (field <= 4 || field == 7));
+    unchanged();
+    assert(!b1cb_publish(ram, sizeof ram, &b, 1));
+    unchanged();
     assert(!b1cb_restore(ram, sizeof ram, &b, field != 8, field != 7));
     unchanged();
+    if (field >= 2 && field <= 4) {
+        /* Keep the slot empty so only the reference guard can refuse publish. */
+        const unsigned references[] = {B1CB_DECODER, B1CB_POSE_A, B1CB_POSE_B};
+        b = setup();
+        put32(ACTOR + references[field - 2], CLIP + 8);
+        rejects_publish(b, 1);
+    }
 }
 static void foreign_pair(void) {
     B1CaughtBinding b = setup();

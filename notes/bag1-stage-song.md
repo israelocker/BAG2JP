@@ -35,6 +35,9 @@ doc_kind: reference
    El reporte conserva `experimental=true`; su texto fijo «stock sound bank» es
    obsoleto cuando `native_sfx_bank0=true`: comprobar bytes, no ese texto.
 4. Revisar referencias externas/CLUT/UV, cámara, efectos, luces y lista vacía.
+   **Requisito obligatorio:** identificar e importar las interacciones y eventos
+   del escenario que avanzan con el puntaje (`level` vs `prev_level`); no basta
+   con la geometría estática ni la pista de audio.
    `test_stage_port.py` comprueba estructura, banco0 y preservación del DBI Heat;
    la prueba aritmética de sprites no demuestra fidelidad GTE/cámara en juego.
 5. Integrar candidato como fila `kind=3` conservando filas aceptadas:
@@ -77,7 +80,265 @@ Las partidas Strike anteriores al port de escenario usaban **Heat BAG2** como
 escenario/canción. No prueban Strike BAG1. Los candidatos visuales iniciales
 conservaban audio/SFX BAG2; fueron sustituidos por las revisiones descritas abajo.
 
+## Requisito obligatorio: eventos e interacciones del escenario según el puntaje (2026-11-06)
+
+- **Regla general de importación de escenarios BAG1 a BAG2:**
+  Al importar cualquier escenario de BAG1 a BAG2 no basta con portar la geometría 3D, texturas, cámaras y pista de audio. Los escenarios de BAG1 son interactivos y dinámicos: evolucionan con eventos visuales y ambientales que se disparan según el avance de la puntuación de los jugadores (por ejemplo, en el escenario de Heat, la rotura progresiva de paneles y ventanas desde el interior en llamas hacia la vista nocturna de la ciudad al alcanzar 15.000 y 45.000 puntos; en Strike, el avance progresivo de luces, elementos mecánicos y dinamismo del entorno conforme sube el puntaje).
+- **Lógica nativa en BAG1:**
+  En BAG1, la función de actualización del escenario (`update`, e.g. `0x801DDC60` en Strike JP, `FUN_801d...` en Heat) compara en cada ciclo el nivel de puntuación actual (`level`, en Strike JP `0x8006F638`, en Heat `0x80068714`) frente al nivel previo (`prev_level`, en Strike JP `0x8006EACC`, en Heat `0x800979D0`). Si `level > prev_level`, se activan los eventos de transformación del entorno correspondientes al nuevo nivel.
+- **Adaptación requerida en BAG2JP:**
+  El motor de BAG2 calcula el nivel de baile (`0x8005141C`) con sus propias tablas y umbrales. Para que el escenario importado reaccione, es imprescindible:
+  1. Que `b1s_vblank` (`bag2jp_bag1_stage.c`) adapte la puntuación de BAG2 al formato de nivel esperado por el escenario BAG1 y lo escriba en el shim de comunicación (`B1S_SHIM + 8`).
+  2. Que el guard del escenario en `b1s_vblank` no descarte el escenario (p. ej. `psx_mod_read_byte(stage) > 1` descarta otros escenarios que no sean 0 o 1).
+  3. Que el DBI o trampolín del escenario invoque el `update` nativo propagando `level` (`SHIM + 8`) a `prev_level` (`SHIM + 9`).
+- **Incidencia observada en Strike BAG1 (revisión 2026-11-06):**
+  Durante la prueba en vivo de duelo ordenado (`_work/versus-runs/20261106T043419201749Z-ordered-heat-heat-strike-strike`), el propietario observó y reportó: *«el escenario de strike no esta avanzando, recuerda que mientras mas puntaje haces el escenario va teniendo eventos, lo mismo paso con la importación del escenario de heat, se habia importado bien, pero faltaba la interacción del escenario cuando iba subiendo su puntaje, ponlo en una nota que cuando importas los escenarios de bag1 a bag2 tambien tienes que importar esas interacciones del escenario con el puntaje»*.
+  El escenario de Strike cargó su geometría y música, pero está estático frente a la puntuación. Esta interacción con el puntaje queda registrada como requisito mandatorio pendiente de implementación para Strike y para todo futuro escenario BAG1.
+
+- **Incidencia resuelta: Pasillos laterales y celdas ausentes (2026-11-06):**
+  - Causa: En el modelo original de BAG1 (`ST_STRI.DFS` archivo 5, 44 huesos), los huesos 0 a 39 utilizaban 10 mallas maestras (tipo 1) en Z=+29607 y 30 referencias relativas (tipo 2) a Z=-29589, -9857 y +9875 para instanciar los pasillos a lo largo de Z. BAG2 no soporta huesos tipo 2 en modelos de escenario, por lo que las 3 secciones laterales en Z no se renderizaban y las maestras quedaban desplazadas hacia adelante fuera de cámara.
+  - Solución: Se implementó `flatten_type2=True` en `tools/bag1import/model_bag1_to_bag2.py` y se configuró en `tools/bag1import/profiles/stages/strike.json`. Esto expande cada nodo tipo 2 en una malla independiente tipo 1 con su propia copia de geometría.
+  - Validación: Reempaquetado del DFS de Strike (334.816 bytes, 44 nodos tipo 1), actualización de payload `bag1_alt.bin`, compilación y prueba en vivo con captura de pantalla (`strike-stage-flattened-run-v6`). Los pasillos, las rejas de las celdas de la prisión, el suelo continuo y las luces del techo ahora se renderizan perfectamente en ambos lados flanqueando a los bailarines.
+
 ## Strike: audio profile candidate (2026-11-06)
+
+### Prueba pendiente: estructuras laterales durante solos
+
+- El propietario confirmó que el escenario funciona en la prueba en vivo con
+  autoplay, pero observó desaparición/reaparición de estructuras laterales durante
+  cámaras de solo; indica que también ocurría en BAG1. No demuestra descarga de texturas.
+- Autorizó una prueba A/B temporal en experimental: identificar la estructura y
+  la condición de descarte, evitar solo ese descarte conservando límites seguros,
+  comparar el mismo solo con/sin cambio, artefactos y rendimiento. No mover geometría
+   ni aumentar memoria para esta prueba. El candidato siguiente es experimental.
+- MCP recuperado con el cliente local instalado, sin reiniciar Ghidra ni cambiar
+  configuración: `20261106-ghidra-008` en `notes/tool-evidence/ghidra-psx-psyq.md`.
+  `get_program_info` confirmó ejecutable JP y hash; juego preservado.
+- La lectura nueva de `0x80022660` incluye `case 2`: el éxito del flattening no
+  demuestra que BAG2 carezca globalmente de soporte tipo2, como se afirmó antes.
+- Siguiente: trazar dibujado por fotograma, reproducir el solo y contrastar culling
+  frente a clipping/orden/VRAM antes de editar. A/B todavía no ejecutada.
+- Ensayo `20261106-ghidra-009`: excluidos render de personajes (`0x8002c404`),
+  inicialización (`0x8003318c`), cámara, texto y entradas como condiciones del
+  descarte buscado. Extracción Capstone complementaria en
+   [su registro](tool-evidence/capstone.md); no identifica aún el render del escenario.
+
+- Avance posterior `20261106-ghidra-010` / `20261106-capstone-002`: lectura MCP
+  de `0x80030458` y contraste exacto de 2048 bytes con el ejecutable JP identifican
+  el bucle real de visibilidad por grupo. El descarte por posición proyectada sigue
+  a comprobaciones independientes de profundidad y flags GTE.
+- Fixture reversible `bag2jp_stage_visibility_test.h`: sustituye únicamente
+  `0x80030590: 0243001b` por `0800c175` (salto a aceptación `0x800305d4`),
+  con seis palabras de guarda y restauración solo de la modificación propia.
+  No evita los rechazos de profundidad `0x80030578` ni GTE `0x80030588`.
+  Desactivado salvo variable `BAG2JP_TEST_STAGE_VISIBILITY=1`; archivo temporal
+  `bag2jp_stage_visibility.mode` alterna 0/1 únicamente con Strike BAG1 cargado.
+- Prueba host rojo→verde y regresión audio: dos tests pasan mediante
+  `py -3.13 -m unittest tools.test.test_stage_visibility_fixture tools.test.test_bag1_stage_audio`.
+  Build de dos jobs: `_work/workflow/20261106T091234997208Z-strike-visibility-fixture`;
+  exe experimental SHA256 `55673109f093a71f37b94c55c37fcb98f10a606e25cd9d67655ca6bca0516254`.
+  Payload y estable sin cambios; exe previo respaldado en
+  `_work/stage_import/strike/visibility-build-backup/BAG2JP.exe`.
+- Calibración visual del nuevo runtime revisada en
+  `_work/versus-runs/20261106T091409672509Z-strike-visibility-calibration`;
+  cinco imágenes vinculadas al catálogo. Restauración verificada de settings,
+  controles, estado de mods y 21 saves. A/B mediante `_work/strike_visibility_ab.py`
+  completada en `_work/versus-runs/20261106T091810099713Z-strike-visibility-ab`.
+- Resultado A/B: el log confirma aplicación (`result=1`) y restauración (`result=2`),
+  pero **comparación visual inválida**: Start no congeló Fever. Las fases avanzaron
+  de1/5/6 a1/7/0 y1/7/3; `ab-compact.png` muestra cámaras/posturas diferentes.
+  No acredita mejora, regresión ni causalidad del descarte. Duración total257,51s;
+  ajustes/controles/mods y21 saves restaurados con hashes verificados; archivo
+  temporal eliminado por el driver. Fixture permanece desactivado por defecto.
+- Próximo paso: obtener captura comparable de la misma cámara/fotograma mediante
+  un control de pausa o repetición verificado antes de repetir A/B. No repetir el
+  intento con Start en Fever ni tratar éxito del harness como aceptación visual.
+- Validación humana posterior: `_work/versus-runs/20261106T092907543033Z-strike-live-autoplay`,
+  Player vs Player/autoplay ambos, Strike BAG1, descarte original activo (sin bypass).
+  El propietario confirma que persisten los huecos visuales y aporta seis imágenes;
+  no hay aceptación visual. Las imágenes no distinguen por sí solas descarte,
+  clipping, orden de polígonos o texturas. Esta partida no evalúa el bypass.
+  Cierre del harness460,102s; restauración verificada de controles/settings/mods y21 saves.
+
+### Incidencia separada: pose durante la presentación inicial
+
+- Auditoría posterior del pecho (solo lectura):
+  `_work/stage_import/strike/current-chest-audit.json`, script
+  `_work/audit_current_strike_chest.py`. Payload instalado/canónico idénticos,
+  SHA256 `58f25584e6850dd37956802c0e5b2299d7aefcceac1a28750d4cc3aab08689e9`.
+  Las dos llamadas de copia `DBI+12+0x2358/0x23d4` siguen anuladas en73/74/145/146.
+  Modelos109/110/181/182 y TIM de los cuatro packs idénticos al backup del ensayo
+  histórico del pecho (`chest_audit/candidate/runtime-before`); cambios en DBI A
+  y bancos SEDT. No respalda pérdida del parche ni sustitución del modelo/textura.
+- `_work/stage_import/strike/vram-rectangle-audit.json`: sin solapamientos directos
+  entre rectángulos TIM estáticos del escenario209 y pack73. No demuestra ausencia
+  de relocación/copia/animación de paletas durante ejecución. La hoja histórica
+  `chest_audit/chest-before-after.png` muestra corrección del atlas/emblema, no una
+  malla de armadura añadida. La discrepancia visual reportada sigue abierta.
+- Iniciada captura `_work/strike_stage_chest_vram_probe.py` usando debug existente,
+  cuatro dumps6000/7200/8400/9600 con confirmación en log de esta partida antes de
+  copiarlos. Sin cambio de assets ni bypass; comparación de atlas/paletas pendiente.
+- Resultado de esa captura: run `20261106T095426567529Z-strike-stage-chest-vram`,
+  cuatro dumps confirmados, cierre171,975s/restauración21 saves y ajustes verificada.
+  `chest-vram-comparison.json` y `chest-vram-phase-summary.json`: f6000 es anterior
+  a carga de Strike (último trace ch0, fase377/380/0), no evidencia de corrupción.
+  En f7200/8400/9600 ambos atlas tienen cero píxeles distintos; CLUTs exactas en
+  7200/9600. En8400 difieren30 palabras de CLUT del TIM4; TIM5 exacto. No se observan
+  las copias destructivas de360 palabras. Pendiente atribuir la diferencia de paleta,
+  no asumir corrupción ni aceptación visual. Captura final oscura dice Dance Viewer:
+  no tratar este cierre como aceptación de canción/retorno.
+- El propietario propone Dance View para comparar pose por pose; se adopta como
+  siguiente aislamiento de pecho/presentación. Boot del probe histórico falló por
+  guard que exigía `strike_p1/p2=bag2` cuando ambos ya son bag1; preparación previa
+  al try dejó ajustes temporales, restaurados manualmente desde
+  `viewer-run/20261106T045814/baseline`, hashes originales verificados/sin juego abierto.
+  Wrapper `_work/strike_viewer_current.py` acepta bag1 o bag2 sin modificar el script
+  histórico; segundo boot iniciado. No afirmar visor abierto hasta resultado.
+- Segundo boot confirmado: Dance View PID19820, evidencia
+  `_work/character_import/strike/viewer-run/20261106T045944`, sesión en
+  `_work/character_import/strike/viewer-session.json`. Selección Down/S/S llega
+  a Strike BAG1; clip0 confirmado visualmente como NEUTRAL, cámara0/speed30.
+  `clip-0-1793959289949833300/review-small.png` muestra el emblema S visible.
+  No prueba que todas las poses/materiales estén correctos ni explica intermitencia.
+  Mantener sesión abierta para revisión; ajustes temporales aún pendientes de
+  restaurar mediante `py -3.13 _work/strike_viewer_current.py close` tras coordinar
+  con el propietario. No restaurar bajo proceso activo ni confundir salida de boot
+  con cierre del juego. No modificación de modelos/animaciones/runtime en este paso.
+- Aclaración posterior del propietario (2026-11-06): la protección del pecho falla
+  **sin ninguna pose seleccionada**, no durante la reproducción de NEUTRAL. Captura
+  fresca `probe-1793959590516897500.png` en el mismo directorio; watch f024281:
+  root19, mode4, viewerFFFF. Comparar FFFF frente a clip0 sin cambiar cámara/costume;
+  el éxito visual de NEUTRAL no acepta el estado sin selección.
+- Nueva incidencia autorizada: Dance View con Strike BAG1 carga el escenario BAG1
+  pero el propietario escucha la canción Strike BAG2; debe usar también la canción
+  BAG1. El log de la sesión solo contiene `activate` y ningún `song ...strike_game`.
+  `b1m_filter` exige extensión BUST2_01, sector/canal del perfil y shim/modelo
+  importado; todavía no se identifica cuál falla en el visor. No ampliar canales ni
+  sustituir audio globalmente sin observar esas entradas. La sesión PID19820 sigue
+  abierta; coordinar cierre antes de reconstruir/desplegar instrumentación.
+- Continuación verificada: PID19820 cerrado con restauración de ajustes/saves.
+  Diagnóstico opt-in `BAG2JP_TEST_VIEWER_AUDIO=1` (32 combinaciones como máximo)
+  en `bag2jp_bag1_stage.c`: run `viewer-run/20261106T051542` muestra modelo ID1,
+  shim correcto, XA37083/canal1 dentro de37082..64242, pero perfil nulo porque el
+  root del visor es **0x19**, no **0x13**. Los watches imprimen hexadecimal; no
+  confundir `19` con el root decimal19 del combate. Corrección mínima permite
+  root0x19 SOLO con mode4 y conserva shim/modelo/ID/canal/extensión existentes.
+- Regresión del audio: fallo de aserción PCM al reproducir root0x19/mode4 antes
+  de corregir, luego dos tests audio/visibilidad verdes (3,855s). Primer intento
+  de test diagnóstico falló por símbolo ausente; stub produjo después la aserción
+  esperada, antes de implementación. Revisión contra backup de esta fase sin
+  cambios ajenos. Consumidores compartidos: filtro, duración y fixture de
+  visibilidad (este último sigue opt-in/off; no se acepta el bypass previo).
+- Build `20261106T101904477460Z-strike-viewer-bag1-song` pasó en28,492s;
+  exe experimental SHA256 `f59c6809b459f3601d26e3a4a938c0b557a7baca700380fa01cd94fca4d614b3`.
+  Nueva sesión PID20508/run `viewer-run/20261106T052003`: log confirma perfil1,
+  apertura `strike_game.flac` y duración136→129s. Aceptación auditiva humana
+  pendiente; no afirmar canción completa/fin/retorno ni todos los modos aceptados.
+- Pecho reproducido sin selección (`viewerFFFF`) en
+  `viewer-run/20261106T051542/probe-1793960292235549000.png`; NEUTRAL en
+  `viewer-run/20261106T052003/clip-0-1793960489006315100/01.png` sí muestra S.
+  Comparación CPU-VRAM6000/7200 del primer run: ambos atlas y ambas CLUTs
+  exactamente iguales a los TIM BAG1, cero copias destructivas360words
+  (`chest-vram-comparison.json`). No prueba todos los frames ni determina causa
+  geométrica; no reaplicar parche TIM histórico. Se conserva RAM6000 para trazar
+  estado/bind transforms. Intento posterior `clip0` falló al salir el visor a
+  root0x21; no se trató como captura NEUTRAL válida. Cierre/restauración verificados.
+- La sesión de ese ensayo PID20508 quedó abierta para escucha y comparación, con ajustes
+  temporales/copias de tarjetas. Cerrar mediante
+  `py -3.13 _work/strike_viewer_audio_probe.py close` tras coordinar; no restaurar
+  bajo proceso activo. Véase la continuación de referencia nativa abajo.
+- Continuación 2026-11-06: PID20508 ya había salido al retomar. Ausencia de
+  BAG2JP comprobada; `_work/restore_closed_strike_viewer.py` preservó logs finales
+  y restauró ajustes y hashes de partidas originales. El RAM6000 es solo2MB;
+  contiene player pointer `0x8025C3F8`, fuera del volcado. No permite diagnosticar
+  sus transformaciones (`ram-inventory.json`, Ghidra014).
+- Referencia BAG1, tras corrección del propietario: cargar explícitamente
+  Options → Memory Card → Load Data → YES; captura `LOAD OK!`
+  `native-combat-runs/20261106T053152/view-1793961416449012300.png`.
+  Antes de cargar, Dance View estaba bloqueado: el intento anterior acabó en
+  selección de1P y no constituye evidencia del visor. Después de cargar, abrir
+  Dance View y seleccionar Strike/A. Sin seleccionar pose, **también falta la S**
+  en el pecho (`view-1793961574554742900.png`, crop conservado); con NEUTRAL
+  sí aparece (`view-1793961614670690400.png`). Comparación inspeccionada:
+  `unselected-vs-neutral.png` en ese mismo directorio. Es evidencia del runtime
+  BAG1 de referencia, no una nueva captura de hardware PS1 ni causa geométrica
+  demostrada. No cambiar textura/modelo para corregir una supuesta regresión
+  del port a partir de este caso.
+- Decisión pendiente: conservar este estado nativo sin pose o autorizar una
+  desviación visual deliberada para mostrar siempre la protección. Sin cambios
+  de assets/código en esta continuación. Referencia PID41832 queda abierta para
+  revisión; journal `native-combat-session.json`, cierre/restauración mediante
+  `py -3.13 _work/character_import/strike/native_combat_probe.py close` cuando
+  termine el propietario. Música del candidato BAG2 sigue pendiente de escucha;
+  agujeros durante solos y pose inicial intermitente siguen independientes.
+- Decisión del propietario: en BAG2 la protección debe verse también parado
+  (sin pose, visor `FFFF`), sin forzar NEUTRAL ni cambiar bailes.
+  Diagnóstico 2026-11-06 (sin cambios de assets/runtime aceptados):
+  - Volcados 8 MB (opt-in `BAG2JP_RAM_DUMP_SIZE=8mb`, exe experimental
+    `aee1a47c…`): `viewer-run/20261106T054637` (sin pose = WAIT slot71) y
+    `20261106T055110` (NEUTRAL). Mismos nodos con matriz válida en ambos
+    estados; se descarta la hipótesis de matrices nulas.
+  - Los paquetes GT3 de la placa (tpage 0x1B, CLUT 0x3C) se generan en ambos
+    estados con coordenadas de pantalla actualizadas: la parte inferior está en
+    el nodo1 y la zona de la S en los nodos 9/10. Los emisores (`80027fc8`…,
+    Capstone sobre RAM) ordenan cada triángulo en la OT por la suma de z de dos
+    vértices: el orden es por polígono, sin z-buffer.
+  - WAIT tiene un ciclo de respiración exacto de 88 frames: pelvis (b0) de -2,1°
+    a -16,8° en x, pecho (b1) de -0,4° a +11,6°, cuello (b8) de -0,3° a +8,6°
+    (`run_strike_wait_cycle.py`, run `20261106T061013`). La S aparece y
+    desaparece según la fase del ciclo; la ventana exacta de fase no está
+    resuelta.
+  - Se comparó con el WAIT de un personaje BAG2 de serie (ch8, run
+    `20261106T061818/stock-wait-2`, `_work/compare_wait_breathing.py`). La
+    amplitud de pelvis, pecho y cuello es **igual** a la de Strike; solo cambia el ritmo:
+    Strike tiene 45 frames con paso 2 y el de serie 55 frames con paso 3 (≈2× más lento). Esto
+    contradice la hipótesis de que la respiración de BAG2 es más suave. Causa
+    probable: la S de los nodos 9/10 queda ordenada detrás de la piel del torso
+    en algunas fases.
+  - Herramienta: `tools/bag1import/motion_codec.py` (formato leído de
+    FUN_800126f8/800128b4/80012850, Ghidra015) hace un round-trip exacto de 104
+    motions por volcado. Regresión: `tools/test/test_motion_codec.py`.
+  - Pendiente de decisión del propietario: (a) sesgo de profundidad o adelantar
+    los polígonos de la placa (causa raíz, sin tocar la animación) o (b) ralentizar
+    o suavizar el WAIT de Strike (no corrige la oclusión).
+
+- Ensayo humano con bypass confirmado:
+  `_work/versus-runs/20261106T094126581420Z-strike-live-autoplay`,
+  `visibility-activation.log` y `visibility-trial.txt`. El propietario informa
+  que los huecos persisten durante cámaras de solo y también la pose inicial
+  como caminando. Omitir el descarte lateral de pantalla no basta para corregir
+  los huecos; no demuestra por sí solo cuál de clipping/orden/texturas los causa.
+  No aceptar ni promover el bypass. Cierre323,359s, restauración verificada de
+  controles/settings/mods y21 saves; control temporal eliminado por el driver.
+- En ese mismo ensayo el propietario señala ausencia de la protección del pecho
+  previamente esperada y aporta captura. Posible discrepancia de modelo/costume o
+  paquete, sin causa demostrada. Antes de restaurar nada: contrastar versión y
+  hashes realmente cargados con historial de la protección; preservar trabajo previo.
+  No atribuirlo automáticamente al bypass ni reintroducir un parche histórico
+  eliminado sin comprobar su propósito y la decisión del propietario.
+
+- El propietario observa ocasionalmente una pose adelantada/no erguida en
+  cualquiera de los dos lados. No atribuirla exclusivamente a Strike ni forzar
+   postura de pie sin contrastar el papel nativo de la presentación.
+- Reconfirmado por el propietario en la partida `20261106T092907543033Z-strike-live-autoplay`:
+  unas presentaciones muestran a Strike erguido y otras con una pierna levantada,
+  como caminando. Evidencia visual aportada por el propietario; incidencia abierta,
+  no corregida ni aceptada. No atribuir intermitencia a reinicio sin medir frame/matrices.
+- Evidencia existente, no nueva partida:
+  `_work/versus-runs/20261106T081736509909Z-strike-live-autoplay/bag2jp_anim_trace.log`,
+  líneas1299..1323. En f6599 P1 usa anim73/req104 y P2 anim71/req106;
+  en f7037 P2 pasa a anim72/req103, vuelve a71 en f7362.
+  Al entrar en fase1/3/3 (f7484) quedan73/71; ambos pasan a0 en f7490,
+  reciben req0 en f7490/7491 y continúan con anim6/req1 en f7622/7623.
+- Esto acredita transición de identificadores, **no** frame local, matrices,
+  postura visual correcta ni descarte de un fallo intermitente de reinicio.
+  Roles compartidos71=stand/source60 y72/73=appeal/source62; el perfil Strike
+  no los sobrescribe. Igualar todos a stand ocultaría el papel de appeal.
+- Próxima comprobación: correlacionar fotograma de presentación/transición con
+  request, frame local y final de source62; comparar los dos lados y control BAG2.
+  Sin cambio de animaciones ni aceptación nueva.
+
+### Continuación de la evidencia de audio
 
 - Implemented in `bag2jp_bag1_stage.c`: shared Heat/Strike music profiles, isolated
   XA channels, decoder switching, per-song duration override/restoration. Heat keeps
@@ -120,6 +381,18 @@ conservaban audio/SFX BAG2; fueron sustituidos por las revisiones descritas abaj
   Run en vivo `20261106T004800028681Z-strike-15row-selector` recorrió el carrusel, seleccionó la
   fila 5 independientemente del personaje (Strike BAG2 elegido en character select), y verificó
   la carga de `entry 209 -> BAG1` y la música `strike_game.flac`. 21 tarjetas restauradas e intactas.
+
+## Strike: mejoras aplazadas (decisión del propietario 2026-11-06)
+
+Propietario: «Descartalo por ahora, que sea un punto de mejora para el futuro cuando
+tengamos todos los personajes importados». No se trabaja en ellas hasta entonces:
+- **S del pecho en WAIT/Dance View sin pose**: la S parpadea según la fase del ciclo de
+  respiración (88 frames) por ordenación por polígono en la OT. BAG1 nativo se comporta
+  igual y el WAIT de un personaje BAG2 de serie (ch8) tiene la misma amplitud. Opción
+  recomendada al retomar: sesgo de profundidad o adelantar los polígonos de la placa
+  (nodos 9/10). Diagnóstico completo arriba, en las secciones del pecho.
+- **Texturas huecas del escenario de Strike durante solos**: ver «Prueba pendiente:
+  estructuras laterales durante solos». El bypass de límites de pantalla no basta.
 
 ## Strike: candidato visual experimental (2026-11-05)
 

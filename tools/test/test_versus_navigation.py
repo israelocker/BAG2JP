@@ -15,6 +15,91 @@ import versus_navigation as nav
 class NavigationTests(unittest.TestCase):
     """Catch silent fallback, wrong mode, stale evidence and shared input."""
 
+    def test_explicit_ram_dump_reaches_child_without_inheriting_other_debug_flags(self):
+        with tempfile.TemporaryDirectory() as directory:
+            game = Path(directory)
+            (game / 'settings.toml').write_text('[controller]\np1_device="keyboard"\np2_device="keyboard"\n')
+            (game / 'keybinds.ini').write_text('')
+            session = versus_session.Session(game)
+            session.ram_dump_frame = 7500
+            session.ram_dump_size = '8mb'
+            try:
+                with patch.object(versus_session, 'GAME', game), \
+                     patch.object(versus_session, 'powershell', return_value='0'), \
+                     patch.object(versus_session, 'process_identity', return_value={}), \
+                     patch.object(nav, 'parse_bindings', return_value={}), \
+                     patch.object(nav, 'key_for'), patch.object(nav, 'wait_until'), \
+                     patch.object(versus_session.os, 'environ', {'PATH': 'safe', 'BAG2JP_RAM_DUMP': '1', 'BAG2JP_CPU_SKILL': '9'}), \
+                     patch.object(versus_session.subprocess, 'Popen') as launch:
+                    session.start()
+                env = launch.call_args.kwargs['env']
+                self.assertEqual(env.get('BAG2JP_RAM_DUMP'), '7500')
+                self.assertEqual(env.get('BAG2JP_RAM_DUMP_SIZE'), '8mb')
+                self.assertNotIn('BAG2JP_CPU_SKILL', env)
+                self.assertEqual(env['PATH'], 'safe')
+            finally:
+                for log in session.logs:
+                    log.close()
+
+    def _launch_env(self, session: versus_session.Session, environ: dict) -> dict:
+        game = session.run
+        (game / 'settings.toml').write_text('[controller]\np1_device="keyboard"\np2_device="keyboard"\n')
+        (game / 'keybinds.ini').write_text('')
+        try:
+            with patch.object(versus_session, 'GAME', game), \
+                 patch.object(versus_session, 'powershell', return_value='0'), \
+                 patch.object(versus_session, 'process_identity', return_value={}), \
+                 patch.object(nav, 'parse_bindings', return_value={}), \
+                 patch.object(nav, 'key_for'), patch.object(nav, 'wait_until'), \
+                 patch.object(versus_session.os, 'environ', environ), \
+                 patch.object(versus_session.subprocess, 'Popen') as launch:
+                session.start()
+            return launch.call_args.kwargs['env']
+        finally:
+            for log in session.logs:
+                log.close()
+
+    def test_music_timing_diagnostic_and_extra_watches_reach_child(self):
+        with tempfile.TemporaryDirectory() as directory:
+            session = versus_session.Session(Path(directory))
+            session.watch_extra = [(0x80355C5C, 4), (0x80354148, 1)]
+            env = self._launch_env(session, {'BAG2JP_TEST_B1M_TIMING': '1', 'BAG2JP_CPU_SKILL': '9'})
+        self.assertEqual(env.get('BAG2JP_TEST_B1M_TIMING'), '1')
+        self.assertNotIn('BAG2JP_CPU_SKILL', env)
+        watches = env['BAG2JP_WATCH'].split(',')
+        self.assertEqual(watches[:len(nav.WATCHES)],
+                         [f"{address:08X}:{size}" for address, size in nav.WATCHES.values()])
+        self.assertEqual(watches[len(nav.WATCHES):], ['80355C5C:4', '80354148:1'])
+
+    def test_watch_overflow_is_refused_before_launch(self):
+        with tempfile.TemporaryDirectory() as directory:
+            session = versus_session.Session(Path(directory))
+            session.watch_cues = True
+            session.watch_extra = [(0x80354148, 1)]
+            with self.assertRaisesRegex(ValueError, 'at most 32'):
+                self._launch_env(session, {})
+
+    def test_watch_overflow_is_refused_before_any_run_directory(self):
+        argv = ['versus_session.py', '--action', 'run', '--temporary-controls', '--watch-cues',
+                '--watch-extra', '80354148:1']
+        with patch('sys.argv', argv), \
+             patch.object(versus_session, 'powershell') as shell, \
+             patch.object(versus_session.Path, 'mkdir') as mkdir, \
+             self.assertRaises(SystemExit) as stop:
+            versus_session.main()
+        self.assertEqual(stop.exception.code, 2)
+        shell.assert_not_called()
+        mkdir.assert_not_called()
+
+    def test_watch_extra_parser_rejects_unsafe_entries(self):
+        self.assertEqual(versus_session.parse_watch_extra('80354144:4,80355690:2,80354148:1'),
+                         [(0x80354144, 4), (0x80355690, 2), (0x80354148, 1)])
+        for text in ('', '80354144', '80354144:3', '80354146:4', '80354145:2',
+                     '7FFFFFFC:4', '80800000:4', 'zz:4', '80354144:4,',
+                     '80354144:4,80354144:4', '80354144:4,80354146:2', '8005D3D4:1', '800892EC:2'):
+            with self.subTest(text=text), self.assertRaises(ValueError):
+                versus_session.parse_watch_extra(text)
+
     def test_resolve_normalizes_known_character_name(self):
         self.assertEqual(nav.resolve_character(" comet "), 2)
 

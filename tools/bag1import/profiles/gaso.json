@@ -35,6 +35,20 @@
     "ending": true,
     "shared_announcer_name": true
   },
+  "hud_name": {
+    "source_rect": {"usa": [0, 0, 100, 17], "jp": [0, 0, 116, 17]},
+    "stock_rect": [32, 112, 77, 119],
+    "target_rect": [0, 0, 69, 7],
+    "text": "GAS-O",
+    "glyphs": [
+      {"character": "G", "source": "assets/archive/characters/hustle_kong/pack_a_p1/002.tim", "rect": [125, 56, 140, 63]},
+      {"character": "A", "source": "assets/archive/characters/heat/pack_a_p1/003.tim", "rect": [87, 168, 103, 175]},
+      {"character": "S", "source": "assets/archive/characters/strike/pack_a_p1/003.tim", "rect": [56, 80, 70, 87], "spacing_after": 1},
+      {"character": "-", "source": "assets/archive/characters/bi_o/pack_a_p1/003.tim", "rect": [54, 112, 61, 119]},
+      {"character": "O", "source": "assets/archive/characters/bi_o/pack_a_p1/003.tim", "rect": [61, 112, 77, 119]}
+    ],
+    "evidence": "Owner 2026-11-13: use BAG2 HUD lettering. Copy native glyph indices verbatim (shared HUD CLUT), 69x7 without resampling, inside the regional BAG1 name area. Native Bi-O descriptors remain 20 70 2d 07 01 00; per-draw Gas-O sprite override required. Experimental; body-UV audit and recorded runtime validation pending."
+  },
   "voice_bank": {
     "max_body_bytes": 64032,
     "reason": "Same-character VS loads two voice banks; SsVabOpenHead fails when SPU is exhausted (ghidra-033). 64032 = stock Bi-O voice body, so a Gas-O pair fits wherever a Bi-O pair fits.",

@@ -13,7 +13,8 @@
       {"entry": 4, "clut_xy": [992, 48]}
     ],
     "padding_texture_entry": 4,
-    "model_scale": [3, 2],
+    "model_scale": null,
+    "flatten_type2": true,
     "empty_animation_list": true,
     "native_sfx_bank0": true
   },

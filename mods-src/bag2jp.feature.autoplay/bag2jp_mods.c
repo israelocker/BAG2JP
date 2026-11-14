@@ -22,7 +22,7 @@ PSX_MOD_CONSTRUCTOR(bag2jp_register_plugins) {
  * human_player = 0x8005E6C8, CPU dancer state = 0x8005CF08 + p*0x24.
  *
  * Three things make player p a CPU dancer; autoplay applies them to the human
- * player in one-player mode (two-player mode is left untouched):
+ * player in one-player mode (two-player mode uses register hooks, see below):
  *
  * 1. Input source, per frame (0x8009A994..): s1/s2 = "player reads the pad".
  *      0x8009A9A4 bnez human, skip   ; human==0 -> P1 reads pad
@@ -161,7 +161,8 @@ static void bag2jp_autoplay_no_fumble(struct CPUState* cpu, uint32_t address) {
  * - 0x8009ADB4 bne $v0(mode),$s1(1): per-measure CPU setup is skipped for every player in mode 2;
  *   for an autoplayed player ($s4 = player) make it fall through ($v0 = 1) ...
  * - 0x8009ADC8 beq $s4,$v0(human): ... and not match the human byte ($v0 = $s4 ^ 1).
- * The CPU attack choice only runs in modes 0/1, so autoplayed 2P dancers never attack. */
+ * That per-measure path also holds the CPU attack choice, so autoplayed 2P dancers would attack;
+ * 0x8009AFE0 hides their attack stock from it (bag2jp_ap2_no_attack.h). */
 #define AP2_PAD_SITE   0x8009A9DCu
 #define AP2_PAD_WORD   0x3C038006u   /* lui $v1, 0x8006 */
 #define AP2_SETUP_SITE 0x8009ADB4u
@@ -188,11 +189,17 @@ static void ap2_human_hook(struct CPUState* cpu, uint32_t address) {
     const uint32_t p = cpu->gpr[20] & 1u;
     if (ap_2p_mask & (1u << p)) cpu->gpr[2] = p ^ 1u;
 }
+#include "bag2jp_ap2_no_attack.h"
+static void ap2_attack_hook(struct CPUState* cpu, uint32_t address) {
+    if (ap2_on() && ap2_block_attack(cpu, address, ap_2p_mask))
+        psx_mod_counter_add("bag2jp.autoplay.attack_blocked", 1);
+}
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_autoplay) {
     (void)psx_mod_register_instruction_plugin("bag2jp.autoplay", AP2_PAD_SITE, AP2_PAD_WORD, ap2_pad_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.autoplay", AP2_SETUP_SITE, AP2_SETUP_WORD, ap2_setup_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.autoplay", AP2_HUMAN_SITE, AP2_HUMAN_WORD, ap2_human_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.autoplay", AP2_ATTACK_SITE, AP2_ATTACK_WORD, ap2_attack_hook);
     (void)psx_mod_register_activation_plugin("bag2jp.autoplay", bag2jp_autoplay_activate);
     (void)psx_mod_register_option_changed_plugin("bag2jp.autoplay", bag2jp_autoplay_option_changed);
     (void)psx_mod_register_vblank_plugin("bag2jp.autoplay", bag2jp_autoplay_vblank);

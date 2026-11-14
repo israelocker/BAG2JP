@@ -20,8 +20,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import versus_navigation as nav  # noqa: E402
 
 CATALOG = REPO / "_work/versus-navigation/catalog.json"
-REVIEWED_IMAGES = ("selector.png", "probe-0-right-2.png", "probe-2-left-0.png",
-                   "probe-0-down-1.png", "probe-1-up-0.png", "review-sheet.png")
+REVIEWED_IMAGES = (
+    "selector.png",
+    "probe-0-right-2.png", "probe-2-left-0.png",
+    "probe-0-down-1.png", "probe-1-left-5.png",
+    "probe-5-down-9.png", "probe-9-up-5.png",
+    "probe-5-right-1.png", "probe-1-up-0.png",
+    "review-sheet.png"
+)
 
 
 def sha256(path: Path) -> str:

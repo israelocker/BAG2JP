@@ -9,8 +9,9 @@ param(
     [string]$P2Character = 'Heat',
     [ValidateSet('BAG1','BAG2')][string]$P2Version = 'BAG2',
     [ValidateSet('A','B')][string]$P2Costume = 'A',
-    [ValidateSet('HeatBAG2','HeatBAG1')][string]$Stage = 'HeatBAG2',
+    [ValidateSet('HeatBAG2','HeatBAG1','StrikeBAG2','StrikeBAG1','GasOBAG1','GasoBAG1')][string]$Stage = 'HeatBAG2',
     [switch]$TemporaryControls,
+    [switch]$AudioDump,
     [switch]$Finish,
     [switch]$StageSurvey,
     [double]$FinishTimeout = 420
@@ -22,6 +23,7 @@ $arguments = @('-3.13', "$PSScriptRoot/versus_session.py", '--action', $Action,
     '--p2-character', $P2Character, '--p2-version', $P2Version,
     '--p2-costume', $P2Costume, '--stage', $Stage)
 if ($TemporaryControls) { $arguments += '--temporary-controls' }
+if ($AudioDump) { $arguments += '--audio-dump' }
 if ($StageSurvey) { $arguments += '--stage-survey' }
 if ($Finish) { $arguments += '--finish', '--finish-timeout', $FinishTimeout }
 & py @arguments

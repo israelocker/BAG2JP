@@ -20,6 +20,9 @@ Origin: owner deferred the real campaign ending test "despues de importar el esc
 ## Goal and acceptance
 - Choosing Strike BAG1 stage (BAG2 stage id 1, archive entry 209) plays the BAG1 Strike stage
   (model, textures, stage code, camera, SFX) with the BAG1 Strike song and its BAG1 chart.
+- Stage score-driven event progression: the stage must react and advance its environmental
+  events/lighting as the player score increases across levels, matching BAG1 native behavior
+  (owner directive 2026-11-06; pending implementation).
 - Choosing BAG2 keeps the stock 209 stage/song byte-identical.
 - Heat BAG1 stage keeps working (regression).
 - Final check: a real campaign with Strike BAG1 reaches its BAG1 ending (movie + BAG1 model credits).
@@ -178,7 +181,7 @@ Blocked by: 3.1, 4.1.
 | 2 | candidate deployed: row209/1/3; 19 admitted entries preserved exactly; 4270080 bytes < 27648000 capacity |
 | 3 | song done: profile Strike stage1/XA ch1/length index1/native129s, `strike_game.flac` 44.1kHz; gameplay-root 0x13 guard; live runs `20261106T000303289538Z` and `20261106T002321415753Z` full song→results→select, 21 saves verified. Human listening pending |
 | 4 | stage selector done: 15-row carousel in `system/007.dbi` (Heat B2/B1, Hiro, Kelly, Strike B2/B1, stock stages, Random % 14). Row 5 is Strike BAG1, Row 4 is Strike BAG2. Thumbnail `strike_bag1.png` and `< STRIKE BAG1 >` label verified. Independent stage choice verified in `test_stage_version.c` and in live run `20261106T004800028681Z-strike-15row-selector`. 21 saves verified |
-| 5 | in-game acceptance complete: 5.1 Versus Strike BAG1 on Strike BAG1 stage verified live (`20261106T010056170156Z-strike-15row-selector`, entry 209 alt, `strike_game.flac`, merged Bank 0 SFX); 5.2 15-row carousel regressions passed for Heat BAG1 row 1 (`20261106T012500289564Z-heat-b1-regress`) and Strike BAG2 row 4 (`20261106T012746447672Z-strike-b2-regress`); 5.3 Strike shot FX verified (`test_strike_bag1_fx.py`); 5.4 Ending media routing verified for Strike BAG1 A/B, stock Strike BAG2, and Heat BAG1; `bag2jp_bag1_endings.c` updated for campaign modes (1, 0, 5) and verified by `test_bag1_endings.py`. All 21 original saves verified untouched across all runs. |
+| 5 | candidate visual/audio/selector live tests verified with 21 saves restored (5.1 versus Strike BAG1 on Strike BAG1 stage `20261106T010056170156Z`, 5.2 carousel regressions, 5.3 shot FX, 5.4 ending routing). **Eventos por puntaje (propietario 2026-11-06), evidencia experimental:** run 2P autoplay sin fixture de ataques `_work/versus-runs/20261106T054037095560Z-autoplay-strike-stage-events` (runtime `0e6f892a…`, 21 saves verificados): volcado RAM en frame 15000 con shim `B1ST`, level=2, prev_level=2 (el helper sincronizó tras la transición nativa), puntajes 19950/20610, stage id1; 16 capturas muestran progresión de iluminación (blanco→verde→focos/humo→rojo). Pendiente: frames exactos de 0→1→2, verificar `0x8005E2E8`=32 como base de umbrales (t1/t2 quedarían triviales), separar tinte nativo BAG2 del evento BAG1 y aceptación visual del propietario. La causa probable del fallo anterior: los ataques del fixture ordenado mantenían bajo el puntaje (no probado con log). Escucha humana y campaña real completas siguen separadamente pendientes. |
 
 ## Experimental execution evidence (2026-11-05)
 - Host check: `wsl.exe -d Ubuntu --exec python3 -m unittest tools.test.test_stage_port`:

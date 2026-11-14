@@ -21,8 +21,8 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """Compile the actual callback with the installed framework's real ABI.
 
         The default build matches the runtime (no clip published, never
-        redirects); the published build proves the one-shot redirect logic
-        that a future verified clip would enable.
+        redirects); the published build proves the contract publication,
+        the redirect onto it and the slot1 retirement against simulated RAM.
         """
         include = ROOT.parent / 'BAG2JP-codex-build/BAG2JP/psxrecomp/runtime/include'
         if not include.is_dir():
@@ -90,13 +90,37 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """Session reset and savestate clear captured records without writes."""
         self.run_scenario(10)
 
+    def test_secondary_effect_is_cleared_only_after_owned_publication(self) -> None:
+        """Clear selector1 on direct owned CAUGHT, preserving other effects and side."""
+        self.run_scenario(13)
+
+    def test_secondary_effect_is_preserved_when_caught_is_rejected(self) -> None:
+        """Preserve BAG2 recipients, refused binding, foreign attackers and reflection."""
+        self.run_scenario(14)
+
+    def test_secondary_effect_span_is_checked_at_ram_boundary(self) -> None:
+        """An actor may fit its binding while its secondary selector is out of RAM."""
+        self.run_scenario(15)
+
     def test_publication_slot1_guarded_and_restorable(self) -> None:
         """Slot1 publication is gated by CLIP_PUBLISHED; reset/savestate clear it."""
         self.run_scenario(11)
 
-    def test_slot1_restored_after_clip_duration(self) -> None:
-        """Slot1 restores after clip duration elapses since publication."""
+    def test_slot1_retires_after_the_clip_leaves_it(self) -> None:
+        """Restore once the actor left slot1 (or never entered it); refusals retry and fail closed."""
         self.run_scenario(12)
+
+    def test_rehit_preserves_only_compatible_live_pose_and_never_writes_timers(self) -> None:
+        """Continue verified settled CAUGHT, otherwise retain normal native entry."""
+        self.run_scenario(16)
+
+    def test_rehit_barriers_keep_the_native_entry(self) -> None:
+        """Identity, BAG1 lookup and the RAM contract each refuse on their own."""
+        self.run_scenario(17)
+
+    def test_rehit_continuation_is_symmetric_on_side_zero(self) -> None:
+        """The mirrored victim side takes the same continuation without writes."""
+        self.run_scenario(18)
 
 
 MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'

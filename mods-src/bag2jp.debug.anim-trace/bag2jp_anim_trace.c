@@ -12,6 +12,8 @@
  * the other PCM plugins) to bag2jp_audio.wav, plus bag2jp_audio_sync.log ("frame sample" per vblank,
  * same frame numbering as the trace / watch logs) so sounds can be located against game events.
  * With the trace on, bag2jp_frame.txt holds the current frame and phase (rewritten every 6 frames).
+ * Audio dumping also writes bag2jp_clock_probe.csv every 6 vblanks: frame, samples,
+ * SDL performance ticks and frequency. Diagnostic only; legacy sync stays unchanged.
  * Used to map BAG2 anim slots to game states for the BAG1 character import. */
 #include <stdint.h>
 #include <stdio.h>
@@ -123,6 +125,19 @@ static int s_nwatch = -1; static uint32_t s_wa[MAX_WATCH], s_ws[MAX_WATCH], s_wv
 /* ---- audio recorder ---- */
 static int s_audio = -1; static FILE* s_wav; static FILE* s_async;
 static volatile uint64_t s_samples; static uint64_t s_hdr_at;
+#define AUDIO_CLOCK_PROBE_STRIDE 6u
+static FILE* s_clock_probe;
+static uint64_t s_clock_frequency;
+/* Counter epochs are opaque: compare deltas/frequency within this process, never
+ * subtract these ticks directly from Python's counter. Stamp before any row I/O. */
+static void audio_clock_probe(uint32_t frame) {
+    if (!s_clock_probe || frame % AUDIO_CLOCK_PROBE_STRIDE) return;
+    const uint64_t ticks = SDL_GetPerformanceCounter();
+    const uint64_t samples = s_samples;
+    fprintf(s_clock_probe, "%u,%llu,%llu,%llu\n", frame, (unsigned long long)samples,
+            (unsigned long long)ticks, (unsigned long long)s_clock_frequency);
+    fflush(s_clock_probe);
+}
 static void wav_header(FILE* f, uint64_t frames) {
     const uint32_t data = (uint32_t)(frames * 4u > 0xFFFFFFF0u ? 0xFFFFFFF0u : frames * 4u);
     uint8_t h[44] = {'R','I','F','F',0,0,0,0,'W','A','V','E','f','m','t',' ',16,0,0,0,1,0,2,0,
@@ -146,9 +161,18 @@ static void audio_vblank(void) {
             snprintf(p, sizeof p, "%sbag2jp_audio_sync.log", b ? b : ""); s_async = fopen(p, "w");
             snprintf(p, sizeof p, "%sbag2jp_audio.wav", b ? b : ""); s_wav = fopen(p, "wb");
             if (s_wav) wav_header(s_wav, 0); else s_audio = 0;
+            if (s_wav) {
+                s_clock_frequency = SDL_GetPerformanceFrequency();
+                snprintf(p, sizeof p, "%sbag2jp_clock_probe.csv", b ? b : "");
+                if (s_clock_frequency) s_clock_probe = fopen(p, "w");
+                if (s_clock_probe)
+                    fputs("frame,samples,producer_ticks,producer_hz\n", s_clock_probe);
+                else fputs("audio clock probe unavailable\n", stderr);
+            }
         }
     }
     ++af;
+    audio_clock_probe(af);
     if (s_async) { fprintf(s_async, "%u %llu\n", af, (unsigned long long)s_samples); if ((af & 63) == 0) fflush(s_async); }
 }
 

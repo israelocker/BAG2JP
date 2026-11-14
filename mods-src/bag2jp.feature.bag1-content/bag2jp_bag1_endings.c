@@ -19,6 +19,7 @@ typedef struct { unsigned character; uint16_t models[2]; const char* movie; } En
 static const EndingProfile profiles[] = {
     {0, {95,167}, "HEAT_END.mpg"},
     {1, {109,181}, "STRI_END.mpg"},
+    {9, {89,161}, "GAS_END.mpg"},
 };
 enum { SCRIPT = 0x8009635c, DANCE = 0x80096500, STUB = 0x80096630 };
 typedef struct { uint32_t address, old, value; unsigned code; } SavedWord;

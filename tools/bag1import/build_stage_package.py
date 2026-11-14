@@ -79,12 +79,27 @@ def build_from_project(root, name):
                 k0 = c_keys[i0]
                 k1 = c_keys[i1]
                 resampled_keys.append(tuple(int(round(k0[c] + (k1[c] - k0[c]) * frac)) for c in range(6)))
-            new_track_len = 4 + len(resampled_keys) * 12
+        new_track_len = 4 + len(resampled_keys) * 12
         new_cam = struct.pack('<II', new_track_len, (c_flags << 16) | len(resampled_keys))
         for rk in resampled_keys:
             new_cam += struct.pack('<6h', *rk)
         new_cam += bytes(4)
         camera = new_cam
+    cam_scale = float(config.get('camera_scale', 1.0))
+    if cam_scale != 1.0:
+        # Keys are s16 eye xyz + target xyz: scale the eye-target distance, keep the target.
+        c_track_len, c_flags_keys = struct.unpack_from('<II', camera, 0)
+        c_nkeys = c_flags_keys & 0xFFFF
+        if c_track_len != 4 + c_nkeys * 12:
+            raise ValueError('camera_scale expects 12-byte eye/target keys')
+        body = bytearray()
+        for i in range(c_nkeys):
+            k = struct.unpack_from('<6h', camera, 8 + i * 12)
+            eye = [int(round(k[3 + c] + (k[c] - k[3 + c]) * cam_scale)) for c in range(3)]
+            if any(not -0x8000 <= v <= 0x7FFF for v in eye):
+                raise ValueError(f'camera_scale {cam_scale} overflows s16 at key {i}: {eye}')
+            body += struct.pack('<6h', *eye, k[3], k[4], k[5])
+        camera = struct.pack('<II', c_track_len, c_flags_keys) + body + bytes(4)
     first_stock_track = struct.unpack_from('<I', members[12])[0]
     members[12] = camera[:-4] + members[12][4 + first_stock_track:]
     if config.get('empty_animation_list') and len(members) > 13:

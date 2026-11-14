@@ -33,6 +33,8 @@ known_crc32 = [
 seeds = "seeds/ghidra_funcs.txt"
 out_dir = "generated"
 strict = true
+mod_instruction_sites = ["0x8001F8A4", "0x8002D818", "0x8002BA18"]
+mod_function_entry_funcs = ["0x8002D06C"]
 
 [runtime]
 window_title = "BAG2JP Recompiled"
@@ -47,6 +49,7 @@ aspect_ratio = "4:3"          # widescreen is mod-owned (bag2jp.enhancement.wide
 internal_resolution = "4k"
 resolution_reference_lines = 240
 render_thread = true          # GL on its own thread: driver stalls leave the guest frame
+present_thread = true         # uncouples presentation flips from frame pacing
 # --- PGXP (needs the PGXP hook build, see CMakeLists): no vertex wobble,
 # perspective-correct textures. Depth buffer off (low compatibility).
 geometry_correction = true
@@ -92,4 +95,4 @@ required_tracks = 1
 required_disc_fp = "40ad17afa68eed98be76728e23b9558229989bce72a2be7f7db469771ff626a8"
 
 [audio]
-buffer_ms = 90                # output buffer: how far the sound heard lags the game (default 180)
+buffer_ms = 45                # output buffer: how far the sound heard lags the game (default 180, 45ms for low-latency rhythm precision)

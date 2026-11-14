@@ -5,7 +5,7 @@ tags: ["assets", "archive", "reference"]
 summary: "Identidad de assets, herramientas instaladas y uso pertinente obligatorio con historial individual de efectividad."
 related: ["notes/character-alternate-entries.md", "notes/bag1-stage-song.md"]
 created: "2026-10-26"
-updated: "2026-11-06"
+updated: "2026-11-13"
 edited: "2026-11-06"
 doc_kind: reference
 ---
@@ -117,10 +117,16 @@ todos los historiales como contexto de inicio. Consultar solo los pertinentes.
 | [TIMedit](tool-evidence/timedit.md) | Haya dudas de píxeles, coordenadas, CLUT o STP en TIM; trabajar sobre copias |
 | [spimdisasm](tool-evidence/spimdisasm.md) | Se necesite desensamblado MIPS estructurado independiente de un rango identificado |
 | [m2c](tool-evidence/m2c.md) | Convenga obtener C revisable de MIPS ya delimitado; contrastarlo en Ghidra |
-| [asm-differ](tool-evidence/asm-differ.md) | Se comparen dos revisiones MIPS de una función/parche, con configuración y objdump verificados |
+| [ffmpeg-skill](tool-evidence/ffmpeg-skill.md) | Cuando haga falta medir, recortar, comparar frames, extraer o medir audio, generar montajes o comprobar archivos de video/audio en el proyecto |
+| [bag2_record.py](tool-evidence/bag2-record.md) | Siempre en toda validación en juego (AGENTS «Validación en juego grabada»): video + audio exacto del juego alineado a fotogramas; skill `bag2-game-recording` |
+
+### ffmpeg-skill (instalado en el proyecto, 2026-11-10)
+
+Integrado en `tools/ffmpeg-skill` (v3.2.3). Doctor: 84 capacidades disponibles, 0 requeridas faltantes, 1 opcional faltante (`parakeet`). **Uso obligatorio cuando sea pertinente** para evidencia o procesamiento de video/audio; no sustituye pruebas de juego ni demuestra fidelidad por sí solo. No aplicar normalización, eliminación de silencios ni cambios de velocidad a evidencia original sin autorización. Historial: `notes/tool-evidence/ffmpeg-skill.md`." Desde 2026-11-12 la copia cargada como skill es `.agents/skills/ffmpeg-skill` (v3.6.0, completada con autorización); `tools/ffmpeg-skill` (v3.2.3) queda duplicada hasta que el owner decida (ver ffmpeg-skill-002).
 | [Ghidra / PSX / PsyQ](tool-evidence/ghidra-psx-psyq.md) | Siempre según AGENTS; firmas PsyQ solo cuando aporten a la identificación concreta |
 | [PCSX-Redux](tool-evidence/pcsx-redux.md) | Un diagnóstico complementario necesite GPU/GTE/breakpoints y no lo resuelva la referencia nativa; respetar autorización y sesiones |
 | [funcmatch.py](tool-evidence/funcmatch.md) | Se busquen equivalentes de funciones de los ejecutables principales BAG1/BAG2, no overlays |
+| [Intérprete PSXRecomp](tool-evidence/psxrecomp-interpreter.md) | Haga falta ejecutar un tramo MIPS real fuera del juego con RAM/callees delimitados; no sustituye render/cadencia ni aceptación en partida |
 
 No se impone una prueba peligrosa ni un cambio de configuración ajeno al objetivo.
 Si procede la herramienta pero está bloqueada, ya existe evidencia reutilizable

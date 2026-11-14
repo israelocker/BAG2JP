@@ -5,11 +5,103 @@ tags: ["tools", "evidence"]
 summary: "Historial de Ghidra MCP y soporte PSX/PsyQ; no certifica identificación automática."
 related: ["notes/assets.md", "AGENTS.md"]
 created: "2026-11-06"
-updated: "2026-11-11"
+updated: "2026-11-14"
 doc_kind: evidence
 ---
 
 # Ghidra / PSX / PsyQ — historial
+
+## 20261114-ghidra-initial-anchor — offset nativo y referencia READY
+
+- Puente stdio instalado, Ghidra12.1.4 e instancia existente preservados. Consultas con
+  `D:/Dev/Tools/ghidra-mcp-python/python.exe _work/gaso/probe_call.py`: siempre
+  `get_program_info()` primero; main JP SLPM_862.19, SHA256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe, sin overlay.
+- `decompile_function_by_address(0x8002DA74)` confirma focal8006D98C; lecturas de
+  80044480/192B y8002DCFC/12B contrastan SetGeomOffset/SetGeomScreen.
+  La segunda devuelve `00 01 04 24 39 11 01 0c 78 00 05 24`: argumentos256/120.
+  Evidencia `alignment-{gte-setup,geom-offset}-ghidra.json` y
+  `alignment-measure3-offset-mcp.json`, en `_work/gaso/drift/end-center/`.
+- Contraste independiente: código GTE del framework aplica factor horizontal0.75 para
+  16:9; cámara y raíces muestreadas en grabación aceptada initial-alignment-measure3.
+  El cálculo previo lo omitía: se corrige con nueva evidencia, no reescribiendo su historial.
+  Modelo READY propone±1300; no certifica posición del cuerpo ni ausencia de recorte.
+- Capstone se detuvo en ctc2 no soportado; repetición con skipdata mantuvo los bytes
+  explícitos, sin interpretar datos omitidos como instrucciones. MCP verifica los bytes.
+  Uso útil para corregir el modelo; tiempo/manual/ahorro no medidos. Siguiente: revisión grabada.
+
+## 20261114-ghidra-wider-home-implementation — cámara y costura final
+
+- Ghidra12.1.4 por puente stdio instalado, instancia existente preservada. Cada llamada
+  de `_work/gaso/probe_call.py` ejecuta primero `get_program_info()`; main JP SLPM_862.19,
+  SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; sin overlay.
+- Decompilaciones80014E10→FUN80014C3C,80017AC0,8002C404 y8002DA78→FUN8002DA74:
+  eye8005D158, target8005D0C8, matriz8005D0F0, focal8006D98C aplicado por FUN80044504.
+  Salidas `wider-home-{camera,projection,pose,geom}-ghidra.json` en el directorio end-center.
+- Verificación final `read_memory(address="0x8002BA08",length=32)` devuelve
+  `03 3a 07 00 21 20 40 02 21 28 20 02 10 00 a6 27 17 b6 00 0c ff ff e7 30 38 00 42 8e 00 00 00 00`;
+  a2=sp+10 y JAL8002D85C coinciden con pruebas y emisión AOT aislada.
+- Intento con py3.13 falló antes de MCP: ModuleNotFoundError mcp. Repetido con
+  D:/Dev/Tools/ghidra-mcp-python/python.exe y pwsh respondió, sin instalar ni reiniciar GUI.
+  Evidencia `wider-home-seam-final-ghidra.json`.
+- Independencia: ocho snapshots RAM de baseline grabado aceptado, fingerprints host y
+  generación shard08. Útil para cálculo y orden de inicialización; offset geométrico256/120
+  aún supuesto, no prueba alineación visual. Tiempo/manual/ahorro no medidos.
+  Siguiente: revisar la partida experimental grabada, no repetir consultas sin nueva duda.
+
+## 20261114-ghidra-wider-home — inicialización y separación de bailarines
+
+- Propósito: localizar la referencia inicial que el owner pide abrir bajo cada barra,
+  sin probar otra partida ni modificar el análisis. Ghidra12.1.4, GUI Java existente;
+  el catálogo directo no exponía Ghidra y los puertos inspeccionados antes no respondían.
+- Puente instalado: `D:/Dev/Tools/ghidra-mcp-python/python.exe
+  _work/gaso/probe_call.py <tool> <json> <output>` con `pwsh.exe`;
+  el script abre stdio `-m ghidra_mcp --ghidra-server http://127.0.0.1:8080/`.
+  `get_program_info()` primero en cada conexión confirmó `SLPM_862.19`, JP/PSX LE32,
+  SHA256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  No se identificó overlay ni se abrió otra GUI/reinició Java/cambió configuración.
+- Consultas reales: `decompile_function_by_address(address="0x8002B5BC")`,
+  `disassemble_function(address="0x8002B5BC",limit=320)`,
+  `read_memory(address="0x80051918",length=12)`. Listado filtrado `?disass` del puente
+  confirmó el schema de disassembly antes de usarlo. Salidas `wider-home-init-ghidra.txt`,
+  `wider-home-init-disasm.json`, `wider-home-stage-table.json` en
+  `_work/gaso/drift/end-center/`.
+- Fallo retenido: primer comando con powershell.exe eliminó comillas del JSON y produjo
+  `JSONDecodeError` antes de llamar MCP. Mismo comando con pwsh.exe respondió; no fue
+  un fallo de Ghidra. La ausencia del catálogo directo no implicaba backend irrecuperable.
+- Evidencia: home ordinario = ±tablaStage×4×zoom/256 (±520 para tabla0x82/zoom256);
+  stage5 tabla0x56; stage0xB/modo4/personajes especiales tienen excepciones.
+  Vector de inicialización en a2=sp+0x10 antes de JAL8002BA18 a8002D85C.
+- Independencia: bytes originales de tabla/JAL y homes RAM históricos coinciden en
+  `wider-home-audit.json` (hashes completos). Resultado útil para localizar seam y
+  causa de cercanía; no resuelve proyección objetivo ni valida un nuevo home.
+  Tiempo/manual/ahorro no medidos. Siguiente: calcular posición contra cámara inicial.
+
+## 2026-11-13 — HUD Gas-O: consumidor y límites de la prueba UV
+
+- Propósito: rótulo nativo BAG2 por lado, sin cambiar el descriptor compartido de Bi-O.
+- Entorno: Ghidra 12.1.4 instalado; MCP `get_program_info()` confirmó main japonés
+  `SLPM_862.19`, PSX LE32, SHA256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  Consultas relevantes: `decompile_function_by_address(0x800342dc)` (selección/carga
+  de packs) y `decompile_function_by_address(0x800220b8)` (layout de nodos y type4).
+- Fallo conservado: consulta por nombre supuesto `FUN_800274c4` devolvió
+  `FUNCTION_NOT_FOUND`; no se creó una función ni se modificó análisis.
+- Overlay005 no estaba cargado en el main del GUI. Se reutilizó la exportación aislada
+  `_work/gaso/hud/descriptor-decompile/80093de0.c`; NO es una nueva descompilación MCP
+  del overlay ni prueba del código residente. Archivo `assets/archive/system/005.dbi`
+  SHA256 `bc5f3045084e4b3e19009910441627977863c8b5791b5cdb716a766e68b28fb2`,
+  payload a `0x8008f890` después de 12 bytes; consumidor `0x80093de0`.
+- Contraste independiente: Capstone WSL y palabras originales verificaron hook
+  `0x80093f6c=3c0400ff`, JAL anterior `0c012649` y SH `a6220012`.
+  Harness host prueba las cinco escrituras de sprite; no dispatcher real.
+- Resultado: útil para delimitar carga, layout y hook; exclusión UV corporal NO
+  acreditada. Inventario `bag2-font/corrected/model-inventory.json`: 16 miembros
+  de modelos USA/JP parseados completos; cuerpos tienen 14 nodos type4. Un primer
+  inspector limitado a type0/1/2 se detuvo con `ValueError: 4`; se amplió el inventario,
+  no se interpretó el fallo como ausencia de UV. Sin modificar proyecto Ghidra.
+- Tiempo, ahorro y retrabajo manual: desconocidos. Siguiente: identificar todos los
+  layouts UV y selección de textura antes de integrar. No se usó funcmatch: no se
+  buscaban equivalentes de funciones main BAG1→BAG2.
 
 ## 2026-11-07 — ghidra-040 — controlled native-reference session check
 
@@ -1596,3 +1688,498 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Resultado: P3 callbacks implementados y verificados en host. Siguiente: estudio
   de publica/restore quiescente con guard, sujeto a aprobación del propietario.
   Tiempo/retrabajo/ahorro no medidos.
+
+## caught-retire-contract-20261112 - 2026-11-12 UTC
+- Use: Ghidra 12.1.4 MCP, `SLPM_862.19` sha256 `ea5a1668…851efe` (reopened this session with `ghidraRun.bat` + `BAG2JP.gpr`; Tip dialog closed via `_work/click.ps1`). Queries: `get_program_info`; `read_memory` 0x8002d4b8 (`4c 15 08 ae`) and 0x8002d6cc (`50 15 02 ae`); `get_xrefs_to` 0x8005f808/80c/810/814; `get_function_by_address` over 130 capstone hits; `disassemble_function` 0x8002bc38 (offset 10, 34 lines).
+- Result: retirement points confirmed (current=a2 at 0x8002d4b8, previous=current at 0x8002d6cc). Static xrefs did not resolve 0x8005f80c/814 contents (RAM dump did). The 130 slot-table accesses group into 13 named functions plus the undefined controller region; FUN_8002bc38 reads previous only to compare with current. Useful: refuted Goldfish S2 for direct table reads. Limit: cached clip pointers elsewhere not proven absent.
+- Time: about 10 min including restart; savings not measured. Next: reuse these addresses unless the main executable hash changes.
+
+## 2026-11-12 - caught-active-reuse: contraste del retiro al revisar evidencia
+
+- MCP `get_program_info()` confirmó `SLPM_862.19`, JP main,
+  SHA `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`;
+  `read_memory(0x8002d6cc,4)` devuelve `50 15 02 ae`, sin gaps:
+  previous=current al salir. Instancia existente, sin arranque/configuración nuevos.
+- Útil acotado: se mantiene el límite de retiro; el fallo del segundo golpe se
+  localizó en el contrato host (VERIFY aplicaba reposo), no en esos bytes MIPS.
+  Contraste independiente: trace gf8088 anim1/gf8292 anim89 y regresión host RED.
+- Tiempo/manual/ahorro no medidos. Corrige la estimación temporal «about10min»
+  anterior: no hubo cronometraje que la acreditara. Siguiente: reutilizar bytes
+  mientras no cambie el ejecutable; no hace falta otra consulta idéntica.
+
+## 2026-11-12 - caught-tank-timing: región y límite de procedencia
+
+- Instancia existente Ghidra12.1.4; MCP get_program_info confirmó SLPM_862.19,
+  main JP SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  Consultas anteriores de este ensayo: xrefs a 80087992/8798e/879a2/879a6
+  vacíos; 8005cf24 tiene WRITE8001e47c en FUN_8001e0f4 (inicialización,
+  no demuestra productor runtime). Decompile8001e0f4; segmentos y consulta
+  de función/memoria8009b5b4 no demostraron overlay005 cargado.
+- Hallazgo útil: los decompiles históricos8001e030/8001f6a0 son BAG1 JP,
+  no funciones equivalentes de BAG2. Contraste con procedencia en gaso-import
+  y función BAG2 contenedora FUN_8001f560. No reutilizar sus globals como BAG2.
+- Al retomar: get_program_info() seguido de read_memory(8002d4b8,8) devolvió
+  `4c 15 08 ae 1c 00 7e ae`, sin gaps: store slot actual actor+154c, consistente
+  con el consumidor del visual. No se modificó proyecto/análisis ni abrió otra
+  instancia. No identifica flag/counter de trap en overlay ni autoriza constantes.
+- Resultado útil acotado para identidad/región y descarte de procedencia falsa;
+  timer nativo y estrellas pendientes. Tiempo/manual/ahorro no medidos.
+  Próximo: analizar overlay005 conservando el main y contrastar con trace.
+
+## 2026-11-12 - caught-tank-state: palabra de slot y límite de análisis
+
+- Ghidra12.1.4 MCP get_program_info confirmó instancia existente SLPM_862.19
+  JP main, SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  `decompile_function_by_address(8002d06c)` devolvió FUNCTION_NOT_FOUND;
+  no se creó función ni se alteró análisis para ocultar el fallo.
+- Consulta acotada alternativa MCP `read_memory(8002d4a0,48)` sin gaps:
+  el word8002d4b8 sigue `4c 15 08 ae` (store slot actor+154c).
+  Contraste independiente: comentario existente de retiro en gaso_caught y
+  trace histórico gaso-topmost-reuse-heat-bag1 observa P1 anim74 -> anim6 ->
+  anim74. Justifica observar cambios de slot, no inferirlos comparando el reloj
+  de animación con la edad del tanque. No acredita por sí solo fidelidad nativa
+  del umbral38 ni detecta reinicios74->74 entre dos muestras.
+- Resultado útil acotado/parte decompile bloqueada. Sin cambios a Ghidra,
+  instalación, runtime ni partida; tiempo/manual/ahorro no medidos. Próximo:
+  reutilizar identidad/bytes con el mismo main, investigar005 para estrellas.
+
+## 2026-11-12 - caught-secondary-effect: selector paralelo al motion
+
+- Instancia existente Ghidra12.1.4, MCP get_program_info SLPM_862.19 JP main
+  SHA ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  read_memory518e4/16,51458/32,19d70/32,19e34/32 sin gaps; comparación raw
+  independiente en `_work/gaso/stars-research-report.json` (4/4 iguales).
+- `decompile_function_by_address(80019d70)` falló FUNCTION_NOT_FOUND;
+  get_function_by_address(80019e30) también falló (dirección del delay-slot de
+  retorno, no inicio). get_function_by_address(80019888) encontró196d4;
+  decompile196d4 pasó pero es otro efecto, irrelevante al selector1. Se conservó
+  análisis/sesión; no se crearon funciones en GUI ni se cambió región.
+- Complemento aislado, no sustitución MCP: `py -3.13
+  _work/gaso/trace_bag2_caught.py --follow-up --label <label> --addresses <addr>`
+  con bag2-hit-secondary-effect/80019d70 (13,848s),
+  bag2-hit-secondary-stars/8001a8fc (7,773s),
+  bag2-hit-secondary-update/80019e34 (7,798s),
+  bag2-hit-star-particles/8001ab8c (7,739s), todos exit0. Ghidra headless usa
+  proyecto task-owned gaso-runtime-hooks/slpm.bin, raw main SHA143b4bf8… base
+  80010000; comandos completos y hashes en <label>-trial.json y reporte agregado.
+  El campo heredado mcp_matched_address del wrapper dice2d06c: NO es la consulta
+  nueva de este ensayo; las cuatro comprobaciones nuevas están en el agregado.
+- Hecho estático: tabla atacante[9]=202,1; 0058009b5d0 lee la segunda columna,
+  b5e4 llama19d70(rival,1), b5e8 es delay-slot `move a1,s0`. Selector actor+1724
+  despacha init1a8fc y update1ab8c:8 partículas, separado de slot de motion.
+  Reutilizado005bc5f3045… payload+12/base8008f890 y decompile99e90 anterior:
+  no se repitió. Slot89/90 y timer de202 corroborados con tabla MCP/historial.
+- Resultado útil estático; identidad de bitmap visible de estrellas y orden
+  live no demostrados. No parche/guest write/build/deploy/partida. Tiempo manual
+  y ahorro desconocidos. Próximo: probar identidad de sprite/supresión acotada
+  a publicación propia; no desactivar selector1 global ni cambiar salida90.
+
+## 2026-11-12 - caught-secondary-suppression: sprite y propiedad
+
+- MCP get_program_info confirmó de nuevo SLPM_862.19 JP main SHAea5a1668…;
+  consultas pertinentes nuevas get_xrefs_to80054c88 (10READ, sin writers) y
+  80054c52 (14READ),54c50 (0). No interpretarlas como ausencia de loader:
+  puede escribir el descriptor indirectamente. read_memory54c50/64 muestra
+  campos inicialmente cero; NO representa la VRAM de una partida activa.
+- read_memory8004e3c0/64 confirma tabla deUV40,56 y56,56 para partículas pares
+  y ciclo de paletas8,9,10,11,10,9 para impares. Se reutilizó decompile1ab8c
+  previo (sin otro headless): sprite impar UV72,56/16x16.
+- Contraste independiente con assets/archive/system/010/001.tim: TIM4bpp,
+  origen512,256 -> baseUV0,0,256x256,16 filasCLUT. Bitmap recortado desde bytes
+  originales y paletas8..11 muestra estrella naranja/roja; SHA2560039c3d3…,
+  SHA1 coincide con _container; PNG histórico también coincide con _png_sha1.
+  `_work/gaso/secondary-star-identity.json` conserva100 píxeles no cero,
+  hashes/crop/CLUT. No es captura live ni prueba del descriptor actual54c50.
+- Útil para identidad del asset y alcance del canal (también cue0x0e).
+  Sin modificaciones de Ghidra/runtime; tiempo/manual/ahorro no medidos.
+  Próximo: regresiones host de supresión posterior a propiedad verificada y
+  después validar audiovisual real; no afirmar que MCP validó la partida.
+
+## 2026-11-13 - caught-tank-liquid: verificación MCP y decompiles reutilizados
+
+- MCP `get_program_info`: `SLPM_862.19`, SHA `ea5a166863f1…`, 1324 funciones. Responde.
+- El render nativo del tanque es del main/overlay BAG1 JP, que no está en esta sesión MCP. Se reutilizaron
+  los decompiles contrastados `_work/gaso/native-tank-primitives-decompile/` (8002becc, 8002c430, 8002d3e0,
+  8002cf6c, 8002d020: NCLIP y descarte <=0) y la nota F2 (cilindro 0x3A + E1000600, metal 0x38, tapa 0x30).
+  No se repitió la extracción: entradas sin cambios.
+- Resultado: útil (fijó culling, modo de mezcla y opacidad del metal). Sin modificaciones en Ghidra.
+  Límite: iluminación GTE (8002bbe8) no reproducida, solo aproximada.
+
+## 2026-11-13 - liquid7: cámara y deformación de burbujas
+
+- Propósito: contrastar la proyección del anillo ovalado sin modificar el juego.
+  Ghidra12.1.4/MCP, main JP `SLPM_862.19`, SHA256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`;
+  `get_program_info()` antes de las lecturas, sesión existente reutilizada.
+- Consultas exactas: `get_xrefs_to(address="0x8005d0f0",offset=0,limit=30)`:
+  12 referencias, sin más páginas. `decompile_function_by_address` de
+  8002c338,800198b8,80019e34,80019c38,8002dcf8 (última resuelve a8002dc9c).
+  Consumidores confirman CompMatrix cámara×actor; no son escritores que
+  demuestren escala/aspecto efectivos.8002dc9c fija offset256,120 y H0x180.
+- Validación independiente: helper C `strike_project` aplica0,85 enX y los
+  paquetes reales del host miden18×22; log de partida liquid7 dice aspecto16:9,
+  y gpu_gl_renderer.c5921 explica el stretched present. Prototipo aislado
+  `bubble-aspect-host.json` aproxima circunferencia bajo supuestos explícitos.
+- Resultado: parcialmente útil; descartó asumir que un consumidor escribe la
+  matriz y confirmó offset/H, **no** resolvió cómo consultar aspecto efectivo.
+  Sin cambios en análisis/proyecto. Tiempo manual/ahorro no medidos. Próximo:
+  contrato de aspecto; no repetir estas consultas sin nueva evidencia.
+
+## 2026-11-13 - liquid8 candidate: contrato de aspecto y enlace sin partida
+
+- Propósito: continuar radio dinámico sin confundir estado host con GTE MIPS.
+  Ghidra12.1.4/MCP, sesión existente; get_program_info confirmó main JP
+  SLPM_862.19 SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  Consulta acotada `decompile_function_by_address(address="0x8002dc9c")`:
+  offset256,120 y H0x180, coherentes con la evidencia previa; sin cambios de análisis.
+- La API necesaria no pertenece al MIPS original. Productor real leído en
+  framework pin1a3fc0db303a: view_x_margin solo native-wide2, no squash1;
+  display_info y clasificador alimentan extensión read-only guardada como parche
+  `patches/psxrecomp-display-pixel-aspect.patch`, SHA0a25564a…; no función BAG1
+  equivalente a buscar con funcmatch. No se vuelve a decompilar el render nativo.
+- Validación independiente: RED/GREEN host49 tests,18 casos de API, patch replay,
+  build Windows135s y llvm-nm confirma referencia desde plugin/definición en exe.
+  Ghidra útil para encuadrar H/offset, no demuestra presentación host ni fidelidad.
+  Sin partida nueva; FFmpeg/grabación omitidos hasta autorización. Tiempo de
+  Ghidra/manual/ahorro no medido. Siguiente: autorización y comparación grabada.
+
+## 2026-11-13 - bubble-aspect: despliegue autorizado y correlación de grabación
+
+- Ghidra12.1.4/MCP existente: get_program_info confirma SLPM_862.19/main JP,
+  SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe;
+  get_function_by_address(address="0x8002c404") → cuerpo8002c404..8002ccc7.
+  Se reutiliza decompile previo (cámara×dancer), no cambia código MIPS/análisis.
+- Propósito: fijar seam de proyección y revisar ataques en logs de runtime
+  752e21f0. Spawn/corte gf7190/7329 y retiro después de slot1gf7611; grabador
+  ubica vídeo, inspección independiente ve caída2,862 y cortes5,195/10,033s.
+- Resultado: útil como identidad/seam, no mide por sí solo el aspecto host.
+  Frames llegan~3-4 después de etiquetas en fronteras: latencia sin calibrar.
+  Sin nuevas modificaciones de funciones. Tiempo/manual/ahorro no medidos;
+  revisar tema y toma aceptada16:9, no repetir análisis MIPS sin cambio.
+
+## 2026-11-13 deslizamiento del rival atrapado
+
+- MCP SLPM_862.19 (ea5a1668…): `FUN_80012a94`, xrefs (caller único
+  `FUN_8002ccc8`), `FUN_8002c404` (despacho por estado `+4`) y
+  `list_functions`. Hueco sin función en 0x8002a090..0x8002b5bc; se completó
+  con capstone.
+- Resultado: útil como mapa (re-anclaje de la base y despacho por estado). No
+  prueba por sí solo la causa en tiempo de ejecución. Sin renombres ni
+  modificaciones.
+
+## 2026-11-13 candidato hold: verificación MCP al retomar
+
+- `get_program_info` → SLPM_862.19 JP, SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  `decompile_function_by_address(0x8002ccc8)` confirma base X/Z = raíz menos
+  traslación/2 cuando actor+3 es distinto de cero. Sin cambios al proyecto.
+- Contraste independiente: watch del diagnóstico f7593..8008 y toma aceptada
+  del hold f7245..7663. El primer análisis confundía reloj de canción y frame
+  global: se corrige en notes/gaso-import.md, no se reutiliza esa atribución.
+- Útil para localizar seam nativo; no prueba por sí solo orden de vblank/render.
+  Tiempo/ahorro desconocidos. Próximo: evitar mezcla residual, no repetir lectura
+  inalterada sin nueva pregunta.
+
+## 2026-11-13 clamp nativo CAUGHT
+
+- MCP get_program_info: SLPM_862.19/ea5a1668. Decompile8002d06c falló
+  FUNCTION_NOT_FOUND; read_memory(8002d06c,32) coincidió con trial histórico
+  (raw143b4bf8). Decompile headless existente reutilizado; instancia intacta.
+- Byte5 gobierna clamp/wrap; byte4 detecta vuelta. MIPS original/intérprete:
+  101→1 reanclajes/200ticks, re-hit añade1; callees observados, no ejecutados.
+  Toma aceptada confirma no oscilación periódica, pero re-hit(-4,+3) pendiente.
+  Útil; tiempo/ahorro desconocidos. Próximo: contrato de reentrada y timers.
+
+## 2026-11-13 reentrada CAUGHT: efectos exclusivos de modo1
+
+- Propósito: saber qué omite pasar de modo1(entrada) a modo0(avance) en
+  `FUN_8002d06c` y si esos efectos son inocuos para una pose ya asentada.
+- Consultas MCP (programa SLPM_862.19/ea5a1668, sin escrituras ni reinicio):
+  `decompile_function_by_address(0x8003190c)`, `decompile_function_by_address
+  (0x8002ccc8)`, `decompile_function_by_address(0x80012a94)`,
+  `decompile_function_by_address(0x8002cd48)`, `read_memory(0x80054fe4,80)` y
+  `read_memory(0x80055030,80)`.
+- Evidencia: 3190c despacha callbacks de personaje por byte+4/byte+5;
+  8002ccc8 fija `+0x14b8/+0x14c0 = +0x810/+0x818 - traslación de raíz` (solo
+  lee 0x810); 80012a94 evalúa la raíz del clip y no escribe posición; 8002cd48
+  limita la distancia ancla-base y solo escribe el ancla. Modo1 (líneas
+  125-207) además limpia +0x0a/+0x0b, copia param5 en +0x1c/+0x20 y el frame
+  en +0x24, y llama a 3190c solo si controlador+0x0d==0.
+- Límite: 3190c apunta a tablas por lado cuyo handler del lado2 vive en overlay
+  no cargado en Ghidra (0x801d66e4 sin inicializar); no se ejecutó ningún
+  callback ni callee de render.
+- Resultado: útil para acotar las guardas del candidato modo0. Tiempo/ahorro
+  desconocidos. Próximo: observar controlador +0x0a/+0x0b/+0x20/+0x24 en la
+  próxima toma; no repetir el decompile sin una pregunta nueva.
+
+
+## 2026-11-13 correccion de +0x24 en la guarda de reentrada
+
+- Relectura del bloque param_2 != 0 en `FUN_8002d06c` (lineas 176-199): modo1 fija
+  `pcVar8[0x1554]=0` (frame) y luego `param_1[9]=*(pcVar8+0x1554)` (linea 199), es
+  decir +24=0, no 1. La guarda inicial (`== GASO_CAUGHT_LAST_FRAME`, 1) era falsa
+  y habria dejado la conversion inerte. Corregida a `GASO_CAUGHT_ENTRY_FRAME_COPY` (0).
+- Evidencia independiente: `8002d06c.asm:399` (`sw $v0,0x24($s3)`) es la unica
+  escritura de +0x24 en esa funcion; no hay otro writer en el mismo bloque.
+- Residuales declarados tras la correccion: modo0 tampoco reinicia +0x10 (linea 184)
+  ni +0x20 (linea 128), ni ejecuta los callbacks 8003190c (lineas 131-167).
+
+## 20261113-ghidra-hud — nombre del marcador Gas-O, candidato offline
+
+- MCP get_program_info confirmó SLPM_862.19/main JP, SHA
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  decompile_function_by_address(80032270) devolvió el contenedor80031d3c
+  (carga texturas/modelos, no consumidor HUD). get_xrefs_to(80054c88)
+  encontró lectores8001ab8c/8001a0a4; decompile8001a0a4 confirma uso de CLUT
+  compartida, sin demostrar su contenido. get_xrefs_to(80054c40) no dio refs:
+  negativo inconcluso, no prueba de ausencia de writer.
+- Complemento headless12.255s, exit0: `py -3.13 _work/gaso/hud/trace_hud.py`,
+  procesa solo programa aislado bag2-combat005-duration-payload.bin, sin tocar
+  sesión GUI. Región JP/overlay005 SHA bc5f3045084e4b3e19009910441627977863c8b5791b5cdb716a766e68b28fb2,
+  payload8008f890 tras12bytes. Export FUN80093de0 y comandos/hashes exactos
+  en `_work/gaso/hud/descriptor-{decompile,trial.json,headless.log}`.
+- Contraste independiente: descriptores originales a offsets ee52/eebe,
+  bytes20702d070100, y tests de salida del constructor18DFS. Consumidor usa
+  char*6+costume*0x6c, textura u16+4 y UV/width/height del registro.
+- Goldfish2 revisores: MCP de ambos identificó main; una consulta a80093de0
+  falló FUNCTION_NOT_FOUND y otra lectura dio memoria no inicializada (overlay
+  no residente en ese programa). No se presenta como consulta MCP del overlay.
+- Resultado útil para recuadro, no para CLUT efectiva ni visibilidad. Falta
+  contraste del orden RGB del CLUT compartido. Tiempo total/manual/ahorro no
+  medidos; no nueva partida. Siguiente: conservar límite en candidato B.
+
+### Consultas de audio previas del mismo bloque, todavía WIP
+
+- Mismo main JP/MCP: decompile8003190c mostró dispatcher por char+side,
+  read_memory80054fe4,length160 devolvió tabla de handlers de overlay.
+  decompile8002e478 y8002e2d0 confirmó wrapper con slot libre y tabla6*u16
+  buscada por cue, retorno-1 si no existe. No se leyó un handler overlay cargado.
+- Contraste con8002d06c exportado:779/782 son eventos para receptor char9,
+  no identidad del sonido perdido con Heat. El handler Heat recibe1/4/12d/3e9.
+  Atribución anterior a cue782 retirada en el ledger/estado; falta identificar
+  el sonido real. Referencias nativas headless801d6480/666c/7218 reutilizadas,
+  no consultas MCP nuevas de BAG1. Cola de audio candidata sin aceptación.
+- Resultado útil para API/evitar una atribución falsa; tiempo/manual/ahorro
+  desconocidos. Próximo A: verificar pulso/onset/banco real y Goldfish,
+  sin presentar el build872e6753 como sonido correcto.
+
+## 20261113-ghidra-fan — cálculo del giro y lectura del nivel
+
+- MCP get_program_info confirmó main BAG2 JP SLPM_862.19, SHAea5a1668…
+  (completo en ensayo HUD anterior). get_xrefs_to(8006d994,limit100):47refs,
+  sin más páginas; writers8002db48/db54/dc2c en8002da74. Decompile8002da74
+  confirma delta8006d994=8005d2dc salvo primer frame/pausa. Xrefs8005d2dc:
+  writers main8001e938 y reset8001ecf0; decompiles confirman diferencia de
+  contador y reset0, no un escalado8x. No se midió el delta efectivo en juego.
+- Complemento headless `py -3.13 _work/gaso/stage-fan/trace_fan.py`: imports
+  propios aislados native-usa-fan.bin a801e17b0, ported-fan.bin a801daf10.
+  Export801e22c8/801dba28, exit0 en7.770/7.910s. Comandos exactos en
+  `stage-fan/ghidra-trials.json`; bytes fuente y candidatos before/ bajo esa ruta.
+  No se cambió el programa GUI. Son decompiles del nativo y port ANTERIOR a C.
+- Overlay nativo USA SHA0d3a49731d5d44f62e108ce925aa37fafc044896a3e7ce5ab80f1efdc430a320.
+  El giro es speed*delta/16; el port previo /2. Goldfish detectó además lectura
+  80070108 en ruta nivel1: confirmada por decompile y MIPS. Candidato final
+  corrige divisor y LUI, no todo el motor general de reubicación.
+- Independencia: Capstone sobre bytes, pruebas de generador y ejecución de144
+  casos originales/corregidos con intérprete PSXRecomp; port previo no coincide.
+  Detalle en notes/gaso-import.md sección C. Resultado útil, no aceptación visual,
+  ni prueba de cadencia/RPM. Tiempo/manual/ahorro global desconocidos.
+
+## 2026-11-13 reanudación Gas-O: verificación MCP al iniciar sesión
+
+- `get_program_info` → SLPM_862.19, SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe,
+  1324 funciones; MCP ya conectado (no se relanzó Ghidra).
+- `get_function_by_address(0x8002d06c)` → FUNCTION_NOT_FOUND: la entrada CAUGHT
+  usada por el plugin no está definida como función en el proyecto; no se creó.
+  `get_function_by_address`/`disassemble_function(0x8003190c, limit4)` →
+  FUN_8003190c 160 bytes, prólogo `addiu sp,-0x18`: coincide con el dispatcher
+  de eventos del actor anotado en notes/gaso-import.md (plan A-E).
+- Solo comprobación de conexión/programa; no es evidencia nueva de utilidad.
+  Tiempo/ahorro desconocidos. Próximo: consultas acotadas cuando F o A lo requieran.
+
+## 20261113-ghidra-cleanup-inventory — 2026-11-13 UTC — Inventario de conservación
+
+- Tipo: arranque/identidad y lectura acotada, sin cambios de análisis.
+- Entorno: Ghidra instalado 12.1.4; MCP `get_program_info()`, después
+  `list_segments(offset=0, limit=12)` y `list_segments(offset=12, limit=14)`;
+  paginación completa de 26 bloques, última respuesta `has_more=false`.
+- Entrada: proyecto existente `/SLPM_862.19`, ejecutable japonés SLPM_862.19,
+  PSX LE32, SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  CODE inicializado `80010000..8005cfff`; no se analizó un overlay.
+- Observado: sesión MCP activa con 1324 funciones; proyecto y análisis se deben
+  conservar, no clasificar `ghidra/` como caché por estar ignorado en Git.
+- Contraste independiente: `.gitignore` excluye `ghidra/`; el inventario local
+  `_work/cleanup-audit-20261113/files.json` mide 13,88 MB / 20 archivos allí.
+  El hash del ejecutable coincide con la consulta de inicio anterior.
+- Dictamen: inconcluso como prueba de utilidad para limpieza; confirma identidad
+  y sesión, no demuestra que otros archivos sean prescindibles. No se modificó
+  el programa, no se inició otra instancia ni se obtuvieron decompilados.
+- Medición: duración MCP y preparación/revisión no medidas; ahorro no medido.
+- Siguiente: conservar proyecto Ghidra. Candidatos y límites del inventario en
+  `notes/project.md`; ninguna eliminación autorizada por esta comprobación.
+
+### Seguimiento del mismo ensayo — 2026-11-13 — lista conservadora
+
+- MCP `get_program_info()` volvió a confirmar `/SLPM_862.19`, PSX LE32,
+  SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`,
+  1324 funciones. Se reutiliza la lectura paginada anterior de segmentos: mismos
+  insumos y objetivo, repetirla no aportaría evidencia de limpieza.
+- Contraste: `conservative-list.json` no incluye el proyecto ni binarios; solo
+  205 cachés Python y un temporal de audio, con hashes y exclusión de enlaces/Git.
+- Dictamen sigue inconcluso sobre utilidad para decidir borrados; sin cambios de
+  Ghidra, decompilados ni nueva instancia. Tiempo y ahorro no medidos.
+- Siguiente: conservar Ghidra; esperar aprobación de eliminación de lista exacta.
+
+## 20261113-ghidra-hud-uv - layout de primitivas, texturas y carga de packs
+
+- MCP `get_program_info()`: `/SLPM_862.19`, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  Decompilados/desensamblados: `FUN_800220b8` (relocador), `FUN_800201b0`
+  (primitivas type1/2 texturizadas), `FUN_80021ff0` (type4: solo SetPolyF3/F4,
+  color 0x303030), `FUN_800315c8`/`FUN_80031268` (subida de texturas, entradas
+  0x30), `FUN_800342dc` (máquina de carga de packs) y `FUN_8001f874` (lee
+  entrada DF2_: offset `lw s0,0x8(a0)` en 0x8001f8a4, tamaño en 0x8001f8a8).
+- Uso: tablas de conteo/stride/byte de textura (`tex_idx = byte & 0x1f`) para
+  `_work/gaso/hud/bag2-font/audit_body_uv.py` (SHA `4ea9fe9b…`); informe
+  `corrected/body-uv-audit.json` (SHA `f5df828c…`).
+- Validación independiente: el mismo lector sobre modelos stock detecta
+  `tex_idx 1` (Heat 231, Strike 551, accesorio Bi-O 20 vértices), luego no
+  devuelve ceros triviales. 16 modelos Gas-O: 3075 vértices, todos `tex_idx 0`.
+- Dictamen: útil. Demuestra la exclusión UV de body2 sin ejecutar el juego; no
+  demuestra identidad del pack residente ni el render real.
+- Medición: tiempo y ahorro no medidos.
+- Siguiente: hook latch en 0x8001f8a4 para identidad residente del pack HUD.
+
+## 20261113-ghidra-cam - proyección, OT y escala del escenario Gas-O; firma del latch
+
+- MCP `get_program_info()`: `SLPM_862.19`, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`. Solo
+  programa principal; el renderer de nodos vive en overlays (003.dbi), leídos con
+  Capstone (`20261113-capstone-cam`).
+- Consultas: `FUN_8002da74` (H por fotograma vía `FUN_80044504(DAT_8006d98c)`,
+  `ClearOTagR(base-4,0x1001)`), `FUN_8002dc9c` (H por defecto 0x180),
+  `FUN_80014318` (pista de cámara: H = bits 16..27 si no es cero),
+  `FUN_8002d85c` (halfwords 0x1000/0x400/0x100), xrefs de `*(0x8005D410)` (solo
+  `FUN_8001F874` y el cargador `FUN_8001F6FC`), `read_memory(0x8001F8A0,12)`.
+- Resultados: H BAG2 = 384 = BAG1 (scus 0x800774E0, reset 0x180) y pistas Gas-O
+  con H=0: el FOV no es la causa. OT del mismo tamaño en ambos. `0x8002d85c` es
+  igual en BAG1 (0x800320c0): no es la diferencia de escala de mundo; la matriz
+  1/4 frente a 3/8 **no se localizó en código**, se comprobó empíricamente
+  (`_work/gaso/cam-ws/render_probe.py`: cam95 a escala 0.25 reproduce el vacío
+  de `f855.png`). La palabra previa del latch es `0x3C028006`, no `0x3C020006`:
+  error real corregido y fijado por test contra `assets/disc_files/SLPM_862.19`.
+- Validación independiente: bytes iguales en `_work/mainexe/slpm.bin`; test
+  `test_load_latch_site_matches_original_executable`; paquete `stage197`
+  con `model_scale [3,2]` (SHA `b663417f…`) y `test_stage_port.py` 6/6 en WSL.
+- Dictamen: útil (descartó FOV/OT, detectó un fingerprint erróneo). Sin prueba
+  en juego; escala de mundo no localizada en código.
+- Medición: tiempo y ahorro no medidos.
+- Siguiente: validar cámara y HUD en partida grabada, con autorización.
+
+## 20261114-ghidra-drift
+- Purpose: explain lateral convergence of BAG1 dancers (owner question 2026-11-14).
+- MCP: get_program_info (SLPM_862.19 sha ea5a1668…); decompile 0x8002ccc8, 0x8002c404, 0x80012c9c,
+  0x8002d85c, 0x8002b5bc; get_xrefs_to 0x8002b5bc (FUN_8001e0f4 x4); read_memory 0x80051900/0x40,
+  0x80051a70/0x30; disassemble FUN_8001e0f4.
+- Evidence: re-anchor on clip change; root = base + clip tx x dancer scale >> 7; hard leash
+  FUN_8002cd48; home X +-4*130 = +-520, radius 440 (x zoom >> 8); ctl 0x8005F820 + side*0x98
+  (+0x28 home, +0x38 radius).
+- Validation: BAG1 counterpart read independently with Capstone (capstone.md 20261114-capstone-drift).
+- Outcome: useful; in-game values unverified. Time ~40 min, no rework.
+- Next: owner decision on proportional BAG1 radius.
+
+## 20261114-ghidra-psx-psyq-leash-release-review — 2026-11-14 UTC — radio BAG1 y liberación nativa
+- Tipo: uso real, solo lectura; Ghidra12.1.4/PSX loader, JP main `SLPM_862.19`, base0x80010000.
+- MCP exacto: `get_program_info()`; `decompile_function_by_address(address="0x8002cd48")`, `("0x8002B5BC")`, `("0x8002D85C")`; `read_memory(address="0x8002ad00", length=64)`.
+- Fallo conservado: `decompile_function_by_address(address="0x8002ad00")` devolvió FUNCTION_NOT_FOUND; read_memory sí verificó el swap. Ningún cambio de análisis.
+- Entrada main SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`; identidad MCP ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Resultado: consumidor XZ, inicialización raw/active y zoom nativos verificados. Contraste: bytes/fingerprints del test, código generado y ruta runtime de VBlank; no reproducción de interleaving en juego.
+- Evidencia con hashes: `_work/goldfish/bag1-leash-verdict.json`; RED/GREEN y suite29/3 tests. Liberación overlay complementada con Capstone, no sustituye el uso obligatorio MCP.
+- Dictamen: útil para semántica de main; lectura de overlay no realizada en MCP (programa abierto es main), no se afirma lo contrario.
+- Medición: duración de consultas/preparación/revisión no medida; ahorro no medido.
+- Siguiente: validar candidato solo con otra partida autorizada. `funcmatch.py` omitido: no se busca ahora equivalencia main BAG1/BAG2.
+
+## 20261114-ghidra-release-validation — 2026-11-14 UTC — corrected leash live-read anchor
+- Tipo: uso real de solo lectura; Ghidra12.1.4, PSX loader, JP main SLPM_862.19 (no overlay005).
+- MCP exacto: `get_program_info()`; `read_memory(address="0x8002D810", length=20)`.
+- Entrada/identidad SHA-256: ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; PSX:LE:32:default.
+- Resultado: hex `28006426100805263800668e52b3000cb8140726`; consumidor lee ctl+0x38 y llama 0x8002CD48, pasando actor+0x810 y actor+0x14B8.
+- Contraste: el muestreador read-only de la nueva toma exige estos mismos 20 bytes en RAM antes de recoger raíz/base; runtime candidato3b43cff8. Enlace vivo y aceptación audiovisual pendientes al escribir esta entrada.
+- Evidencia: `_work/gaso/drift/run_leash_release_capture.py` y `release-run-preflight.log`; no modificaciones de análisis ni de memoria del juego.
+- Dictamen: útil como ancla independiente de direcciones JP; no prueba movimiento ni sincronización de captura.
+- Medición: consultas/preparación/revisión no medidas; ahorro no medido.
+- Siguiente: exigir grabación aceptada y contrastar posiciones, flags y liberación. Sin búsqueda de equivalencias main; funcmatch no pertinente.
+
+## 20261114-ghidra-release-live-contrast — 2026-11-14 UTC — enlace vivo confirmado (complemento del anterior)
+- Tipo: verificación de contraste, sin nueva consulta de análisis; Ghidra 12.1.4, JP main `SLPM_862.19`.
+- Contraste: el muestreador de la toma aceptada exigió en RAM los mismos 20 bytes
+  `28006426100805263800668e52b3000cb8140726` antes de cada bloque de muestras; 171 filas con
+  `all_runtime_pinned`/`all_read_only` verdaderos y 0 lecturas con heartbeat cambiado.
+- Resultado: las direcciones usadas (`ctl+0x38/0x3C`, `actor+0x810`, `actor+0x14B8`) corresponden a
+  las confirmadas por MCP; la toma `bag1-release-autoplay` (runtime `3b43cff8…`) mostró radio 318
+  y liberación `0x7FFFFFFF` sin reescritura.
+- Límite: el contraste demuestra la dirección y el valor, no píxeles en pantalla ni sincronía exacta.
+- Dictamen: entrada anterior corregida por complemento, no reescrita; Ghidra sigue siendo el ancla.
+- Medición: no medida; ahorro no medido. Siguiente: ninguna consulta pendiente para este hito.
+
+## 20261114-ghidra-end-center — 2026-11-14 UTC — costura nativa del centrado final
+- Tipo: uso real acotado; Ghidra 12.1.4 por MCP, instancia existente preservada.
+- Consultas: `get_program_info()` primero; `read_memory(address="0x8002d7f4", length=56)`.
+- Entrada: main JP `SLPM_862.19`, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+- Resultado: lectura sin huecos confirma guardas actor[3]/ctl[0xC], sitio8002D818
+  `8E660038` (lw a2,38(s3)), llamada8002D81C a8002CD48 y después8002C404.
+  No se modificó análisis ni memoria del juego.
+- Contraste independiente: fingerprints del ejecutable original en
+  `tools/test/test_bag1_leash.py`; regeneración aislada solo añade el callback en las
+  dos rutas de shard09. Evidencia `_work/gaso/drift/end-center/codegen/report.json`
+  y build `_work/workflow/20261114T071651559442Z-bag1-end-center-reviewed/metrics.json`.
+- Dictamen: útil para anclar la costura y conservar el orden nativo; no prueba el
+  consumidor de pose, la cadencia ni el aspecto del candidato893833b1 dentro del juego.
+- Medición: consultas, preparación y retrabajo no medidos; ahorro no medido.
+- Siguiente: prueba grabada solo tras autorización. Se reutiliza la equivalencia
+  BAG1/BAG2 ya contrastada, sin nueva búsqueda funcmatch; FFmpeg/recorder aplazados
+  porque esta fase no ejecuta partida ni procesa nueva evidencia audiovisual.
+
+## 20261114-ghidra-clock-diagnosis — 2026-11-14 UTC — alcance del recentrado
+- Tipo: consulta real acotada, sin modificar análisis/proyecto.
+- MCP: `get_program_info()` confirmó `SLPM_862.19`, PSX LE JP, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`;
+  `read_memory(address="0x8002D818", length=16)` devolvió
+  `38 00 66 8e 52 b3 00 0c b8 14 07 26 01 b1 00 0c`.
+- Contraste independiente: fingerprints originales fijados por tests; traza de ambas
+  tomas sitúa el hueco en fase1/5/6, no en fase1/4/clip68 donde el callback puede escribir.
+- Dictamen: útil para verificar seam y alcance; no explica el stall ni valida gameplay.
+  Medición/ahorro no medidos. Evidencia temporal en
+  `_work/gaso/drift/end-center/capture-clock-replay.json`; siguiente: relojes del productor.
+
+## 20261114-ghidra-clock-probe-host — 2026-11-14 UTC — alcance de la instrumentación
+- Tipo: comprobación MCP real acotada, sin cambiar análisis ni proyecto.
+- `get_program_info()` confirmó `SLPM_862.19`, JP/PSX LE, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  `read_memory(address="0x8002D818", length=16)` devolvió
+  `38 00 66 8e 52 b3 00 0c b8 14 07 26 01 b1 00 0c`: costura de clamp/C404 sin cambios.
+- Contraste: bytes originales y exclusión de fase del recentrado ya verificados; el nuevo
+  diagnóstico está en callbacks host de audio/recorder, no modifica MIPS, regiones u overlays.
+  Fixture host real/syntax-check reportados en `notes/gaso-import.md` y log del recorder.
+- Dictamen: útil para confirmar identidad y límite de alcance; no diagnostica por sí solo
+  la pausa. Sin equivalencia nueva que justifique repetir funcmatch, ni nueva grabación que
+  justifique inspección FFmpeg. Tiempo/ahorro no medidos. Pendiente evidencia viva autorizada.
+
+## 20261114-ghidra-dance-centering-crash — 2026-11-14 UTC — caída de servidor MCP en decompilación
+- Tipo: fallo de herramienta MCP en ejecución; sin cambios al proyecto `.gpr`.
+- Consulta: `decompile_function_by_address` sobre `0x8002CD48` y `0x8002C404` mientras `javaw` PID `63424` (`Ghidra: BAG2JP`) estaba abierto con `SLPM_862.19` (`ea5a1668…`).
+- Fallo: `BrokenResourceError` / `Connection closed: MCP server process exited with code 1`; el catálogo de sesión retiró `ghidra` tras el fallo.
+- Mitigación usada: desensamblado directo con Capstone 5.0.7 sobre `SLPM_862.19` y `005.dbi` (registrado en `notes/tool-evidence/capstone.md`) y contraste de RAM en `combined-ae-f2/bag2jp_watch.log`.
+- Dictamen: bloqueado/caído en sesión actual para decompilación MCP; tiempo/ahorro no medidos. Siguiente: reiniciar puente/sesión antes de requerir nuevas consultas MCP Ghidra.
+
+- Tipo: comprobación MCP real acotada, sin cambiar análisis ni proyecto.
+- `get_program_info()` confirmó `SLPM_862.19`, JP/PSX LE, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  `read_memory(address="0x8002D818", length=16)` devolvió
+  `38 00 66 8e 52 b3 00 0c b8 14 07 26 01 b1 00 0c`: costura de clamp/C404 sin cambios.
+- Contraste: bytes originales y exclusión de fase del recentrado ya verificados; el nuevo
+  diagnóstico está en callbacks host de audio/recorder, no modifica MIPS, regiones u overlays.
+  Fixture host real/syntax-check reportados en `notes/gaso-import.md` y log del recorder.
+- Dictamen: útil para confirmar identidad y límite de alcance; no diagnostica por sí solo
+  la pausa. Sin equivalencia nueva que justifique repetir funcmatch, ni nueva grabación que
+  justifique inspección FFmpeg. Tiempo/ahorro no medidos. Pendiente evidencia viva autorizada.

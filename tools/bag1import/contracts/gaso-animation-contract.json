@@ -1,0 +1,2604 @@
+{
+  "schema": 1,
+  "character": "gaso",
+  "source_character_id": 9,
+  "target_character_id": 9,
+  "source_animation_list": "_work/character_inventory/gaso/001.bin",
+  "generated_from": "reqmap.py + animlib.py + bag1-usa-bag2jp.roles.json",
+  "notes": "Rol semántico determinado por request number. Slots BAG1 de reqmap.py (bag1). Slots BAG2 de reqmap.py (bag2). Estados: mapped (existe en ambos), unresolved (solo en uno), duplicate (mismo rol, múltiples requests), unused (slot vacío en BAG1).",
+  "entries": [
+    {
+      "bag1_request": 0,
+      "bag1_slot": 0,
+      "bag2_slot": 0,
+      "rol_semantico": "NEUTRAL",
+      "frames": 53,
+      "anim_size_bytes": 1956,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        205,
+        206,
+        207,
+        213,
+        214,
+        215,
+        228,
+        230,
+        231,
+        278
+      ]
+    },
+    {
+      "bag1_request": 1,
+      "bag1_slot": 1,
+      "bag2_slot": 6,
+      "rol_semantico": "A",
+      "frames": 60,
+      "anim_size_bytes": 2216,
+      "events": [
+        {
+          "type": 2,
+          "frame": 58,
+          "value": 8
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        290
+      ]
+    },
+    {
+      "bag1_request": 2,
+      "bag1_slot": 2,
+      "bag2_slot": 11,
+      "rol_semantico": "B",
+      "frames": 58,
+      "anim_size_bytes": 2268,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 3,
+      "bag1_slot": 3,
+      "bag2_slot": 21,
+      "rol_semantico": "C",
+      "frames": 57,
+      "anim_size_bytes": 2276,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 4,
+      "bag1_slot": 4,
+      "bag2_slot": 53,
+      "rol_semantico": "D",
+      "frames": 61,
+      "anim_size_bytes": 2432,
+      "events": [
+        {
+          "type": 2,
+          "frame": 17,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 30,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 59,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        245,
+        246
+      ]
+    },
+    {
+      "bag1_request": 5,
+      "bag1_slot": 5,
+      "bag2_slot": 5,
+      "rol_semantico": "E",
+      "frames": 59,
+      "anim_size_bytes": 2456,
+      "events": [
+        {
+          "type": 2,
+          "frame": 43,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 57,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 6,
+      "bag1_slot": 7,
+      "bag2_slot": 10,
+      "rol_semantico": "F",
+      "frames": 61,
+      "anim_size_bytes": 2528,
+      "events": [
+        {
+          "type": 2,
+          "frame": 21,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 29,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 51,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 59,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 7,
+      "bag1_slot": 8,
+      "bag2_slot": 19,
+      "rol_semantico": "G",
+      "frames": 59,
+      "anim_size_bytes": 2448,
+      "events": [
+        {
+          "type": 2,
+          "frame": 25,
+          "value": 34
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 8,
+      "bag1_slot": 9,
+      "bag2_slot": 26,
+      "rol_semantico": "H",
+      "frames": 60,
+      "anim_size_bytes": 2476,
+      "events": [
+        {
+          "type": 2,
+          "frame": 15,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 28,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 41,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 57,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 9,
+      "bag1_slot": 11,
+      "bag2_slot": 36,
+      "rol_semantico": "I",
+      "frames": 66,
+      "anim_size_bytes": 2788,
+      "events": [
+        {
+          "type": 2,
+          "frame": 14,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 29,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 41,
+          "value": 6
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 10,
+      "bag1_slot": 13,
+      "bag2_slot": 52,
+      "rol_semantico": "J",
+      "frames": 56,
+      "anim_size_bytes": 2112,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 11,
+      "bag1_slot": 14,
+      "bag2_slot": 4,
+      "rol_semantico": "K",
+      "frames": 59,
+      "anim_size_bytes": 2428,
+      "events": [
+        {
+          "type": 2,
+          "frame": 14,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 29,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 43,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 57,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        286
+      ]
+    },
+    {
+      "bag1_request": 12,
+      "bag1_slot": 15,
+      "bag2_slot": 9,
+      "rol_semantico": "L",
+      "frames": 56,
+      "anim_size_bytes": 2168,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 13,
+      "bag1_slot": 17,
+      "bag2_slot": 17,
+      "rol_semantico": "M",
+      "frames": 60,
+      "anim_size_bytes": 2396,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 14,
+      "bag1_slot": 19,
+      "bag2_slot": 25,
+      "rol_semantico": "N",
+      "frames": 58,
+      "anim_size_bytes": 2216,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 15,
+      "bag1_slot": 21,
+      "bag2_slot": 34,
+      "rol_semantico": "O",
+      "frames": 60,
+      "anim_size_bytes": 2392,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 16,
+      "bag1_slot": 22,
+      "bag2_slot": 51,
+      "rol_semantico": "P",
+      "frames": 56,
+      "anim_size_bytes": 2276,
+      "events": [
+        {
+          "type": 2,
+          "frame": 11,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 26,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 40,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 17,
+      "bag1_slot": 23,
+      "bag2_slot": 3,
+      "rol_semantico": "Q",
+      "frames": 59,
+      "anim_size_bytes": 2240,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 18,
+      "bag1_slot": 25,
+      "bag2_slot": 8,
+      "rol_semantico": "R",
+      "frames": 56,
+      "anim_size_bytes": 2244,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        282
+      ]
+    },
+    {
+      "bag1_request": 19,
+      "bag1_slot": 27,
+      "bag2_slot": 15,
+      "rol_semantico": "S",
+      "frames": 56,
+      "anim_size_bytes": 2160,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 20,
+      "bag1_slot": 29,
+      "bag2_slot": 24,
+      "rol_semantico": "T",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 21,
+      "bag1_slot": 31,
+      "bag2_slot": 32,
+      "rol_semantico": "U",
+      "frames": 56,
+      "anim_size_bytes": 2176,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 22,
+      "bag1_slot": 32,
+      "bag2_slot": 50,
+      "rol_semantico": "V",
+      "frames": 57,
+      "anim_size_bytes": 2448,
+      "events": [
+        {
+          "type": 2,
+          "frame": 9,
+          "value": 2
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 23,
+      "bag1_slot": 33,
+      "bag2_slot": 2,
+      "rol_semantico": "W",
+      "frames": 56,
+      "anim_size_bytes": 2232,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        288
+      ]
+    },
+    {
+      "bag1_request": 24,
+      "bag1_slot": 35,
+      "bag2_slot": 7,
+      "rol_semantico": "X",
+      "frames": 55,
+      "anim_size_bytes": 2332,
+      "events": [
+        {
+          "type": 2,
+          "frame": 39,
+          "value": 4
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 25,
+      "bag1_slot": 37,
+      "bag2_slot": 13,
+      "rol_semantico": "Y",
+      "frames": 62,
+      "anim_size_bytes": 2440,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 26,
+      "bag1_slot": 39,
+      "bag2_slot": 23,
+      "rol_semantico": "Z",
+      "frames": 68,
+      "anim_size_bytes": 2928,
+      "events": [
+        {
+          "type": 2,
+          "frame": 19,
+          "value": 1
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 27,
+      "bag1_slot": 41,
+      "bag2_slot": 30,
+      "rol_semantico": "ZZ",
+      "frames": 56,
+      "anim_size_bytes": 2184,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 28,
+      "bag1_slot": 43,
+      "bag2_slot": 39,
+      "rol_semantico": "ZZZ",
+      "frames": 59,
+      "anim_size_bytes": 2460,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 29,
+      "bag1_slot": 44,
+      "bag2_slot": 45,
+      "rol_semantico": "FINISH1",
+      "frames": 98,
+      "anim_size_bytes": 3732,
+      "events": [
+        {
+          "type": 1,
+          "frame": 50,
+          "value": 3
+        },
+        {
+          "type": 1,
+          "frame": 50,
+          "value": 6
+        },
+        {
+          "type": 1,
+          "frame": 92,
+          "value": 1
+        },
+        {
+          "type": 1,
+          "frame": 92,
+          "value": 4
+        },
+        {
+          "type": 2,
+          "frame": 6,
+          "value": 0
+        },
+        {
+          "type": 2,
+          "frame": 20,
+          "value": 0
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 30,
+      "bag1_slot": 45,
+      "bag2_slot": 49,
+      "rol_semantico": "FINISH2",
+      "frames": 118,
+      "anim_size_bytes": 4124,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 31,
+      "bag1_slot": 46,
+      "bag2_slot": 12,
+      "rol_semantico": "FINISH3",
+      "frames": 93,
+      "anim_size_bytes": 3800,
+      "events": [
+        {
+          "type": 2,
+          "frame": 14,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 42,
+          "value": 1
+        },
+        {
+          "type": 1,
+          "frame": 52,
+          "value": 3
+        },
+        {
+          "type": 1,
+          "frame": 52,
+          "value": 6
+        },
+        {
+          "type": 1,
+          "frame": 81,
+          "value": 1
+        },
+        {
+          "type": 1,
+          "frame": 81,
+          "value": 4
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 32,
+      "bag1_slot": 47,
+      "bag2_slot": 22,
+      "rol_semantico": "FINISH4",
+      "frames": 111,
+      "anim_size_bytes": 4296,
+      "events": [
+        {
+          "type": 2,
+          "frame": 38,
+          "value": 4
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 33,
+      "bag1_slot": 48,
+      "bag2_slot": 28,
+      "rol_semantico": "FINISH5",
+      "frames": 125,
+      "anim_size_bytes": 5060,
+      "events": [
+        {
+          "type": 2,
+          "frame": 16,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "frame": 49,
+          "value": 1
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        294,
+        298
+      ]
+    },
+    {
+      "bag1_request": 34,
+      "bag1_slot": 49,
+      "bag2_slot": 38,
+      "rol_semantico": "FINISH6",
+      "frames": 104,
+      "anim_size_bytes": 3868,
+      "events": [
+        {
+          "type": 2,
+          "frame": 15,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 26,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 41,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 60,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 35,
+      "bag1_slot": 50,
+      "bag2_slot": 43,
+      "rol_semantico": "FINISH7",
+      "frames": 108,
+      "anim_size_bytes": 3984,
+      "events": [
+        {
+          "type": 2,
+          "frame": 11,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 29,
+          "value": 7
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 50,
+      "bag1_slot": 51,
+      "bag2_slot": 54,
+      "rol_semantico": "SOLO_4_A",
+      "frames": 61,
+      "anim_size_bytes": 2428,
+      "events": [
+        {
+          "type": 2,
+          "frame": 29,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 58,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 51,
+      "bag1_slot": 54,
+      "bag2_slot": 55,
+      "rol_semantico": "SOLO_8_A",
+      "frames": 127,
+      "anim_size_bytes": 5452,
+      "events": [
+        {
+          "type": 2,
+          "frame": 33,
+          "value": 4
+        },
+        {
+          "type": 2,
+          "frame": 53,
+          "value": 5
+        },
+        {
+          "type": 2,
+          "frame": 69,
+          "value": 5
+        },
+        {
+          "type": 2,
+          "frame": 83,
+          "value": 5
+        },
+        {
+          "type": 2,
+          "frame": 97,
+          "value": 5
+        },
+        {
+          "type": 2,
+          "frame": 113,
+          "value": 5
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 52,
+      "bag1_slot": 57,
+      "bag2_slot": 56,
+      "rol_semantico": "SOLO_16_A",
+      "frames": 223,
+      "anim_size_bytes": 9072,
+      "events": [
+        {
+          "type": 2,
+          "frame": 51,
+          "value": 3
+        },
+        {
+          "type": 2,
+          "frame": 79,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 105,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 197,
+          "value": 5
+        },
+        {
+          "type": 2,
+          "frame": 207,
+          "value": 5
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 60,
+      "bag1_slot": 52,
+      "bag2_slot": 57,
+      "rol_semantico": "SOLO_4_B",
+      "frames": 60,
+      "anim_size_bytes": 2484,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 61,
+      "bag1_slot": 55,
+      "bag2_slot": 58,
+      "rol_semantico": "SOLO_8_B",
+      "frames": 124,
+      "anim_size_bytes": 4640,
+      "events": [
+        {
+          "type": 2,
+          "frame": 36,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 40,
+          "value": 3
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 62,
+      "bag1_slot": 58,
+      "bag2_slot": 59,
+      "rol_semantico": "SOLO_16_B",
+      "frames": 240,
+      "anim_size_bytes": 9496,
+      "events": [
+        {
+          "type": 2,
+          "frame": 79,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 109,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 221,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 70,
+      "bag1_slot": 53,
+      "bag2_slot": 63,
+      "rol_semantico": "SOLO_4_C",
+      "frames": 58,
+      "anim_size_bytes": 2268,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 71,
+      "bag1_slot": 56,
+      "bag2_slot": 64,
+      "rol_semantico": "SOLO_8_C",
+      "frames": 126,
+      "anim_size_bytes": 5076,
+      "events": [
+        {
+          "type": 2,
+          "frame": 82,
+          "value": 5
+        },
+        {
+          "type": 2,
+          "frame": 94,
+          "value": 5
+        },
+        {
+          "type": 2,
+          "frame": 107,
+          "value": 5
+        },
+        {
+          "type": 2,
+          "frame": 12,
+          "value": 2
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 72,
+      "bag1_slot": 59,
+      "bag2_slot": 65,
+      "rol_semantico": "SOLO_16_C",
+      "frames": 233,
+      "anim_size_bytes": 8880,
+      "events": [
+        {
+          "type": 2,
+          "frame": 73,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "frame": 152,
+          "value": 3
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 100,
+      "bag1_slot": 61,
+      "bag2_slot": 255,
+      "rol_semantico": "WALK",
+      "frames": 38,
+      "anim_size_bytes": 1476,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        105,
+        111,
+        120,
+        121,
+        122
+      ]
+    },
+    {
+      "bag1_request": 105,
+      "bag1_slot": 62,
+      "bag2_slot": 255,
+      "rol_semantico": "INDIVIDUAL",
+      "frames": 78,
+      "anim_size_bytes": 2796,
+      "events": [
+        {
+          "type": 1,
+          "frame": 46,
+          "value": 2
+        },
+        {
+          "type": 1,
+          "frame": 46,
+          "value": 5
+        },
+        {
+          "type": 1,
+          "frame": 47,
+          "value": 1902
+        },
+        {
+          "type": 1,
+          "frame": 70,
+          "value": 1
+        },
+        {
+          "type": 1,
+          "frame": 70,
+          "value": 4
+        },
+        {
+          "type": 2,
+          "frame": 47,
+          "value": 6144
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        100,
+        111,
+        120,
+        121,
+        122
+      ]
+    },
+    {
+      "bag1_request": 106,
+      "bag1_slot": 60,
+      "bag2_slot": 71,
+      "rol_semantico": "WAIT",
+      "frames": 45,
+      "anim_size_bytes": 1668,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        237
+      ]
+    },
+    {
+      "bag1_request": 110,
+      "bag1_slot": 63,
+      "bag2_slot": 74,
+      "rol_semantico": "ATTACK1",
+      "frames": 66,
+      "anim_size_bytes": 2432,
+      "events": [
+        {
+          "type": 1,
+          "frame": 11,
+          "value": 1901
+        },
+        {
+          "type": 16,
+          "frame": 20,
+          "value": 1
+        },
+        {
+          "type": 1,
+          "frame": 67,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "frame": 13,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "frame": 36,
+          "value": 6149
+        },
+        {
+          "type": 2,
+          "frame": 46,
+          "value": 6149
+        },
+        {
+          "type": 2,
+          "frame": 61,
+          "value": 6149
+        },
+        {
+          "type": 2,
+          "frame": 1,
+          "value": 6147
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        242
+      ]
+    },
+    {
+      "bag1_request": 111,
+      "bag1_slot": 64,
+      "bag2_slot": 255,
+      "rol_semantico": "ATTACK2",
+      "frames": 62,
+      "anim_size_bytes": 2288,
+      "events": [
+        {
+          "type": 1,
+          "frame": 1,
+          "value": 1900
+        },
+        {
+          "type": 1,
+          "frame": 60,
+          "value": 4
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        100,
+        105,
+        120,
+        121,
+        122
+      ]
+    },
+    {
+      "bag1_request": 120,
+      "bag1_slot": 66,
+      "bag2_slot": 255,
+      "rol_semantico": "HIT1",
+      "frames": 20,
+      "anim_size_bytes": 964,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        100,
+        105,
+        111,
+        121,
+        122
+      ]
+    },
+    {
+      "bag1_request": 121,
+      "bag1_slot": 67,
+      "bag2_slot": 255,
+      "rol_semantico": "HIT2",
+      "frames": 36,
+      "anim_size_bytes": 1392,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        100,
+        105,
+        111,
+        120,
+        122
+      ]
+    },
+    {
+      "bag1_request": 122,
+      "bag1_slot": 68,
+      "bag2_slot": 255,
+      "rol_semantico": "HIT3",
+      "frames": 51,
+      "anim_size_bytes": 1996,
+      "events": [
+        {
+          "type": 2,
+          "frame": 1,
+          "value": 6145
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        100,
+        105,
+        111,
+        120,
+        121
+      ]
+    },
+    {
+      "bag1_request": 123,
+      "bag1_slot": 70,
+      "bag2_slot": 78,
+      "rol_semantico": "CAUGHT",
+      "frames": 2,
+      "anim_size_bytes": 348,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 124,
+      "bag1_slot": 69,
+      "bag2_slot": 79,
+      "rol_semantico": "TIRED",
+      "frames": 34,
+      "anim_size_bytes": 1356,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 130,
+      "bag1_slot": 71,
+      "bag2_slot": 85,
+      "rol_semantico": "req_130",
+      "frames": 44,
+      "anim_size_bytes": 1896,
+      "events": [
+        {
+          "type": 2,
+          "frame": 39,
+          "value": 9
+        },
+        {
+          "type": 2,
+          "frame": 1,
+          "value": 6145
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        200,
+        234,
+        250
+      ]
+    },
+    {
+      "bag1_request": 131,
+      "bag1_slot": 72,
+      "bag2_slot": 86,
+      "rol_semantico": "req_131",
+      "frames": 46,
+      "anim_size_bytes": 1936,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        208
+      ]
+    },
+    {
+      "bag1_request": 132,
+      "bag1_slot": 73,
+      "bag2_slot": 87,
+      "rol_semantico": "req_132",
+      "frames": 44,
+      "anim_size_bytes": 1836,
+      "events": [
+        {
+          "type": 2,
+          "frame": 39,
+          "value": 9
+        },
+        {
+          "type": 2,
+          "frame": 1,
+          "value": 6145
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        201
+      ]
+    },
+    {
+      "bag1_request": 133,
+      "bag1_slot": 74,
+      "bag2_slot": 88,
+      "rol_semantico": "req_133",
+      "frames": 46,
+      "anim_size_bytes": 1904,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        209
+      ]
+    },
+    {
+      "bag1_request": 134,
+      "bag1_slot": 75,
+      "bag2_slot": 89,
+      "rol_semantico": "req_134",
+      "frames": 44,
+      "anim_size_bytes": 1824,
+      "events": [
+        {
+          "type": 2,
+          "frame": 1,
+          "value": 6145
+        },
+        {
+          "type": 2,
+          "frame": 16,
+          "value": 9
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        202
+      ]
+    },
+    {
+      "bag1_request": 135,
+      "bag1_slot": 76,
+      "bag2_slot": 90,
+      "rol_semantico": "req_135",
+      "frames": 46,
+      "anim_size_bytes": 1816,
+      "events": [
+        {
+          "type": 2,
+          "frame": 21,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        210
+      ]
+    },
+    {
+      "bag1_request": 140,
+      "bag1_slot": 77,
+      "bag2_slot": 94,
+      "rol_semantico": "WIN1",
+      "frames": 140,
+      "anim_size_bytes": 4720,
+      "events": [
+        {
+          "type": 2,
+          "frame": 96,
+          "value": 6147
+        },
+        {
+          "type": 2,
+          "frame": 21,
+          "value": 6152
+        },
+        {
+          "type": 2,
+          "frame": 38,
+          "value": 6152
+        },
+        {
+          "type": 2,
+          "frame": 55,
+          "value": 6152
+        },
+        {
+          "type": 2,
+          "frame": 71,
+          "value": 6152
+        },
+        {
+          "type": 1,
+          "frame": 121,
+          "value": 6
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 141,
+      "bag1_slot": 78,
+      "bag2_slot": 95,
+      "rol_semantico": "WIN2",
+      "frames": 75,
+      "anim_size_bytes": 2652,
+      "events": [
+        {
+          "type": 1,
+          "frame": 50,
+          "value": 6
+        },
+        {
+          "type": 2,
+          "frame": 16,
+          "value": 6146
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 142,
+      "bag1_slot": 79,
+      "bag2_slot": 96,
+      "rol_semantico": "WIN3",
+      "frames": 200,
+      "anim_size_bytes": 6388,
+      "events": [
+        {
+          "type": 1,
+          "frame": 167,
+          "value": 1902
+        },
+        {
+          "type": 2,
+          "frame": 34,
+          "value": 6151
+        },
+        {
+          "type": 2,
+          "frame": 99,
+          "value": 6151
+        },
+        {
+          "type": 2,
+          "frame": 167,
+          "value": 6144
+        },
+        {
+          "type": 1,
+          "frame": 162,
+          "value": 2
+        },
+        {
+          "type": 1,
+          "frame": 162,
+          "value": 5
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 150,
+      "bag1_slot": 80,
+      "bag2_slot": 98,
+      "rol_semantico": "LOSE1",
+      "frames": 82,
+      "anim_size_bytes": 2992,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        233,
+        241,
+        249
+      ]
+    },
+    {
+      "bag1_request": 151,
+      "bag1_slot": 81,
+      "bag2_slot": 99,
+      "rol_semantico": "LOSE2",
+      "frames": 81,
+      "anim_size_bytes": 2812,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 160,
+      "bag1_slot": 82,
+      "bag2_slot": 101,
+      "rol_semantico": "FEVER1",
+      "frames": 437,
+      "anim_size_bytes": 16492,
+      "events": [
+        {
+          "type": 2,
+          "frame": 15,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 64,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 131,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 180,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 220,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 233,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 252,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 286,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 296,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 309,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 322,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 346,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 352,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 398,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 412,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 8,
+          "value": 0
+        },
+        {
+          "type": 2,
+          "frame": 117,
+          "value": 0
+        },
+        {
+          "type": 2,
+          "frame": 181,
+          "value": 0
+        },
+        {
+          "type": 2,
+          "frame": 356,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 398,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 8
+        },
+        {
+          "type": 2,
+          "frame": 105,
+          "value": 8
+        },
+        {
+          "type": 2,
+          "frame": 215,
+          "value": 8
+        },
+        {
+          "type": 2,
+          "frame": 283,
+          "value": 8
+        },
+        {
+          "type": 2,
+          "frame": 326,
+          "value": 8
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 161,
+      "bag1_slot": 83,
+      "bag2_slot": 102,
+      "rol_semantico": "FEVER2",
+      "frames": 450,
+      "anim_size_bytes": 16688,
+      "events": [
+        {
+          "type": 1,
+          "frame": 388,
+          "value": 1900
+        },
+        {
+          "type": 1,
+          "frame": 408,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 59,
+          "value": 8
+        },
+        {
+          "type": 2,
+          "frame": 69,
+          "value": 6152
+        },
+        {
+          "type": 2,
+          "frame": 84,
+          "value": 6152
+        },
+        {
+          "type": 2,
+          "frame": 99,
+          "value": 6152
+        },
+        {
+          "type": 2,
+          "frame": 112,
+          "value": 6152
+        },
+        {
+          "type": 2,
+          "frame": 170,
+          "value": 3
+        },
+        {
+          "type": 2,
+          "frame": 304,
+          "value": 2
+        },
+        {
+          "type": 2,
+          "frame": 319,
+          "value": 1
+        },
+        {
+          "type": 2,
+          "frame": 374,
+          "value": 3
+        },
+        {
+          "type": 2,
+          "frame": 388,
+          "value": 2
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 170,
+      "bag1_slot": 65,
+      "bag2_slot": 75,
+      "rol_semantico": "DODGE",
+      "frames": 66,
+      "anim_size_bytes": 2784,
+      "events": [
+        {
+          "type": 2,
+          "frame": 13,
+          "value": 31
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 200,
+      "bag1_slot": 71,
+      "bag2_slot": 85,
+      "rol_semantico": "DOWN1",
+      "frames": 44,
+      "anim_size_bytes": 1896,
+      "events": [
+        {
+          "type": 2,
+          "frame": 39,
+          "value": 9
+        },
+        {
+          "type": 2,
+          "frame": 1,
+          "value": 6145
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        130,
+        234,
+        250
+      ]
+    },
+    {
+      "bag1_request": 201,
+      "bag1_slot": 73,
+      "bag2_slot": 87,
+      "rol_semantico": "DOWN2",
+      "frames": 44,
+      "anim_size_bytes": 1836,
+      "events": [
+        {
+          "type": 2,
+          "frame": 39,
+          "value": 9
+        },
+        {
+          "type": 2,
+          "frame": 1,
+          "value": 6145
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        132
+      ]
+    },
+    {
+      "bag1_request": 202,
+      "bag1_slot": 75,
+      "bag2_slot": 89,
+      "rol_semantico": "DOWN3",
+      "frames": 44,
+      "anim_size_bytes": 1824,
+      "events": [
+        {
+          "type": 2,
+          "frame": 1,
+          "value": 6145
+        },
+        {
+          "type": 2,
+          "frame": 16,
+          "value": 9
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        134
+      ]
+    },
+    {
+      "bag1_request": 205,
+      "bag1_slot": 0,
+      "bag2_slot": 0,
+      "rol_semantico": "req_205",
+      "frames": 53,
+      "anim_size_bytes": 1956,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        206,
+        207,
+        213,
+        214,
+        215,
+        228,
+        230,
+        231,
+        278
+      ]
+    },
+    {
+      "bag1_request": 206,
+      "bag1_slot": 0,
+      "bag2_slot": 0,
+      "rol_semantico": "req_206",
+      "frames": 53,
+      "anim_size_bytes": 1956,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        205,
+        207,
+        213,
+        214,
+        215,
+        228,
+        230,
+        231,
+        278
+      ]
+    },
+    {
+      "bag1_request": 207,
+      "bag1_slot": 0,
+      "bag2_slot": 0,
+      "rol_semantico": "req_207",
+      "frames": 53,
+      "anim_size_bytes": 1956,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        205,
+        206,
+        213,
+        214,
+        215,
+        228,
+        230,
+        231,
+        278
+      ]
+    },
+    {
+      "bag1_request": 208,
+      "bag1_slot": 72,
+      "bag2_slot": 86,
+      "rol_semantico": "req_208",
+      "frames": 46,
+      "anim_size_bytes": 1936,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        131
+      ]
+    },
+    {
+      "bag1_request": 209,
+      "bag1_slot": 74,
+      "bag2_slot": 88,
+      "rol_semantico": "req_209",
+      "frames": 46,
+      "anim_size_bytes": 1904,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        133
+      ]
+    },
+    {
+      "bag1_request": 210,
+      "bag1_slot": 76,
+      "bag2_slot": 90,
+      "rol_semantico": "req_210",
+      "frames": 46,
+      "anim_size_bytes": 1816,
+      "events": [
+        {
+          "type": 2,
+          "frame": 21,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        135
+      ]
+    },
+    {
+      "bag1_request": 213,
+      "bag1_slot": 0,
+      "bag2_slot": 0,
+      "rol_semantico": "req_213",
+      "frames": 53,
+      "anim_size_bytes": 1956,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        205,
+        206,
+        207,
+        214,
+        215,
+        228,
+        230,
+        231,
+        278
+      ]
+    },
+    {
+      "bag1_request": 214,
+      "bag1_slot": 0,
+      "bag2_slot": 0,
+      "rol_semantico": "req_214",
+      "frames": 53,
+      "anim_size_bytes": 1956,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        205,
+        206,
+        207,
+        213,
+        215,
+        228,
+        230,
+        231,
+        278
+      ]
+    },
+    {
+      "bag1_request": 215,
+      "bag1_slot": 0,
+      "bag2_slot": 0,
+      "rol_semantico": "req_215",
+      "frames": 53,
+      "anim_size_bytes": 1956,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        205,
+        206,
+        207,
+        213,
+        214,
+        228,
+        230,
+        231,
+        278
+      ]
+    },
+    {
+      "bag1_request": 228,
+      "bag1_slot": 34,
+      "bag2_slot": 0,
+      "rol_semantico": "req_228",
+      "frames": 56,
+      "anim_size_bytes": 2188,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        205,
+        206,
+        207,
+        213,
+        214,
+        215,
+        230,
+        231,
+        278
+      ]
+    },
+    {
+      "bag1_request": 230,
+      "bag1_slot": 0,
+      "bag2_slot": 0,
+      "rol_semantico": "req_230",
+      "frames": 53,
+      "anim_size_bytes": 1956,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        205,
+        206,
+        207,
+        213,
+        214,
+        215,
+        228,
+        231,
+        278
+      ]
+    },
+    {
+      "bag1_request": 231,
+      "bag1_slot": 0,
+      "bag2_slot": 0,
+      "rol_semantico": "req_231",
+      "frames": 53,
+      "anim_size_bytes": 1956,
+      "events": [],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        205,
+        206,
+        207,
+        213,
+        214,
+        215,
+        228,
+        230,
+        278
+      ]
+    },
+    {
+      "bag1_request": 233,
+      "bag1_slot": 32,
+      "bag2_slot": 98,
+      "rol_semantico": "req_233",
+      "frames": 57,
+      "anim_size_bytes": 2448,
+      "events": [
+        {
+          "type": 2,
+          "frame": 9,
+          "value": 2
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        150,
+        241,
+        249
+      ]
+    },
+    {
+      "bag1_request": 234,
+      "bag1_slot": 1,
+      "bag2_slot": 85,
+      "rol_semantico": "req_234",
+      "frames": 60,
+      "anim_size_bytes": 2216,
+      "events": [
+        {
+          "type": 2,
+          "frame": 58,
+          "value": 8
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        130,
+        200,
+        250
+      ]
+    },
+    {
+      "bag1_request": 237,
+      "bag1_slot": 32,
+      "bag2_slot": 71,
+      "rol_semantico": "req_237",
+      "frames": 57,
+      "anim_size_bytes": 2448,
+      "events": [
+        {
+          "type": 2,
+          "frame": 9,
+          "value": 2
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        106
+      ]
+    },
+    {
+      "bag1_request": 238,
+      "bag1_slot": 1,
+      "bag2_slot": 92,
+      "rol_semantico": "req_238",
+      "frames": 60,
+      "anim_size_bytes": 2216,
+      "events": [
+        {
+          "type": 2,
+          "frame": 58,
+          "value": 8
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 241,
+      "bag1_slot": 32,
+      "bag2_slot": 98,
+      "rol_semantico": "req_241",
+      "frames": 57,
+      "anim_size_bytes": 2448,
+      "events": [
+        {
+          "type": 2,
+          "frame": 9,
+          "value": 2
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        150,
+        233,
+        249
+      ]
+    },
+    {
+      "bag1_request": 242,
+      "bag1_slot": 1,
+      "bag2_slot": 74,
+      "rol_semantico": "req_242",
+      "frames": 60,
+      "anim_size_bytes": 2216,
+      "events": [
+        {
+          "type": 2,
+          "frame": 58,
+          "value": 8
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        110
+      ]
+    },
+    {
+      "bag1_request": 245,
+      "bag1_slot": 32,
+      "bag2_slot": 53,
+      "rol_semantico": "req_245",
+      "frames": 57,
+      "anim_size_bytes": 2448,
+      "events": [
+        {
+          "type": 2,
+          "frame": 9,
+          "value": 2
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        4,
+        246
+      ]
+    },
+    {
+      "bag1_request": 246,
+      "bag1_slot": 1,
+      "bag2_slot": 53,
+      "rol_semantico": "req_246",
+      "frames": 60,
+      "anim_size_bytes": 2216,
+      "events": [
+        {
+          "type": 2,
+          "frame": 58,
+          "value": 8
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        4,
+        245
+      ]
+    },
+    {
+      "bag1_request": 249,
+      "bag1_slot": 32,
+      "bag2_slot": 98,
+      "rol_semantico": "req_249",
+      "frames": 57,
+      "anim_size_bytes": 2448,
+      "events": [
+        {
+          "type": 2,
+          "frame": 9,
+          "value": 2
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        150,
+        233,
+        241
+      ]
+    },
+    {
+      "bag1_request": 250,
+      "bag1_slot": 1,
+      "bag2_slot": 85,
+      "rol_semantico": "req_250",
+      "frames": 60,
+      "anim_size_bytes": 2216,
+      "events": [
+        {
+          "type": 2,
+          "frame": 58,
+          "value": 8
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        130,
+        200,
+        234
+      ]
+    },
+    {
+      "bag1_request": 253,
+      "bag1_slot": 32,
+      "bag2_slot": 130,
+      "rol_semantico": "req_253",
+      "frames": 57,
+      "anim_size_bytes": 2448,
+      "events": [
+        {
+          "type": 2,
+          "frame": 9,
+          "value": 2
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        254,
+        258,
+        260,
+        262
+      ]
+    },
+    {
+      "bag1_request": 254,
+      "bag1_slot": 1,
+      "bag2_slot": 130,
+      "rol_semantico": "req_254",
+      "frames": 60,
+      "anim_size_bytes": 2216,
+      "events": [
+        {
+          "type": 2,
+          "frame": 58,
+          "value": 8
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        253,
+        258,
+        260,
+        262
+      ]
+    },
+    {
+      "bag1_request": 258,
+      "bag1_slot": 29,
+      "bag2_slot": 130,
+      "rol_semantico": "req_258",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        253,
+        254,
+        260,
+        262
+      ]
+    },
+    {
+      "bag1_request": 260,
+      "bag1_slot": 64,
+      "bag2_slot": 130,
+      "rol_semantico": "req_260",
+      "frames": 62,
+      "anim_size_bytes": 2288,
+      "events": [
+        {
+          "type": 1,
+          "frame": 1,
+          "value": 1900
+        },
+        {
+          "type": 1,
+          "frame": 60,
+          "value": 4
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        253,
+        254,
+        258,
+        262
+      ]
+    },
+    {
+      "bag1_request": 262,
+      "bag1_slot": 29,
+      "bag2_slot": 130,
+      "rol_semantico": "req_262",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        253,
+        254,
+        258,
+        260
+      ]
+    },
+    {
+      "bag1_request": 266,
+      "bag1_slot": 29,
+      "bag2_slot": 176,
+      "rol_semantico": "req_266",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 270,
+      "bag1_slot": 29,
+      "bag2_slot": 216,
+      "rol_semantico": "req_270",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 274,
+      "bag1_slot": 29,
+      "bag2_slot": 112,
+      "rol_semantico": "req_274",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 278,
+      "bag1_slot": 29,
+      "bag2_slot": 0,
+      "rol_semantico": "req_278",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        0,
+        205,
+        206,
+        207,
+        213,
+        214,
+        215,
+        228,
+        230,
+        231
+      ]
+    },
+    {
+      "bag1_request": 282,
+      "bag1_slot": 29,
+      "bag2_slot": 8,
+      "rol_semantico": "req_282",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        18
+      ]
+    },
+    {
+      "bag1_request": 286,
+      "bag1_slot": 29,
+      "bag2_slot": 4,
+      "rol_semantico": "req_286",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        11
+      ]
+    },
+    {
+      "bag1_request": 288,
+      "bag1_slot": 68,
+      "bag2_slot": 2,
+      "rol_semantico": "req_288",
+      "frames": 51,
+      "anim_size_bytes": 1996,
+      "events": [
+        {
+          "type": 2,
+          "frame": 1,
+          "value": 6145
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        23
+      ]
+    },
+    {
+      "bag1_request": 290,
+      "bag1_slot": 29,
+      "bag2_slot": 6,
+      "rol_semantico": "req_290",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        1
+      ]
+    },
+    {
+      "bag1_request": 294,
+      "bag1_slot": 29,
+      "bag2_slot": 28,
+      "rol_semantico": "req_294",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        33,
+        298
+      ]
+    },
+    {
+      "bag1_request": 296,
+      "bag1_slot": 80,
+      "bag2_slot": 100,
+      "rol_semantico": "req_296",
+      "frames": 82,
+      "anim_size_bytes": 2992,
+      "events": [],
+      "estado": "mapped",
+      "slot_vacio_en_bag1": false
+    },
+    {
+      "bag1_request": 298,
+      "bag1_slot": 29,
+      "bag2_slot": 28,
+      "rol_semantico": "req_298",
+      "frames": 68,
+      "anim_size_bytes": 2704,
+      "events": [
+        {
+          "type": 2,
+          "frame": 52,
+          "value": 6153
+        },
+        {
+          "type": 2,
+          "frame": 54,
+          "value": 6153
+        }
+      ],
+      "estado": "duplicate",
+      "slot_vacio_en_bag1": false,
+      "duplicate_of_requests": [
+        33,
+        294
+      ]
+    }
+  ]
+}

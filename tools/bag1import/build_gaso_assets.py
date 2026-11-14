@@ -9,6 +9,7 @@ Generates candidate containers for entries:
   - 90: Model A P2 (Gas-O B2 model + 001.bin + accessory)
   - 161: Model B P1 (Gas-O A4 model + 001.bin + accessory)
   - 162: Model B P2 (Gas-O B4 model + 001.bin + accessory)
+  - 17: Solo fever choreography (BAG1 Gas-O fever dances, stock Bi-O member 1)
 
 Source disc region comes from the profile's source_layout.regions (usa or jp):
 its extraction root and pack directories; model directories are shared.
@@ -39,12 +40,15 @@ from model_bag1_to_bag2 import convert, check_bag2
 from preserve_announcer import append_cue, cue_record, rename_cue, replace_cue
 from rebase_cues import rebase_sedt
 from rebuild_dfs_members import build_container, read_members
-from tim_retarget import retarget
+from tim_retarget import retarget, paste_native_glyphs
 from patch_gaso_dbi import patch_gaso_dbi
 from vab_budget import Vab, fit_voice_budget
+from anim_remap_gaso import build_fever
+from animlib import anim_list
 
 PROFILE = ROOT / "tools/bag1import/profiles/gaso.json"
 STOCK_BIO_DIR = ROOT / "_work/stage_import/gaso/stock_bio_entries"
+STOCK_FEVER_DIR = ROOT / "assets/archive/characters/bi_o/choreography_a"
 MOTIONS = ROOT / "_work/gaso/test_001.bin"
 DEFAULT_OUT = {
     "usa": ROOT / "_work/character_import/gaso/candidate",
@@ -66,6 +70,21 @@ def write_entry(out_dir: Path, name: str, members: list[bytes]) -> None:
     data = build_container(members)
     (out_dir / name).write_bytes(data)
     print(f"Built {name}: {len(data)} bytes, sha {hashlib.sha256(data).hexdigest()[:12]}")
+
+
+def build_hud_texture(source: bytes, reference: bytes, label: dict) -> bytes:
+    """Place stock BAG2 glyphs inside the existing BAG1 name artwork area."""
+    glyphs = label['glyphs']
+    if ''.join(glyph['character'] for glyph in glyphs) != label['text']:
+        raise ValueError('HUD glyph sequence does not match label text')
+    target = tuple(label['target_rect'])
+    for area in label['source_rect'].values():
+        if not (area[0] <= target[0] < target[2] <= area[2]
+                and area[1] <= target[1] < target[3] <= area[3]):
+            raise ValueError('HUD label must remain inside native name artwork')
+    return paste_native_glyphs(retarget(source, reference), [
+        ((ROOT / glyph['source']).read_bytes(), tuple(glyph['rect'])) for glyph in glyphs
+    ], target, [glyph.get('spacing_after', 0) for glyph in glyphs])
 
 
 def build(region: str, out_dir: Path) -> None:
@@ -120,7 +139,9 @@ def build(region: str, out_dir: Path) -> None:
 
     for key, entry in (("a_p1", 53), ("a_p2", 54), ("b_p1", 125), ("b_p2", 126)):
         body1 = retarget(packs[key][BODY_MEMBERS[0]], bio_body1_ref)
-        body2 = retarget(packs[key][BODY_MEMBERS[1]], bio_body2_ref)
+        # A per-draw runtime override uses this native-size BAG2 label, not the
+        # stock Bi-O UV slot (which contains Gas-O body pixels).
+        body2 = build_hud_texture(packs[key][BODY_MEMBERS[1]], bio_body2_ref, profile['hud_name'])
         costume, side = key.split("_")
         if side == "p1":
             members = [bio_portrait, gaso_dbi_p1, body1, body2, merged_voice, vs_banks["p1"]]
@@ -142,7 +163,13 @@ def build(region: str, out_dir: Path) -> None:
                                         (161, "B", "b", "p1"), (162, "B", "b", "p2")):
         write_entry(out_dir, f"entry_{entry}_model_{costume}_{side}.dfs",
                     [converted[label], motions, converted["accessory"]])
-    print(f"All 8 Gas-O {region} candidate DFS containers built in {out_dir}.")
+
+    # Solo fever: BAG1 Gas-O fever dances; member 1 (choreography data) stays stock.
+    stock_fever = [(STOCK_FEVER_DIR / name).read_bytes() for name in ("000.bin", "001.bin")]
+    fever = build_fever(anim_list(model_a[1]), len(anim_list(stock_fever[0])))
+    solo_entry = profile["target_entries"]["fever_choreography"][0]
+    write_entry(out_dir, f"entry_{solo_entry}_choreography_a.dfs", [fever, stock_fever[1]])
+    print(f"All 9 Gas-O {region} candidate DFS containers built in {out_dir}.")
 
 
 def main() -> None:

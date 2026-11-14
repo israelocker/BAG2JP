@@ -25,6 +25,27 @@ TIMEOUT = 25.0
 CUE_SLOTS = 0x8006D9F6  # u16 cue id per sound slot, stride 8 (FUN_8002e2d0)
 RESULT_STATE = 0x8005D3E0  # result-screen announcer state (overlay at 0x80098C88)
 HELPER_CALLS = 0
+MAX_WATCH = 32  # bag2jp_anim_trace.c MAX_WATCH; the runtime silently drops extra entries
+DEBUG_ENV_ALLOWLIST = ("BAG2JP_TEST_HEAT_ATTACK", "BAG2JP_TEST_STRIKE_ATTACK", "BAG2JP_TEST_GASO_ATTACK",
+                       "BAG2JP_TEST_ORDERED_DUEL", "BAG2JP_TEST_B1M_TIMING")
+
+
+def parse_watch_extra(text: str) -> list[tuple[int, int]]:
+    """Parse ADDR:SIZE,... (hex RAM address, size 1/2/4, naturally aligned) for diagnostic watches."""
+    watches = []
+    for entry in text.split(","):
+        match = re.fullmatch(r"([0-9A-Fa-f]{8}):([124])", entry)
+        if match is None:
+            raise ValueError(f"Watch entry must be ADDR:SIZE with size 1, 2 or 4: {entry!r}")
+        address, size = int(match[1], 16), int(match[2])
+        if not 0x80000000 <= address <= 0x807FFFFF - (size - 1) or address % size:
+            raise ValueError(f"Watch address outside 8 MB RAM or misaligned: {entry!r}")
+        watches.append((address, size))
+    # nav.parse_watch keys rows by address: an overlapping entry would shadow navigation state.
+    spans = sorted(watches + list(nav.WATCHES.values()))
+    if any(a + s > b for (a, s), (b, _) in zip(spans, spans[1:])):
+        raise ValueError("Watch entries must not repeat or overlap each other or the standard watches")
+    return watches
 
 
 def ps_quote(value: str | Path) -> str:
@@ -70,6 +91,8 @@ def tail(path: Path) -> str:
 
 def session_log(path: Path, started: float) -> str:
     """Do not accept a previous process's popup confirmations."""
+    if not path.is_file():
+        return ""
     if path.stat().st_mtime < started:
         raise ValueError("Popup log belongs to an earlier process")
     return tail(path)
@@ -125,6 +148,7 @@ class Session:
         self.ram_dump_size = "2mb"
         self.audio_dump = False
         self.watch_cues = False
+        self.watch_extra: list[tuple[int, int]] = []
         self.spu_cue_dump: int | None = None
 
     def start(self) -> None:
@@ -140,6 +164,9 @@ class Session:
             for action in nav.TEMPORARY_KEYS[side]:
                 nav.key_for(self.bindings, side, action)
         env = {key: value for key, value in os.environ.items() if not key.startswith("BAG2JP_")}
+        for key in DEBUG_ENV_ALLOWLIST:
+            if key in os.environ:
+                env[key] = os.environ[key]
         env["BAG2JP_ANIM_TRACE"] = "1"
         if self.ram_dump_frame is not None:
             if self.ram_dump_frame <= 0:
@@ -155,8 +182,15 @@ class Session:
         watches = list(nav.WATCHES.values())
         if self.watch_cues:
             watches += [(CUE_SLOTS + 8 * slot, 2) for slot in range(15)] + [(RESULT_STATE, 4)]
+        watches += self.watch_extra
+        if len(watches) > MAX_WATCH:
+            raise ValueError(f"The runtime logs at most {MAX_WATCH} watches; {len(watches)} requested")
         env["BAG2JP_WATCH"] = ",".join(f"{address:08X}:{size}" for address, size in watches)
         self.logs = [(self.run / name).open("wb") for name in ("stdout.log", "stderr.log")]
+        try:
+            (GAME / 'bag2jp_charsel_popup.log').unlink(missing_ok=True)
+        except Exception:
+            pass
         self.started = time.time()
         self.process = subprocess.Popen([str(GAME / "BAG2JP.exe"), "--no-launcher"], cwd=GAME,
                                         env=env, stdout=self.logs[0], stderr=self.logs[1])
@@ -326,9 +360,15 @@ class Session:
                 self.shot(f"stage-survey-{step:02d}-row-{row:02d}")
                 self.key(1, "left")
                 self.wait(lambda current: (current["stage_position"] >> 16 & 255) != row)
-        stage_map = {"HeatBAG2": 0, "HeatBAG1": 1, "StrikeBAG2": 4, "StrikeBAG1": 5}
+        stage_map = {
+            "HeatBAG2": 0, "HeatBAG1": 1, 
+            "StrikeBAG2": 2, "StrikeBAG1": 3,
+            "BiO": 11, "BiOBAG2": 11, 
+            "GasOBAG1": 12, "GasoBAG1": 12, "Gaso": 12, "GasO": 12,
+            "Random": 15
+        }
         wanted = stage_map.get(stage, stage)
-        for _ in range(15):
+        for _ in range(16):
             state = self.state()
             nav.require_selector(state)
             row = state["stage_position"] >> 16 & 255
@@ -399,12 +439,14 @@ def main() -> int:
                         help="dump SPU RAM and voice states when sound slot 14 starts this cue")
     parser.add_argument("--watch-cues", action="store_true",
                         help="also watch the 15 sound-slot cue ids (0x8006D9F6 + 8*slot) in bag2jp_watch.log")
+    parser.add_argument("--watch-extra", type=parse_watch_extra, default=[],
+                        help="diagnostic RAM watches ADDR:SIZE,... appended to bag2jp_watch.log")
     parser.add_argument("--temporary-controls", action="store_true")
     for side in (1, 2):
         parser.add_argument(f"--p{side}-character", default="Heat")
         parser.add_argument(f"--p{side}-version", choices=("BAG1", "BAG2"), default="BAG2")
         parser.add_argument(f"--p{side}-costume", choices=("A", "B"), default="A")
-    parser.add_argument("--stage", choices=("HeatBAG2", "HeatBAG1", "StrikeBAG2", "StrikeBAG1"), default="HeatBAG2")
+    parser.add_argument("--stage", choices=("HeatBAG2", "HeatBAG1", "StrikeBAG2", "StrikeBAG1", "GasOBAG1", "GasoBAG1"), default="HeatBAG2")
     parser.add_argument("--stage-survey", action="store_true",
                         help="shoot every stage carousel row before choosing the stage")
     parser.add_argument("--finish", action="store_true",
@@ -414,6 +456,8 @@ def main() -> int:
     args = parser.parse_args()
     if args.ram_dump_frame is not None and args.ram_dump_frame <= 0:
         parser.error("--ram-dump-frame must be positive")
+    if len(nav.WATCHES) + (16 if args.watch_cues else 0) + len(args.watch_extra) > MAX_WATCH:
+        parser.error(f"The runtime logs at most {MAX_WATCH} watches")
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if os.name != "nt":
         parser.error("Windows test host required")
@@ -443,6 +487,7 @@ def main() -> int:
     session.ram_dump_size = args.ram_dump_size
     session.audio_dump = args.audio_dump
     session.watch_cues = args.watch_cues
+    session.watch_extra = args.watch_extra
     session.spu_cue_dump = args.spu_cue_dump
     files = nav.IsolatedFiles(GAME, run, safe_to_restore=lambda: session.process is None or session.process.poll() is not None)
     result = {"status": "failed", "requested": vars(args), "runtime_sha256": executable_hash,

@@ -63,6 +63,7 @@ typedef struct {
 } CsPopup;
 static CsPopup s_pop[2];
 static int s_enabled;
+static int s_cur_gaso[2] = {-1, -1};
 static char s_dir[1024];
 static atomic_int s_dirty, s_visible;
 static atomic_uint s_pending_sfx;
@@ -281,6 +282,72 @@ static void cs_feedback_hook(struct CPUState* cpu, uint32_t address) {
         const uint32_t slot = psx_mod_call_guest(cpu, 0x8002E478u, address, 0x200u + i, ~0u, ~0u, ~0u);
         cs_log("feedback: cue %04x slot %d", 0x200u + i, (int32_t)slot);
     }
+    /* Dynamic Gas-O / Bi-O character portrait and name switching on character select */
+    const uint32_t select_phase = psx_mod_read_word(0x80096F94u);
+    for (int s = 0; s < 2; ++s) {
+        const uint32_t b = CS_PLAYER + 0x20u * (uint32_t)s;
+        const int chr = (int8_t)psx_mod_read_byte(b + 0x1Au);
+        const int st = (uint8_t)psx_mod_read_byte(b + 0x1Eu);
+        const int anim = (uint8_t)psx_mod_read_byte(b + 0x18u);
+        const int confirmed_chr = (int)psx_mod_read_word(0x8005E6A0u + (uint32_t)s * 4u);
+        int want_gaso = 0;
+        int active_chr = chr;
+        if (select_phase >= 2) {
+            /* During stage select (phases 2, 3, etc.), player slots are frozen/reused; check confirmed character */
+            active_chr = confirmed_chr;
+            if (active_chr == 9) {
+                want_gaso = (bag2jp_bag1_get_version(9, s) != 0);
+            }
+        } else if (chr == 9) {
+            const CsPopup* p = &s_pop[s];
+            if (p->phase == P_OPEN || p->phase == P_REPLAY) {
+                want_gaso = p->version != 0;
+            } else if (p->phase == P_IDLE) {
+                if (st >= 2 || confirmed_chr == 9) want_gaso = (bag2jp_bag1_get_version(9, s) != 0);
+                else want_gaso = 0;
+            }
+        }
+        if (active_chr != 9) {
+            s_cur_gaso[s] = -1;
+        } else {
+            /* Note: We do NOT overwrite the global table at 0x80096414 with Gas-O color,
+             * because that shared global would overwrite Bi-O's background when returning to char select!
+             * The per-player background tint is cleanly handled in cs_char_name_hook at 0x8009347Cu. */
+
+            if (want_gaso != s_cur_gaso[s]) {
+                const int was_switch = (s_cur_gaso[s] != -1);
+                s_cur_gaso[s] = want_gaso;
+                /* Update Bi-O CLUT entry 235: 0x7FFF = Bi-O (hash 1B5B54D6C25AC7A0), 0x7FFE = Gas-O (hash 61E197B20D89CB1E) */
+                const uint32_t clut_buf = psx_mod_read_word(0x80096438u + 9u * 48u + 0x18u);
+                if (clut_buf != 0) {
+                    psx_mod_write_half(clut_buf + 235u * 2u, want_gaso ? 0x7FFEu : 0x7FFFu);
+                }
+                const uint32_t clut_buf_ss = psx_mod_read_word(0x800967C8u + 9u * 48u + 0x18u);
+                if (clut_buf_ss != 0) {
+                    psx_mod_write_half(clut_buf_ss + 235u * 2u, want_gaso ? 0x7FFEu : 0x7FFFu);
+                }
+
+                /* Synchronously upload updated CLUT to VRAM so Recomp's HD texture pack immediately detects Gas-O */
+                const uint32_t rect_addr = (select_phase >= 2) ? 0x800967E8u : (0x80096438u + 0x20u + (uint32_t)s * 48u);
+                const uint32_t src_clut = (select_phase >= 2) ? clut_buf_ss : clut_buf;
+                if (src_clut != 0) {
+                    const uint32_t rx = psx_mod_read_half(rect_addr + 0u);
+                    const uint32_t ry = psx_mod_read_half(rect_addr + 2u);
+                    const uint32_t rw = psx_mod_read_half(rect_addr + 4u);
+                    const uint32_t rh = psx_mod_read_half(rect_addr + 6u);
+                    if (rw > 0 && rh > 0 && rx < 1024u && ry < 512u) {
+                        psx_mod_psyq_load_image(rx, ry, rw, rh, src_clut);
+                    }
+                }
+
+                /* If switching versions between Bi-O and Gas-O on the same slot, trigger the native portrait vibration/shake */
+                if (was_switch && select_phase < 2 && anim > 2) {
+                    psx_mod_write_byte(b + 0x18u, 0);
+                }
+                cs_log("charsel: side %d portrait -> %s", s, want_gaso ? "Gas-O" : "Bi-O");
+            }
+        }
+    }
 }
 static void cs_neutral(PSXModPadOutput* out, uint32_t buttons) {
     out->buttons = buttons; out->type = PSX_MOD_PAD_DIGITAL;
@@ -394,6 +461,64 @@ static void cs_mirror_hook(struct CPUState* cpu, uint32_t address) {
     cs_log("mirror: player %d keeps costume %c (other game version)", side + 1, cpu->gpr[7] ? 'B' : 'A');
 }
 
+/* Dynamic character name coordinates and per-player background tint hook at 0x8009347C */
+static void cs_char_name_hook(struct CPUState* cpu, uint32_t address) {
+    (void)address;
+    if (!s_enabled || !cs_screen_active()) return;
+    const uint32_t s3 = cpu->gpr[19]; /* $s3 = current player block pointer */
+    if (s3 < CS_PLAYER || s3 > CS_PLAYER + 0x40u) return;
+    const int side = (int8_t)psx_mod_read_byte(s3 + 0x19u);
+    const int chr = (int8_t)psx_mod_read_byte(s3 + 0x1Au);
+    if (chr != 9 || side < 0 || side > 1) return;
+    const uint32_t b = CS_PLAYER + 0x20u * (uint32_t)side;
+    const int st = (uint8_t)psx_mod_read_byte(b + 0x1Eu);
+    const int confirmed_chr = (int)psx_mod_read_word(0x8005E6A0u + (uint32_t)side * 4u);
+    const uint32_t select_phase = psx_mod_read_word(0x80096F94u);
+    int want_gaso = 0;
+    if (select_phase >= 2) {
+        if (confirmed_chr == 9) want_gaso = (bag2jp_bag1_get_version(9, side) != 0);
+    } else {
+        const CsPopup* p = &s_pop[side];
+        if (p->phase == P_OPEN || p->phase == P_REPLAY) {
+            want_gaso = p->version != 0;
+        } else if (p->phase == P_IDLE) {
+            if (st >= 2 || confirmed_chr == 9) want_gaso = (bag2jp_bag1_get_version(9, side) != 0);
+            else want_gaso = 0;
+        }
+    }
+    const uint32_t entry = 0x80096DD8u + 9u * 8u;
+    const uint32_t sp = cpu->gpr[29];
+    if (want_gaso) {
+        /* GAS-O embedded at u=0, v=226, w=115, h=29 on sheet 1 (042.tim) */
+        psx_mod_write_byte(entry + 0u, 0);     /* u */
+        psx_mod_write_byte(entry + 1u, 226);   /* v */
+        psx_mod_write_byte(entry + 2u, 115);   /* w */
+        psx_mod_write_byte(entry + 3u, 29);    /* h */
+        psx_mod_write_byte(entry + 4u, 1);     /* sheet_idx = 1 (042.tim) */
+
+        /* Independent per-player background tint on CPU stack:
+         * 0x80093480 lbu $a0, 0x28($sp) (R)
+         * 0x80093484 lbu $a1, 0x29($sp) (G)
+         * 0x8009348c lbu $a2, 0x2a($sp) (B)
+         * Toxic green Gas-O: R=0x20, G=0xE0, B=0x30 */
+        psx_mod_write_byte(sp + 0x28u, 0x20u);
+        psx_mod_write_byte(sp + 0x29u, 0xE0u);
+        psx_mod_write_byte(sp + 0x2Au, 0x30u);
+    } else {
+        /* Stock BI-O at u=0, v=62, w=129, h=31 on sheet 0 (041.tim) */
+        psx_mod_write_byte(entry + 0u, 0);
+        psx_mod_write_byte(entry + 1u, 62);
+        psx_mod_write_byte(entry + 2u, 129);
+        psx_mod_write_byte(entry + 3u, 31);
+        psx_mod_write_byte(entry + 4u, 0);
+
+        /* Stock Bi-O blue/purple: R=0x40, G=0x48, B=0x90 */
+        psx_mod_write_byte(sp + 0x28u, 0x40u);
+        psx_mod_write_byte(sp + 0x29u, 0x48u);
+        psx_mod_write_byte(sp + 0x2Au, 0x90u);
+    }
+}
+
 static void cs_vblank(void) {
     cs_stage_vblank();
     for (int i = 0; i < 2; ++i) if (s_pop[i].phase == P_OPEN && s_pop[i].open_t < 8) {
@@ -406,6 +531,8 @@ static void cs_vblank(void) {
 }
 static void cs_activate(void) {
     memset(s_pop, 0, sizeof s_pop);
+    s_cur_gaso[0] = -1;
+    s_cur_gaso[1] = -1;
     atomic_store(&s_pending_sfx, 0);
     if (psx_mod_current_resource_path("popup_assets", s_dir, sizeof s_dir) <= 0) s_dir[0] = 0;
     s_enabled = 1;
@@ -415,7 +542,14 @@ static void cs_activate(void) {
     cs_publish();
     cs_log("activate: assets '%s', pad transforms %d %d", s_dir, a, b);
 }
-static void cs_reset(void) { atomic_store(&s_pending_sfx, 0); s_enabled = 0; atomic_store(&s_visible, 0); cs_stage_publish((CsStageView){0}); }
+static void cs_reset(void) {
+    atomic_store(&s_pending_sfx, 0);
+    s_enabled = 0;
+    s_cur_gaso[0] = -1;
+    s_cur_gaso[1] = -1;
+    atomic_store(&s_visible, 0);
+    cs_stage_publish((CsStageView){0});
+}
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_charsel_popup) {
     (void)psx_mod_register_activation_plugin("bag2jp.charsel_popup", cs_activate);
@@ -423,6 +557,7 @@ PSX_MOD_CONSTRUCTOR(bag2jp_register_charsel_popup) {
     (void)psx_mod_register_vblank_plugin("bag2jp.charsel_popup", cs_vblank);
     (void)psx_mod_register_function_entry_plugin("bag2jp.charsel_popup", 0x80090258u, cs_feedback_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", CS_MIRROR_SB, CS_MIRROR_W, cs_mirror_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x8009347Cu, 0x3C038009u, cs_char_name_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x800917A8u, 0x00531021u, cs_stage_random_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x80093DB0u, 0x145E0002u, cs_stage_name_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x80093E38u, 0x0C007EFFu, cs_stage_heat_label_hook);

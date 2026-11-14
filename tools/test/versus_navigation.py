@@ -14,7 +14,7 @@ from typing import Callable, TypeVar
 T = TypeVar("T")
 
 # JP identities verified by popup logs; this is deliberately not a full roster.
-CHARACTERS = {"heat": 0, "strike": 1, "comet": 2}
+CHARACTERS = {"heat": 0, "strike": 1, "comet": 2, "shorty": 5, "bi-o": 9, "bi_o": 9, "gas-o": 9, "gas_o": 9, "gaso": 9}
 WATCHES = {
     "root": (0x8005D3D4, 4), "menu": (0x80192028, 4),
     "mode": (0x8005D2C4, 2), "p1_position": (0x800971EC, 4),
@@ -49,7 +49,7 @@ def validate_pick(name: str, version: str, costume: str) -> int:
     character = resolve_character(name)
     if version not in {"BAG1", "BAG2"}:
         raise ValueError(f"Unsupported version: {name} {version}")
-    if version == "BAG1" and character not in (0, 1):
+    if version == "BAG1" and character not in (0, 1, 9):
         raise ValueError(f"Unsupported BAG1 character: {name}")
     if costume not in {"A", "B"}:
         raise ValueError("Costume must be A or B")

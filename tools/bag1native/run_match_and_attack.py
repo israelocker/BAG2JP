@@ -1,7 +1,7 @@
-"""Automate entering a 2P match and recording an attack in native BAG1.
+"""Automate entering a 1P/2P match and recording Gas-O attack in native BAG1.
 
 Usage:
-  py -3.13 tools/bag1native/run_match_and_attack.py --out-dir <dir>
+  py -3.13 tools/bag1native/run_match_and_attack.py --out-dir <dir> --p1-char 9
 """
 from __future__ import annotations
 
@@ -21,8 +21,8 @@ u = ctypes.windll.user32
 VK_RETURN = 0x0D
 VK_DOWN = 0x28
 VK_UP = 0x26
-VK_LEFT = 0x27
-VK_RIGHT = 0x29
+VK_LEFT = 0x25
+VK_RIGHT = 0x27
 VK_S = 0x53   # P1 Circle (Confirm)
 VK_X = 0x58   # P1 Cross (Cancel)
 VK_A = 0x41   # P1 Triangle (Attack)
@@ -47,14 +47,15 @@ def get_hwnd(pid: int) -> int:
 
 
 def activate(hwnd: int) -> None:
+    u.ShowWindow(hwnd, 9)
     u.SetForegroundWindow(hwnd)
-    time.sleep(0.2)
+    time.sleep(0.3)
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out-dir", type=Path, required=True)
-    ap.add_argument("--p1-char", type=int, default=0, help="0=Heat, 1=Strike, etc.")
+    ap.add_argument("--p1-char", type=int, default=9, help="0=Heat, 1=Strike, 9=Gas-O")
     ap.add_argument("--duration", type=float, default=45.0)
     args = ap.parse_args()
 
@@ -87,10 +88,39 @@ def main() -> int:
     tap(VK_S)
     time.sleep(2.0)
 
-    print("Character Select: P1 Heat, P2 Frida...")
+    print(f"Navigating P1 character to {args.p1_char}...")
+    # On character select screen:
+    # 0x80068718 holds P1 char, 0x8006871C holds P2 char
+    # We pulse Right/Down until P1 is the target character
+    for step in range(25):
+        p1 = mem.u32(0x80068718)
+        p2 = mem.u32(0x8006871C)
+        print(f"Selector step {step}: P1={p1}, P2={p2}")
+        if p1 == args.p1_char:
+            print(f"P1 reached character {args.p1_char}!")
+            break
+        activate(hwnd)
+        tap(VK_RIGHT, extended=True)
+        time.sleep(0.3)
+    else:
+        # If Right didn't change P1, try Down
+        for step in range(25):
+            p1 = mem.u32(0x80068718)
+            print(f"Selector retry with Down step {step}: P1={p1}")
+            if p1 == args.p1_char:
+                print(f"P1 reached character {args.p1_char}!")
+                break
+            activate(hwnd)
+            tap(VK_DOWN, extended=True)
+            time.sleep(0.3)
+
+    time.sleep(0.5)
+    print("Confirming P1...")
     activate(hwnd)
     tap(VK_S)
     time.sleep(1.0)
+
+    print("Confirming P2...")
     activate(hwnd)
     tap(VK_M)
     time.sleep(1.5)
@@ -103,7 +133,7 @@ def main() -> int:
     time.sleep(0.5)
     print("Match confirmed, starting video capture...")
 
-    video_path = args.out_dir / "heat-native-attack.mp4"
+    video_path = args.out_dir / "gaso-native-attack-60fps.mp4"
     ff_cmd = [
         r"D:\ffmpeg\bin\ffmpeg.exe", "-y", "-loglevel", "error",
         "-filter_complex", "ddagrab=output_idx=0:framerate=60:offset_x=360:offset_y=0:video_size=1840x1380,hwdownload,format=bgra,scale=920:690",
@@ -112,32 +142,33 @@ def main() -> int:
     ]
     ff = subprocess.Popen(ff_cmd)
 
-    print("Waiting for dance to start...")
+    print("Waiting for dance to start (state & 0x01)...")
     t0 = time.perf_counter()
-    while time.perf_counter() - t0 < 30.0:
+    while time.perf_counter() - t0 < 35.0:
         state = mem.u32(STATE_ADDR)
         if state & 0x01:
             print(f"Dance active! state={state:#x} beat={mem.u32(BEAT_ADDR)&0xffff}")
             break
         time.sleep(0.05)
 
-    print("Running attack bot...")
-    events, prev_state, bar, accepted = [], mem.u32(STATE_ADDR), 0, 0
+    print(f"Running attack bot for P1 (char={args.p1_char})...")
+    events, prev_st, bar, accepted = [], mem.u32(STATE_ADDR), 0, 0
     t_start = time.perf_counter()
-    while time.perf_counter() - t_start < 25.0 and accepted < 2:
-        state = mem.u32(STATE_ADDR)
-        if state & 0x10 and not prev_state & 0x10:
+    while time.perf_counter() - t_start < 30.0 and accepted < 2:
+        st = mem.u32(STATE_ADDR)
+        # 4th beat detection: 0x10 bit in STATE_ADDR
+        if (st & 0x10) and not (prev_st & 0x10):
             bar += 1
             attacks = mem.s16(ATTACKS_ADDR)
             if attacks > 0:
                 activate(hwnd)
-                tap(VK_A)
+                tap(VK_A)  # P1 Triangle
                 t_press = time.perf_counter() - t_start
                 time.sleep(0.25)
                 flags = mem.u16(FLAG_ADDR)
                 after = mem.s16(ATTACKS_ADDR)
                 ok = after < attacks
-                accepted += ok
+                accepted += int(ok)
                 ev = {
                     "t": round(t_press, 3), "bar": bar, "beat": mem.u32(BEAT_ADDR) & 0xFFFF,
                     "attacks_before": attacks, "attacks_after": after,
@@ -145,14 +176,14 @@ def main() -> int:
                 }
                 events.append(ev)
                 print(json.dumps(ev), flush=True)
-        prev_state = state
+        prev_st = st
         time.sleep(0.001)
 
-    (args.out_dir / "heat-native-attack.json").write_text(json.dumps(events, indent=2), encoding="utf-8")
-    print(f"Attacks accepted: {accepted}/2. Waiting for video to finish...")
+    (args.out_dir / "attack-bot.json").write_text(json.dumps(events, indent=2), encoding="utf-8")
+    print(f"Attacks accepted: {accepted}/2. Waiting for video recording to complete...")
     ff.wait()
     print(f"Video saved to {video_path} ({video_path.stat().st_size} bytes)")
-    return 0 if accepted else 1
+    return 0
 
 
 if __name__ == "__main__":

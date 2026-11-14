@@ -2,16 +2,20 @@
 id: bag1-stage-song-digest
 title: "Escenario/canción: ruta de referencia"
 tags: ["digest", "stage"]
-summary: "Heat/Strike: porter por perfiles, receta stage/audio y evidencia histórica con límites; no relocador universal ni campaña aceptada."
+summary: "Heat/Strike: perfiles, receta stage/audio, requisito de eventos por puntaje y límites históricos; no relocador universal ni campaña aceptada."
 related: ["notes/bag1-stage-song.md"]
 created: "2026-11-02"
 updated: "2026-11-06"
+edited: "2026-11-06"
 doc_kind: digest
 source: "notes/bag1-stage-song.md"
-source_sha256: "8ea4579dd1b2e234535d040ca1e2b2bc1f0e6646e0b41a293515edf09975e3f0"
+source_sha256: "a14049afa7534e87fb21ecdc7894032d22c6ffe93ee44195e31bf8cdcbb8547a"
 ---
 
 Leer primero «Receta reutilizable» de la [fuente](../bag1-stage-song.md).
+Requisito obligatorio (2026-11-06): no basta importar geometría y texturas;
+deben importarse las interacciones/eventos del escenario con el puntaje
+(level/prev_level en BAG1 y adaptación en BAG2); reportado pendiente en Strike.
 `build_stage_package.py --root <project> --profile strike --output <new.dfs>`
 crea DFS+JSON, no despliega. Perfiles Heat/Strike tienen símbolos/callbacks y
 paquetes distintos: no es un relocador universal. Modelo, atlas, cámara, chart y

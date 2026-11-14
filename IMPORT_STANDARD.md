@@ -36,6 +36,13 @@ hechos a partir de un resumen de chat. No leer todas las notas al empezar.
   P1/A, P1/B, P2/A, P2/B y capacidades aplicables, final y retorno.
 - Sincronizar explícitamente fuentes/recursos antes de build; preflight no copia.
 - Validar bytes de DUMMY independientemente del guard defectuoso del generador.
+- Al importar escenarios BAG1 a BAG2, no basta con la geometría, texturas y audio: es obligatorio importar y cablear las interacciones y eventos del escenario que avanzan con el puntaje (niveles de puntuación / eventos dinámicos del entorno, como ocurrió en Heat con la rotura de ventanas y en Strike con su progresión; directiva del propietario 2026-11-06).
+- Importar cada personaje, canción y escenario BAG1 desde **ambos discos**, USA
+  (`_work/bag1_disc_full`) y Japón (`_work/bag1jp_disc_full`, sin la censura
+  americana), y ofrecer las dos variantes en la elección de versión del juego.
+  Comparar miembro a miembro; si una región es idéntica, reutilizar sus bytes y no
+  duplicar payload. Heat y Strike siguen solo con fuentes USA: pendiente tras Gas-O
+  (directiva del propietario 2026-11-06, regla permanente).
 - No prometer tiempos ni porcentajes de ahorro sin medición comparable.
 
 Este índice no es un generador automático. El CLI `character_workflow.py` tiene

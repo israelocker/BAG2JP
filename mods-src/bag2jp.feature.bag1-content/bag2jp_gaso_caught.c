@@ -1,12 +1,22 @@
 /* Experimental CAUGHT entry seam, default-off (feature bag1-gaso-caught) and
- * inert while GASO_CAUGHT_CLIP_PUBLISHED is 0: no build publishes an authentic
- * guest clip yet, so a2 is never changed. Request 202 has already become slot
- * 89 before FUN_8002d06c; it must not be matched as a controller-entry request.
+ * inert while GASO_CAUGHT_CLIP_PUBLISHED is 0: the shipped source never writes
+ * guest RAM from a hook and never changes a2. Request 202 has already become
+ * slot 89 before FUN_8002d06c; it must not be matched as a controller-entry
+ * request.
  *
  * Hook contract: publish borrowed slot1 before the original controller body,
  * then change a2=1; never write the actor's pending at +0x18. A record is taken
  * only by the recipient main actor's entry with mode 1 and slot 89, and it is
  * consumed by that take whether or not a2 changes.
+ *
+ * Experimental publication (CLIP_PUBLISHED=1 build-tree only): the take runs
+ * the bag2jp_caught_binding.h publish on a host copy of the spans it checks
+ * and mirrors its three slot1 writes; a2 becomes 1 only when slot1 holds this
+ * clip. Every later entry call checks retirement first and restores the empty
+ * tuple through the same contract once the actor left slot1 (see
+ * GASO_CAUGHT_UNSTARTED_TICKS). Unproven in game; P2b generation is open.
+ * A verified take also clears the recipient's native secondary selector1 at
+ * +0x1724 (one halfword), including its generic impact cue; not visual-only.
  *
  * Producer-site capture: runs immediately before sh v0,0x18(s5) at 0x8009b5b4,
  * reads the original registers (v0=request, s2=source_side, s4=recipient_side,
@@ -15,8 +25,8 @@
  * captured[] only for a direct (non-reflected) request whose source main actor
  * is Gas-O with the BAG1 version selected. Heat and Strike publish the same
  * request 202; their publications only invalidate the recipient's record.
- * Hooks never write guest RAM, allocate, or change CPU registers (except a2 in
- * the entry callback). Host-only counters (TCP mod_counters) report every
+ * Hooks never allocate; they write guest RAM and a2 only in the published
+ * build, as described above. Host-only counters (TCP mod_counters) report every
  * producer-site call as capture_stored/capture_rejected and every take as
  * entry_taken; the same events and the rejection reason go to
  * bag2jp_bag1_versions.log, the only channel in builds without debug tools.
@@ -26,10 +36,11 @@
  * no retry or repair on later activations. P2a looks up the recipient's clip
  * at entry for diagnostics only: readiness is not permission to publish it.
  *
- * Required before GASO_CAUGHT_CLIP_PUBLISHED: authenticated recipient/table
- * generation, bounded exclusive RAM access, persistent loan ownership, safe
- * retirement and reset/savestate handling. Do not allocate placeholder clips
- * or publish slot1 here without a captured record.
+ * Still required before the source default may become 1: authenticated
+ * recipient/table generation (P2b), in-game evidence of the retirement and
+ * owner acceptance. Known limit: reset/savestate forget a published tuple
+ * without restoring it; a later publication on those tables fails closed.
+ * Do not allocate placeholder clips or publish slot1 without a captured record.
  * See notes/gaso-import.md, caught-entry-recovery-20261111.
  */
 #include <stdint.h>
@@ -51,13 +62,36 @@
 #define GASO_CAUGHT_REG_A0 4                 /* controller; actor at word[a0] */
 #define GASO_CAUGHT_REG_A1 5                 /* controller mode */
 #define GASO_CAUGHT_REG_A2 6                 /* destination slot */
+#define GASO_CAUGHT_REG_A3 7                 /* requested blend cap */
+#define GASO_CAUGHT_REG_SP 29
+#define GASO_CAUGHT_MODE_ADVANCE 0u
 #define GASO_CAUGHT_MODE_ENTRY 1u
+#define GASO_CAUGHT_FULL_BLEND 0x1000u
+#define GASO_CAUGHT_BLEND_OFF 0x1546u
+#define GASO_CAUGHT_FRAME_OFF 0x1554u
+#define GASO_CAUGHT_LAST_FRAME 1u
+#define GASO_CAUGHT_CTRL_FLAG_A 0x0au          /* entry clears; must already be 0 */
+#define GASO_CAUGHT_CTRL_FLAG_B 0x0bu          /* entry clears; must already be 0 */
+#define GASO_CAUGHT_CTRL_RATE 0x14u
+#define GASO_CAUGHT_CTRL_TICKS 0x18u
+#define GASO_CAUGHT_CTRL_SPEED_ARG 0x1cu
+#define GASO_CAUGHT_CTRL_FRAME_COPY 0x24u       /* entry copies frame 0 here */
+#define GASO_CAUGHT_ENTRY_FRAME_COPY 0u
+#define GASO_CAUGHT_CTRL_BYTES 0x28u
+#define GASO_CAUGHT_STACK_SPEED_ARG 0x10u
+#define GASO_CAUGHT_STACK_ARG_BYTES 0x14u
+#define GASO_CAUGHT_FIXED_SPEED_BIT 0x80000000u
+#define GASO_CAUGHT_NO_TICK_TIMER 0xffffffffu
 #define GASO_CAUGHT_HIT_SLOT 89u             /* request 202 translated */
+#define GASO_CAUGHT_SECONDARY_EFFECT 0x1724u /* native visual/audio selector */
+#define GASO_CAUGHT_SECONDARY_HIT 1u         /* eight hit particles, including stars */
 #define GASO_CAUGHT_ARG_A2 1                 /* borrowed slot1 */
 #define GASO_CAUGHT_CHARACTER 9              /* Gas-O, GASO_CHAR_ID */
 
 int bag2jp_bag1_has_version(int chr);
 int bag2jp_bag1_get_version(int chr, int side);
+/* Plays the tank cues requested by the tank visual (bag2jp_bag1_versions.c). */
+void bag2jp_gaso_tank_play_cues(struct CPUState *cpu, uint32_t return_address);
 void b1v_log(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 /* Producer site: sh v0,0x18(s5) publishes request202 to the recipient's
@@ -102,28 +136,84 @@ static B1CaughtBank bank;
 
 /* Slot1 publication / restore state, one per recipient side.
  * Guarded by GASO_CAUGHT_CLIP_PUBLISHED: while 0 no guest write is ever
- * issued and a2 is never changed. Publication writes the ten slot bytes
- * (clip, frames=2, info) before the controller consumes slot 89; restore
- * writes the original empty tuple back when the clip retires. */
+ * issued and a2 is never changed. Both directions run the validated
+ * bag2jp_caught_binding.h transaction on a host copy of the spans it reads,
+ * then mirror its three slot writes (raw word, length half, metadata word). */
 static B1CaughtBinding gaso_caught_binding[GASO_CAUGHT_SIDES];
+static B1CaughtBankClip gaso_caught_clip[GASO_CAUGHT_SIDES];
 static int gaso_caught_published[GASO_CAUGHT_SIDES];
+static int gaso_caught_entered[GASO_CAUGHT_SIDES];      /* actor seen on slot1 */
+static int gaso_caught_restore_refused[GASO_CAUGHT_SIDES];
+static uint32_t gaso_caught_restore_tries[GASO_CAUGHT_SIDES];
+static uint32_t gaso_caught_info[GASO_CAUGHT_SIDES];     /* published metadata word */
 static uint32_t gaso_caught_publish_tick[GASO_CAUGHT_SIDES];
+static uint32_t gaso_caught_retry_tick[GASO_CAUGHT_SIDES];
 static uint32_t gaso_caught_ticks;
+/* Gas-O hits taken per recipient side, monotonic: the tank visual
+ * (bag2jp_gaso_tank.h) drops a tank when this changes, the moment BAG1's
+ * trap starts. Never reset, so a reader only compares against its own copy. */
+static uint32_t gaso_caught_hits[GASO_CAUGHT_SIDES];
+static uint32_t gaso_caught_epoch;
+static uint32_t gaso_caught_epoch_hits[GASO_CAUGHT_SIDES];
 
-/* Clip duration in entry-callback ticks (TBD: research native tank effect
- * length; native reference ~100 frames at 60 Hz). */
-#define GASO_CAUGHT_CLIP_DURATION 60u
+uint32_t bag2jp_gaso_caught_hits(uint32_t side) {
+    return side < GASO_CAUGHT_SIDES ? gaso_caught_hits[side] : 0u;
+}
+
+uint32_t bag2jp_gaso_caught_epoch(void) {
+    return gaso_caught_epoch;
+}
+
+/* Snapshot at the callback boundary, not at the next visual tick: a fresh
+ * hit can arrive between those events and must not be mistaken for an old one. */
+uint32_t bag2jp_gaso_caught_epoch_hits(uint32_t side) {
+    return side < GASO_CAUGHT_SIDES ? gaso_caught_epoch_hits[side] : 0u;
+}
+
+/* Retirement (FUN_8002d06c, read 2026-11-12 in Ghidra/SLPM_862.19): the
+ * controller stores current = a2 inside the same entry call (0x8002d4b8) and
+ * previous = current when it returns (0x8002d6cc); it divides by
+ * length[current] every tick (0x8002d644/0x8002d684) and when leaving the slot
+ * (0x8002d494). So the clip has retired once the actor was seen on slot1 and
+ * both current and previous left it; the contract refuses the restore while
+ * either is still 1 or a decoder/pose word points into the clip.
+ * If the actor is never seen on slot1 (the redirected call returned early),
+ * the slot is restored after this many entry calls; calls, not frames. */
+#define GASO_CAUGHT_UNSTARTED_TICKS 60u
+#define GASO_CAUGHT_RETRY_TICKS 8u           /* calls between refused restores */
+/* Refused restores before the publication is abandoned without writing. The
+ * tuple left behind points into the never-freed bank with length 2, so the
+ * controller cannot divide by zero on it; a later publication fails closed. */
+#define GASO_CAUGHT_RESTORE_TRIES 32u
+
+/* Sparse host copy of guest main RAM: only the spans the contract reads
+ * (actor list, listed actors, their three tables, the original empty word).
+ * Every other byte stays zero and is never read by b1cb_plan. */
+#define GASO_CAUGHT_COPY_SPANS (2u + 4u * B1CB_ACTOR_COUNT)
+#define GASO_CAUGHT_MAX_SLOTS 0x1000u        /* bound on copied table entries */
+static uint8_t gaso_caught_ram[B1CB_MAX_RAM];
+static struct { uint32_t offset, bytes; } gaso_caught_spans[GASO_CAUGHT_COPY_SPANS];
+static unsigned gaso_caught_span_count;
 
 /* Forward declarations: defined below, used by the entry callback. */
 static int gaso_caught_build_binding(uint32_t side, const B1CaughtBankClip *clip,
                                      B1CaughtBinding *b) __attribute__((unused));
 static void gaso_caught_publish_slot1(uint32_t side) __attribute__((unused));
-static void gaso_caught_restore_slot1(uint32_t side) __attribute__((unused));
+static void gaso_caught_retire_slot1(void) __attribute__((unused));
+static void gaso_caught_suppress_secondary(uint32_t side, uint32_t actor);
+/* Contract directions: publish and restore write the slot1 tuple; verify only
+ * confirms that slot1 still holds this clip for this actor. */
+enum { GASO_CAUGHT_PUBLISH, GASO_CAUGHT_RESTORE, GASO_CAUGHT_VERIFY };
+static int gaso_caught_transact(uint32_t side, int mode);
 
 /* ---- Guest RAM reads through the runtime API ---- */
 
 static uint32_t guest_read_word(uint32_t addr) {
     return psx_mod_read_word(addr);
+}
+
+static uint16_t guest_read_half(uint32_t addr) {
+    return psx_mod_read_half(addr);
 }
 
 static uint8_t guest_read_byte(uint32_t addr) {
@@ -233,32 +323,60 @@ static const char *capture_producer_source(struct CPUState *cpu) {
 
 /* ---- Entry callback: take the recipient's record once ---- */
 
+/* Only called after VERIFY of an already published tuple. The caller has
+ * renewed the capture lifetime (+0x44) before reaching this entry. For the
+ * same settled static pose and unchanged fixed rate, advance mode keeps that
+ * lifetime while avoiding a second entry reanchor (8002d06c). Any uncertain
+ * timing/phase retains native entry. Never write a controller or actor timer.
+ *
+ * Known residuals of advance: it does not zero the sub-frame accumulator
+ * (+0x10) nor the countdown (+0x20), and it does not run the character entry
+ * callbacks (8003190c, which include the native cue for Gas-O 0x782). The
+ * three guarded writes below (+0x0a, +0x0b, +0x24=0) are proven no-ops only
+ * when the live values already match what mode1 would write. */
+static int gaso_caught_can_continue(const struct CPUState *cpu, uint32_t actor) {
+    const uint32_t controller = cpu->gpr[GASO_CAUGHT_REG_A0];
+    const uint32_t stack = cpu->gpr[GASO_CAUGHT_REG_SP];
+    if (!guest_range_ok(controller, GASO_CAUGHT_CTRL_BYTES, 0) ||
+        !guest_range_ok(stack, GASO_CAUGHT_STACK_ARG_BYTES, 0) ||
+        cpu->gpr[GASO_CAUGHT_REG_A3] != GASO_CAUGHT_FULL_BLEND ||
+        guest_read_word(actor + B1CB_CURRENT) != B1CB_SLOT ||
+        guest_read_word(actor + B1CB_PREVIOUS) != B1CB_SLOT ||
+        guest_read_word(actor + GASO_CAUGHT_FRAME_OFF) != GASO_CAUGHT_LAST_FRAME ||
+        guest_read_half(actor + GASO_CAUGHT_BLEND_OFF) != GASO_CAUGHT_FULL_BLEND)
+        return 0;
+    const uint32_t speed = guest_read_word(controller + GASO_CAUGHT_CTRL_SPEED_ARG);
+    return (speed & GASO_CAUGHT_FIXED_SPEED_BIT) &&
+           speed == guest_read_word(stack + GASO_CAUGHT_STACK_SPEED_ARG) &&
+           guest_read_word(controller + GASO_CAUGHT_CTRL_RATE) == 0u - speed &&
+           guest_read_word(controller + GASO_CAUGHT_CTRL_TICKS) == GASO_CAUGHT_NO_TICK_TIMER &&
+           guest_read_byte(controller + GASO_CAUGHT_CTRL_FLAG_A) == 0u &&
+           guest_read_byte(controller + GASO_CAUGHT_CTRL_FLAG_B) == 0u &&
+           guest_read_word(controller + GASO_CAUGHT_CTRL_FRAME_COPY) == GASO_CAUGHT_ENTRY_FRAME_COPY;
+}
+
 static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
     int side;
     uint32_t actor;
+    int continuing = 0;
     if (address != GASO_CAUGHT_ENTRY_ADDRESS) return;
-    /* Count every entry call as a tick for clip-duration tracking. */
     ++gaso_caught_ticks;
-    /* Restore any published slot whose clip duration has elapsed. The
-     * retirement point is timer-based (TBD: research native tank effect
-     * length for a precise hook address). */
-    for (side = 0; side < GASO_CAUGHT_SIDES; ++side) {
-        if (gaso_caught_published[side] &&
-            gaso_caught_ticks - gaso_caught_publish_tick[side] >= GASO_CAUGHT_CLIP_DURATION) {
-            gaso_caught_restore_slot1(side);
-        }
-    }
+    bag2jp_gaso_tank_play_cues(cpu, address);
+    if (GASO_CAUGHT_CLIP_PUBLISHED) gaso_caught_retire_slot1();
     for (side = 0; side < GASO_CAUGHT_SIDES; ++side)
         if (captured[side].available) break;
-    /* No record: leave the controller untouched without reading guest RAM. */
+    /* No record: leave the controller untouched; only a published slot's
+     * retirement above reads guest RAM. */
     if (side == GASO_CAUGHT_SIDES) return;
     if (cpu->gpr[GASO_CAUGHT_REG_A1] != GASO_CAUGHT_MODE_ENTRY ||
         cpu->gpr[GASO_CAUGHT_REG_A2] != GASO_CAUGHT_HIT_SLOT) return;
+    if (!guest_range_ok(cpu->gpr[GASO_CAUGHT_REG_A0], 4u, 0)) return;
     actor = guest_read_word(cpu->gpr[GASO_CAUGHT_REG_A0]);
     for (side = 0; side < GASO_CAUGHT_SIDES; ++side) {
         if (!captured[side].available || captured[side].actor != actor) continue;
         /* Consume once, even while no clip is published. */
         captured[side].available = 0;
+        ++gaso_caught_hits[side];
         psx_mod_counter_add("gaso_caught.entry_taken", 1u);
         /* Captured recipient identity is only a diagnostic snapshot until P2b
          * proves its load generation. Never use the attacker's BAG1 choice. */
@@ -271,31 +389,52 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
         psx_mod_counter_add(ready ? "gaso_caught.lookup_ready" : "gaso_caught.lookup_rejected", 1u);
         b1v_log("gaso_caught: entry taken by side %d actor %08x, a2 %s; "
                 "lookup char=%u version=%u %s clip=%08x bytes=%u", side + 1,
-                (unsigned)actor, GASO_CAUGHT_CLIP_PUBLISHED ? "-> 1" : "unchanged",
+                (unsigned)actor, GASO_CAUGHT_CLIP_PUBLISHED ? "pending publication" : "unchanged",
                 (unsigned)character, (unsigned)version, ready ? "ready" : "rejected",
                 (unsigned)clip.clip, (unsigned)clip.clip_bytes);
-        /* Construye el binding y publica slot1 (diez bytes) antes de cambiar
-         * a2. Nada se escribe mientras GASO_CAUGHT_CLIP_PUBLISHED es 0. */
-        if (GASO_CAUGHT_CLIP_PUBLISHED && !gaso_caught_published[side]) {
-            if (gaso_caught_build_binding(side, &clip,
-                                          &gaso_caught_binding[side])) {
-                gaso_caught_publish_slot1(side);
-                gaso_caught_publish_tick[side] = gaso_caught_ticks;
+        /* Publish slot1 before changing a2; redirect only onto a slot that holds
+         * this clip for this actor, never onto the empty tuple (length 0 is a
+         * divisor). Retirement ran first in this call and forgot a tuple the
+         * game rewrote; a second take reuses a still-published clip only after
+         * the contract confirms it in guest RAM. */
+        if (!GASO_CAUGHT_CLIP_PUBLISHED || !ready) return;
+        if (gaso_caught_published[side]) {
+            if (gaso_caught_binding[side].actor != actor ||
+                gaso_caught_clip[side].clip != clip.clip) return;
+            if (!gaso_caught_transact((uint32_t)side, GASO_CAUGHT_VERIFY)) {
+                b1v_log("gaso_caught: slot1 reuse refused side=%u actor=%08x (contract)",
+                        (unsigned)side + 1u, (unsigned)actor);
+                return;
             }
+            gaso_caught_publish_tick[side] = gaso_caught_ticks;
+            continuing = gaso_caught_can_continue(cpu, actor);
+        } else {
+            if (!gaso_caught_build_binding(side, &clip, &gaso_caught_binding[side])) {
+                b1v_log("gaso_caught: slot1 publish refused side=%u actor=%08x (unreadable)",
+                        (unsigned)side + 1u, (unsigned)actor);
+                return;
+            }
+            gaso_caught_clip[side] = clip;
+            gaso_caught_publish_slot1(side);
         }
-        if (GASO_CAUGHT_CLIP_PUBLISHED)
+        if (gaso_caught_published[side]) {
             cpu->gpr[GASO_CAUGHT_REG_A2] = GASO_CAUGHT_ARG_A2;
+            if (continuing) cpu->gpr[GASO_CAUGHT_REG_A1] = GASO_CAUGHT_MODE_ADVANCE;
+            gaso_caught_suppress_secondary((uint32_t)side, actor);
+        }
         return;
     }
 }
 
-/* Construye el binding del slot1 para el lado dado a partir del registro
- * capturado y el resultado del lookup. Devuelve 0 si las tablas del actor
- * no son legibles en guest RAM. */
+/* Binding facts from the captured recipient and its live actor. empty_raw is
+ * the slot's original raw word; the contract then requires the original tuple
+ * (empty_raw, 0, 0) and a zero word at empty_raw before any publication.
+ * Returns 0 when the actor or its raw table cannot be read. */
 static int gaso_caught_build_binding(uint32_t side, const B1CaughtBankClip *clip,
                                      B1CaughtBinding *b) {
-    uint32_t actor = captured[side].actor;
+    const uint32_t actor = captured[side].actor;
     if (!guest_range_ok(actor, B1CB_ACTOR_BYTES, 0)) return 0;
+    *b = (B1CaughtBinding){0};
     b->actor = actor;
     b->character = captured[side].character;
     b->side = captured[side].side;
@@ -303,37 +442,204 @@ static int gaso_caught_build_binding(uint32_t side, const B1CaughtBankClip *clip
     b->raw_table = guest_read_word(actor + B1CB_RAW);
     b->length_table = guest_read_word(actor + B1CB_LENGTH);
     b->metadata_table = guest_read_word(actor + B1CB_META);
-    b->empty_raw = b->raw_table + 4u * B1CB_SLOT;
+    if (b->count <= B1CB_SLOT || !guest_range_ok(b->raw_table + 4u * B1CB_SLOT, 4u, 0)) return 0;
+    b->empty_raw = guest_read_word(b->raw_table + 4u * B1CB_SLOT);
     b->clip = clip->clip;
     b->clip_bytes = clip->clip_bytes;
     return 1;
 }
 
-/* Publica los diez bytes del slot1 (clip, frames=2, info) antes de que el
- * controller consuma la entrada. Nunca escribe mientras GASO_CAUGHT_CLIP_PUBLISHED=0. */
+/* ---- Host copy of the contract's main-RAM spans ---- */
+
+static void gaso_caught_copy_clear(void) {
+    for (unsigned i = 0; i < gaso_caught_span_count; ++i)
+        memset(gaso_caught_ram + gaso_caught_spans[i].offset, 0, gaso_caught_spans[i].bytes);
+    gaso_caught_span_count = 0;
+}
+
+static int gaso_caught_copy(uint32_t addr, uint32_t bytes) {
+    if (!bytes || !guest_range_ok(addr, bytes, 0) ||
+        gaso_caught_span_count >= GASO_CAUGHT_COPY_SPANS) return 0;
+    const uint32_t offset = addr - GASO_CS_RAM;
+    uint32_t i = 0;
+    /* Aligned words where possible: a quarter of the traced reads. */
+    for (; i < bytes && (addr + i) % 4u; ++i)
+        gaso_caught_ram[offset + i] = guest_read_byte(addr + i);
+    for (; bytes - i >= 4u; i += 4u)
+        b1cb_write(gaso_caught_ram, offset + i, guest_read_word(addr + i), 4);
+    for (; i < bytes; ++i)
+        gaso_caught_ram[offset + i] = guest_read_byte(addr + i);
+    gaso_caught_spans[gaso_caught_span_count].offset = offset;
+    gaso_caught_spans[gaso_caught_span_count].bytes = bytes;
+    ++gaso_caught_span_count;
+    return 1;
+}
+
+static uint32_t gaso_caught_copied_word(uint32_t addr) {
+    return b1cb_read(gaso_caught_ram, addr - GASO_CS_RAM, 4);
+}
+
+/* A listed actor and its three tables. Fails like the contract would on an
+ * unreadable entry; count is bounded so a corrupt actor cannot stall a frame. */
+static int gaso_caught_copy_actor(uint32_t actor) {
+    if (!gaso_caught_copy(actor, B1CB_ACTOR_BYTES)) return 0;
+    const uint32_t count = gaso_caught_copied_word(actor + B1CB_COUNT);
+    if (count <= B1CB_SLOT || count > GASO_CAUGHT_MAX_SLOTS) return 0;
+    return gaso_caught_copy(gaso_caught_copied_word(actor + B1CB_RAW), 4u * count) &&
+           gaso_caught_copy(gaso_caught_copied_word(actor + B1CB_LENGTH), 2u * count) &&
+           gaso_caught_copy(gaso_caught_copied_word(actor + B1CB_META), 4u * count);
+}
+
+static int gaso_caught_copy_load(const B1CaughtBinding *b) {
+    gaso_caught_copy_clear();
+    if (!gaso_caught_copy(B1CB_ACTORS, 4u * B1CB_ACTOR_COUNT)) return 0;
+    for (uint32_t i = 0; i < B1CB_ACTOR_COUNT; ++i) {
+        const uint32_t actor = gaso_caught_copied_word(B1CB_ACTORS + 4u * i);
+        if (actor && !gaso_caught_copy_actor(actor)) return 0;
+    }
+    return gaso_caught_copy(b->empty_raw, 4u);
+}
+
+/* Run one contract direction and mirror its three slot writes to the guest.
+ * The entry callback runs inside the guest's own call, so the guest is
+ * stopped between the copy, the checks and the writes (paused = 1); the
+ * restore's quiescence is the caller's slot1-left observation. Verify runs
+ * the same identity/layout and tuple checks, without the restore-only
+ * retirement guards: reuse is valid while the actor decodes this clip. */
+static int gaso_caught_transact(uint32_t side, int mode) {
+    const B1CaughtBinding *b = &gaso_caught_binding[side];
+    const B1CaughtBankClip *clip = &gaso_caught_clip[side];
+    const B1CaughtClipRegion region = {clip->allocation_data, clip->allocation_base,
+                                       clip->allocation_bytes};
+    const uint32_t ram_bytes = memory_get_ram_bytes();
+    B1CaughtWritePlan plan;
+    int ok = ram_bytes <= B1CB_MAX_RAM && gaso_caught_copy_load(b);
+    if (ok && mode == GASO_CAUGHT_VERIFY)
+        ok = b1cb_inspect(gaso_caught_ram, ram_bytes, b, 1, &region, &plan) &&
+             b1cb_tuple(gaso_caught_ram, &plan, b->clip, B1CB_FRAMES, plan.info);
+    else if (ok)
+        ok = mode == GASO_CAUGHT_RESTORE
+                 ? b1cb_restore_in(gaso_caught_ram, ram_bytes, b, 1, 1, &region)
+                 : b1cb_publish_in(gaso_caught_ram, ram_bytes, b, 1, &region);
+    if (ok && mode != GASO_CAUGHT_VERIFY) {
+        const uint32_t raw = b->raw_table + 4u * B1CB_SLOT;
+        const uint32_t length = b->length_table + 2u * B1CB_SLOT;
+        const uint32_t meta = b->metadata_table + 4u * B1CB_SLOT;
+        psx_mod_write_word(raw, gaso_caught_copied_word(raw));
+        psx_mod_write_half(length, (uint16_t)b1cb_read(gaso_caught_ram, length - GASO_CS_RAM, 2));
+        psx_mod_write_word(meta, gaso_caught_copied_word(meta));
+        if (mode == GASO_CAUGHT_PUBLISH) gaso_caught_info[side] = gaso_caught_copied_word(meta);
+    }
+    gaso_caught_copy_clear();
+    return ok;
+}
+
+/* The published tuple and the actor words the binding fixed are unchanged.
+ * Twelve reads of addresses the contract validated at publication (RAM size
+ * is fixed per session); any change means the game rewrote or moved them,
+ * e.g. a character reload without a plan reset. */
+static int gaso_caught_slot1_intact(uint32_t side) {
+    const B1CaughtBinding *b = &gaso_caught_binding[side];
+    return guest_read_byte(b->actor + 4u) == b->character &&
+           guest_read_byte(b->actor + 5u) == b->side &&
+           guest_read_word(b->actor + B1CB_COUNT) == b->count &&
+           guest_read_word(b->actor + B1CB_RAW) == b->raw_table &&
+           guest_read_word(b->actor + B1CB_LENGTH) == b->length_table &&
+           guest_read_word(b->actor + B1CB_META) == b->metadata_table &&
+           guest_read_word(b->raw_table + 4u * B1CB_SLOT) == b->clip &&
+           guest_read_half(b->length_table + 2u * B1CB_SLOT) == B1CB_FRAMES &&
+           guest_read_word(b->metadata_table + 4u * B1CB_SLOT) == gaso_caught_info[side];
+}
+
+/* Read-only ownership query for the tank visual. An ordinary slot1 is not
+ * CAUGHT; require both the publication and its original live tuple. */
+int bag2jp_gaso_caught_owns_slot1(uint32_t side, uint32_t actor) {
+    return GASO_CAUGHT_CLIP_PUBLISHED && side < GASO_CAUGHT_SIDES &&
+           gaso_caught_published[side] &&
+           gaso_caught_binding[side].actor == actor && gaso_caught_slot1_intact(side);
+}
+
+/* The producer has already initialised this independent native effect before
+ * controller entry. Clear it only after publication/VERIFY succeeded: doing
+ * it at the producer would erase native feedback even when CAUGHT fails closed.
+ * Selector1 includes its generic sound0x0e; this is not a visual-only change. */
+static void gaso_caught_suppress_secondary(uint32_t side, uint32_t actor) {
+    if (!bag2jp_gaso_caught_owns_slot1(side, actor) ||
+        !guest_range_ok(actor, GASO_CAUGHT_SECONDARY_EFFECT + sizeof(uint16_t), 0)) return;
+    const uint32_t selector = actor + GASO_CAUGHT_SECONDARY_EFFECT;
+    if (guest_read_half(selector) == GASO_CAUGHT_SECONDARY_HIT)
+        psx_mod_write_half(selector, 0u);
+}
+
+/* Publish (clip, 2 frames, info) into the recipient's empty slot1 before the
+ * controller consumes the entry. Never writes while CLIP_PUBLISHED is 0. */
 static void gaso_caught_publish_slot1(uint32_t side) {
     if (!GASO_CAUGHT_CLIP_PUBLISHED || gaso_caught_published[side]) return;
     const B1CaughtBinding *b = &gaso_caught_binding[side];
-    psx_mod_write_word(b->raw_table + 4u * B1CB_SLOT, b->clip);
-    psx_mod_write_half(b->length_table + 2u * B1CB_SLOT, (uint16_t)B1CB_FRAMES);
-    psx_mod_write_word(b->metadata_table + 4u * B1CB_SLOT, b->clip);
+    if (!gaso_caught_transact(side, GASO_CAUGHT_PUBLISH)) {
+        b1v_log("gaso_caught: slot1 publish refused side=%u actor=%08x (contract)",
+                side + 1, (unsigned)b->actor);
+        return;
+    }
     gaso_caught_published[side] = 1;
+    gaso_caught_entered[side] = 0;
+    gaso_caught_restore_refused[side] = 0;
+    gaso_caught_restore_tries[side] = 0;
+    gaso_caught_publish_tick[side] = gaso_caught_ticks;
     psx_mod_counter_add("gaso_caught.slot1_published", 1u);
-    b1v_log("gaso_caught: slot1 published side=%u clip=%08x bytes=%u", side + 1,
+    b1v_log("gaso_caught: slot1 published side=%u clip=%08x bytes=%u, a2 -> 1", side + 1,
             (unsigned)b->clip, (unsigned)b->clip_bytes);
 }
 
-/* Restaura la tupla vacía original del slot1 cuando el clip se retira.
- * Nunca escribe mientras GASO_CAUGHT_CLIP_PUBLISHED=0. */
-static void gaso_caught_restore_slot1(uint32_t side) {
-    if (!GASO_CAUGHT_CLIP_PUBLISHED || !gaso_caught_published[side]) return;
-    const B1CaughtBinding *b = &gaso_caught_binding[side];
-    psx_mod_write_word(b->raw_table + 4u * B1CB_SLOT, b->empty_raw);
-    psx_mod_write_half(b->length_table + 2u * B1CB_SLOT, 0);
-    psx_mod_write_word(b->metadata_table + 4u * B1CB_SLOT, 0);
-    gaso_caught_published[side] = 0;
-    psx_mod_counter_add("gaso_caught.slot1_restored", 1u);
-    b1v_log("gaso_caught: slot1 restored side=%u", side + 1);
+/* Restore the original empty tuple once the clip retired (see
+ * GASO_CAUGHT_UNSTARTED_TICKS). A tuple the game rewrote is forgotten without
+ * writing. A refused restore is logged once per publication, retried on later
+ * calls and abandoned without writing after GASO_CAUGHT_RESTORE_TRIES. */
+static void gaso_caught_retire_slot1(void) {
+    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
+        if (!gaso_caught_published[side]) continue;
+        const uint32_t actor = gaso_caught_binding[side].actor;
+        if (!gaso_caught_slot1_intact(side)) {
+            gaso_caught_published[side] = 0;
+            psx_mod_counter_add("gaso_caught.slot1_lost", 1u);
+            b1v_log("gaso_caught: slot1 lost side=%u actor=%08x (rewritten by the game)",
+                    side + 1, (unsigned)actor);
+            continue;
+        }
+        const uint32_t current = guest_read_word(actor + B1CB_CURRENT);
+        const uint32_t previous = guest_read_word(actor + B1CB_PREVIOUS);
+        if (current == B1CB_SLOT || previous == B1CB_SLOT) {
+            if (!gaso_caught_entered[side])
+                b1v_log("gaso_caught: slot1 entered side=%u", side + 1);
+            gaso_caught_entered[side] = 1;
+            continue;
+        }
+        if (!gaso_caught_entered[side] &&
+            gaso_caught_ticks - gaso_caught_publish_tick[side] < GASO_CAUGHT_UNSTARTED_TICKS)
+            continue;
+        if (gaso_caught_restore_refused[side] &&
+            gaso_caught_ticks - gaso_caught_retry_tick[side] < GASO_CAUGHT_RETRY_TICKS)
+            continue;
+        if (!gaso_caught_transact(side, GASO_CAUGHT_RESTORE)) {
+            if (++gaso_caught_restore_tries[side] >= GASO_CAUGHT_RESTORE_TRIES) {
+                gaso_caught_published[side] = 0;
+                psx_mod_counter_add("gaso_caught.slot1_abandoned", 1u);
+                b1v_log("gaso_caught: slot1 restore abandoned side=%u after %u refusals",
+                        side + 1, (unsigned)GASO_CAUGHT_RESTORE_TRIES);
+                continue;
+            }
+            if (!gaso_caught_restore_refused[side])
+                b1v_log("gaso_caught: slot1 restore refused side=%u current=%u previous=%u; retrying",
+                        side + 1, (unsigned)current, (unsigned)previous);
+            gaso_caught_restore_refused[side] = 1;
+            gaso_caught_retry_tick[side] = gaso_caught_ticks;
+            continue;
+        }
+        gaso_caught_published[side] = 0;
+        psx_mod_counter_add("gaso_caught.slot1_restored", 1u);
+        b1v_log("gaso_caught: slot1 restored side=%u (%s)", side + 1,
+                gaso_caught_entered[side] ? "clip left slot1" : "clip never started");
+    }
 }
 
 /* ---- Producer-site instruction callback ---- */
@@ -358,13 +664,28 @@ static void gaso_caught_capture_cb(struct CPUState *cpu, uint32_t address) {
  * The bank itself stays owned (Expansion 1 arena never freed) and needs no
  * repair: lookup re-verifies guest bytes on every call.
  */
-static void gaso_caught_session_reset(void) {
+static void gaso_caught_forget(void) {
+    ++gaso_caught_epoch;
     for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
+        gaso_caught_epoch_hits[side] = gaso_caught_hits[side];
         captured[side].available = 0;
         gaso_caught_published[side] = 0;
+        gaso_caught_entered[side] = 0;
+        gaso_caught_restore_refused[side] = 0;
+        gaso_caught_restore_tries[side] = 0;
+        gaso_caught_info[side] = 0;
         gaso_caught_publish_tick[side] = 0;
+        gaso_caught_retry_tick[side] = 0;
         gaso_caught_binding[side] = (B1CaughtBinding){0};
+        gaso_caught_clip[side] = (B1CaughtBankClip){0};
     }
+}
+
+/* Known limit: a tuple published at reset/load time stays in guest RAM. It
+ * points into the never-freed bank, and a later publication on the same
+ * tables fails closed (the contract needs a zero word at the raw slot). */
+static void gaso_caught_session_reset(void) {
+    gaso_caught_forget();
 }
 
 /* Savestate runs after successful guest-state restore, before the restored PC
@@ -375,12 +696,7 @@ static void gaso_caught_session_reset(void) {
  * allocation, no publication.
  */
 static void gaso_caught_savestate(void) {
-    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
-        captured[side].available = 0;
-        gaso_caught_published[side] = 0;
-        gaso_caught_publish_tick[side] = 0;
-        gaso_caught_binding[side] = (B1CaughtBinding){0};
-    }
+    gaso_caught_forget();
 }
 
 /* ---- Activation: prepare the clip bank once, never repair it ---- */

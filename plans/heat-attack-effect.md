@@ -5,12 +5,38 @@ tags: ["heat", "bag1", "plan"]
 summary: "Sustituir el efecto de fuego BAG2 (roto con texturas BAG1) por el efecto nativo BAG1 de Heat, manteniendo la lógica de golpe/reacción BAG2."
 related: ["notes/bag1-character.md", "plans/strike-shot-effect.md", "notes/character-pipeline.md"]
 created: "2026-11-05"
-updated: "2026-11-05"
+updated: "2026-11-06"
 doc_kind: plan
-status: "implemented_awaiting_owner_review"
+status: "accepted_by_owner_visual_review"
 ---
 
 # Objetivo
+
+## Revisión solicitada 2026-11-06: Heat, Heat, Strike, Strike
+
+El propietario solicita PvP Heat BAG1/A contra Strike BAG1/A en escenario Strike
+BAG1, dos ataques consecutivos de Heat y después dos de Strike, esperando su
+aceptación. El fixture alternante anterior no cumple ese orden. Se añade el modo
+debug opt-in `BAG2JP_TEST_ORDERED_DUEL=1`: cuatro entradas nativas `0x6E`, orden
+P1/P1/P2/P2, separación mínima 480 vblanks y comprobación de ataques pendientes
+en ambos lados. No modifica efectos, puntuación ni fuerza animaciones/golpes.
+
+Pruebas: nuevo caso inicialmente RED (función ausente), después cuatro casos
+del fixture y suite host completa **156/156** en verde. Build WSL dos jobs pasado
+en `_work/workflow/20261106T043001811613Z-ordered-heat-strike-attacks/`.
+Ejecutable experimental `0e6f892a66a22c2a55081e4b2ffa237c03f30544ce0dffb05a415c0f5fa7c85c`;
+original retenido en `_work/character_import/heat/ordered-duel-build/BAG2JP.before.exe`.
+Driver aislado `_work/character_import/heat/run_ordered_duel.py` mantiene la ventana
+abierta para el propietario; restaura ajustes y tarjetas al cerrarla.
+
+### Aceptación visual del propietario (2026-11-06)
+
+El propietario revisó en vivo el duelo ordenado (`_work/versus-runs/20261106T043419201749Z-ordered-heat-heat-strike-strike`,
+runtime `0e6f892a66a22c2a55081e4b2ffa237c03f30544ce0dffb05a415c0f5fa7c85c`) con las cuatro entradas
+de ataque ejecutadas en orden (`P1, P1, P2, P2` en frames 8307, 8829, 11439, 11961) y declaró
+explícitamente **aceptado** el efecto de ataque especial de llamas de Heat BAG1 («*queda aceptado el efecto de ataque especial de heat, actualizalo como aceptado*»).
+El efecto queda cerrado y aceptado para la versión experimental. Quedan como gaps separados
+la progresión de eventos del escenario con el puntaje y las verificaciones globales de campaña/audio.
 
 El propietario eligió (2026-11-05) portar el efecto nativo BAG1 de Heat, como con Strike,
 y que el fixture de prueba fuerce que la CPU del P2 no esquive ni bloquee en el compás del

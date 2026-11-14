@@ -28,6 +28,22 @@ static inline int bag2_side_attack_fixture_tick(int enabled, uint32_t side, uint
 static inline int bag2_char_attack_fixture_tick(int enabled, uint32_t side, uint32_t input, uint32_t char_id) {
     return side == 0 && bag2_side_attack_fixture_tick(enabled, side, input, char_id);
 }
+/* One owner-visible sequence per process; no forced animation or hit-state writes. */
+typedef struct { uint32_t count, next_frame; } Bag2OrderedDuel;
+static inline int bag2_ordered_duel_fixture_tick(int enabled, uint32_t side, uint32_t input,
+                                                uint32_t frame, Bag2OrderedDuel* state) {
+    if (!enabled || state->count >= 4u || side != state->count / 2u || frame < state->next_frame)
+        return 0;
+    const uint32_t p_char = psx_mod_read_word(0x8005E6A0u + side * 4u);
+    for (uint32_t p = 0; p < 2u; ++p) {
+        if ((psx_mod_read_word(0x8005E748u + p * 0x32u) & 0xFFFFu) ||
+            (psx_mod_read_word(0x8005E754u + p * 0x32u) & 0xFFu)) return 0;
+    }
+    if (!bag2_side_attack_fixture_tick(1, side, input, p_char)) return 0;
+    ++state->count;
+    state->next_frame = frame + 480u;
+    return 1;
+}
 static inline int bag2_attack_fixture_tick(int enabled, uint32_t side, uint32_t input) {
     return bag2_char_attack_fixture_tick(enabled, side, input, 1u);
 }

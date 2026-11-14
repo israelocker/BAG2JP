@@ -58,6 +58,8 @@ class StagePortTests(unittest.TestCase):
         tail_offset = 12 + 0x801E268C - stage.B2_BASE
         self.assertEqual(entries[0][tail_offset:], stock[tail_offset:])
         self.assertEqual(len(entries[0]), len(stock))
+        # B1ST shim magic at SHIM (0x801E0100) -> DBI offset 0x51F0 -> DFS offset 12+0x51F0
+        self.assertEqual(entries[0][12 + 0x51F0:12 + 0x51F0 + 4], b'B1ST')
 
     def test_gaso_rejects_a_wrong_callback_within_the_image(self):
         import build_stage_package as package
@@ -86,6 +88,70 @@ class StagePortTests(unittest.TestCase):
         self.assertEqual(entries[7:11], [native[4]] * 4)
         import preserve_announcer as pa
         self.assertEqual(pa.banks(entries[1])[0], pa.banks(native[1])[0])
+
+    def test_gaso_stage_world_scaled_for_native_camera(self):
+        import build_stage_package as package
+        import model_bag1_to_bag2 as model
+        import struct
+
+        def keys(track):
+            count = struct.unpack_from('<I', track, 4)[0] & 0xFFFF
+            return [struct.unpack_from('<6h', track, 8 + i * 12) for i in range(count)]
+
+        def transforms(data):
+            # Node transforms in walk order (same walk as model_bag1_to_bag2.check_bag2).
+            w = list(struct.unpack('<%di' % (len(data) // 4), data[:len(data) // 4 * 4]))
+            links = [w[1 + 4 * b: 5 + 4 * b] for b in range(w[0])]
+            i, out = 1 + 4 * w[0], []
+            for _ in model.walk_order(links):
+                t = w[i]
+                if t == 0:
+                    i += 1
+                elif t == 2:
+                    i += 2
+                elif t == 3:
+                    i += 3 + w[i + 2] * 2
+                elif t == 4:
+                    hi = struct.unpack('<hh', struct.pack('<i', w[i + 5]))
+                    i += 0x13 + w[i + 4] * 2 + hi[0] * 2 + hi[1] * 2
+                else:
+                    i += model.mesh_len_bag2(w, i) // 4
+                out.append(w[i:i + 10])
+                i += 10
+            return out
+
+        profile = stage.load_profile('gaso')['package']
+        result, _ = package.build_from_project(ROOT, 'gaso')
+        built = dfs_entries(result)
+        source = dfs_entries((ROOT / '_work/bag1_disc_full/STAGEE/ST_GAS.DFS').read_bytes())
+        stock_dir = ROOT / profile['stock']
+        stock = sorted(stock_dir.glob('[0-9][0-9][0-9].*'))[12].read_bytes()
+
+        # BAG2 draws stage models at 1/4 of camera units, BAG1 at 3/8: unscaled, the native
+        # intro camera sat above and outside the shrunken dome (recorded black void, cam95 run).
+        self.assertEqual(profile['model_scale'], [3, 2])
+        self.assertNotIn('camera_scale', profile)
+        self.assertEqual(profile['camera_speed'], 2.1)
+        unscaled, _, _ = model.convert(source[5], flatten_type2=True)
+        scaled, plain = transforms(built[11]), transforms(unscaled)
+        self.assertEqual(len(scaled), len(plain))
+        for got, base in zip(scaled, plain):
+            self.assertEqual(got[2:5], [v * 3 // 2 for v in base[2:5]])
+            self.assertEqual(got[6:9], [v * 3 // 2 for v in base[6:9]])
+            self.assertEqual(got[:2] + got[5:6] + got[9:], base[:2] + base[5:6] + base[9:])
+
+        # Native camera keys kept (only time-resampled to the stock intro length).
+        native = keys(source[6])
+        cam = keys(built[12])
+        self.assertEqual(len(cam), struct.unpack_from('<I', stock, 4)[0] & 0xFFFF)
+        self.assertEqual(cam[0], native[0])
+        self.assertEqual(cam[-1], native[-1])
+        # Dance tracks 1+ stay BAG2 stock byte for byte.
+        built_size = struct.unpack_from('<I', built[12])[0]
+        stock_size = struct.unpack_from('<I', stock)[0]
+        self.assertEqual(built[12][4 + built_size:], stock[4 + stock_size:])
+        for name in ('heat', 'strike'):
+            self.assertNotIn('camera_scale', stage.load_profile(name).get('package', {}))
 
     def test_heat_profile_is_byte_identical_to_admitted_stage(self):
         self.assertTrue(hasattr(stage, 'load_profile'), 'Stage profiles are not implemented')

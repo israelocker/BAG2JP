@@ -3,7 +3,8 @@
  * The BAG1 Heat stage program is ported to a BAG2 stage DBI by tools/bag1import/port_bag1_stage.py.
  * It reads a few BAG1 game variables that BAG2 does not have; the port points them at a shim block
  * inside the DBI image (0x801E0100: 'B1ST', beat flags u32, score level u8, previous level u8) and
- * this plugin fills it once per frame while that DBI is resident and stage id 0 or 1 is loaded:
+ * this plugin fills it once per frame while that DBI is resident and stage id 0 or 1 is loaded, or
+ * stage id 9 with the BAG1 Gas-O stage selected (it also zeroes that stage's fan at match start):
  *   beat flags (BAG1 0x80068704): bit 0 = a beat happened this frame (BAG2 beat counter 0x8005E2D0
  *   changed), bit 4 = it is the first beat of a bar (= bar start 0x8005E684), bit 6 = song over
  *   (beats left 0x8005E658 reached 0);
@@ -25,8 +26,10 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <time.h>
 #include <SDL3/SDL.h>
 #include "mod_plugins.h"
+#include "cpu_state.h"
 #include "cdrom.h"
 #include <dr_libs/dr_flac.h>
 #include "bag2jp_stage_visibility_test.h"
@@ -35,15 +38,45 @@
 #define B1S_MAGIC  0x54533142u   /* 'B1ST' */
 #define B1S_ROOT_GAMEPLAY 0x13u
 
+#define B1S_GASO_STAGE_ENTRY 197u
+
+int bag2jp_bag1_entry_is_alt(unsigned entry);
+
+/* Stage 9 (Gas-O vs Bi-O) runs the imported BAG1 stage only while DF2_ entry 197 points at
+ * its BAG1 file (exact offset from bag2jp_bag1_alt_index.h, international or JP). */
+static int b1s_is_gaso_bag1(void) {
+    return bag2jp_bag1_entry_is_alt(B1S_GASO_STAGE_ENTRY);
+}
+
 static void b1s_vblank(void) {
     static uint16_t last_beat = 0xFFFF;
-    if (psx_mod_read_word(0x8005D3D4u) != B1S_ROOT_GAMEPLAY) { last_beat = 0xFFFF; return; }
-    if (psx_mod_read_word(B1S_SHIM) != B1S_MAGIC) { last_beat = 0xFFFF; return; }
+    const uint32_t root = psx_mod_read_word(0x8005D3D4u);
+    if (root != B1S_ROOT_GAMEPLAY) { last_beat = 0xFFFF; return; }
+
     const uint32_t stage = psx_mod_read_word(0x80089200u);
-    if (stage < 0x80000000u || stage >= 0x80800000u || psx_mod_read_byte(stage) > 1) return;
+    if (stage < 0x80000000u || stage >= 0x80800000u) return;
+    const uint8_t stage_id = psx_mod_read_byte(stage);
+    if (stage_id != 0 && stage_id != 1 && stage_id != 9) return;
+
+    /* Stage 9 needs the imported BAG1 stage selected (entry 197 -> ALT) as well. */
+    if (stage_id == 9 && !b1s_is_gaso_bag1()) { last_beat = 0xFFFF; return; }
+    /* 'B1ST' comes from the ported DBI image itself (image offset 0x51F0), so this read
+     * is the residency test. Never write the magic from the plugin: before the stage DBI
+     * is loaded that address belongs to other game data, and corrupting it crashed the
+     * emulated game right after the stage-select screen. */
+    if (psx_mod_read_word(B1S_SHIM) != B1S_MAGIC) { last_beat = 0xFFFF; return; }
+
     const uint16_t beat = psx_mod_read_half(0x8005E2D0u);
     uint32_t flags = 0;
-    if (last_beat != 0xFFFF && beat != last_beat) {
+    if (last_beat == 0xFFFF) {
+        /* New match start: reset score level and fan speed so the ventilation fan starts stationary */
+        psx_mod_write_byte(B1S_SHIM + 8u, 0);
+        psx_mod_write_byte(B1S_SHIM + 9u, 0);
+        if (stage_id == 9) {
+            psx_mod_write_half(0x801DECC0u, 0); /* stage fan angle */
+            psx_mod_write_half(0x801DECC2u, 0); /* stage fan speed */
+        }
+    } else if (beat != last_beat) {
         flags |= 1u;
         if (beat == psx_mod_read_half(0x8005E684u)) flags |= 0x10u;
     }
@@ -80,6 +113,17 @@ static drflac_bool32 b1m_sk(void* u, int off, drflac_seek_origin o) {
     return fseek((FILE*)u, off, w) == 0;
 }
 static drflac_bool32 b1m_tl(void* u, drflac_int64* c) { long p = ftell((FILE*)u); if (p < 0) return 0; *c = p; return 1; }
+/* Opt-in stall diagnostic (BAG2JP_TEST_B1M_TIMING=1): logs FLAC seeks and slow
+ * reads with the UTC wall time, to align them with recorder heartbeats. */
+static int b1m_timing_on(void) {
+    static int on = -1;
+    if (on < 0) { const char* e = getenv("BAG2JP_TEST_B1M_TIMING"); on = e && !strcmp(e, "1"); }
+    return on;
+}
+static double b1m_wall(void) {
+    struct timespec ts;
+    return timespec_get(&ts, TIME_UTC) ? (double)ts.tv_sec + ts.tv_nsec / 1e9 : 0.0;
+}
 
 #define B1M_FRAMES_PER_SECTOR 2352u
 #define B1M_XA_FILES 2u
@@ -114,10 +158,15 @@ static const B1MusicProfile* b1m_stage_profile(void) {
      * imported-stage guards so native Strike/Heat music is not replaced. */
     if (root != B1S_ROOT_GAMEPLAY &&
         !(root == 0x19u && psx_mod_read_word(0x8005D2C4u) == 4u)) return NULL;
-    if (psx_mod_read_word(B1S_SHIM) != B1S_MAGIC) return NULL;
+
     const uint32_t stage = psx_mod_read_word(0x80089200u);
     if (stage < 0x80000000u || stage >= 0x80800000u) return NULL;
     const uint8_t id = psx_mod_read_byte(stage);
+
+    if (id == 9 && !b1s_is_gaso_bag1()) return NULL;
+    /* Same residency test as b1s_vblank: the DBI image supplies the magic. */
+    if (psx_mod_read_word(B1S_SHIM) != B1S_MAGIC) return NULL;
+
     for (unsigned i = 0; i < sizeof b1m_profiles / sizeof b1m_profiles[0]; ++i)
         if (b1m_profiles[i].stage == id) return &b1m_profiles[i];
     return NULL;
@@ -177,16 +226,33 @@ static void b1m_filter(int lba, int file, int channel, int16_t* pcm, int frames)
     const unsigned xa = profile->stage / B1M_XA_CHANNELS;
     if (xa >= B1M_XA_FILES || (uint32_t)lba < b1m_lba[xa] || (uint32_t)lba >= b1m_end[xa]) return;
     const uint32_t rel = (uint32_t)lba - b1m_lba[xa];
-    if ((rel % B1M_XA_CHANNELS) != profile->channel || channel != profile->channel || !b1m_open(profile)) return;
+    if ((rel % B1M_XA_CHANNELS) != profile->channel || channel != profile->channel) return;
+    const int timing = b1m_timing_on();
+    const double t0 = timing ? b1m_wall() : 0.0;
+    const uint64_t prev = b1m_cursor;
+    const int opened = b1m_flac == NULL || b1m_loaded != profile;
+    if (!b1m_open(profile)) return;
     const uint64_t pos = (uint64_t)(rel / B1M_XA_CHANNELS) * B1M_FRAMES_PER_SECTOR;
     if (b1m_cursor != pos) {
-        if (!drflac_seek_to_pcm_frame(b1m_flac, pos)) { memset(pcm, 0, (size_t)frames * 4u); b1m_cursor = ~0ull; return; }
+        if (!drflac_seek_to_pcm_frame(b1m_flac, pos)) {
+            memset(pcm, 0, (size_t)frames * 4u); b1m_cursor = ~0ull;
+            if (timing) b1m_log("timing wall=%.3f lba=%d pos=%llu seek failed ms=%.2f", t0, lba,
+                                (unsigned long long)pos, (b1m_wall() - t0) * 1000.0);
+            return;
+        }
         b1m_cursor = pos;
     }
     const drflac_uint64 got = drflac_read_pcm_frames_s16(b1m_flac, (drflac_uint64)frames, b1m_tmp);
     b1m_cursor += got;
     memcpy(pcm, b1m_tmp, (size_t)got * 4u);
     if (got < (drflac_uint64)frames) memset(pcm + got * 2u, 0, (size_t)(frames - (int)got) * 4u);
+    if (timing) {
+        const double ms = (b1m_wall() - t0) * 1000.0;
+        if (prev != pos || ms >= 5.0)
+            b1m_log("timing wall=%.3f lba=%d pos=%llu prev=%llu open=%d frames=%d got=%llu ms=%.2f", t0, lba,
+                    (unsigned long long)pos, (unsigned long long)prev, opened, frames,
+                    (unsigned long long)got, ms);
+    }
 }
 static void b1m_read_extents(void) {
     for (unsigned i = 0; i < B1M_XA_FILES; ++i) {
@@ -271,7 +337,35 @@ static void b1sv_experiment(void) {
     last_result = result;
 }
 
+/* ---- BAG1 stage camera adjustment (balanced focus: winner highlighted but rival and background fully visible) ---- */
+static void b1s_camera_clamp_hook(struct CPUState* cpu, uint32_t address) {
+    (void)address;
+    /* Only adjust when an imported BAG1 stage is active */
+    if (psx_mod_read_word(B1S_SHIM) != B1S_MAGIC) return;
+
+    /* cpu->gpr[16] ($s0) is the camera target interpolation weight towards the leader.
+     * Stock BAG2 clamps this to 0x800 (50%). In narrower BAG1 stages, reduce max bias to 0x380 (~22%)
+     * so the camera gently frames the leader while keeping the second player and background in frame. */
+    if (cpu->gpr[16] > 0x380u) {
+        cpu->gpr[16] = 0x380u;
+    }
+}
+
+static void b1s_camera_offset_hook(struct CPUState* cpu, uint32_t address) {
+    (void)address;
+    if (psx_mod_read_word(B1S_SHIM) != B1S_MAGIC) return;
+
+    /* cpu->gpr[2] ($v0) is the target X offset (+0x140 / -0x140 = +/-320 units).
+     * Scale to +/-160 units (+/-0xA0) to avoid pushing the second player off-screen. */
+    int32_t val = (int32_t)cpu->gpr[2];
+    if (val == 0x140) cpu->gpr[2] = 0xA0u;
+    else if (val == -0x140) cpu->gpr[2] = (uint32_t)(int32_t)-0xA0;
+}
+
 PSX_MOD_CONSTRUCTOR(bag2jp_register_bag1_stage) {
     (void)psx_mod_register_vblank_plugin("bag2jp.bag1_stage", b1s_vblank_all);
     (void)psx_mod_register_activation_plugin("bag2jp.bag1_stage", b1m_activate);
+    /* Camera hooks at 0x80014FB8 (bias weight clamp) and 0x80014FD4 (lateral X offset) */
+    (void)psx_mod_register_instruction_plugin("bag2jp.bag1_stage", 0x80014FB8u, 0x9202D047u, b1s_camera_clamp_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.bag1_stage", 0x80014FD4u, 0xAF82D158u, b1s_camera_offset_hook);
 }

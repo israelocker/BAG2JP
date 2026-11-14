@@ -11,7 +11,7 @@ doc_kind: plan
 
 # Reusable BAG1 import process audit
 
-Status: documentation verified; Ghidra validation blocked by unavailable backend.
+Status: completed; documentation verified and Ghidra MCP startup/read validated.
 Approved by owner («Si, procede»).
 Owner request: auditoría exhaustiva y documentación de procesos realmente probados
 para futuras importaciones de personajes, efectos, escenarios, canciones y endings;
@@ -98,13 +98,13 @@ Documentar solo opciones CLI confirmadas en el parser o mediante ayuda segura.
 | 1 inventory | Both trees inventoried and compared; local scripts explicitly historical, exclusions recorded |
 | 2–6 processes | Canonical recipes corrected; evidence metadata contrasted; missing campaign/subjective acceptance explicit |
 | 7 verification | Passed: 155 host tests, 9 Ending View C cases, 32 checker tests; 113 documents, 0 errors, 9 historical warnings; digest hashes and focused review passed |
-| 8 Ghidra and close | Probed after documentation: BACKEND_UNAVAILABLE at localhost:8080, no Java/Ghidra process. Read query blocked until owner opens project/plugin; no configuration changes |
+| 8 Ghidra and close | Completed: agent opened existing Ghidra/project and SLPM_862.19; MCP get_program_info identified PSX binary/hash, bounded decompile of start at 0x80035d98 succeeded. No installation/configuration/runtime changes |
 
-## Resume point
+## Execution record
 
-Documentary results and limits: `notes/documentation-audit.md`. Do not repeat
-unchanged host tests. When Ghidra is open with its MCP backend, call
-`get_program_info` first, verify the intended program/region and perform one bounded
-read query. Only then close/archive this plan. Actual campaign completion, human
-listening and remaining visual acceptance are separate gameplay work, not claims
-made by this audit.
+Documentary results and limits: `notes/documentation-audit.md`. Initial Ghidra
+probe failed while it was closed; the owner clarified that the agent must open it
+and always use it. Startup and MCP reading then passed, and the standing rule was
+added to `AGENTS.md`. Keep the working instance open; do not repeat unchanged host
+tests. Actual campaign completion, human listening and remaining visual acceptance
+are separate gameplay work, not claims made by this audit.

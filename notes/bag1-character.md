@@ -12,7 +12,7 @@ doc_kind: reference
 
 # Heat no es la plantilla de todos los personajes
 
-## Ataque BAG1: efecto de llamas portado (2026-11-05, experimental, pendiente de revisión del propietario)
+## Ataque BAG1: efecto de llamas portado (2026-11-05, experimental; aceptado en revisión visual del propietario 2026-11-06)
 
 - **Causa.** El efecto de fuego del DBI de Heat en BAG2 muestreaba la página de VRAM x768 y256, que ahora contiene las texturas BAG1 de Heat (tira de llamas de `005.tim`). Por eso aparecían el anillo blanco y el arco pixelado. Además, la animación facial del DBI (6 llamadas a MoveImage) sobrescribía esa tira. El impacto no fallaba: la CPU P2 esquivó (req170) y luego se protegió (req171).
 - **Cambios.**
@@ -43,9 +43,9 @@ doc_kind: reference
   - Tests de host: `test_heat_flame_effect`, `test_heat_dbi_face_patch`, `test_attack_fixture` (6 OK).
 - **Nombre de escenario HEAT BAG1/BAG2 (2026-11-05).** Es texto, no imagen. Los nombres nativos usan la fila 3 de la paleta de `system/000/000.tim` (crema con borde naranja); el nuestro usaba la fila 5 (gris azulado). Ahora `cs_stage_compose` dibuja con `CS_FONT_STAGE` = `popup_assets/font_a03.png`, copiado del menú de mods, igual que a05/a06. Exe `cf0a6c87`, calibración `20261105T151206676816Z-stage-label-font-calib`, recorrido `_work/versus-runs/20261105T151331621132Z-stage-label-survey` (`--stage-survey` captura cada fila del carrusel; `label-crops.png` compara HEAT BAG2/BAG1 con COMET/SHORTY). Falta la revisión del propietario.
 - **Ataque de Strike (aceptación visual delimitada, 2026-11-05).** El propietario lo vio bien en `_work/versus-runs/20261105T163443254952Z-live-heat-strike-bag1`, exe `c054ea2c…`: Heat BAG1 A P1 contra Strike BAG1 A P2, escenario HeatBAG1. No retirar automáticamente los efectos blancos BAG2. `bag2jp_strike_bag1_fx.h`/`draw.h` portan cinco eventos dobles, FT4 y tres partículas por disparo; `bag2jp_strike_shot.h` conserva helpers compartidos con Heat. Tres lotes históricos (`c054ea2c`, `6dc97e0d`, `3fbd0a3a`) completaron P1/P2 × A/B con ataques, canción, retorno y restauración; 96muestras VRAM conservan atlas004/005 y variantes de pecho. Fever observado solo en P1/A. **Posteriormente el propietario descartó el callback de iluminación del actor**; no reactivarlo por esos logs históricos. Endings se verificaron después con medios BAG1/BAG2, no campaña real; `0xB` se identificó como stage-id11, no modo. Fuentes actuales: [Strike](strike-recovery.md), [escenario](bag1-stage-song.md), [endings](endings-view.md) y [plan](../plans/strike-shot-effect.md).
+- **Aceptación visual (2026-11-06).** El propietario aceptó expresamente el efecto de llamas de Heat en la partida en vivo de duelo ordenado `_work/versus-runs/20261106T043419201749Z-ordered-heat-heat-strike-strike` (ejecutable experimental `0e6f892a…`, Heat BAG1 A vs Strike BAG1 A en escenario Strike BAG1 con orden P1, P1, P2, P2). Queda aceptado el efecto especial de ataque.
 - **Gaps.**
   - El anillo de la explosión se ve naranja y en bloques, frente al destello blanco nativo. Su textura y CLUT coinciden con BAG1, así que la diferencia probable es el tamaño o la mezcla; no está verificado.
-  - Falta la comparación visual del propietario.
   - Corrección de trajes Heat (2026-11-05): los miembros modelo 0 de las entradas 96 y 167 estaban cruzados (A/P2 usaba el modelo B y B/P1 usaba el modelo A). Se copió el modelo correcto desde las entradas 95 y 168, manteniendo tamaños. Payload nuevo `30fea8e75ca466a32a749c1cad8491bb593af0b59339ac934a744abda716434e`; `test_heat_costume_assets.py` pasa. Esto debería recuperar las partes blancas del traje B; falta confirmación visual en partida.
    - `test_heat_costume_assets.py` ya no falla tras esta corrección.
 

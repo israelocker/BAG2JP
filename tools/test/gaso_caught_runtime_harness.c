@@ -23,6 +23,7 @@
 #define RAM_BYTES 0x800000u
 #define RETAIL_RAM 0x200000u
 #define RAM_MASK (RAM_BYTES - 1u)
+#define RAM_BASE 0x80000000u
 #define ENTRY 0x8002d06cu
 #define PRODUCER 0x8009b5b4u
 #define ACTORS 0x8005f808u
@@ -34,6 +35,7 @@
 #define STACK 0x801ff000u
 #define REQUEST 202u
 #define HIT_SLOT 89u
+#define SECONDARY_EFFECT 0x1724u
 #define HEAT 0
 #define STRIKE 1
 #define GASO 9
@@ -50,6 +52,19 @@
 #define SCRATCHPAD_BYTES 0x400u
 #define EXPANSION1 0x9f000000u
 #define EXPANSION1_BYTES 0x100000u
+/* Recipient actor fields and its animation tables (bag2jp_caught_binding.h). */
+#define COUNT 0x820u
+#define RAW 0x824u
+#define LENGTH 0x828u
+#define META 0x82cu
+#define DECODER 0x830u
+#define CURRENT 0x154cu
+#define PREVIOUS 0x1550u
+#define SLOTS 100u
+#define TABLES 0x80110000u                 /* raw, length, metadata per side */
+#define EMPTY_WORDS 0x80118000u            /* slot1's original raw target */
+#define CLIP_FRAMES 2u
+
 /* Arena already used by other plugins, so the bank never starts at 0. */
 #define PRIOR_ARENA_BYTES 0x34u
 
@@ -57,17 +72,23 @@
 typedef struct { uint32_t character, offset, bytes; } B1CaughtBankEntry;
 #include "bag2jp_caught_bank_data.inc"
 
+/* Read by the tank visual (bag2jp_gaso_tank.h). */
+uint32_t bag2jp_gaso_caught_hits(uint32_t side);
+uint32_t bag2jp_gaso_caught_epoch(void);
+uint32_t bag2jp_gaso_caught_epoch_hits(uint32_t side);
+int bag2jp_gaso_caught_owns_slot1(uint32_t side, uint32_t actor);
+
 static PSXModFunctionEntryCallback entry;
 static PSXModFunctionEntryCallback capture_cb;
 static PSXModActivationCallback activate;
 static PSXModActivationCallback session_reset_cb;
 static PSXModActivationCallback savestate_cb;
-static unsigned guest_accesses, guest_writes, allocations;
+static unsigned guest_accesses, guest_writes, allocations, slot_state_reads;
 static unsigned bank_ready, bank_unavailable;
 static unsigned capture_stored, capture_rejected, entry_taken;
 static unsigned lookup_ready, lookup_rejected;
-static unsigned slot1_published, slot1_restored;
-static unsigned log_lines;
+static unsigned slot1_published, slot1_restored, slot1_dropped;
+static unsigned log_lines, log_entered, log_restore_refused, log_publish_refused, log_lost;
 static char last_log[256];
 static int fail_allocation;
 static uint32_t expansion1_used = PRIOR_ARENA_BYTES;
@@ -79,7 +100,7 @@ static uint32_t live_ram = RETAIL_RAM;
 uint32_t memory_get_ram_bytes(void) { return live_ram; }
 static int has_version = 1;
 static int versions[18][2];
-static const uint32_t actor_of[2] = {0x80100000u, 0x80102000u};
+static uint32_t actor_of[2] = {0x80100000u, 0x80102000u};
 
 int psx_mod_register_function_entry_plugin(
     const char *id, uint32_t address, PSXModFunctionEntryCallback callback) {
@@ -142,25 +163,72 @@ static const uint8_t *guest_bytes(uint32_t address, uint32_t bytes) {
     assert(!"guest read outside RAM, scratchpad and bank");
     return NULL;
 }
+/* Retirement reads of a published recipient: its identity bytes, table
+ * pointers, current/previous words and the slot1 tuple at the tables it was
+ * published on. The only reads an entry makes for a published slot with no
+ * record, so recorded() discounts them. */
+static uint32_t table_of(uint32_t side, uint32_t field);
+static int is_slot_state(uint32_t address) {
+    static const uint32_t fields[] = {4u, 5u, COUNT, RAW, LENGTH, META, CURRENT, PREVIOUS};
+    for (uint32_t side = 0; side < 2; ++side) {
+        for (unsigned i = 0; i < sizeof fields / sizeof *fields; ++i)
+            if (address == actor_of[side] + fields[i]) return 1;
+        if (address == table_of(side, RAW) + 4u || address == table_of(side, LENGTH) + 2u ||
+            address == table_of(side, META) + 4u) return 1;
+    }
+    return 0;
+}
 uint32_t psx_mod_read_word(uint32_t address) {
     const uint8_t *p = guest_bytes(address & ~3u, 4u);
     ++guest_accesses;
+    if (is_slot_state(address)) ++slot_state_reads;
     return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24;
 }
 uint16_t psx_mod_read_half(uint32_t address) {
     const uint8_t *p = guest_bytes(address & ~1u, 2u);
     ++guest_accesses;
+    if (is_slot_state(address)) ++slot_state_reads;
     return (uint16_t)(p[0] | p[1] << 8);
 }
 uint8_t psx_mod_read_byte(uint32_t address) {
     ++guest_accesses;
+    if (is_slot_state(address)) ++slot_state_reads;
     return *guest_bytes(address, 1u);
 }
+/* Only slot1 tuples and the exact selector1->0 halfword on a main actor are
+ * permitted. Never pending+0x18 or a neighbouring actor field. */
+static uint32_t ram_word(uint32_t address);
+static int is_slot1_entry(uint32_t address, unsigned width) {
+    for (uint32_t i = 0; i < 4u; ++i) {
+        const uint32_t actor = ram_word(ACTORS + 4u * i);
+        if (!actor) continue;
+        if ((width == 4u && (address == ram_word(actor + RAW) + 4u ||
+                             address == ram_word(actor + META) + 4u)) ||
+            (width == 2u && address == ram_word(actor + LENGTH) + 2u)) return 1;
+    }
+    return 0;
+}
+static int is_secondary_clear(uint32_t address, uint32_t value, unsigned width) {
+    if (!GASO_CAUGHT_CLIP_PUBLISHED || width != 2u || value != 0u) return 0;
+    for (uint32_t side = 0; side < 2u; ++side) {
+        const uint32_t actor = ram_word(ACTORS + 8u * side);
+        if (actor && address == actor + SECONDARY_EFFECT &&
+            (ram_word(address) & 0xffffu) == 1u) return 1;
+    }
+    return 0;
+}
+static void write_main_ram(uint32_t address, uint32_t value, unsigned width) {
+    ++guest_accesses; ++guest_writes;
+    assert(address % width == 0 && (is_slot1_entry(address, width) ||
+                                   is_secondary_clear(address, value, width)));
+    uint8_t *const p = (uint8_t *)guest_bytes(address, width);
+    for (unsigned i = 0; i < width; ++i) p[i] = (uint8_t)(value >> (8 * i));
+}
 void psx_mod_write_word(uint32_t address, uint32_t value) {
-    (void)address; (void)value; ++guest_accesses; ++guest_writes;
+    write_main_ram(address, value, 4u);
 }
 void psx_mod_write_half(uint32_t address, uint16_t value) {
-    (void)address; (void)value; ++guest_accesses; ++guest_writes;
+    write_main_ram(address, value, 2u);
 }
 void psx_mod_counter_add(const char *name, uint32_t delta) {
     assert(delta == 1u);
@@ -173,6 +241,8 @@ void psx_mod_counter_add(const char *name, uint32_t delta) {
     else if (strcmp(name, "gaso_caught.lookup_rejected") == 0) ++lookup_rejected;
     else if (strcmp(name, "gaso_caught.slot1_published") == 0) ++slot1_published;
     else if (strcmp(name, "gaso_caught.slot1_restored") == 0) ++slot1_restored;
+    else if (strcmp(name, "gaso_caught.slot1_lost") == 0 ||
+             strcmp(name, "gaso_caught.slot1_abandoned") == 0) ++slot1_dropped;
     else assert(!"unexpected counter");
 }
 /* Mirrors every counted event to the versions log; keep the last line. */
@@ -183,6 +253,10 @@ void b1v_log(const char *fmt, ...) {
     va_end(ap);
     assert(n > 0 && (size_t)n < sizeof last_log);
     ++log_lines;
+    if (strstr(last_log, "slot1 entered")) ++log_entered;
+    if (strstr(last_log, "restore refused")) ++log_restore_refused;
+    if (strstr(last_log, "publish refused") || strstr(last_log, "reuse refused")) ++log_publish_refused;
+    if (strstr(last_log, "slot1 lost") || strstr(last_log, "restore abandoned")) ++log_lost;
 }
 int bag2jp_bag1_has_version(int chr) {
     return has_version && (chr == GASO || chr == HEAT || chr == STRIKE);
@@ -191,14 +265,63 @@ int bag2jp_bag1_get_version(int chr, int side) {
     assert(chr >= 0 && chr < 18 && side >= 0 && side < 2);
     return versions[chr][side];
 }
+/* The tank's cue player lives in bag2jp_bag1_versions.c (tested there). */
+void bag2jp_gaso_tank_play_cues(struct CPUState *cpu, uint32_t return_address) {
+    assert(cpu && return_address == ENTRY);
+}
 
 static void put_word(uint32_t address, uint32_t value) {
     const uint32_t o = address & RAM_MASK;
     for (unsigned i = 0; i < 4; ++i) ram[o + i] = (uint8_t)(value >> (8 * i));
 }
+static uint32_t ram_word(uint32_t address) {
+    const uint32_t o = address & RAM_MASK;
+    return (uint32_t)ram[o] | (uint32_t)ram[o + 1] << 8 |
+           (uint32_t)ram[o + 2] << 16 | (uint32_t)ram[o + 3] << 24;
+}
+static uint32_t ram_half(uint32_t address) {
+    const uint32_t o = address & RAM_MASK;
+    return (uint32_t)ram[o] | (uint32_t)ram[o + 1] << 8;
+}
+static uint32_t table_of(uint32_t side, uint32_t field) {
+    return TABLES + 0x1000u * (3u * side + (field - RAW) / 4u);
+}
+static uint32_t empty_of(uint32_t side) { return EMPTY_WORDS + 0x10u * side; }
 
-/* Original code sites, main actors and the 202 table rows for Heat/Strike/Gas-O. */
+/* Slot1 of the recipient side: raw word, length half and metadata word. */
+typedef struct { uint32_t raw, length, meta; } Slot1;
+static Slot1 slot1_of(uint32_t side) {
+    const uint32_t actor = actor_of[side];
+    return (Slot1){ram_word(ram_word(actor + RAW) + 4u), ram_half(ram_word(actor + LENGTH) + 2u),
+                   ram_word(ram_word(actor + META) + 4u)};
+}
+static int slot1_empty(uint32_t side) {
+    const Slot1 s = slot1_of(side);
+    return s.raw == empty_of(side) && s.length == 0 && s.meta == 0;
+}
+/* A published tuple: the bank clip of that character, 2 frames, its info block. */
+static int slot1_holds_clip(uint32_t side, uint32_t character) {
+    const Slot1 s = slot1_of(side);
+    for (unsigned i = 0; i < sizeof b1cc_entries / sizeof *b1cc_entries; ++i) {
+        const B1CaughtBankEntry *e = &b1cc_entries[i];
+        const uint32_t clip = EXPANSION1 + PRIOR_ARENA_BYTES + e->offset;
+        if (e->character == character)
+            return s.raw == clip && s.length == CLIP_FRAMES &&
+                   s.meta > clip && s.meta < clip + e->bytes;
+    }
+    return 0;
+}
+static void set_slot_state(uint32_t side, uint32_t current, uint32_t previous) {
+    put_word(actor_of[side] + CURRENT, current);
+    put_word(actor_of[side] + PREVIOUS, previous);
+}
+
+/* Original code sites, main actors and the 202 table rows for Heat/Strike/Gas-O.
+ * Each actor owns SLOTS entries of distinct tables, slot1 holding the empty
+ * tuple (a pointer to a zero word, 0, 0) and current = previous = 0. New RAM
+ * is a new session, so the plugin's per-session state is reset too. */
 static void setup_ram(int side0_character, int side1_character) {
+    if (session_reset_cb) session_reset_cb();
     memset(ram, 0, sizeof ram);
     put_word(0x80010ce0u, 0x8008f890u);
     put_word(0x8009b5acu, 0x90420000u);
@@ -210,6 +333,10 @@ static void setup_ram(int side0_character, int side1_character) {
         ram[(actor_of[side] + 4u) & RAM_MASK] = (uint8_t)characters[side];
         ram[(actor_of[side] + 5u) & RAM_MASK] = (uint8_t)side;
         put_word(CONTROLLERS + CONTROLLER_STRIDE * side, actor_of[side]);
+        put_word(actor_of[side] + COUNT, SLOTS);
+        for (uint32_t field = RAW; field <= META; field += 4u)
+            put_word(actor_of[side] + field, table_of(side, field));
+        put_word(table_of(side, RAW) + 4u, empty_of(side));
     }
     ram[(TABLE + 2u * HEAT) & RAM_MASK] = REQUEST;
     ram[(TABLE + 2u * STRIKE) & RAM_MASK] = REQUEST;
@@ -252,10 +379,11 @@ static int publish(uint32_t source, uint32_t recipient) {
 }
 
 /* Probe without consuming: an entry naming no actor reads guest RAM only
- * when some record is stored, so the default build can observe captures. */
+ * when some record is stored, so the default build can observe captures.
+ * A published slot adds its retirement reads, which are not a record. */
 static int recorded(void) {
     CPUState cpu, before;
-    const uint32_t accesses = guest_accesses;
+    const uint32_t accesses = guest_accesses - slot_state_reads;
     memset(&cpu, 0xa5, sizeof cpu);
     cpu.gpr[REG_A0] = 0x80000000u;
     cpu.gpr[REG_A1] = 1;
@@ -265,11 +393,12 @@ static int recorded(void) {
     entry(&cpu, ENTRY);
     assert(memcmp(&cpu, &before, sizeof cpu) == 0 && entry_taken == taken);
     assert(log_lines == lines);
-    return guest_accesses != accesses;
+    return guest_accesses - slot_state_reads != accesses;
 }
 
 /* Enter the controller; return 1 when only a2 became slot1, 0 when untouched.
- * A redirect is always a counted take; the caller checks takes that leave a2. */
+ * A redirect is always a counted take onto a slot1 that holds a clip; the
+ * caller checks takes that leave a2. Retirement runs first, then the take. */
 static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     CPUState cpu, before;
     memset(&cpu, 0xa5, sizeof cpu);
@@ -280,26 +409,49 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     const unsigned writes = guest_writes, allocs = allocations;
     const unsigned stored = capture_stored, rejected = capture_rejected;
     const unsigned taken = entry_taken, lines = log_lines;
-    const unsigned pub_before = slot1_published;
-    const unsigned rest_before = slot1_restored;
+    const unsigned pub_before = slot1_published, rest_before = slot1_restored;
+    const unsigned entered = log_entered, refused = log_restore_refused, lost = log_lost;
+    const unsigned publish_refused = log_publish_refused, dropped = slot1_dropped;
+    const uint32_t effect_before = ram_word(actor_of[controller_side] + SECONDARY_EFFECT);
     entry(&cpu, ENTRY);
+    assert(slot1_dropped - dropped == log_lost - lost);  /* one counter per lost/abandoned line */
     const unsigned took = entry_taken == taken + 1u ? 1u : 0u;
     const unsigned published = slot1_published - pub_before;
     const unsigned restored = slot1_restored - rest_before;
-    /* Each slot1 publication or restore writes 3 bytes (clip word, length half, metadata word). */
-    assert(guest_writes == writes + (published + restored) * 3u && allocations == allocs);
+    const unsigned retire_logs = (log_entered - entered) + (log_restore_refused - refused) +
+                                 (log_lost - lost);
+    const unsigned publish_logs = log_publish_refused - publish_refused;
+    const uint32_t effect_after = ram_word(actor_of[controller_side] + SECONDARY_EFFECT);
+    const unsigned cleared = (effect_before & 0xffffu) == 1u &&
+                             effect_after == (effect_before & 0xffff0000u);
+    if (cleared) assert(took && GASO_CAUGHT_CLIP_PUBLISHED && cpu.gpr[REG_A2] == 1u);
+    /* Tuples use three writes; a cleared owned effect uses one exact halfword. */
+    assert(guest_writes == writes + (published + restored) * 3u + cleared && allocations == allocs);
     assert(capture_stored == stored && capture_rejected == rejected);
     assert(entry_taken == taken || entry_taken == taken + 1u);
-    /* One log line for entry taken, plus one for slot1 published/restored when applicable. */
-    assert(log_lines == lines + took + published + restored);
-    if (entry_taken != taken)
-        assert(strstr(last_log, restored ? "slot1 restored"
-                     : published ? "slot1 published" : "entry taken") != NULL);
+    assert(published + publish_logs <= took);
+    if (!GASO_CAUGHT_CLIP_PUBLISHED)
+        assert(!published && !restored && !retire_logs && !publish_logs);
+    /* One line per take, publication, refusal, restore and first slot1 sighting. */
+    assert(log_lines == lines + took + published + publish_logs + restored + retire_logs);
+    if (took)
+        assert(strstr(last_log, published ? "slot1 published"
+                     : publish_logs ? " refused" : "entry taken") != NULL);
+    else if (restored)
+        assert(strstr(last_log, "slot1 restored") != NULL);
     if (memcmp(&cpu, &before, sizeof cpu) == 0) return 0;
-    assert(entry_taken == taken + 1u);
+    assert(took && GASO_CAUGHT_CLIP_PUBLISHED);
+    assert(slot1_empty(controller_side ^ 1u));       /* the other side is never written */
+    assert(slot1_holds_clip(controller_side, ram[(actor_of[controller_side] + 4u) & RAM_MASK]));
     before.gpr[REG_A2] = 1;
     assert(memcmp(&cpu, &before, sizeof cpu) == 0);
     return 1;
+}
+
+/* What the entry does after a stored take: redirect only in the published
+ * build, once the bank is prepared and the recipient picked BAG1. */
+static int expect_redirect(int recipient_bag1) {
+    return GASO_CAUGHT_CLIP_PUBLISHED && bank_ready && recipient_bag1;
 }
 
 static void call_matrix(void) {
@@ -408,25 +560,43 @@ static void foreign_sources_never_redirect(void) {
 }
 
 /* A direct Gas-O BAG1 publication redirects once, only for the recipient's
- * main controller at mode 1/slot 89, and never while no clip is published. */
+ * main controller at mode 1/slot 89, and never while no clip is published:
+ * without a prepared bank the take publishes nothing and leaves a2. */
 static void gaso_redirects_once(void) {
     for (uint32_t source_side = 0; source_side < 2; ++source_side) {
         const uint32_t recipient = source_side ^ 1u;
         memset(versions, 0, sizeof versions);
         versions[GASO][source_side] = 1;
+        versions[HEAT][recipient] = 1;
         setup_ram(source_side ? HEAT : GASO, source_side ? GASO : HEAT);
         assert(publish(source_side, recipient));
         assert(recorded());
         const unsigned taken = entry_taken;
+        const uint32_t hits = bag2jp_gaso_caught_hits(recipient);
+        const uint32_t source_hits = bag2jp_gaso_caught_hits(source_side);
         assert(!enter(source_side, 1, HIT_SLOT));   /* attacker's controller */
         assert(!enter(recipient, 0, HIT_SLOT));     /* other mode */
         assert(!enter(recipient, 1, HIT_SLOT + 1)); /* exit slot 90 */
         assert(recorded() && entry_taken == taken);
-        assert(enter(recipient, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+        assert(bag2jp_gaso_caught_hits(recipient) == hits);
+        assert(slot1_empty(recipient));
+        const int redirect = expect_redirect(1);
+        assert(!bag2jp_gaso_caught_owns_slot1(recipient,
+                actor_of[recipient]));
+        assert(enter(recipient, 1, HIT_SLOT) == redirect);
+        assert(redirect ? slot1_holds_clip(recipient, HEAT) : slot1_empty(recipient));
+        const unsigned ownership_writes = guest_writes;
+        assert(bag2jp_gaso_caught_owns_slot1(recipient,
+                actor_of[recipient]) == redirect);
+        assert(!bag2jp_gaso_caught_owns_slot1(2u, 0u));
+        assert(!bag2jp_gaso_caught_owns_slot1(recipient, 0u));
+        assert(guest_writes == ownership_writes);
         assert(entry_taken == taken + 1u);          /* counted in both builds */
+        assert(bag2jp_gaso_caught_hits(recipient) == hits + 1u); /* drops the tank */
+        assert(bag2jp_gaso_caught_hits(source_side) == source_hits);
         assert(!recorded());                        /* consumed in both builds */
         assert(!enter(recipient, 1, HIT_SLOT));
-        assert(entry_taken == taken + 1u);
+        assert(entry_taken == taken + 1u && bag2jp_gaso_caught_hits(recipient) == hits + 1u);
 
         /* Every rejected later publication to the same recipient supersedes
          * the stored record. */
@@ -538,7 +708,7 @@ static void stack_range_follows_live_geometry(void) {
             stack = valid_stacks[i];
             assert(publish(source, recipient) && recorded());
             const unsigned taken = entry_taken;
-            assert(enter(recipient, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+            assert(enter(recipient, 1, HIT_SLOT) == expect_redirect(1));
             assert(entry_taken == taken + 1u && !recorded());
         }
         for (unsigned i = 0; i < sizeof invalid_stacks / sizeof *invalid_stacks; ++i) {
@@ -573,30 +743,35 @@ static void recipient_lookup_is_read_only(void) {
                           source ? GASO : (int)expected->character);
                 assert(publish(source, recipient));
                 const unsigned ready = lookup_ready, rejected = lookup_rejected;
-                assert(enter(recipient, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+                const unsigned writes = guest_writes;
+                const int redirect = expect_redirect((int)version);
+                assert(enter(recipient, 1, HIT_SLOT) == redirect);
                 assert(lookup_ready == ready + version);
                 assert(lookup_rejected == rejected + (1u - version));
+                assert(redirect ? slot1_holds_clip(recipient, expected->character)
+                                : slot1_empty(recipient));
                 char outcome[128];
                 snprintf(outcome, sizeof outcome,
                          "lookup char=%u version=%u %s clip=%08x bytes=%u",
                          (unsigned)expected->character, version, version ? "ready" : "rejected",
                          version ? EXPANSION1 + PRIOR_ARENA_BYTES + expected->offset : 0u,
                          version ? expected->bytes : 0u);
-                if (!GASO_CAUGHT_CLIP_PUBLISHED)
+                if (!redirect)
                     assert(strstr(last_log, outcome) != NULL);
                 assert(!enter(recipient, 1, HIT_SLOT));
                 assert(lookup_ready == ready + version &&
                        lookup_rejected == rejected + (1u - version));
                 /* Re-read the recipient choice at entry, in either direction;
-                 * the attacker's BAG1 choice stays unchanged throughout. */
+                 * the attacker's BAG1 choice stays unchanged throughout. A
+                 * second take while the clip is still published reuses it. */
                 versions[expected->character][recipient] = (int)(version ^ 1u);
                 assert(publish(source, recipient));
                 versions[expected->character][recipient] = (int)version;
-                assert(enter(recipient, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+                assert(enter(recipient, 1, HIT_SLOT) == redirect);
                 assert(lookup_ready == ready + 2u * version);
                 assert(lookup_rejected == rejected + 2u * (1u - version));
-                if (!GASO_CAUGHT_CLIP_PUBLISHED)
-                    assert(strstr(last_log, outcome) != NULL);
+                assert(strstr(last_log, outcome) != NULL);
+                assert(guest_writes == writes + (redirect ? 3u : 0u));
             }
         }
     }
@@ -610,14 +785,15 @@ static void recipient_lookup_is_read_only(void) {
         if (failure == 2) has_version = 0;
         if (failure == 3) expansion1[PRIOR_ARENA_BYTES] ^= 1u;
         const unsigned ready = lookup_ready, rejected = lookup_rejected;
-        assert(enter(1, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+        assert(!enter(1, 1, HIT_SLOT) && slot1_empty(1));
         assert(lookup_ready == ready && lookup_rejected == rejected + 1u);
         assert(strstr(last_log, "rejected clip=00000000 bytes=0") != NULL);
         has_version = 1;
         if (failure == 3) expansion1[PRIOR_ARENA_BYTES] ^= 1u;
     }
-    assert(allocations == 1 &&
-           guest_writes == B1CC_BANK_BYTES + (GASO_CAUGHT_CLIP_PUBLISHED ? 6u : 0u));
+    const unsigned entries = sizeof b1cc_entries / sizeof *b1cc_entries;
+    assert(allocations == 1 && guest_writes == B1CC_BANK_BYTES +
+           (GASO_CAUGHT_CLIP_PUBLISHED ? 3u * 2u * entries : 0u));
     assert(memcmp(expansion1 + PRIOR_ARENA_BYTES, b1cc_data, B1CC_BANK_BYTES) == 0);
 }
 
@@ -637,12 +813,14 @@ static void reset_and_savestate_invalidate_captured(void) {
     versions[GASO][0] = 1;   /* source Gas-O BAG1 side 0 */
     versions[HEAT][1] = 1;   /* recipient Heat BAG1 side 1 */
     setup_ram(GASO, HEAT);
+    const uint32_t epoch = bag2jp_gaso_caught_epoch();
     assert(publish(0, 1));   /* captured[1] available */
     assert(recorded());
     assert(capture_stored == 1);
 
     /* Before reset/savestate, entry takes the record. */
-    assert(enter(1, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
+    assert(enter(1, 1, HIT_SLOT) == expect_redirect(1));
+    assert(GASO_CAUGHT_CLIP_PUBLISHED ? slot1_holds_clip(1, HEAT) : slot1_empty(1));
     assert(entry_taken == 1);
     assert(!recorded());   /* consumed */
 
@@ -650,6 +828,9 @@ static void reset_and_savestate_invalidate_captured(void) {
     assert(publish(0, 1));
     assert(recorded());
     session_reset_cb();
+    assert(bag2jp_gaso_caught_epoch() == epoch + 1u);
+    assert(bag2jp_gaso_caught_epoch_hits(1u) == bag2jp_gaso_caught_hits(1u));
+    assert(bag2jp_gaso_caught_epoch_hits(2u) == 0u);
     assert(guest_writes == writes + (GASO_CAUGHT_CLIP_PUBLISHED ? 3u : 0u) &&
            allocations == allocs);   /* no guest writes/alloc from reset */
     assert(!recorded());   /* reset invalidated */
@@ -660,11 +841,21 @@ static void reset_and_savestate_invalidate_captured(void) {
     assert(publish(0, 1));
     assert(recorded());
     savestate_cb();
+    assert(bag2jp_gaso_caught_epoch() == epoch + 2u);
+    assert(bag2jp_gaso_caught_epoch_hits(1u) == bag2jp_gaso_caught_hits(1u));
     assert(guest_writes == writes + (GASO_CAUGHT_CLIP_PUBLISHED ? 3u : 0u) &&
            allocations == allocs);
     assert(!recorded());   /* savestate invalidated */
     assert(!enter(1, 1, HIT_SLOT));
     assert(entry_taken == 1);
+
+    /* Known limit: the tuple published before the reset stays in RAM, so a
+     * new take on the same tables is refused by the contract and leaves a2. */
+    assert(publish(0, 1));
+    const unsigned refused = log_publish_refused;
+    assert(!enter(1, 1, HIT_SLOT) && entry_taken == 2);
+    assert(log_publish_refused == refused + (GASO_CAUGHT_CLIP_PUBLISHED ? 1u : 0u));
+    assert(GASO_CAUGHT_CLIP_PUBLISHED ? slot1_holds_clip(1, HEAT) : slot1_empty(1));
 
     assert(guest_writes == writes + (GASO_CAUGHT_CLIP_PUBLISHED ? 3u : 0u) &&
            allocations == allocs);
@@ -673,7 +864,7 @@ static void reset_and_savestate_invalidate_captured(void) {
 /* Publication of slot1 is guarded by GASO_CAUGHT_CLIP_PUBLISHED: while 0 no
  * guest write occurs on entry; while 1 the ten slot bytes are published once
  * per recipient side and a2 becomes slot1. Reset/savestate clear published
- * state without guest writes. Restoration point is not yet wired to a hook. */
+ * state without guest writes (retirement is scenario 12). */
 static void publication_slot1_guarded_and_restorable(void) {
     assert(activate && session_reset_cb && savestate_cb);
     activate();
@@ -699,8 +890,9 @@ static void publication_slot1_guarded_and_restorable(void) {
 
     if (GASO_CAUGHT_CLIP_PUBLISHED) {
         assert(strstr(last_log, "slot1 published side=2 clip=") != NULL);
-        /* Three slot bytes written: clip word, length half, metadata word. */
+        /* One tuple written: clip word, 2-frame half, metadata word. */
         assert(guest_writes == writes_before + 3u);
+        assert(slot1_holds_clip(1, HEAT));
         assert(slot1_published == pub_before + 1u);
         assert(slot1_restored == rest_before);
     } else {
@@ -724,11 +916,442 @@ static void publication_slot1_guarded_and_restorable(void) {
     assert(entry_taken == taken_before + 1u);
 }
 
-static void slot1_restored_after_clip_duration(void);
+/* Calls without a take: each ticks the plugin and runs retirement. */
+static void tick(unsigned calls) {
+    for (unsigned i = 0; i < calls; ++i) assert(!enter(0, 0, 0));
+}
 
-/* Clip duration in entry-callback ticks (TBD: research native tank effect
- * length for a precise hook address; matches bag2jp_gaso_cached.c). */
-#define GASO_CAUGHT_CLIP_DURATION_TEST 60u
+/* Fresh session in which Gas-O (side 0) catches a BAG1 Heat (side 1). */
+static int take_on_fresh_session(void) {
+    memset(versions, 0, sizeof versions);
+    versions[GASO][0] = 1;
+    versions[HEAT][1] = 1;
+    setup_ram(GASO, HEAT);
+    assert(publish(0, 1) && recorded());
+    return enter(1, 1, HIT_SLOT);
+}
+
+/* Entry calls a retirement waits for a clip that never reached slot1
+ * (GASO_CAUGHT_UNSTARTED_TICKS) and between refused restores (RETRY). */
+#define UNSTARTED_CALLS 60u
+#define RETRY_CALLS 8u
+#define RESTORE_TRIES 32u                    /* refused restores before abandoning */
+
+/* The clip retires when FUN_8002d06c has moved the actor off slot1: seen on
+ * slot1 (current or previous == 1), then both elsewhere. The restore puts back
+ * the original empty tuple; a decoder still inside the clip refuses it and the
+ * restore is retried, throttled. A clip that never started is restored after
+ * UNSTARTED_CALLS. A take the contract refuses leaves a2 and RAM untouched. */
+static void slot1_retires_after_clip_leaves(void) {
+    assert(activate && session_reset_cb && savestate_cb);
+    activate();
+    assert(bank_ready == 1);
+    if (!GASO_CAUGHT_CLIP_PUBLISHED) {
+        assert(!take_on_fresh_session() && slot1_empty(1));
+        const unsigned writes = guest_writes, lines = log_lines;
+        set_slot_state(1, 1, 1);
+        tick(2u * UNSTARTED_CALLS);
+        assert(guest_writes == writes && log_lines == lines && slot1_empty(1));
+        return;
+    }
+
+    /* Seen on slot1, then leaving it in two steps. */
+    assert(take_on_fresh_session() && slot1_holds_clip(1, HEAT));
+    unsigned writes = guest_writes;
+    const unsigned entered = log_entered, restored = slot1_restored;
+    set_slot_state(1, 1, 1);
+    tick(1);
+    assert(log_entered == entered + 1u && strstr(last_log, "slot1 entered side=2"));
+    tick(2u * UNSTARTED_CALLS);                       /* still on slot1: kept */
+    set_slot_state(1, 5, 1);
+    tick(1);                                          /* previous still slot1 */
+    assert(log_entered == entered + 1u && slot1_restored == restored);
+    assert(guest_writes == writes && slot1_holds_clip(1, HEAT));
+    set_slot_state(1, 5, 5);
+    tick(1);
+    assert(slot1_restored == restored + 1u && guest_writes == writes + 3u && slot1_empty(1));
+    assert(strstr(last_log, "slot1 restored side=2 (clip left slot1)"));
+    tick(2u * UNSTARTED_CALLS);
+    assert(slot1_restored == restored + 1u && guest_writes == writes + 3u);
+
+    /* A decoder pointer inside the clip refuses the restore; retried later. */
+    assert(take_on_fresh_session());
+    writes = guest_writes;
+    const unsigned refused = log_restore_refused;
+    set_slot_state(1, 1, 1);
+    tick(1);
+    put_word(actor_of[1] + DECODER, slot1_of(1).raw + 4u);
+    set_slot_state(1, 5, 5);
+    tick(1);
+    assert(log_restore_refused == refused + 1u && guest_writes == writes);
+    assert(strstr(last_log, "restore refused side=2 current=5 previous=5"));
+    tick(RETRY_CALLS - 2u);                           /* throttled, not relogged */
+    assert(log_restore_refused == refused + 1u && slot1_holds_clip(1, HEAT));
+    put_word(actor_of[1] + DECODER, 0);
+    tick(1);
+    assert(slot1_restored == restored + 1u);          /* still waiting to retry */
+    tick(1);
+    assert(slot1_restored == restored + 2u && slot1_empty(1));
+    assert(strstr(last_log, "(clip left slot1)") && guest_writes == writes + 3u);
+
+    /* Never reached slot1: restored after UNSTARTED_CALLS calls. */
+    assert(take_on_fresh_session());
+    tick(UNSTARTED_CALLS - 1u);
+    assert(slot1_restored == restored + 2u && slot1_holds_clip(1, HEAT));
+    tick(1);
+    assert(slot1_restored == restored + 3u && slot1_empty(1));
+    assert(strstr(last_log, "(clip never started)"));
+
+    /* A second take while still published reuses the clip, without writes,
+     * and restarts the unstarted wait. */
+    assert(take_on_fresh_session());
+    writes = guest_writes;
+    tick(UNSTARTED_CALLS - 2u);
+    assert(publish(0, 1) && enter(1, 1, HIT_SLOT) && guest_writes == writes);
+    tick(UNSTARTED_CALLS - 1u);
+    assert(slot1_restored == restored + 3u && slot1_holds_clip(1, HEAT));
+    tick(1);
+    assert(slot1_restored == restored + 4u && slot1_empty(1));
+
+    /* A take whose lookup names another clip never reuses the published one. */
+    assert(take_on_fresh_session());
+    writes = guest_writes;
+    ram[(actor_of[1] + 4u) & RAM_MASK] = STRIKE;
+    versions[STRIKE][1] = 1;
+    assert(publish(0, 1) && !enter(1, 1, HIT_SLOT));
+    assert(guest_writes == writes && slot1_holds_clip(1, HEAT));
+
+    /* The game rewrites slot1 while the clip is published (reload without a
+     * plan reset): the publication is forgotten without writing, and a later
+     * take publishes afresh instead of redirecting onto the empty tuple. */
+    for (unsigned when = 0; when < 2; ++when) {
+        assert(take_on_fresh_session());
+        if (when) {                                   /* after the clip ran */
+            set_slot_state(1, 1, 1);
+            tick(1);
+        }
+        put_word(table_of(1, RAW) + 4u, empty_of(1));
+        ram[(table_of(1, LENGTH) + 2u) & RAM_MASK] = 0;
+        put_word(table_of(1, META) + 4u, 0);
+        set_slot_state(1, 5, 5);
+        writes = guest_writes;
+        const unsigned lost = log_lost;
+        tick(1);
+        assert(log_lost == lost + 1u && strstr(last_log, "slot1 lost side=2"));
+        assert(guest_writes == writes && slot1_empty(1));
+        tick(2u * UNSTARTED_CALLS);                   /* nothing left to retire */
+        assert(guest_writes == writes && slot1_restored == restored + 4u);
+        assert(publish(0, 1) && enter(1, 1, HIT_SLOT));
+        assert(guest_writes == writes + 3u && slot1_holds_clip(1, HEAT));
+    }
+
+    /* Rewritten before the next call could notice: the reuse is verified in
+     * guest RAM, so the take republishes instead of redirecting onto it. */
+    assert(take_on_fresh_session());
+    writes = guest_writes;
+    put_word(table_of(1, RAW) + 4u, empty_of(1));
+    ram[(table_of(1, LENGTH) + 2u) & RAM_MASK] = 0;
+    put_word(table_of(1, META) + 4u, 0);
+    assert(publish(0, 1) && enter(1, 1, HIT_SLOT));
+    assert(guest_writes == writes + 3u && slot1_holds_clip(1, HEAT));
+
+    /* The tuple is intact but the contract no longer holds (the original
+     * empty word was overwritten): the reuse is refused, a2 and RAM untouched. */
+    assert(take_on_fresh_session());
+    writes = guest_writes;
+    put_word(empty_of(1), 7u);
+    assert(publish(0, 1));
+    const unsigned reuse_refused = log_publish_refused;
+    assert(!enter(1, 1, HIT_SLOT));
+    assert(log_publish_refused == reuse_refused + 1u && strstr(last_log, "reuse refused side=2"));
+    assert(guest_writes == writes && slot1_holds_clip(1, HEAT));
+
+    /* Each slot1 field is checked on its own: a rewritten length or metadata
+     * word alone is also lost. */
+    for (unsigned field = 0; field < 2; ++field) {
+        assert(take_on_fresh_session());
+        writes = guest_writes;
+        if (field) put_word(table_of(1, META) + 4u, 0);
+        else ram[(table_of(1, LENGTH) + 2u) & RAM_MASK] = 3u;
+        tick(1);
+        assert(strstr(last_log, "slot1 lost side=2") && guest_writes == writes);
+    }
+
+    /* Moved tables: also lost, never written through the old pointers. */
+    assert(take_on_fresh_session());
+    writes = guest_writes;
+    put_word(actor_of[1] + RAW, table_of(1, RAW) + 0x800u);
+    tick(1);
+    assert(strstr(last_log, "slot1 lost side=2") && guest_writes == writes);
+    put_word(actor_of[1] + RAW, table_of(1, RAW));
+
+    /* A restore refused past its retry budget is abandoned, not retried forever. */
+    assert(take_on_fresh_session());
+    writes = guest_writes;
+    set_slot_state(1, 1, 1);
+    tick(1);
+    put_word(actor_of[1] + DECODER, slot1_of(1).raw + 4u);
+    set_slot_state(1, 5, 5);
+    const unsigned lost_before = log_lost;
+    tick(RESTORE_TRIES * RETRY_CALLS - RETRY_CALLS);
+    assert(log_lost == lost_before && slot1_holds_clip(1, HEAT));
+    tick(RETRY_CALLS);
+    assert(log_lost == lost_before + 1u && strstr(last_log, "restore abandoned side=2"));
+    put_word(actor_of[1] + DECODER, 0);
+    tick(2u * RETRY_CALLS);
+    assert(guest_writes == writes && slot1_restored == restored + 4u);
+
+    /* Refused publications: the actor on slot1, a non-zero empty word, and
+     * unreadable tables. Each leaves a2, writes nothing and is logged. */
+    for (unsigned failure = 0; failure < 3; ++failure) {
+        memset(versions, 0, sizeof versions);
+        versions[GASO][0] = versions[HEAT][1] = 1;
+        setup_ram(GASO, HEAT);
+        if (failure == 0) set_slot_state(1, 1, 0);
+        if (failure == 1) put_word(empty_of(1), 7u);
+        if (failure == 2) put_word(actor_of[1] + COUNT, 1u);
+        assert(publish(0, 1));
+        writes = guest_writes;
+        const unsigned publish_refused = log_publish_refused;
+        assert(!enter(1, 1, HIT_SLOT));
+        assert(log_publish_refused == publish_refused + 1u && guest_writes == writes);
+        assert(strstr(last_log, failure == 2 ? "(unreadable)" : "(contract)"));
+        tick(2u * UNSTARTED_CALLS);                   /* nothing to retire */
+        assert(guest_writes == writes && slot1_restored == restored + 4u);
+    }
+
+    /* Live regression: gf8088 entered slot1, and the second catch at gf8292
+     * must reuse it even while current/previous and decoder still refer to it.
+     * Reuse writes no tuple; restoration remains forbidden until retirement. */
+    assert(take_on_fresh_session());
+    writes = guest_writes;
+    set_slot_state(1, 1, 1);
+    put_word(actor_of[1] + DECODER, slot1_of(1).raw + 4u);
+    assert(publish(0, 1) && enter(1, 1, HIT_SLOT));
+    assert(guest_writes == writes && slot1_holds_clip(1, HEAT));
+    tick(UNSTARTED_CALLS);
+    assert(guest_writes == writes && slot1_holds_clip(1, HEAT));
+    set_slot_state(1, 5, 5);
+    put_word(actor_of[1] + DECODER, 0);
+    tick(1);
+    assert(guest_writes == writes + 3u && slot1_empty(1));
+}
+
+static void secondary_effect_only_after_owned_publication(void) {
+    activate();
+    const uint32_t effects[] = {0u, 1u, 2u, 21u};
+    for (uint32_t source = 0; source < 2; ++source) {
+        const uint32_t recipient = source ^ 1u;
+        for (unsigned i = 0; i < sizeof effects / sizeof *effects; ++i) {
+            memset(versions, 0, sizeof versions);
+            versions[GASO][source] = versions[HEAT][recipient] = 1;
+            setup_ram(source ? HEAT : GASO, source ? GASO : HEAT);
+            put_word(actor_of[recipient] + SECONDARY_EFFECT, 0xcafe0000u | effects[i]);
+            put_word(actor_of[source] + SECONDARY_EFFECT, 0xbeef0001u);
+            assert(publish(source, recipient));
+            const int redirect = expect_redirect(1);
+            assert(enter(recipient, 1, HIT_SLOT) == redirect);
+            const uint32_t expected = redirect && effects[i] == 1u ? 0u : effects[i];
+            assert(ram_word(actor_of[recipient] + SECONDARY_EFFECT) == (0xcafe0000u | expected));
+            assert(ram_word(actor_of[source] + SECONDARY_EFFECT) == 0xbeef0001u);
+            /* A re-hit on an owned active slot must suppress its new effect too. */
+            if (redirect) {
+                set_slot_state(recipient, 1, 1);
+                put_word(actor_of[recipient] + SECONDARY_EFFECT, 0xcafe0001u);
+                assert(publish(source, recipient) && enter(recipient, 1, HIT_SLOT));
+                assert(ram_word(actor_of[recipient] + SECONDARY_EFFECT) == 0xcafe0000u);
+            }
+        }
+    }
+}
+
+static void secondary_effect_survives_rejected_caught(void) {
+    activate();
+    for (unsigned variant = 0; variant < 7; ++variant) {
+        memset(versions, 0, sizeof versions);
+        versions[GASO][0] = variant != 4;
+        versions[HEAT][1] = variant != 0;
+        const unsigned source_char = variant == 2 ? HEAT : variant == 3 ? STRIKE : GASO;
+        setup_ram(source_char, HEAT);
+        if (variant == 6 && GASO_CAUGHT_CLIP_PUBLISHED) {
+            assert(publish(0, 1) && enter(1, 1, HIT_SLOT));
+            set_slot_state(1, 1, 1);
+            /* The game replaces an owned tuple before the next direct hit. */
+            const uint32_t meta = table_of(1, META) + 4u;
+            put_word(meta, ram_word(meta) ^ 1u);
+        }
+        put_word(actor_of[1] + SECONDARY_EFFECT, 0xcafe0001u);
+        if (variant == 1) put_word(empty_of(1), 1u); /* binding rejects nonempty raw */
+        if (variant == 5) {
+            put_word(actor_of[0] + SECONDARY_EFFECT, 0xbeef0001u);
+            assert(!publish(0, 0)); /* reflected */
+            assert(!enter(0, 1, HIT_SLOT));
+            assert(ram_word(actor_of[0] + SECONDARY_EFFECT) == 0xbeef0001u);
+        } else {
+            const int captured_ok = publish(0, 1);
+            assert(captured_ok == (variant < 2 || variant == 6));
+            assert(!enter(1, 1, HIT_SLOT));
+        }
+        assert(ram_word(actor_of[1] + SECONDARY_EFFECT) == 0xcafe0001u);
+    }
+}
+
+static void secondary_effect_span_respects_ram_end(void) {
+    activate();
+    const uint32_t original = actor_of[1];
+    for (unsigned outside = 0; outside < 2; ++outside) {
+        memset(versions, 0, sizeof versions);
+        versions[GASO][0] = versions[HEAT][1] = 1;
+        /* Highest aligned actor whose selector halfword fits, then next word. */
+        actor_of[1] = RAM_BASE + live_ram - 0x1728u + outside * 4u;
+        setup_ram(GASO, HEAT);
+        const uint32_t selector = outside ? RAM_BASE : actor_of[1] + SECONDARY_EFFECT;
+        put_word(selector, 0xcafe0001u); /* RAM_BASE is an alias canary, not a valid field. */
+        assert(publish(0, 1));
+        const int redirect = expect_redirect(1);
+        assert(enter(1, 1, HIT_SLOT) == redirect);
+        assert(ram_word(selector) == (redirect && !outside ? 0xcafe0000u : 0xcafe0001u));
+    }
+    actor_of[1] = original;
+}
+
+/* A settled, fully blended CAUGHT hold with the native fixed-rate argument. */
+static void compatible_live_pose(CPUState *cpu, uint32_t side) {
+    const uint32_t actor = actor_of[side];
+    const uint32_t controller = CONTROLLERS + CONTROLLER_STRIDE * side;
+    set_slot_state(side, 1, 1);
+    put_word(actor + 0x1544u, 0x10001000u); /* animation blend half at+1546 */
+    put_word(actor + 0x1554u, 1u);
+    put_word(controller + 0x14u, 0x08000000u);
+    put_word(controller + 0x18u, 0xffffffffu); /* fixture only, never plugin writes */
+    put_word(controller + 0x1cu, 0xf8000000u);
+    put_word(controller + 0x20u, 0xf7ffff00u);
+    put_word(controller + 0x24u, 0u); /* mode1 copies the already-cleared frame 0 */
+    put_word(controller + 0x44u, 217u); /* renewed by native caller before entry */
+    put_word(STACK + 0x10u, 0xf8000000u);
+    memset(cpu, 0xa5, sizeof *cpu);
+    cpu->gpr[REG_A0] = controller;
+    cpu->gpr[REG_A1] = 1u;
+    cpu->gpr[REG_A2] = HIT_SLOT;
+    cpu->gpr[7] = 0x1000u;
+    cpu->gpr[REG_SP] = STACK;
+}
+
+static void rehit_preserves_only_compatible_live_pose(void) {
+    activate();
+    if (!GASO_CAUGHT_CLIP_PUBLISHED) {
+        assert(!take_on_fresh_session());
+        return;
+    }
+    for (unsigned kind = 0; kind < 15; ++kind) {
+        assert(take_on_fresh_session());
+        CPUState cpu, expected;
+        compatible_live_pose(&cpu, 1);
+        const uint32_t actor = actor_of[1];
+        const uint32_t controller = CONTROLLERS + CONTROLLER_STRIDE;
+        if (kind == 1) put_word(controller + 0x14u, 0x04000000u);
+        if (kind == 2) put_word(STACK + 0x10u, 0xf0000000u);
+        if (kind == 3) cpu.gpr[7] = 0x800u;
+        if (kind == 4) put_word(actor + 0x1544u, 0x08001000u);
+        if (kind == 5) put_word(actor + PREVIOUS, 6u);
+        if (kind == 6) put_word(actor + 0x1554u, 0u);
+        if (kind == 7) cpu.gpr[REG_SP] = RAM_BASE + live_ram - 4u;
+        if (kind == 8) {
+            cpu.gpr[REG_A0] = RAM_BASE + live_ram - 4u;
+            put_word(cpu.gpr[REG_A0], actor); /* actor readable but rest of controller not */
+        }
+        if (kind == 9) {
+            put_word(controller + 0x1cu, 17u);
+            put_word(STACK + 0x10u, 17u);
+            put_word(controller + 0x14u, 0u - 17u);
+        }
+        if (kind == 10) put_word(controller + 0x18u, 3u);
+        if (kind == 11) put_word(actor + CURRENT, 6u);
+        if (kind == 12) ram[(controller + 0x0au) & RAM_MASK] = 1u; /* entry would clear it */
+        if (kind == 13) ram[(controller + 0x0bu) & RAM_MASK] = 1u; /* entry would clear it */
+        if (kind == 14) put_word(controller + 0x24u, 1u);          /* entry would copy frame 0 */
+        assert(publish(0, 1));
+        expected = cpu;
+        expected.gpr[REG_A2] = 1u;
+        if (!kind) expected.gpr[REG_A1] = 0u;
+        const unsigned writes = guest_writes;
+        entry(&cpu, ENTRY);
+        if (memcmp(&cpu, &expected, sizeof cpu))
+            fprintf(stderr, "rehit case=%u mode=%u/%u slot=%u/%u\n", kind,
+                    cpu.gpr[REG_A1], expected.gpr[REG_A1], cpu.gpr[REG_A2], expected.gpr[REG_A2]);
+        assert(memcmp(&cpu, &expected, sizeof cpu) == 0);
+        assert(guest_writes == writes); /* no actor/control/timer writes */
+        assert(ram_word(controller + 0x20u) == 0xf7ffff00u);
+        assert(ram_word(controller + 0x44u) == 217u);
+    }
+}
+
+/* A fully compatible live pose is not enough: identity, lookup and VERIFY must
+ * each still refuse the continuation on their own, leaving a1/a2 untouched. */
+static void rehit_barriers_keep_native_entry(void) {
+    activate();
+    if (!GASO_CAUGHT_CLIP_PUBLISHED) {
+        assert(!take_on_fresh_session());
+        return;
+    }
+    for (unsigned barrier = 0; barrier < 3; ++barrier) {
+        assert(take_on_fresh_session());
+        CPUState cpu;
+        compatible_live_pose(&cpu, 1);
+        const uint32_t controller = CONTROLLERS + CONTROLLER_STRIDE;
+        if (barrier == 0) cpu.gpr[REG_A0] = CONTROLLERS; /* another actor: no record matches */
+        if (barrier == 1) versions[HEAT][1] = 0;         /* recipient is no longer BAG1 Heat */
+        if (barrier == 2) {
+            /* The slot1 tables stay intact (retire passes), but the clamp byte of
+             * the live clip does not: lookup's bank match refuses the reuse. VERIFY
+             * re-checks the same bank on a fresh copy, so this is the same contract. */
+            const uint32_t meta = slot1_of(1).meta;
+            assert(meta >= EXPANSION1 && meta - EXPANSION1 + 5u < expansion1_used);
+            expansion1[meta - EXPANSION1 + 5u] = 0u;
+        }
+        assert(publish(0, 1));
+        const CPUState expected = cpu;
+        const unsigned writes = guest_writes;
+        entry(&cpu, ENTRY);
+        if (memcmp(&cpu, &expected, sizeof cpu))
+            fprintf(stderr, "barrier=%u mode=%u slot=%u\n", barrier,
+                    cpu.gpr[REG_A1], cpu.gpr[REG_A2]);
+        assert(memcmp(&cpu, &expected, sizeof cpu) == 0);
+        assert(cpu.gpr[REG_A1] == 1u && cpu.gpr[REG_A2] == HIT_SLOT);
+        assert(guest_writes == writes);
+        assert(ram_word(controller + 0x44u) == 217u);
+    }
+}
+
+/* The mirrored direction: victim on side 0, attacker on side 1. */
+static void rehit_preserves_compatible_pose_on_side0(void) {
+    activate();
+    memset(versions, 0, sizeof versions);
+    versions[HEAT][0] = versions[GASO][1] = 1;
+    setup_ram(HEAT, GASO);
+    assert(publish(1, 0) && recorded());
+    if (!GASO_CAUGHT_CLIP_PUBLISHED) {
+        assert(!enter(0, 1, HIT_SLOT));
+        return;
+    }
+    assert(enter(0, 1, HIT_SLOT));
+    CPUState cpu, expected;
+    compatible_live_pose(&cpu, 0);
+    const uint32_t controller = CONTROLLERS;
+    assert(publish(1, 0));
+    expected = cpu;
+    expected.gpr[REG_A1] = 0u;
+    expected.gpr[REG_A2] = 1u;
+    const unsigned writes = guest_writes;
+    entry(&cpu, ENTRY);
+    if (memcmp(&cpu, &expected, sizeof cpu))
+        fprintf(stderr, "side0 mode=%u/%u slot=%u/%u\n", cpu.gpr[REG_A1],
+                expected.gpr[REG_A1], cpu.gpr[REG_A2], expected.gpr[REG_A2]);
+    assert(memcmp(&cpu, &expected, sizeof cpu) == 0);
+    assert(guest_writes == writes);
+    assert(ram_word(controller + 0x20u) == 0xf7ffff00u);
+    assert(ram_word(controller + 0x44u) == 217u);
+}
 
 int main(int argc, char **argv) {
     assert(argc == 2 && entry && capture_cb);
@@ -770,80 +1393,28 @@ int main(int argc, char **argv) {
         publication_slot1_guarded_and_restorable();
         break;
     case 12:
-        slot1_restored_after_clip_duration();
+        slot1_retires_after_clip_leaves();
+        break;
+    case 13:
+        secondary_effect_only_after_owned_publication();
+        break;
+    case 14:
+        secondary_effect_survives_rejected_caught();
+        break;
+    case 15:
+        secondary_effect_span_respects_ram_end();
+        break;
+    case 16:
+        rehit_preserves_only_compatible_live_pose();
+        break;
+    case 17:
+        rehit_barriers_keep_native_entry();
+        break;
+    case 18:
+        rehit_preserves_compatible_pose_on_side0();
         break;
     default:
         return 2;
     }
     return 0;
-}
-
-/* Slot1 restore fires after the clip duration elapses since publication.
- * Entry ticks accumulate; once GASO_CAUGHT_CLIP_DURATION ticks have passed,
- * the next entry call restores slot1 (3 bytes, clears published flag).
- * No guest writes before duration elapses; 3 writes on restore. */
-static void slot1_restored_after_clip_duration(void) {
-    assert(activate && session_reset_cb && savestate_cb);
-    activate();
-    assert(bank_ready == 1);
-
-    memset(versions, 0, sizeof versions);
-    versions[GASO][0] = 1;   /* source Gas-O BAG1 side 0 */
-    versions[HEAT][1] = 1;   /* recipient Heat BAG1 side 1 */
-    setup_ram(GASO, HEAT);
-    assert(publish(0, 1));   /* captured[1] available */
-    assert(recorded());
-
-    const unsigned writes_before = guest_writes;
-    const unsigned taken_before = entry_taken;
-    const unsigned pub_before = slot1_published;
-    const unsigned rest_before = slot1_restored;
-
-    /* Entry take publishes slot1 (when CLIP_PUBLISHED=1). */
-    assert(enter(1, 1, HIT_SLOT) == GASO_CAUGHT_CLIP_PUBLISHED);
-    assert(entry_taken == taken_before + 1u);
-
-    if (GASO_CAUGHT_CLIP_PUBLISHED) {
-        assert(slot1_published == pub_before + 1u);
-        assert(slot1_restored == rest_before);
-        assert(guest_writes == writes_before + 3u);
-    } else {
-        assert(slot1_published == pub_before);
-        assert(slot1_restored == rest_before);
-        assert(guest_writes == writes_before);
-    }
-
-    /* Ticks accumulate without restore while duration not elapsed.
-     * Each enter() call increments gaso_caught_ticks by 1; restore fires
-     * when ticks - publish_tick >= DURATION, so run DURATION-1 iterations
-     * to stay below the threshold, then restore on the next entry. */
-    for (uint32_t i = 0; i + 1u < GASO_CAUGHT_CLIP_DURATION_TEST; ++i) {
-        const unsigned w = guest_writes;
-        const unsigned p = slot1_published;
-        const unsigned r = slot1_restored;
-        const unsigned l = log_lines;
-        assert(!enter(1, 1, HIT_SLOT));   /* no take, no publish/restore */
-        assert(entry_taken == taken_before + 1u);
-        assert(guest_writes == w);
-        assert(slot1_published == p);
-        assert(slot1_restored == r);
-        assert(log_lines == l);
-    }
-
-    /* Next entry: duration elapsed, restore fires (3 bytes, 1 log line). */
-    assert(!enter(1, 1, HIT_SLOT));
-    assert(entry_taken == taken_before + 1u);
-    if (GASO_CAUGHT_CLIP_PUBLISHED) {
-        assert(slot1_restored == rest_before + 1u);
-        assert(guest_writes == writes_before + (GASO_CAUGHT_CLIP_PUBLISHED ? 6u : 0u));
-        assert(strstr(last_log, "slot1 restored side=2") != NULL);
-    } else {
-        assert(slot1_restored == rest_before);
-        assert(guest_writes == writes_before);
-    }
-
-    /* After restore, published cleared: no further restore on next entry. */
-    assert(!enter(1, 1, HIT_SLOT));
-    assert(entry_taken == taken_before + 1u);
-    assert(slot1_restored == rest_before + (GASO_CAUGHT_CLIP_PUBLISHED ? 1u : 0u));
 }

@@ -1,0 +1,38 @@
+{
+  "profile": "strike-native-lighting",
+  "character": "Strike",
+  "source": "STAGES/ST_STRI.DFS (BAG1 Strike native stage)",
+  "description": "Native Strike lighting configuration restoring lower face and mouth line contrast by replacing subtractive stage lighting with positive fill light.",
+  "parameters": {
+    "color_matrix": [
+      -2816, 5632, 7680,
+      -2048, 8448, 1536,
+      -768, 5632, -3072
+    ],
+    "ambient_rgb": [168, 168, 168],
+    "direction_angles": [
+      0, 256, 2880,
+      0, 0, 0,
+      0, 0, 0,
+      1264, 976, 0
+    ],
+    "direction_matrix_resolved": [
+      -1099, 3920, -455,
+      1099, -3920, 455,
+      -109, -4085, 280
+    ]
+  },
+  "runtime_offsets": {
+    "slpm_ram_color_matrix_target_p1": "0x8005F370",
+    "slpm_ram_ambient_target_p1": "0x8005F3D4",
+    "slpm_ram_direction_angles_p1": "0x8005F320",
+    "dancer_struct_direction_matrix": "+0x155C",
+    "dancer_struct_color_matrix": "+0x157C",
+    "dancer_struct_ambient": "+0x159C"
+  },
+  "evidence": {
+    "live_dump": "_work/character_import/strike/face_audit/live-lighting-with-head.json",
+    "comparison_sheet": "_work/character_import/strike/face_audit/face-full-native-centered.png",
+    "analysis": "_work/character_import/strike/face_audit/face-lighting-analysis.json"
+  }
+}

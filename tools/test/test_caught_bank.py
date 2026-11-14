@@ -1,6 +1,7 @@
 """Authentic CAUGHT bytes in the real allocator/snapshot arena, not gameplay."""
 import hashlib
 import json
+import re
 import subprocess
 import tempfile
 import unittest
@@ -9,6 +10,7 @@ from unittest.mock import patch
 
 from tools.test.test_caught_loan import ROOT, linux_path
 from tools.bag1import import build_caught_bank
+from tools.bag1import.animlib import info
 
 CLIPS = (
     ('heat', 'aba71e3806dcbb731f6bc4df87437d8845491d66ae1cf94a1671a8650db93fad'),
@@ -18,6 +20,22 @@ CLIPS = (
 
 
 class CaughtBankSourceTest(unittest.TestCase):
+    def test_runtime_metadata_clamps_pose_without_changing_motion(self) -> None:
+        """Only metadata byte5 changes; native controller then holds the final frame."""
+        clips = build_caught_bank.extract_clips()
+        text = build_caught_bank.generated_text(clips)
+        array = text.split('b1cc_data[B1CC_BANK_BYTES] = {', 1)[1].split('}', 1)[0]
+        actual = bytes(int(v, 16) for v in re.findall(r'0x([0-9a-f]{2})', array))
+        offset = 0
+        for character, source in clips:
+            with self.subTest(character=character):
+                _header, _events, metadata, _end = info(source)
+                expected = bytearray(source)
+                expected[metadata + 5] = 1
+                self.assertEqual(actual[offset:offset + len(source)], bytes(expected))
+                self.assertEqual(source[metadata + 5], 0)  # original is immutable
+            offset += len(source)
+
     def test_generated_bank_is_identical_to_pinned_original_sources(self) -> None:
         """Source extraction must match both prior decoder fixtures and the bank."""
         clips = build_caught_bank.extract_clips()
@@ -61,7 +79,11 @@ class CaughtBankTest(unittest.TestCase):
             data = (ROOT / '_work/gaso/owned-decoder-input' / (name + '.bin')).read_bytes()
             if hashlib.sha256(data).hexdigest() != digest:
                 raise AssertionError('Authentic fixture changed: ' + name)
-            clips.append(data)
+            # Independent expectation: original motion, only metadata+5 adapted.
+            _header, _events, metadata, _end = info(data)
+            expected = bytearray(data)
+            expected[metadata + 5] = 1
+            clips.append(bytes(expected))
         cls.expected.write_bytes(b''.join(clips))
         framework = ROOT.parent / 'BAG2JP-codex-build/BAG2JP/psxrecomp/runtime'
         source = ROOT / 'mods-src/bag2jp.feature.bag1-content'

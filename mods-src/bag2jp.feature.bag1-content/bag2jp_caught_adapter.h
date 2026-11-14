@@ -41,6 +41,7 @@
 #define BAG2JP_CAUGHT_ADAPTER_H
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include "bag2jp_caught_binding.h"
 #include "bag2jp_caught_loan.h"
 
@@ -48,6 +49,13 @@ typedef struct {
     B1CaughtLoan loan;
     B1CaughtBinding binding;
     int binding_valid;
+    /* Caller-owned clip backing for `binding.clip`. NULL conserva el camino
+     * legacy de publicación/restauración solo-RAM-principal; distinto de NULL
+     * escribe los diez bytes de ranura en las tablas comprobadas mientras los
+     * bytes del clip permanecen en la asignación inmutable Expansion1 del
+     * llamador. Vida útil y procedencia son prueba del llamador, no de este
+     * adaptador; no se reclama retiro ni exclusión de compañeros aquí. */
+    const B1CaughtClipRegion *region;
 } B1CaughtAdapter;
 
 /* Caller-proven VM facts. They are inputs, not proof produced here. */
@@ -90,6 +98,23 @@ static int b1ca_owns_tuple(const uint8_t *ram, size_t bytes,
         b1cb_read(ram, tables[2].offset + 4u*B1CB_SLOT, 4) == plan.info;
 }
 
+/* Publica la tupla de ranura respetando la región del clip cuando existe;
+ * con NULL se comporta exactamente como b1cb_publish (solo RAM principal). */
+static int b1ca_publish(uint8_t *ram, size_t bytes, const B1CaughtBinding *b,
+                        int paused, const B1CaughtClipRegion *region) {
+    if (region) return b1cb_publish_in(ram, bytes, b, paused, region);
+    return b1cb_publish(ram, bytes, b, paused);
+}
+
+/* Restaura la tupla de ranura respetando la región del clip cuando existe;
+ * con NULL se comporta exactamente como b1cb_restore (solo RAM principal). */
+static int b1ca_restore(uint8_t *ram, size_t bytes, const B1CaughtBinding *b,
+                        int paused, int quiescent,
+                        const B1CaughtClipRegion *region) {
+    if (region) return b1cb_restore_in(ram, bytes, b, paused, quiescent, region);
+    return b1cb_restore(ram, bytes, b, paused, quiescent);
+}
+
 /* Apply the decided action to RAM before adopting the new loan state. A rejected
  * publication, retirement or abandon leaves the previous state and every RAM
  * byte unchanged so the caller can retry at the next safe point.
@@ -107,7 +132,7 @@ static int b1ca_apply(B1CaughtAdapter *adapter, const B1CaughtObservation *view,
     case B1C_ENTER:
         if (adapter->binding_valid || !candidate ||
             !b1ca_matches_identity(candidate, &view->identity)) { ok = 0; break; }
-        if (!b1cb_publish(ram, bytes, candidate, vm->paused)) { ok = 0; break; }
+        if (!b1ca_publish(ram, bytes, candidate, vm->paused, adapter->region)) { ok = 0; break; }
         adapter->binding = *candidate;
         adapter->binding_valid = 1;
         adapter->loan = decision.next;
@@ -126,7 +151,8 @@ static int b1ca_apply(B1CaughtAdapter *adapter, const B1CaughtObservation *view,
             result.committed = 1;
             break;
         }
-        if (!b1cb_restore(ram, bytes, &adapter->binding, vm->paused, vm->quiescent)) {
+        if (!b1ca_restore(ram, bytes, &adapter->binding, vm->paused, vm->quiescent,
+                          adapter->region)) {
             ok = 0;
             break;
         }
@@ -157,7 +183,8 @@ static int b1ca_apply(B1CaughtAdapter *adapter, const B1CaughtObservation *view,
             break;
         }
         if (!vm->paused || !vm->quiescent) { ok = 0; break; }  /* defer, no orphan */
-        if (b1cb_restore(ram, bytes, &adapter->binding, vm->paused, vm->quiescent))
+        if (b1ca_restore(ram, bytes, &adapter->binding, vm->paused, vm->quiescent,
+                         adapter->region))
             adapter->binding_valid = 0;
         /* ORPHANED is terminal for this descriptor; the tuple may remain
          * installed when retire is refused inside a stopped guest (see header). */
@@ -173,6 +200,120 @@ static int b1ca_apply(B1CaughtAdapter *adapter, const B1CaughtObservation *view,
     if (!ok) result.committed = 0;
     if (out) *out = result;
     return ok;
+}
+
+/* Estado serializable del adaptador (savestate/reset). Little-endian, campo a
+ * campo para no depender del layout de las estructuras. El caller puede guardar
+ * antes de un scene change y restaurar después; loan.owner y binding se
+ * conservan íntegros. region->data es propiedad del caller (no se serializa el
+ * puntero); se conservan region->guest_base y region->bytes como metadata. */
+enum { B1CA_STATE_SIZE = 128u };
+
+static uint32_t b1ca_u32(const uint8_t *p) {
+    return (uint32_t)p[0] | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16) |
+           ((uint32_t)p[3] << 24);
+}
+static uint64_t b1ca_u64(const uint8_t *p) {
+    uint64_t v = 0;
+    for (unsigned i = 0; i < 8; ++i) v |= (uint64_t)p[i] << (8 * i);
+    return v;
+}
+static void b1ca_put_u32(uint8_t *p, uint32_t v) {
+    p[0] = (uint8_t)(v & 0xffu); p[1] = (uint8_t)((v >> 8) & 0xffu);
+    p[2] = (uint8_t)((v >> 16) & 0xffu); p[3] = (uint8_t)((v >> 24) & 0xffu);
+}
+static void b1ca_put_u64(uint8_t *p, uint64_t v) {
+    for (unsigned i = 0; i < 8; ++i) p[i] = (uint8_t)((v >> (8 * i)) & 0xffu);
+}
+
+static int b1ca_state_size(void) { return (int)B1CA_STATE_SIZE; }
+
+static int b1ca_save_state(const B1CaughtAdapter *adapter, uint8_t *out,
+                           size_t out_bytes) {
+    if (!adapter || !out || out_bytes < B1CA_STATE_SIZE) return 0;
+    size_t o = 0;
+    b1ca_put_u64(out + o, adapter->loan.owner.generation); o += 8;
+    b1ca_put_u64(out + o, adapter->loan.owner.scene_epoch); o += 8;
+    b1ca_put_u32(out + o, adapter->loan.owner.actor); o += 4;
+    b1ca_put_u32(out + o, adapter->loan.owner.raw_table); o += 4;
+    b1ca_put_u32(out + o, adapter->loan.owner.length_table); o += 4;
+    b1ca_put_u32(out + o, adapter->loan.owner.metadata_table); o += 4;
+    b1ca_put_u32(out + o, adapter->loan.owner.count); o += 4;
+    b1ca_put_u32(out + o, adapter->loan.owner.content_tag); o += 4;
+    b1ca_put_u32(out + o, adapter->loan.owner.character); o += 4;
+    b1ca_put_u32(out + o, adapter->loan.owner.side); o += 4;
+    b1ca_put_u32(out + o, adapter->loan.owner.version); o += 4;
+    b1ca_put_u64(out + o, adapter->loan.attack_id); o += 8;
+    b1ca_put_u32(out + o, (uint32_t)adapter->loan.phase); o += 4;
+    b1ca_put_u32(out + o, (uint32_t)adapter->binding_valid); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.actor); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.raw_table); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.length_table); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.metadata_table); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.count); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.character); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.side); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.empty_raw); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.clip); o += 4;
+    b1ca_put_u32(out + o, adapter->binding.clip_bytes); o += 4;
+    /* region es caller-owned y const: no se serializa guest_base ni bytes.
+     * has_region = 0 siempre; el caller configura region antes de llamar a
+     * load_state. Padding a B1CA_STATE_SIZE (128). */
+    b1ca_put_u32(out + o, 0u); o += 4;
+    memset(out + o, 0, 16); o += 16;
+    return 1;
+}
+
+static int b1ca_load_state(B1CaughtAdapter *adapter, const uint8_t *in,
+                           size_t in_bytes) {
+    if (!adapter || !in || in_bytes < B1CA_STATE_SIZE) return 0;
+    size_t o = 0;
+    adapter->loan.owner.generation = b1ca_u64(in + o); o += 8;
+    adapter->loan.owner.scene_epoch = b1ca_u64(in + o); o += 8;
+    adapter->loan.owner.actor = b1ca_u32(in + o); o += 4;
+    adapter->loan.owner.raw_table = b1ca_u32(in + o); o += 4;
+    adapter->loan.owner.length_table = b1ca_u32(in + o); o += 4;
+    adapter->loan.owner.metadata_table = b1ca_u32(in + o); o += 4;
+    adapter->loan.owner.count = b1ca_u32(in + o); o += 4;
+    adapter->loan.owner.content_tag = b1ca_u32(in + o); o += 4;
+    adapter->loan.owner.character = b1ca_u32(in + o); o += 4;
+    adapter->loan.owner.side = b1ca_u32(in + o); o += 4;
+    adapter->loan.owner.version = b1ca_u32(in + o); o += 4;
+    adapter->loan.attack_id = b1ca_u64(in + o); o += 8;
+    adapter->loan.phase = (B1CaughtPhase)b1ca_u32(in + o); o += 4;
+    adapter->binding_valid = (int)b1ca_u32(in + o); o += 4;
+    adapter->binding.actor = b1ca_u32(in + o); o += 4;
+    adapter->binding.raw_table = b1ca_u32(in + o); o += 4;
+    adapter->binding.length_table = b1ca_u32(in + o); o += 4;
+    adapter->binding.metadata_table = b1ca_u32(in + o); o += 4;
+    adapter->binding.count = b1ca_u32(in + o); o += 4;
+    adapter->binding.character = b1ca_u32(in + o); o += 4;
+    adapter->binding.side = b1ca_u32(in + o); o += 4;
+    adapter->binding.empty_raw = b1ca_u32(in + o); o += 4;
+    adapter->binding.clip = b1ca_u32(in + o); o += 4;
+    adapter->binding.clip_bytes = b1ca_u32(in + o); o += 4;
+    int has_region = (int)b1ca_u32(in + o); o += 4;
+    if (has_region) {
+        /* region->data es caller-owned y const: no se restaura el puntero ni
+         * sus campos desde aquí. El caller configura region antes de llamar. */
+        (void)b1ca_u32(in + o); o += 4;
+        (void)b1ca_u32(in + o); o += 4;
+    }
+    return 1;
+}
+
+/* Reinicia el adaptador a IDLE. Solo permitido cuando no hay binding
+ * instalado (binding_valid == 0) o el loan está en IDLE/ORPHANED. Si hay un
+ * binding instalado, el caller debe pasar por RESTORE primero; reset no toca
+ * RAM ni libera el clip owned (ese es trabajo del caller). */
+static int b1ca_reset(B1CaughtAdapter *adapter) {
+    if (!adapter) return 0;
+    if (adapter->binding_valid) return 0;
+    if (adapter->loan.phase != B1C_IDLE && adapter->loan.phase != B1C_ORPHANED) return 0;
+    adapter->loan = (B1CaughtLoan){0};
+    adapter->binding_valid = 0;
+    adapter->binding = (B1CaughtBinding){0};
+    return 1;
 }
 
 #endif

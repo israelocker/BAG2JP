@@ -11,6 +11,11 @@ entry:
 
     {"rows": [{"entry": 73, "chr": 1, "kind": 0, "file": "pack_a_p1.dfs"}]}
 
+For regional entries, replace ``file`` with ``regions`` containing exactly
+``international`` and ``japanese`` file paths. Both receive exact offsets/sizes;
+identical bytes share storage. Legacy rows have no Japanese variant (jp_size=0),
+not an implicitly Japanese copy of their International payload.
+
 Stock offset/size always come from the disc's DF2_ table; only the payload
 comes from the file, so a row can never point the game at the wrong entry.
 Entries are stored sector-aligned in DUMMY.BIN and recorded with their exact
@@ -54,45 +59,62 @@ def read_entries(header: bytes, entries: list[int]) -> dict[int, tuple[int, int]
     return table
 
 
-def build(spec: dict, disc: Disc) -> tuple[bytes, list[dict]]:
+def _store_variant(file: str, payload: bytearray, seen: dict, base: int) -> tuple[int, int, int, str]:
+    data = Path(file).read_bytes()
+    if not data:
+        raise ValueError(f"empty alternate file: {file}")
+    digest = hashlib.sha256(data).hexdigest()
+    if digest not in seen:
+        seen[digest] = len(payload) // SECTOR
+        payload.extend(data)
+        payload.extend(b"\x00" * (-len(payload) % SECTOR))
+    start = seen[digest]
+    return base + start * SECTOR, len(data), start, digest
+
+
+def build(spec: dict, disc: Disc) -> tuple[bytes, list[dict], str]:
     """Pack every row's exact bytes into one sector-aligned payload."""
     rows = spec["rows"]
     layout = extents(disc)
     archive_lba, _ = layout[ARCHIVE]
-    dummy_lba, dummy_sectors = layout[DUMMY]
+    dummy_lba, dummy_size = layout[DUMMY]
     stock = read_entries(disc.read(archive_lba, 4096), [row["entry"] for row in rows])
-    capacity = dummy_sectors * SECTOR
+    capacity = dummy_size  # dummy_size is already in bytes
 
     payload = bytearray()
     index = []
     seen = {}
     for row in rows:
         entry = row["entry"]
-        data = Path(row["file"]).read_bytes()
-        if not data:
-            raise SystemExit(f"entry {entry}: empty alternate file {row['file']}")
-        digest = hashlib.sha256(data).hexdigest()
-        if digest in seen:
-            start = seen[digest]
-        else:
-            start = len(payload) // SECTOR
-            seen[digest] = start
-            payload += data
-            payload += b"\x00" * (-len(payload) % SECTOR)
+        regions = row.get("regions")
+        if "regions" in row and (not isinstance(regions, dict)
+                or set(regions) != {"international", "japanese"} or "file" in row):
+            raise ValueError(f"entry {entry}: regions requires exactly international/japanese and no file")
+        file = regions["international"] if regions else row["file"]
+        base = (dummy_lba - archive_lba) * SECTOR
+        alt_off, alt_size, start, digest = _store_variant(file, payload, seen, base)
+        jp_off, jp_size, jp_digest = 0, 0, None
+        if regions:
+            jp_off, jp_size, _, jp_digest = _store_variant(regions["japanese"], payload, seen, base)
         offset, size = stock[entry]
         index.append({
             "entry": entry, "chr": row["chr"], "kind": row["kind"],
             "off": offset, "size": size,
             # DUMMY offsets are stored relative to the archive base, like the stock table.
-            "alt_off": (dummy_lba + start - archive_lba) * SECTOR,
-            "alt_size": len(data),
+            "alt_off": alt_off, "alt_size": alt_size,
+            "jp_off": jp_off, "jp_size": jp_size,
             "sectors": start,
-            "file": row["file"],
+            "file": file,
             "sha256": digest,
+            "jp_file": regions["japanese"] if regions else None,
+            "jp_sha256": jp_digest,
         })
     if len(payload) > capacity:
         raise SystemExit(f"payload {len(payload)} exceeds DUMMY.BIN capacity {capacity}")
-    return bytes(payload), index
+    # Compute expected_sha256 from actual stock data in DUMMY.BIN, not zeros.
+    stock_data = disc.read(dummy_lba, len(payload))
+    expected_digest = hashlib.sha256(stock_data).hexdigest()
+    return bytes(payload), index, expected_digest
 
 
 def render_index(index: list[dict]) -> str:
@@ -103,13 +125,14 @@ def render_index(index: list[dict]) -> str:
         " * with a BAG1 version stored in DUMMY.BIN. kind: 0 player 1, 1 player 2,",
         " * 2 fever (winner), 3 stage. */",
         "typedef struct { uint16_t entry; uint8_t chr, kind; uint32_t off, size,"
-        " alt_off, alt_size; } B1AltEntry;",
+         " alt_off, alt_size, jp_off, jp_size; } B1AltEntry;",
         "static const B1AltEntry b1_alt_entries[] = {",
     ]
     for row in index:
         lines.append(f"    {{{row['entry']}, {row['chr']}, {row['kind']}, "
                      f"0x{row['off']:X}u, {row['size']}u, "
-                     f"0x{row['alt_off']:X}u, {row['alt_size']}u}},")
+                      f"0x{row['alt_off']:X}u, {row['alt_size']}u, "
+                      f"0x{row.get('jp_off', 0):X}u, {row.get('jp_size', 0)}u}},")
     lines.append("};")
     return "\n".join(lines) + "\n"
 
@@ -124,7 +147,7 @@ def main() -> int:
     spec = json.loads(args.spec.read_text(encoding="utf-8"))
     disc = Disc(args.disc)
     try:
-        payload, index = build(spec, disc)
+        payload, index, expected_digest = build(spec, disc)
     finally:
         disc.f.close()
 
@@ -133,12 +156,12 @@ def main() -> int:
     (out / "payload").mkdir(parents=True, exist_ok=True)
     (out / "payload" / "bag1_alt.bin").write_bytes(payload)
     header = render_index(index).replace("0x00000000u", f"0x{digest[:8].upper()}u", 1)
-    (out / "bag2jp_bag1_alt_index.h").write_text(header, encoding="utf-8")
+    (out / "bag2jp_bag1_alt_index.h").write_text(header, encoding="utf-8", newline="\n")
     (out / "alt_report.json").write_text(json.dumps({
         "payload_bytes": len(payload),
         "payload_sectors": len(payload) // SECTOR,
         "payload_sha256": digest,
-        "expected_sha256": hashlib.sha256(bytes(len(payload))).hexdigest(),
+        "expected_sha256": expected_digest,
         "rows": index,
     }, indent=2) + "\n", encoding="utf-8")
     print(f"{len(index)} entries, {len(payload) // SECTOR} sectors, sha256 {digest}")

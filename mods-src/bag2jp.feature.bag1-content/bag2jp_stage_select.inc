@@ -10,7 +10,7 @@ static CsStageView cs_stage_view;
 static SDL_SpinLock cs_stage_lock;
 static atomic_int cs_stage_visible;
 static int cs_stage_patched, cs_stage_assets_ready, cs_stage_random_row;
-static CsImg cs_stage_images[4]; /* Heat BAG2, Heat BAG1, Strike BAG2, Strike BAG1 */
+static CsImg cs_stage_images[6]; /* Heat BAG2, Heat BAG1, Strike BAG2, Strike BAG1, Bi-O BAG2, Gas-O BAG1 */
 
 int bag2jp_stage_select_enabled(void) { return s_enabled && cs_stage_assets_ready; }
 static void cs_stage_publish(CsStageView view) {
@@ -23,8 +23,8 @@ static void cs_stage_publish(CsStageView view) {
 }
 static void cs_stage_activate(void) {
     cs_stage_assets_ready = 1;
-    const char* names[] = {"heat_bag2.png", "heat_bag1.png", "strike_bag2.png", "strike_bag1.png"};
-    for (int i = 0; i < 4; ++i) {
+    const char* names[] = {"heat_bag2.png", "heat_bag1.png", "strike_bag2.png", "strike_bag1.png", "gaso_bag2.png", "gaso_bag1.png"};
+    for (int i = 0; i < 6; ++i) {
         char p[1200]; snprintf(p, sizeof p, "%s/%s", s_dir, names[i]);
         FILE* f = fopen(p, "rb");
         if (f) fclose(f); else cs_stage_assets_ready = 0;
@@ -79,7 +79,7 @@ static void cs_stage_vblank(void) {
     if (!s_enabled || !cs_screen_active()) {
         cs_stage_patched = 0; cs_stage_publish(view); return;
     }
-    const int wanted = cs_stage_assets_ready && (bag2jp_bag1_has_version(0) || bag2jp_bag1_has_version(1));
+    const int wanted = cs_stage_assets_ready && (bag2jp_bag1_has_version(0) || bag2jp_bag1_has_version(1) || bag2jp_bag1_has_version(9));
     if (!cs_stage_patch(wanted) || !wanted) {
         bag2jp_bag1_set_stage_choice(-1, -1); cs_stage_publish(view); return;
     }
@@ -94,18 +94,23 @@ static void cs_stage_vblank(void) {
         else if (row == 1) { active_chr = 0; bag1 = 1; }
         else if (row == 4) { active_chr = 1; bag1 = 0; }
         else if (row == 5) { active_chr = 1; bag1 = 1; }
-        else if (row == 14) {
+        else if (row == 11) { active_chr = 9; bag1 = 0; }
+        else if (row == 12) { active_chr = 9; bag1 = 1; }
+        else if (row == 15) {
             if (cs_stage_random_row == 0) { active_chr = 0; bag1 = 0; }
             else if (cs_stage_random_row == 1) { active_chr = 0; bag1 = 1; }
             else if (cs_stage_random_row == 4) { active_chr = 1; bag1 = 0; }
             else if (cs_stage_random_row == 5) { active_chr = 1; bag1 = 1; }
+            else if (cs_stage_random_row == 11) { active_chr = 9; bag1 = 0; }
+            else if (cs_stage_random_row == 12) { active_chr = 9; bag1 = 1; }
         }
         bag2jp_bag1_set_stage_choice(active_chr, active_chr >= 0 ? bag1 : -1);
-        if (chr == 0 || chr == 1) {
+        if (chr == 0 || chr == 1 || chr == 9) {
             if (!s_have_glyphs) cs_read_glyphs();
             if (chr == 0) view.kind = bag1 ? 2 : 1;
             else if (chr == 1) view.kind = bag1 ? 4 : 3;
-            view.random = row == 14;
+            else if (chr == 9) view.kind = bag1 ? 6 : 5;
+            view.random = row == 15;
             view.x = (int16_t)psx_mod_read_half(0x8009724Cu);
             view.y = (int16_t)psx_mod_read_half(0x8009724Eu);
             view.label_y = (int16_t)psx_mod_read_half(0x800967DAu) + 0x51;
@@ -116,22 +121,22 @@ static void cs_stage_vblank(void) {
 static void cs_stage_random_hook(struct CPUState* cpu, uint32_t address) {
     (void)address;
     if (s_enabled && cs_stage_patched && cs_screen_active())
-        cs_stage_random_row = cpu->gpr[2] < 14 ? (int)cpu->gpr[2] : 0;
+        cs_stage_random_row = cpu->gpr[2] < 15 ? (int)cpu->gpr[2] : 0;
 }
 static void cs_stage_name_hook(struct CPUState* cpu, uint32_t address) {
     (void)address;
     if (!s_enabled || !cs_stage_patched || !cs_screen_active()) return;
     /* The same s8=12 is also used for arrow dimensions. Normalize only the comparison operand. */
-    if (cpu->gpr[2] == 14) cpu->gpr[2] = 12;
-    else if (cpu->gpr[2] == 12) cpu->gpr[2] = 14;
+    if (cpu->gpr[2] == 15) cpu->gpr[2] = 12;
+    else if (cpu->gpr[2] == 12) cpu->gpr[2] = 15;
 }
 static void cs_stage_heat_label_hook(struct CPUState* cpu, uint32_t address) {
     (void)address;
     if (!s_enabled || !cs_stage_patched || !cs_screen_active()) return;
     const int chr = psx_mod_read_byte(0x80097231u);
     const int row = psx_mod_read_byte(0x8009722Eu);
-    if (row == 14) return;
-    if (chr != 0 && chr != 1) return;
+    if (row == 15) return;
+    if (chr != 0 && chr != 1 && chr != 9) return;
     const uint32_t text = psx_mod_read_word(0x80096E68u);
     if (text >= 0x8008F890u && text < 0x80096F80u && psx_mod_read_byte(text + 4u) == 0)
         cpu->gpr[2] = text + 4u; /* delay-slot sw stores the empty string for the native label */
@@ -139,10 +144,10 @@ static void cs_stage_heat_label_hook(struct CPUState* cpu, uint32_t address) {
 static void cs_stage_compose(void) {
     CsStageView v;
     SDL_LockSpinlock(&cs_stage_lock); v = cs_stage_view; SDL_UnlockSpinlock(&cs_stage_lock);
-    if (v.kind < 1 || v.kind > 4) return;
+    if (v.kind < 1 || v.kind > 6) return;
     CsImg* im = &cs_stage_images[v.kind - 1];
     if (!im->px) {
-        const char* names[] = {"heat_bag2.png", "heat_bag1.png", "strike_bag2.png", "strike_bag1.png"};
+        const char* names[] = {"heat_bag2.png", "heat_bag1.png", "strike_bag2.png", "strike_bag1.png", "gaso_bag2.png", "gaso_bag1.png"};
         cs_load_png(names[v.kind - 1], im);
     }
     if (!im->px) return;
@@ -157,7 +162,11 @@ static void cs_stage_compose(void) {
             s_canvas[dst_y * CV_W + dst_x] = 0xFF000000u | ((uint32_t)p[0] << 16) | ((uint32_t)p[1] << 8) | p[2];
         }
     }
-    const char* labels[] = {"HEAT BAG2", "HEAT BAG1", "STRIKE BAG2", "STRIKE BAG1"};
+    const char* labels[] = {
+        "HEAT BAG2", "HEAT BAG1",
+        "STRIKE BAG2", "STRIKE BAG1",
+        "BI-O BAG2", "GAS-O"
+    };
     const char* label = labels[v.kind - 1];
     if (!v.random) cv_text(label, v.x + 93 - cv_text_w(label, 1) / 2, v.label_y, CS_FONT_STAGE, 1);
 }
