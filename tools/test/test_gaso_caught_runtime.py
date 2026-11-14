@@ -122,6 +122,14 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """The mirrored victim side takes the same continuation without writes."""
         self.run_scenario(18)
 
+    def test_capture_is_rejected_after_actor_or_table_identity_drift(self) -> None:
+        """Consume stale authorization without take counters, writes or redirect."""
+        self.run_scenario(19)
+
+    def test_successful_slot_reuse_emits_positive_verified_log(self) -> None:
+        """Make active reuse observable rather than inferring no refusal."""
+        self.run_scenario(20)
+
 
 MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
 

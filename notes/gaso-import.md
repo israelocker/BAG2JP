@@ -11,6 +11,99 @@ doc_kind: evidence
 
 # Gas-O — ledger canónico
 
+## Bloque 4: captura obsoleta entre productor y entrada (2026-11-14, candidato host)
+
+- Continuación «continua» del propietario; no reabrir la validación del selector
+  aceptada técnicamente. Objetivo acotado: revocar una captura si cambian identidad,
+  membresía en la lista o tablas de cualquiera de los dos actores antes del take;
+  registrar de forma positiva la reutilización tras VERIFY. Guard canónico0.
+- Preflight `20261114T194005951010Z-gaso-block4-lifecycle` PASS0.439s: árbol Git
+  limpio salvo untracked preservados;48fuentes iguales y deriva intencional caught0/1.
+- Regresión nueva demostró el defecto: una captura de Gas-O podía aceptarse tras
+  cambiar atacante a Strike antes de la entrada. RED3fallos en2tests (ambos guards,
+ 7.188s); el positivo VERIFY también faltaba. Captura obsoleta se consume ahora
+  sin entry_taken/lookup/hit, sin redirección ni escrituras propias de esa captura.
+  El retiro de una publicación anterior sigue ejecutándose antes, como siempre.
+- Snapshot host: count/raw/length/metadata de fuente y rival al capturar; al take
+  se releen lista de actores, personaje/lado, capacidad/versión del atacante y
+  esos8words. Epoch host reset/load+1 sustituye el1constante; tick es serial de
+  llamadas al controlador, **no frame de juego**. No hay nuevos hooks ni guest writes.
+- **Límite explícito:** no demuestra generación nativa: una recarga que reproduzca
+  direcciones/bytes idénticos puede pasar este filtro. Tampoco reconstituye ownership
+  de una tupla publicada al cargar savestate. No activar guard1 ni declarar Bloque4
+  terminado a partir de esta mejora. Retiro, ausencia de capturas y guard0 preservados.
+- Tests:75targeted PASS41.648s (runtime/source/binding/bank/tank); luego ampliados
+ 15cambios por ambos lados, incluidos ambos lados de las4tablas.4/4mutantes muertos
+  por assertions, no por compilación (`lifecycle-identity-mutations.json`). Tests
+  existentes de logs cuentan ahora stale/reused; revocar capacidad del atacante
+  rechaza antes de lookup, en vez de solo rechazar al receptor después.
+- Intentos intermedios conservados: `lifecycle-identity-green.log` falló7tests
+  por contabilidad del nuevo log en el harness; `green2.log` falló2subcasos porque
+  esperaba lookup tras retirar capacidad del atacante. Ajustados a la autoridad
+  exigida (rechazo anterior y ninguna escritura), no eliminados ni etiquetados PASS.
+- Ghidra12.1.4 MCP confirma SLPM_862.19 JP (sin cambiar proyecto). Lectura
+ 8002d4a0/48B y decompilación8002d85c preservadas en `_work/gaso/block2/lifecycle-*mcp.json`:
+  init escribe `param_1[6]=-1` (controller+18); no es un contador de generación.
+  Es prueba de por qué un valor fijo de inicialización no autentica una recarga.
+- Framework pin1a3fc0db303a: `boot_state.c:445..447/784/873` serializa y valida
+  MODMEM; `mod_memory.h:80..87` documenta bytes asignados, no punteros host.
+  Siguiente investigación: un journal en memoria guest asignada puede restaurarse
+  con la RAM, pero primero verificar formato/cookie, rechazo de estados antiguos,
+  propiedad de la asignación y quiescencia. **No está implementado ni aprobado como
+  diseño definitivo**; no escribir una tupla guest desde session_reset (prohibido).
+- **Decisión de compatibilidad detectada, aún sin ejecutar:**
+  `memory.c:55..88` incluye los bytes asignados en tamaño/cookie y exige igualdad
+  exacta al validar MODMEM. Una asignación guest adicional para el journal cambiaría
+  la compatibilidad de savestates experimentales anteriores: el runtime los
+  rechazaría. No afecta por sí misma a las partidas de tarjeta/memory card, pero no
+  se presenta como una migración probada. No cambiar ese layout ni la validación
+  global del framework sin decisión explícita del propietario. Alternativa por
+  investigar: recuperación autenticada sin ampliar layout, nunca deduciendo un
+  puntero empty_raw solo porque apunte a cero ni confiando en caché host pre-load.
+- Contraste ejecutado del framework instalado: `probe_modmem_layout.py` compila
+  el test ORIGINAL `test_mod_memory_snapshot.c` con las flags de CMake240..245 y
+  `psx_ram_geometry.c`. PASS5.952s: restaura bytes guest y rechaza snapshot anterior
+  tras ampliar la asignación. Comando/hashes/salida en
+  `_work/gaso/block2/modmem-layout-probe/report.json`; framework no modificado.
+  Esto valida el riesgo de compatibilidad, no una solución de ownership CAUGHT.
+- Suite global actual:468tests/151.044s,1fallo/28errores, mismos29nombres que
+  `block4-consumer-final-full-suite.log` (`lifecycle-identity-suite-comparison.json`);
+  no aparecen regresiones por nombre, pero no es verde global.
+- Goldfish acotado pendiente (dos revisores); suite global terminada como se indica
+  arriba. Sin staging/build/deploy ni nueva partida
+  de esta modificación. `e709c2f8` continúa instalado; estable y snapshot intactos.
+- Seguimiento de generación sin ampliar MODMEM: Ghidra MCP `get_xrefs_to`
+ 8002d85c confirma caller8002ba18 dentro de8002b5bc; para8002b5bc el main
+  muestra4calls en8001e0f4 (8001e424/430/43c/448). Esto NO enumera overlays.
+  Scan exacto de6system DBI encontró20JAL adicionales:12en005,4en004 y4en008;
+  Capstone5.0.7 confirma los12calls005 (grupos96578/99b3c/9d630). No asignarles
+  un modo/fase solo por su dirección. La lectura histórica P2b de la nota no
+  demostraba que fase3main fuera el único init de todo el juego; alcance corregido.
+- Existe una costura ya instrumentada `8002BA18` (word0c00b617) en game.toml,
+  usada por homes±870. Dispatcher `mod_runtime.cpp:388..394/3808..3823` conserva
+  varios callbacks por dirección de plugins distintos; registro en
+  `mod_packages.cpp:1601..1610` rechaza duplicados solo dentro del mismo plugin.
+  **Propuesta siguiente, no implementada:** observar reinicialización de controles
+  principales en esa costura para invalidar capturas, sin asignación guest ni
+  cambiar argumentos del init/home. Necesita test de byte/ABI y ambos lados,
+  no basta con observar `controller+18==-1`. No confundir ese serial host con
+  ownership serializado de las tuplas: ese problema seguiría abierto.
+- Emisión AOT existente comprobada, sin regenerar: `generated/SLPM_862.19_full_08.c`
+  línea30909 llama `psx_mod_instruction(cpu,8002BA18,0c00b617)` ANTES de publicar
+  RA y ejecutar el delay slot. Solo lee esta verificación; no se editaron generados.
+- Continuación preparada en `_work/gaso/block2/capture-generation-next-step.md`:
+  RED con init nativo de direcciones idénticas en ambos lados; observador sin
+  writes/alloc/register edits en la costura ya opt-in; conservar binding/tankepoch
+  como problemas distintos; opcode/ABI/AOT y convivencia con home bajo test.
+- Checkpoint local **WIP previo al veredicto Goldfish**: protege el candidato
+  host verificado y esta investigación; no cierra la revisión, el lifecycle ni
+  el Bloque4, y no autoriza activación/despliegue. Los dos revisores siguen en
+  curso; no se inventa conformidad ni se sustituye su resultado por auto-revisión.
+- Búsqueda de fuentes del dispatcher: el comando `rg` no existe en PATH (fallo
+  conservado en sesión); se localizaron archivos con glob/grep, sin instalar nada.
+  Herramientas pertinentes usadas: Ghidra MCP, Capstone y extracción/hashes Python;
+  no nuevo juego/FFmpeg, porque esta investigación no valida comportamiento vivo.
+
 ## Bloque 4 y retorno al selector (2026-11-14, autorizado/en curso)
 
 - El propietario aprobó el Bloque 3 y su checkpoint local: «Okay aprobado, continua».

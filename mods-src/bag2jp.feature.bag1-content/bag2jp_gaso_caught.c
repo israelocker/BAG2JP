@@ -129,6 +129,12 @@ void b1v_log(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
  * capture hook at 0x8009b5b4. Zero-initialised: available==0 means no record,
  * so the entry callback stays inert. */
 static B1CaughtSource captured[GASO_CAUGHT_SIDES];
+/* Capture-to-entry drift guard, NOT proof of a load generation: a reload can
+ * recreate identical pointers and bytes. The lifecycle ownership gate remains. */
+#define GASO_CAUGHT_CAPTURE_ACTORS 2u         /* source and recipient */
+#define GASO_CAUGHT_TABLE_FIELDS 4u           /* count, raw, length, metadata */
+static uint32_t captured_tables[GASO_CAUGHT_SIDES]
+                               [GASO_CAUGHT_CAPTURE_ACTORS][GASO_CAUGHT_TABLE_FIELDS];
 
 /* Process-lifetime: the Expansion 1 arena is never freed, so a bank prepared
  * by one session's activation stays owned across later sessions. */
@@ -240,6 +246,38 @@ static int guest_range_ok(uint32_t addr, uint32_t bytes, int scratchpad) {
 
 /* ---- Producer-site capture ---- */
 
+static int gaso_caught_snapshot_tables(uint32_t side, const B1CaughtSource *record) {
+    const uint32_t actors[GASO_CAUGHT_CAPTURE_ACTORS] = {record->source_actor, record->actor};
+    for (uint32_t i = 0; i < GASO_CAUGHT_CAPTURE_ACTORS; ++i) {
+        if (!guest_range_ok(actors[i], B1CB_META + sizeof(uint32_t), 0)) return 0;
+        for (uint32_t field = 0; field < GASO_CAUGHT_TABLE_FIELDS; ++field)
+            captured_tables[side][i][field] = guest_read_word(actors[i] + B1CB_COUNT +
+                                                              field * sizeof(uint32_t));
+    }
+    return 1;
+}
+
+static int gaso_caught_capture_matches(uint32_t side) {
+    const B1CaughtSource *r = &captured[side];
+    const uint32_t actors[GASO_CAUGHT_CAPTURE_ACTORS] = {r->source_actor, r->actor};
+    const uint32_t sides[GASO_CAUGHT_CAPTURE_ACTORS] = {r->source_side, r->side};
+    const uint32_t characters[GASO_CAUGHT_CAPTURE_ACTORS] = {r->source_character, r->character};
+    if (r->clock.generation != (uint64_t)gaso_caught_epoch + 1u ||
+        !bag2jp_bag1_has_version(GASO_CAUGHT_CHARACTER) ||
+        !bag2jp_bag1_get_version(GASO_CAUGHT_CHARACTER, (int)r->source_side)) return 0;
+    for (uint32_t i = 0; i < GASO_CAUGHT_CAPTURE_ACTORS; ++i) {
+        if (sides[i] >= GASO_CAUGHT_SIDES ||
+            !guest_range_ok(actors[i], B1CB_META + sizeof(uint32_t), 0) ||
+            guest_read_word(GASO_CS_ACTORS + sides[i] * GASO_CS_MAIN_STRIDE) != actors[i] ||
+            guest_read_byte(actors[i] + GASO_CS_CHARACTER) != characters[i] ||
+            guest_read_byte(actors[i] + GASO_CS_SIDE) != sides[i]) return 0;
+        for (uint32_t field = 0; field < GASO_CAUGHT_TABLE_FIELDS; ++field)
+            if (guest_read_word(actors[i] + B1CB_COUNT + field * sizeof(uint32_t)) !=
+                captured_tables[side][i][field]) return 0;
+    }
+    return 1;
+}
+
 /* Capture the original request202 source before sh v0,0x18(s5) publishes it.
  * Reads guest RAM through psx_mod_read_* since we don't have a full RAM buffer.
  * Returns NULL if a record was stored, otherwise the rejection reason. Never
@@ -305,8 +343,10 @@ static const char *capture_producer_source(struct CPUState *cpu) {
 
     /* Store the captured record (one per recipient side) */
     B1CaughtSource value = {0};
-    value.clock.generation = 1;   /* TODO: real generation from load/reset lifecycle */
-    value.clock.tick = 0;         /* TODO: real tick from frame counter */
+    /* This is the host reset/load epoch and controller-call serial, not a
+     * native content generation or a game-frame clock. */
+    value.clock.generation = (uint64_t)gaso_caught_epoch + 1u;
+    value.clock.tick = gaso_caught_ticks;
     value.actor = recipient_actor;
     value.character = recipient_char;
     value.side = recipient_side;
@@ -317,6 +357,7 @@ static const char *capture_producer_source(struct CPUState *cpu) {
     value.reflected = reflected;
     value.available = 1;
 
+    if (!gaso_caught_snapshot_tables(recipient_side, &value)) return "actor tables";
     captured[recipient_side] = value;
     return NULL;
 }
@@ -376,6 +417,12 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
         if (!captured[side].available || captured[side].actor != actor) continue;
         /* Consume once, even while no clip is published. */
         captured[side].available = 0;
+        if (!gaso_caught_capture_matches((uint32_t)side)) {
+            psx_mod_counter_add("gaso_caught.capture_stale", 1u);
+            b1v_log("gaso_caught: capture stale side=%u actor=%08x (identity/tables)",
+                    (unsigned)side + 1u, (unsigned)actor);
+            return;
+        }
         ++gaso_caught_hits[side];
         psx_mod_counter_add("gaso_caught.entry_taken", 1u);
         /* Captured recipient identity is only a diagnostic snapshot until P2b
@@ -408,6 +455,9 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
             }
             gaso_caught_publish_tick[side] = gaso_caught_ticks;
             continuing = gaso_caught_can_continue(cpu, actor);
+            b1v_log("gaso_caught: slot1 reused side=%u actor=%08x mode=%u (verified)",
+                    (unsigned)side + 1u, (unsigned)actor,
+                    continuing ? GASO_CAUGHT_MODE_ADVANCE : GASO_CAUGHT_MODE_ENTRY);
         } else {
             if (!gaso_caught_build_binding(side, &clip, &gaso_caught_binding[side])) {
                 b1v_log("gaso_caught: slot1 publish refused side=%u actor=%08x (unreadable)",

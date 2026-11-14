@@ -87,8 +87,10 @@ static unsigned guest_accesses, guest_writes, allocations, slot_state_reads;
 static unsigned bank_ready, bank_unavailable;
 static unsigned capture_stored, capture_rejected, entry_taken;
 static unsigned lookup_ready, lookup_rejected;
+static unsigned capture_stale;
 static unsigned slot1_published, slot1_restored, slot1_dropped;
 static unsigned log_lines, log_entered, log_restore_refused, log_publish_refused, log_lost;
+static unsigned log_reused, log_stale;
 static char last_log[256];
 static int fail_allocation;
 static uint32_t expansion1_used = PRIOR_ARENA_BYTES;
@@ -236,6 +238,7 @@ void psx_mod_counter_add(const char *name, uint32_t delta) {
     else if (strcmp(name, "gaso_caught.bank_unavailable") == 0) ++bank_unavailable;
     else if (strcmp(name, "gaso_caught.capture_stored") == 0) ++capture_stored;
     else if (strcmp(name, "gaso_caught.capture_rejected") == 0) ++capture_rejected;
+    else if (strcmp(name, "gaso_caught.capture_stale") == 0) ++capture_stale;
     else if (strcmp(name, "gaso_caught.entry_taken") == 0) ++entry_taken;
     else if (strcmp(name, "gaso_caught.lookup_ready") == 0) ++lookup_ready;
     else if (strcmp(name, "gaso_caught.lookup_rejected") == 0) ++lookup_rejected;
@@ -257,6 +260,8 @@ void b1v_log(const char *fmt, ...) {
     if (strstr(last_log, "restore refused")) ++log_restore_refused;
     if (strstr(last_log, "publish refused") || strstr(last_log, "reuse refused")) ++log_publish_refused;
     if (strstr(last_log, "slot1 lost") || strstr(last_log, "restore abandoned")) ++log_lost;
+    if (strstr(last_log, "slot1 reused")) ++log_reused;
+    if (strstr(last_log, "capture stale")) ++log_stale;
 }
 int bag2jp_bag1_has_version(int chr) {
     return has_version && (chr == GASO || chr == HEAT || chr == STRIKE);
@@ -412,6 +417,7 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     const unsigned pub_before = slot1_published, rest_before = slot1_restored;
     const unsigned entered = log_entered, refused = log_restore_refused, lost = log_lost;
     const unsigned publish_refused = log_publish_refused, dropped = slot1_dropped;
+    const unsigned reused_before = log_reused, stale_before = log_stale;
     const uint32_t effect_before = ram_word(actor_of[controller_side] + SECONDARY_EFFECT);
     entry(&cpu, ENTRY);
     assert(slot1_dropped - dropped == log_lost - lost);  /* one counter per lost/abandoned line */
@@ -421,6 +427,7 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     const unsigned retire_logs = (log_entered - entered) + (log_restore_refused - refused) +
                                  (log_lost - lost);
     const unsigned publish_logs = log_publish_refused - publish_refused;
+    const unsigned reused = log_reused - reused_before, stale = log_stale - stale_before;
     const uint32_t effect_after = ram_word(actor_of[controller_side] + SECONDARY_EFFECT);
     const unsigned cleared = (effect_before & 0xffffu) == 1u &&
                              effect_after == (effect_before & 0xffff0000u);
@@ -433,10 +440,10 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     if (!GASO_CAUGHT_CLIP_PUBLISHED)
         assert(!published && !restored && !retire_logs && !publish_logs);
     /* One line per take, publication, refusal, restore and first slot1 sighting. */
-    assert(log_lines == lines + took + published + publish_logs + restored + retire_logs);
+    assert(log_lines == lines + took + published + publish_logs + restored + retire_logs + reused + stale);
     if (took)
         assert(strstr(last_log, published ? "slot1 published"
-                     : publish_logs ? " refused" : "entry taken") != NULL);
+                      : publish_logs ? " refused" : reused ? "slot1 reused" : "entry taken") != NULL);
     else if (restored)
         assert(strstr(last_log, "slot1 restored") != NULL);
     if (memcmp(&cpu, &before, sizeof cpu) == 0) return 0;
@@ -770,7 +777,7 @@ static void recipient_lookup_is_read_only(void) {
                 assert(enter(recipient, 1, HIT_SLOT) == redirect);
                 assert(lookup_ready == ready + 2u * version);
                 assert(lookup_rejected == rejected + 2u * (1u - version));
-                assert(strstr(last_log, outcome) != NULL);
+                assert(strstr(last_log, redirect ? "slot1 reused" : outcome) != NULL);
                 assert(guest_writes == writes + (redirect ? 3u : 0u));
             }
         }
@@ -784,10 +791,17 @@ static void recipient_lookup_is_read_only(void) {
         assert(publish(0, 1));
         if (failure == 2) has_version = 0;
         if (failure == 3) expansion1[PRIOR_ARENA_BYTES] ^= 1u;
-        const unsigned ready = lookup_ready, rejected = lookup_rejected;
+        const unsigned ready = lookup_ready, rejected = lookup_rejected, stale = capture_stale;
         assert(!enter(1, 1, HIT_SLOT) && slot1_empty(1));
-        assert(lookup_ready == ready && lookup_rejected == rejected + 1u);
-        assert(strstr(last_log, "rejected clip=00000000 bytes=0") != NULL);
+        if (failure == 2) {
+            /* Capability removal also revokes the captured attacker's authority
+             * before the recipient lookup. No lookup is authorized in this case. */
+            assert(lookup_ready == ready && lookup_rejected == rejected);
+            assert(capture_stale == stale + 1u && strstr(last_log, "capture stale"));
+        } else {
+            assert(lookup_ready == ready && lookup_rejected == rejected + 1u);
+            assert(strstr(last_log, "rejected clip=00000000 bytes=0") != NULL);
+        }
         has_version = 1;
         if (failure == 3) expansion1[PRIOR_ARENA_BYTES] ^= 1u;
     }
@@ -1353,6 +1367,57 @@ static void rehit_preserves_compatible_pose_on_side0(void) {
     assert(ram_word(controller + 0x44u) == 217u);
 }
 
+/* Fixed actor addresses are reused across loads; an old capture must not
+ * authorize a recipient after either actor identity or its tables changed. */
+static void capture_identity_drift_is_consumed_without_take(void) {
+    activate();
+    for (uint32_t source = 0; source < 2; ++source) {
+        const uint32_t recipient = source ^ 1u;
+        for (unsigned change = 0; change < 15; ++change) {
+            memset(versions, 0, sizeof versions);
+            versions[GASO][source] = versions[HEAT][recipient] = 1;
+            setup_ram(source ? HEAT : GASO, source ? GASO : HEAT);
+            assert(publish(source, recipient) && recorded());
+            switch (change) {
+            case 0: ram[(actor_of[source] + 4) & RAM_MASK] = STRIKE; break;
+            case 1: versions[GASO][source] = 0; break;
+            case 2: put_word(ACTORS + 8u * source, 0); break;
+            case 3: put_word(ACTORS + 8u * recipient, 0); break;
+            case 4: ram[(actor_of[recipient] + 5) & RAM_MASK] = source; break;
+            case 5: put_word(actor_of[source] + RAW, table_of(source, RAW) + 4); break;
+            case 6: put_word(actor_of[recipient] + RAW, table_of(recipient, RAW) + 4); break;
+            case 7: put_word(actor_of[recipient] + LENGTH, table_of(recipient, LENGTH) + 2); break;
+            case 8: put_word(actor_of[recipient] + META, table_of(recipient, META) + 4); break;
+            case 9: put_word(actor_of[recipient] + COUNT, SLOTS - 1); break;
+            case 10: ram[(actor_of[recipient] + 4) & RAM_MASK] = STRIKE; break;
+            case 11: put_word(actor_of[source] + LENGTH, table_of(source, LENGTH) + 2); break;
+            case 12: put_word(actor_of[source] + META, table_of(source, META) + 4); break;
+            case 13: put_word(actor_of[source] + COUNT, SLOTS - 1); break;
+            default: ram[(actor_of[source] + 5) & RAM_MASK] = recipient; break;
+            }
+            const unsigned taken = entry_taken, writes = guest_writes, stale = capture_stale;
+            assert(!enter(recipient, 1, HIT_SLOT));
+            assert(entry_taken == taken && guest_writes == writes);
+            assert(capture_stale == stale + 1u);
+            assert(strstr(last_log, "capture stale") != NULL);
+            assert(!recorded());
+        }
+    }
+}
+
+static void successful_reuse_is_logged_after_verify(void) {
+    activate();
+    memset(versions, 0, sizeof versions);
+    versions[GASO][0] = versions[HEAT][1] = 1;
+    setup_ram(GASO, HEAT);
+    assert(publish(0, 1));
+    assert(enter(1, 1, HIT_SLOT) == expect_redirect(1));
+    if (!GASO_CAUGHT_CLIP_PUBLISHED) return;
+    set_slot_state(1, 1, 1);
+    assert(publish(0, 1) && enter(1, 1, HIT_SLOT));
+    assert(strstr(last_log, "slot1 reused side=2") != NULL);
+}
+
 int main(int argc, char **argv) {
     assert(argc == 2 && entry && capture_cb);
     switch (atoi(argv[1])) {
@@ -1412,6 +1477,12 @@ int main(int argc, char **argv) {
         break;
     case 18:
         rehit_preserves_compatible_pose_on_side0();
+        break;
+    case 19:
+        capture_identity_drift_is_consumed_without_take();
+        break;
+    case 20:
+        successful_reuse_is_logged_after_verify();
         break;
     default:
         return 2;

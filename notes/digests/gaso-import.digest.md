@@ -1,17 +1,30 @@
 ---
 id: gaso-import-digest
-title: "Gas-O: Bloque 4 y preview de retorno"
+title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque3 aceptado. Selector e709c2f8 verificado: retrato/nombre Gas-O al retorno, Heat conservado, grabación accepted=true,150saves restaurados;15tests y Goldfish triado.466tests globales con1fallo/28errores sin nuevos nombres. Pendientes conformidad del preview y lifecycle CAUGHT/guard1 canónico."
+summary: "Bloque4: guard host de captura obsoleta y log positivo VERIFY en revisión,75tests targeted PASS/4mutantes detectados.468tests globales con1fallo/28errores sin nuevos nombres. Selector e709c2f8 verificado e intacto; lifecycle completo y guard1 pendientes, sin cambio de layout savestate."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-14"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "6be1c013fd800012c704ded7e8d642680746f3a4eb3f9cf5046390377480e2ee"
+source_sha256: "1ffb0619f95c0f98cff464a90eca2d74037bca753bc22c23791ea06c7d7d54bd"
 ---
 
 # Gas-O: lectura vigente
+
+Estado más reciente: sección «Bloque 4: captura obsoleta entre productor y entrada»
+de la fuente. Candidato solo host bajo guard0: snapshot de8words de tablas de los
+dos actores; al take valida membresía, personaje/lado y autoridad Gas-O BAG1 del
+atacante. Captura con drift se consume sin take/lookup/hit ni redirección propia.
+Epoch host reset/load+1 y serial de llamadas NO equivalen a generación nativa/frame.
+Log positivo slot1 reused tras VERIFY. RED3fallos→75tests PASS41.648s;15variantes
+de drift×2lados,4/4mutantes por assertions. Suite global468tests,1fallo/28errores,
+los mismos29nombres; no verde global. Goldfish en curso; sin staging/deploy/juego.
+Reset/load aún deja tupla publicada sin ownership host: lifecycle no terminado.
+Framework memory.c exige tamaño/cookie MODMEM exactos: añadir journal guest cambiaría
+compatibilidad con savestates previos; NO hacerlo sin decisión explícita. Investigar
+recuperación autenticada compatible antes de elegir. Experimental sigue e709c2f8.
 
 Derivado de la sección «Bloque 3: escenario, HUD y audio re-hit de Heat» y «Bloque 2 sobre la base ±870»; verificar hash de la fuente
 antes de reutilizar. La nota canónica conserva la cronología.

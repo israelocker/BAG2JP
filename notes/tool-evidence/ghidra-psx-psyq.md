@@ -2226,3 +2226,33 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   la recarga efectiva y el renderer quedan para la toma WGC autorizada.
 - Dictamen: útil para confirmar binario/costura de carga; inconcluso para el retorno
   nativo aislado. Tiempo/ahorro no medidos. No funcmatch: no se buscan equivalentes BAG1.
+
+## 20261114-ghidra-block4-capture-identity — 2026-11-14 UTC — ciclo captura/entrada
+
+- Tipo: lectura MCP real con instancia GUI existente, Ghidra12.1.4; sin editar proyecto.
+- Puente `D:/Dev/Tools/ghidra-mcp-python/python.exe _work/gaso/probe_call.py`:
+  get_program_info primero; `read_memory {address:0x8002d4a0,length:48}` y
+  `decompile_function_by_address {address:0x8002d85c}`. Main SLPM_862.19 JP/PSXLE32,
+  SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Evidencia `_work/gaso/block2/lifecycle-entry-seam-mcp.json` y
+  `lifecycle-controller-init-mcp.json`: la inicialización escribe controller+18=-1,
+  un valor reinicializado, no una identidad de carga. Lectura bounded del tramo
+  de adopción de slot conserva instrucciones; no se crean funciones ni overlays.
+- Contraste independiente: regresión host de callbacks reales demuestra aceptación
+  indebida tras cambiar el atacante de la captura; nuevo guard revoca identidad/tablas.
+  No se infiere generación de bytes iguales, reloj de frames ni ownership savestate.
+- Dictamen: útil para descartar el contador de init como generación; evidencia viva
+  de recuperación sigue pendiente. Tiempo/ahorro no medidos. No funcmatch/Capstone
+  nuevo: no se buscan equivalentes ni hay bytes fuera del main que lo requieran.
+
+### Seguimiento de la misma investigación: callers de init
+
+- `get_program_info` primero en cada conexión del mismo puente; `get_xrefs_to`
+ 8002d85c→1caller8002ba18/FUN8002b5bc; 8002b5bc→4callers en8001e0f4
+  (8001e424/430/43c/448). Salidas `lifecycle-{init,pair-init}-xrefs-mcp.json`.
+- Corrección de alcance: xrefs del main no enumeran005 ni prueban un único evento
+  de init en todo el juego; scan/capstone de005 confirma otros12JAL directos.
+  Este nuevo dato evita fundamentar generación únicamente en fase3main.
+- Costura existente8002ba18 se puede investigar sin nuevo layout de memoria;
+  no está implementado un observador de generación. Sin cambios al proyecto,
+  ahorro no medido; el ensayo previo se amplía, no se invalida su lectura de main.

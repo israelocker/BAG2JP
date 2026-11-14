@@ -428,3 +428,18 @@ doc_kind: evidence
 - Contraste independiente: test lee opcode directo del007 original; regresión con
   sitio real y variantes mixtas RED134→GREEN15/15 al mover el hook antes del JAL.
   Dictamen de este seguimiento: útil. Ahorro no medido; efecto visual aún debe validarse.
+
+## 20261114-capstone-capture-generation — 2026-11-14 UTC — llamadas de init fuera del main
+
+- Complemento acotado a MCP. Scan Python de JAL alineado hacia8002b5bc/8002d85c
+  en6`assets/archive/system/*.dbi`:20candidatos, hashes y offsets en
+  `_work/gaso/block2/lifecycle-overlay-init-call-scan.json`. No descarta llamadas
+  indirectas ni archivos no inventariados, no es una prueba de flujo completo.
+- Capstone5.0.7 MIPS32LE decodifica005.dbi JP/base8008f890 tras12B, SHA
+  bc5f3045084e4b3e19009910441627977863c8b5791b5cdb716a766e68b28fb2,
+  rangos80096530..965b4,80099af0..99b78,8009d5e0..9d674. Los12JAL candidatos
+  de005 son llamadas a8002b5bc; salida `lifecycle-combat-init-calls.txt`.
+- Contraste: Ghidra main confirma que8002b5bc llama8002d85c en8002ba18; sitio
+  y word0c00b617 ya instrumentados en el perfil canónico y evidencia anterior.
+  Dictamen: útil para corregir la inferencia de un único init en main. No prueba
+  nombres de fases ni lifecycle de savestates. Tiempo/ahorro no medidos.
