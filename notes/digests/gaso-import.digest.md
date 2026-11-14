@@ -8,7 +8,7 @@ created: "2026-11-14"
 updated: "2026-11-14"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "1a09b45bca4652629064e41bd3b4448b63c49e56fc8df40b9501c17429843b1a"
+source_sha256: "3020fc5146767db1f381f3cc3a9b9d861218f5a2a241e7b3f48deeede447eb47"
 ---
 
 # Gas-O: lectura vigente

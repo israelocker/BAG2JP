@@ -76,6 +76,11 @@ doc_kind: evidence
 - **Conformidad del propietario** con A y B tras ver ambos `owner.mp4` («okay esta bien»,
   2026-11-14). Incluye el commit local y el snapshot propuestos. No acepta el audio por
   separado ni convierte en aceptados los candidatos offline (ventilador, cámara, eventos).
+- Commit local `d327e32`. Snapshot refrescado desde el árbol de compilación (opción del propietario):
+  sha256 `0793e2aa…`, 320 MB, sin `.git` ni `build-win-codex`; anterior conservado como
+  `previous-20261114T172611Z`. Incluye `CLIP_PUBLISHED 1` experimental y la música BAG1.
+- Bloque 3, inicio: el payload desplegado (`847058C4`) es el canónico; ventilador y cámara
+  siguen solo offline; el nombre GAS-O del HUD ya se ve en las tomas.
 
 ## Referencia GO + 2 s: candidato ±870 (2026-11-14, aceptado por el propietario)
 
