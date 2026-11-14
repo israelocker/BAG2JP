@@ -6,6 +6,7 @@ import tempfile
 import tomllib
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.test.test_caught_loan import ROOT, linux_path
 
@@ -138,11 +139,52 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """Legitimate earlier retirement may write even though a new take is stale."""
         self.run_scenario(22)
 
+    def test_native_init_revokes_capture_even_with_identical_actor_bytes(self) -> None:
+        """A real init event supersedes either actor's pre-init capture."""
+        self.run_scenario(23)
+
+    def test_native_init_rejects_wrong_site_signature_and_arguments(self) -> None:
+        """Guard the native main pair; leave companions and unrelated calls alone."""
+        self.run_scenario(24)
+
+    def test_init_observer_preserves_published_tuple_and_visual_epoch(self) -> None:
+        """Capture invalidation must not silently discard live binding ownership."""
+        self.run_scenario(25)
+
+    def test_init_stack_boundaries_and_two_pending_recipient_records(self) -> None:
+        """Retail, expanded and scratchpad stack spans revoke both pending sides."""
+        self.run_scenario(26)
+
 
 MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
 
 
 class GasoCaughtManifestTest(unittest.TestCase):
+    def test_init_observer_uses_existing_native_instruction_site(self) -> None:
+        """Pin original JP bytes and opt-in without requiring generated artifacts."""
+        text = SOURCE.read_text(encoding='utf-8')
+        site = int(re.search(r'#define GASO_CAUGHT_INIT_SITE\s+(0x[0-9a-f]+)u', text).group(1), 16)
+        word = int(re.search(r'#define GASO_CAUGHT_INIT_WORD\s+(0x[0-9a-f]+)u', text).group(1), 16)
+        executable = (ROOT / 'assets/disc_files/SLPM_862.19').read_bytes()
+        self.assertEqual(executable[:8], b'PS-X EXE')
+        base = int.from_bytes(executable[0x18:0x1c], 'little')
+        offset = 0x800 + site - base
+        self.assertEqual(int.from_bytes(executable[offset:offset+4], 'little'), word)
+        config = tomllib.loads((ROOT / 'patches/BAG2JP-game.toml').read_text(encoding='utf-8'))
+        self.assertIn(f'0x{site:08X}', config['recompiler']['mod_instruction_sites'])
+
+    def test_native_instruction_fixture_does_not_read_generated_artifacts(self) -> None:
+        """Original-byte regression must run before the external AOT tree exists."""
+        read_text = Path.read_text
+
+        def reject_generated(path: Path, *args, **kwargs) -> str:
+            if path.suffix == '.c' and path.parent.name == 'generated':
+                raise FileNotFoundError(f'No generated fixture: {path}')
+            return read_text(path, *args, **kwargs)
+
+        with patch.object(Path, 'read_text', reject_generated):
+            self.test_init_observer_uses_existing_native_instruction_site()
+
     def test_unverified_reaction_is_disabled_by_default(self) -> None:
         """Prevent a default plan from activating the unfinished reaction."""
         manifest = tomllib.loads(MANIFEST.read_text(encoding='utf-8'))
@@ -164,6 +206,66 @@ class GasoCaughtManifestTest(unittest.TestCase):
         text = SOURCE.read_text(encoding='utf-8')
         self.assertTrue('#define GASO_CAUGHT_CLIP_PUBLISHED 0' in text,
                         f'{SOURCE} must default GASO_CAUGHT_CLIP_PUBLISHED to 0')
+
+
+class GasoCaughtAotIntegrationTest(unittest.TestCase):
+    """Requires emitted main C under BAG2JP_GENERATED_DIR (local build by default).
+
+    Missing emission is an explicit integration skip, never host success or a
+    claim that the dispatcher ran. Present but incorrectly ordered C must fail.
+    """
+
+    def assert_init_dispatch_order(self, generated: str) -> None:
+        """Pin pre-JAL dispatch between native argument setup and CPS transfer."""
+        start = generated.index('/* 0x8002BA14: 0x27A60010 */')
+        end = generated.index('block_8002BA20:', start)
+        seam = generated[start:end]
+        markers = (
+            'psx_mod_instruction(cpu, 0x8002BA18u, 0x0C00B617u);',
+            'cpu->gpr[31] = 0x8002BA20u;',
+            '/* 0x8002BA1C: 0x30E7FFFF */',
+            'cpu->pc = 0x8002D85Cu; return;',
+        )
+        for marker in markers:
+            self.assertEqual(seam.count(marker), 1, marker)
+        positions = [seam.index(marker) for marker in markers]
+        self.assertEqual(positions, sorted(positions), 'dispatch must precede link/delay/transfer')
+
+    def test_emitted_init_dispatch_precedes_link_delay_and_transfer(self) -> None:
+        """Find the emitted site regardless of recompiler shard numbering."""
+        directory = Path(os.environ.get(
+            'BAG2JP_GENERATED_DIR',
+            ROOT.parent / 'BAG2JP-codex-build/BAG2JP/generated'))
+        files = sorted(directory.glob('*.c'))
+        if not files:
+            self.skipTest(f'AOT integration requires emitted main C: {directory}')
+        matches = [text for path in files
+                   if '/* 0x8002BA14: 0x27A60010 */' in (text := path.read_text(encoding='utf-8'))]
+        self.assertEqual(len(matches), 1, 'native seam must appear in exactly one emitted shard')
+        self.assert_init_dispatch_order(matches[0])
+
+    def test_missing_emission_is_explicit_integration_skip(self) -> None:
+        """No external generated files must not become a host FileNotFoundError."""
+        with patch.object(Path, 'glob', return_value=iter(())):
+            with self.assertRaises(unittest.SkipTest):
+                self.test_emitted_init_dispatch_precedes_link_delay_and_transfer()
+
+    def test_order_check_rejects_late_missing_and_duplicate_dispatch(self) -> None:
+        """Mutate a bounded emitted-C seam, not a generated artifact on disk."""
+        start = '/* 0x8002BA14: 0x27A60010 */\n'
+        dispatch = 'psx_mod_instruction(cpu, 0x8002BA18u, 0x0C00B617u);\n'
+        link = 'cpu->gpr[31] = 0x8002BA20u;\n'
+        delay = '/* 0x8002BA1C: 0x30E7FFFF */\n'
+        transfer = 'cpu->pc = 0x8002D85Cu; return;\n'
+        end = 'block_8002BA20:\n'
+        self.assert_init_dispatch_order(start + dispatch + link + delay + transfer + end)
+        for middle in (link + dispatch + delay + transfer,
+                       link + delay + dispatch + transfer,
+                       link + delay + transfer + dispatch,
+                       link + delay + transfer,
+                       dispatch + dispatch + link + delay + transfer):
+            with self.subTest(middle=middle), self.assertRaises(AssertionError):
+                self.assert_init_dispatch_order(start + middle + end)
 
 
 if __name__ == '__main__':

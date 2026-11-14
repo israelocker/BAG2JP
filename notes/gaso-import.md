@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4: captura obsoleta rechazada antes de matching de actor, log VERIFY y77tests host;470tests globales con1fallo/28errores sin nuevos nombres. Goldfish corregido y re-verificado por2revisores. Selector experimental e709c2f8 intacto; generación nativa/ownership savestate y guard1 aún pendientes."
+summary: "Bloque4: observador init8002BA18 invalida capturas sin alterar RAM/CPU/tuplas;35tests runtime y19/19mutantes,2Goldfish favorables. Suite479tests con1fallo/28errores mismos nombres; guard0 sin despliegue. Ownership savestate pendiente."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-14"
@@ -10,6 +10,83 @@ doc_kind: evidence
 ---
 
 # Gas-O — ledger canónico
+
+## Bloque 4: observador de reinicialización nativa (2026-11-14, candidato host guard0)
+
+- Base local `b38ca62`: driftguard y log VERIFY corregidos,77tests específicos y
+  dos Goldfish favorables; la sección siguiente conserva su historia. Esta unidad
+  agrega invalidación de capturas al init nativo, no recuperación de ownership.
+- Preflight `20261114T203416645122Z-gaso-native-init-review` PASS0.354s:48fuentes
+  iguales, deriva intencional CAUGHT fuente0/build1, recursos sin deriva. Ninguna
+  copia al build, compilación Windows, despliegue ni partida de este candidato.
+- Observador en8002BA18/word0c00b617 bajo ID ya declarado `bag2jp.gaso_caught`:
+  a0=s2=controlador principal, a1=s1=actor listado/lado, a2=sp+16; exige span de28B
+  de stack y actor completo. Un init autenticado incrementa serial host64bit e
+  invalida ambas capturas, incluso con punteros/bytes idénticos. Reset/load también
+  avanza ese serial. Snapshot y take lo comparten; tick sigue contando llamadas,
+  **no frames**. No se cambia vector home, CPU/RAM, asignaciones, tuplas, hits ni
+  epoch visual desde el nuevo observador. Fuente SHA256
+  `44a91bf89abf48063a84f8bd7d58384eb7f57e1b76536dca19014da6b985dd56`.
+- RED inicial6subcasos/3tests7.030s por callback ausente; GREEN inicial84tests
+  específicos45.435s. Primera suite propia475tests140.865s:1fallo/28errores,
+  mismos29nombres de `b38ca62`, no verde global. Evidencia
+  `_work/gaso/block2/lifecycle-native-init-{red,targeted,full-suite}.log` y
+  `lifecycle-native-init-suite-comparison.json`; no usar470tests previos como
+  prueba de este observador.
+- Goldfish2revisores, spec `_work/goldfish/spec-block4-native-init.md`: sin defecto
+  funcional demostrado en producción; hallazgo medio confirmado en fixture que
+  exigía shard externo08. RED con ausencia simulada conservado en
+  `lifecycle-native-init-fixture-red.log`, sin tocar generados. Se separa host
+  (EXE JP/TOML) de integración AOT opcional y explícita, configurable con
+  `BAG2JP_GENERATED_DIR`, descubre cualquier shard y comprueba dispatch ANTES de
+  link/delay/transfer. Ausencia de C produce skip declarado, no aceptación; C
+  existente sin costura/orden correcto falla.5snippets tardíos/ausentes/duplicados
+  son rechazados. La integración local real sí corrió, sin skip.
+- Cobertura baja confirmada y ampliada:19negativos incluyen actor/SP desalineados,
+  span de actor incompleto, lista/lado/ff incorrectos y colas retail/8MiB/scratchpad.
+  Preservación de tupla/hits/binding en ambos lados. Primera mutación12/13kills:
+  omitir sitio sobrevivía porque el PC incorrecto también tenía opcode incorrecto;
+  ahora ese caso contiene el mismo opcode para aislar la guarda de sitio. Informe
+  inicial conservado `lifecycle-native-init-mutations.json`; segundo ensayo
+  `lifecycle-native-init-mutations-v2.json`:baseline35tests PASS14.069s y
+  **19/19kills por assertions runtime**,68.210s de mutantes. SHA de fuente/harness
+  sin cambios; no contar fallos de compilación como kills.
+- Ensayos del harness conservados sin atribuirlos a producción: falta de helper
+  `put_byte` (compilación); `recorded()` invocaba entry mientras identidad seguía
+  adversarial (rechazo drift legítimo); booleano de versión y número de llamadas
+  pasados como lado al ampliar preservación P1. Corregidos solo en tests, sin
+  relajar assertions. `lifecycle-native-init-review-runtime-green.log`:35tests
+  PASS12.137s, C real estricto guard0/1, fixture host e integración AOT incluidos.
+  `review-targeted.log`, `review-runtime.log` y `review-runtime-final.log` conservan
+  fallos intermedios. No sumar los61tests del primer log fallido como61PASS afines.
+- Herramientas: Ghidra12.1.4 MCP main JP verificado con get_program_info y lectura
+  bounded8002ba08/32B, sin crear/renombrar funciones ni editar proyecto; entrada
+  `20261114-ghidra-native-init-review` en su log. Reusar xrefs/Capstone existentes:
+  no se buscan equivalentes BAG1 ni nuevos callers; funcmatch no pertinente aquí.
+  Python/WSLgcc para regresión y mutación; revisores fríos para el diff acotado.
+  Sin FFmpeg/grabador/intérprete nuevo: no hay prueba viva ni tramo MIPS nuevo que
+  interpretar; los bytes/callees del init ya están acreditados.
+- **Límites sin cambio:** coexistencia home compatible por inspección y tests
+  separados, NO dispatcher integrado ni partida. El serial no autentica el
+  contenido de un savestate ni recupera la tupla publicada después de load.
+  No ampliar MODMEM ni activar guard1; hash instalado verificado `e709c2f8`.
+- Goldfish final del mismo ciclo: ambos revisores re-verificaron sus hallazgos,
+  fixture y cobertura subsanados, sin bloqueantes del delta; producción sin cambios.
+  Revisores `ses_e243b0676ffeuswINidptJ6ftu` y `ses_e243b0676ffdCiIcmgPH4tA0oL`;
+  spec/veredicto `_work/goldfish/{spec-block4-native-init.md,native-init-verdict.json}`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Próxima unidad interna: localizar evidencia del origen nativo de `empty_raw` y
+  tablas restauradas para recuperar bindings de forma autenticada tras load,
+  contrastando Ghidra y assets exactos antes de diseñar escrituras. No inferirlo
+  de un word cero ni caché host pre-load. Si requiere nueva asignación MODMEM,
+  detener esa alternativa para decisión explícita de compatibilidad; no saltar
+  validación global del framework.
+- Verificación final del candidato revisado: suite479tests148.492s,1fallo/28errores,
+  exactamente los mismos29nombres que `b38ca62` (sin nuevos ni resueltos), **no verde
+  global**. `lifecycle-native-init-reviewed-{full-suite.log,suite-comparison.json}`
+  y `reviewed-inputs.json` ligan fuente/harness/tests/EXE JP a hashes sin cambios.
+  Checkpoint local **WIP host**, no cierre del lifecycle ni del Bloque4. Guard0,
+  estable/saves/ajustes/snapshot preservados y experimental `e709c2f8` sin cambios.
 
 ## Bloque 4: captura obsoleta entre productor y entrada (2026-11-14, candidato host)
 

@@ -87,6 +87,14 @@
 #define GASO_CAUGHT_SECONDARY_HIT 1u         /* eight hit particles, including stars */
 #define GASO_CAUGHT_ARG_A2 1                 /* borrowed slot1 */
 #define GASO_CAUGHT_CHARACTER 9              /* Gas-O, GASO_CHAR_ID */
+#define GASO_CAUGHT_INIT_SITE 0x8002ba18u     /* Before JAL to native controller init. */
+#define GASO_CAUGHT_INIT_WORD 0x0c00b617u     /* jal 0x8002d85c, JP main executable. */
+#define GASO_CAUGHT_CONTROLLERS 0x8005f820u
+#define GASO_CAUGHT_CONTROLLER_STRIDE 0x98u  /* Main actors at control slots 0 and 2. */
+#define GASO_CAUGHT_REG_S1 17
+#define GASO_CAUGHT_REG_S2 18
+#define GASO_CAUGHT_INIT_VECTOR 16u          /* a2 = sp+16 before native JAL. */
+#define GASO_CAUGHT_INIT_STACK_BYTES 28u     /* Three-word home vector at sp+16. */
 
 int bag2jp_bag1_has_version(int chr);
 int bag2jp_bag1_get_version(int chr, int side);
@@ -161,6 +169,9 @@ static uint32_t gaso_caught_ticks;
 static uint32_t gaso_caught_hits[GASO_CAUGHT_SIDES];
 static uint32_t gaso_caught_epoch;
 static uint32_t gaso_caught_epoch_hits[GASO_CAUGHT_SIDES];
+/* Host serial of observed native init/reset/load boundaries. It revokes capture
+ * authorization only, and is NOT serialized ownership of a published tuple. */
+static uint64_t gaso_caught_capture_generation = 1u;
 
 uint32_t bag2jp_gaso_caught_hits(uint32_t side) {
     return side < GASO_CAUGHT_SIDES ? gaso_caught_hits[side] : 0u;
@@ -246,6 +257,38 @@ static int guest_range_ok(uint32_t addr, uint32_t bytes, int scratchpad) {
 
 /* ---- Producer-site capture ---- */
 
+static void gaso_caught_invalidate_captures(void) {
+    ++gaso_caught_capture_generation;
+    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side)
+        captured[side].available = 0;
+}
+
+/* Observe the already instrumented native call; do not run init, change its
+ * arguments/home vector, retire bindings or reset the tank's visual epoch. */
+static void gaso_caught_init_cb(struct CPUState *cpu, uint32_t address) {
+    if (address != GASO_CAUGHT_INIT_SITE ||
+        guest_read_word(address) != GASO_CAUGHT_INIT_WORD ||
+        cpu->gpr[GASO_CAUGHT_REG_A0] != cpu->gpr[GASO_CAUGHT_REG_S2] ||
+        cpu->gpr[GASO_CAUGHT_REG_A1] != cpu->gpr[GASO_CAUGHT_REG_S1]) return;
+    const uint32_t stack = cpu->gpr[GASO_CAUGHT_REG_SP];
+    if ((stack & 3u) || !guest_range_ok(stack, GASO_CAUGHT_INIT_STACK_BYTES, 1) ||
+        cpu->gpr[GASO_CAUGHT_REG_A2] != stack + GASO_CAUGHT_INIT_VECTOR) return;
+    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
+        if (cpu->gpr[GASO_CAUGHT_REG_A0] != GASO_CAUGHT_CONTROLLERS +
+                                            side * GASO_CAUGHT_CONTROLLER_STRIDE) continue;
+        const uint32_t actor = cpu->gpr[GASO_CAUGHT_REG_A1];
+        if ((actor & 3u) || !guest_range_ok(actor, B1CB_ACTOR_BYTES, 0) ||
+            guest_read_word(GASO_CS_ACTORS + side * GASO_CS_MAIN_STRIDE) != actor ||
+            guest_read_byte(actor + GASO_CS_SIDE) != side ||
+            guest_read_byte(actor + GASO_CS_CHARACTER) == 0xffu) return;
+        gaso_caught_invalidate_captures();
+        psx_mod_counter_add("gaso_caught.capture_generation", 1u);
+        b1v_log("gaso_caught: capture generation=%llu side=%u (native init)",
+                (unsigned long long)gaso_caught_capture_generation, (unsigned)side + 1u);
+        return;
+    }
+}
+
 static int gaso_caught_snapshot_tables(uint32_t side, const B1CaughtSource *record) {
     const uint32_t actors[GASO_CAUGHT_CAPTURE_ACTORS] = {record->source_actor, record->actor};
     for (uint32_t i = 0; i < GASO_CAUGHT_CAPTURE_ACTORS; ++i) {
@@ -262,7 +305,7 @@ static int gaso_caught_capture_matches(uint32_t side) {
     const uint32_t actors[GASO_CAUGHT_CAPTURE_ACTORS] = {r->source_actor, r->actor};
     const uint32_t sides[GASO_CAUGHT_CAPTURE_ACTORS] = {r->source_side, r->side};
     const uint32_t characters[GASO_CAUGHT_CAPTURE_ACTORS] = {r->source_character, r->character};
-    if (r->clock.generation != (uint64_t)gaso_caught_epoch + 1u ||
+    if (r->clock.generation != gaso_caught_capture_generation ||
         !bag2jp_bag1_has_version(GASO_CAUGHT_CHARACTER) ||
         !bag2jp_bag1_get_version(GASO_CAUGHT_CHARACTER, (int)r->source_side)) return 0;
     for (uint32_t i = 0; i < GASO_CAUGHT_CAPTURE_ACTORS; ++i) {
@@ -343,9 +386,9 @@ static const char *capture_producer_source(struct CPUState *cpu) {
 
     /* Store the captured record (one per recipient side) */
     B1CaughtSource value = {0};
-    /* This is the host reset/load epoch and controller-call serial, not a
+    /* This is the host native-init/reset/load serial and controller-call serial, not a
      * native content generation or a game-frame clock. */
-    value.clock.generation = (uint64_t)gaso_caught_epoch + 1u;
+    value.clock.generation = gaso_caught_capture_generation;
     value.clock.tick = gaso_caught_ticks;
     value.actor = recipient_actor;
     value.character = recipient_char;
@@ -721,9 +764,9 @@ static void gaso_caught_capture_cb(struct CPUState *cpu, uint32_t address) {
  */
 static void gaso_caught_forget(void) {
     ++gaso_caught_epoch;
+    gaso_caught_invalidate_captures();
     for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
         gaso_caught_epoch_hits[side] = gaso_caught_hits[side];
-        captured[side].available = 0;
         gaso_caught_published[side] = 0;
         gaso_caught_entered[side] = 0;
         gaso_caught_restore_refused[side] = 0;
@@ -775,4 +818,7 @@ PSX_MOD_CONSTRUCTOR(bag2jp_register_gaso_caught) {
     (void)psx_mod_register_instruction_plugin(
         "bag2jp.gaso_caught_capture", GASO_PRODUCER_SITE, GASO_PRODUCER_EXPECTED,
         gaso_caught_capture_cb);
+    (void)psx_mod_register_instruction_plugin(
+        "bag2jp.gaso_caught", GASO_CAUGHT_INIT_SITE, GASO_CAUGHT_INIT_WORD,
+        gaso_caught_init_cb);
 }

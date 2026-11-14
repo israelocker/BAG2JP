@@ -2,22 +2,40 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: driftguard+VERIFY host corregidos tras Goldfish,77tests PASS/5mutantes detectados.470tests globales con1fallo/28errores sin nuevos nombres,2revisores favorables tras triaje. Selector e709c2f8 intacto; siguiente observador init8002BA18, sin ampliar memoria ni activar guard1."
+summary: "Bloque4: observador init8002BA18 host guard0,35tests runtime PASS/19mutantes y2Goldfish favorables. Suite479tests con1fallo/28errores mismos nombres, sin despliegue; ownership savestate sigue pendiente."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-14"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "e4ee32fff0fc94994964dbba97df66f1fde5a7fa3f7c92cbfcbe48053b19d7a7"
+source_sha256: "44718101cbf852f7be92380f063d3eb9d2a7c5ee75b3d74ef802931645d6cb08"
 ---
 
 # Gas-O: lectura vigente
 
-Estado más reciente: sección «Bloque 4: captura obsoleta entre productor y entrada»
-de la fuente. Candidato solo host bajo guard0: snapshot de8words de tablas de los
-dos actores; al take valida membresía, personaje/lado y autoridad Gas-O BAG1 del
-atacante. Captura con drift se consume sin take/lookup/hit ni redirección propia.
-Epoch host reset/load+1 y serial de llamadas NO equivalen a generación nativa/frame.
+Estado más reciente: sección «Bloque 4: observador de reinicialización nativa».
+Candidato solo host guard0, fuente44a91bf8: observa8002BA18/word0c00b617 con ABI
+principal/actor/stack autenticado; invalida ambas capturas aunque direcciones y
+bytes sean idénticos. Serial host64bit cambia en init/reset/load; no es generación
+de contenido autenticada ni reloj de frames. No escribe RAM/CPU/tuplas/asignaciones,
+no olvida binding publicado ni cambia hits/epoch visual desde init.35tests runtime
+PASS12.137s; baseline35PASS14.069s+19/19assertion mutants68.210s. Primera matriz
+12/13 dejaba pasar skip-site por comprobar también un opcode distinto: corregida.
+Goldfish2revisores: fixture externo08 confirmado RED y separado de host; integración
+AOT configurable descubre cualquier shard y comprueba orden dispatch/link/delay/CPS;
+ausencia emisión skip explícito, presente incorrecta FAIL. Integración local ejecutada
+sin skip,5snippets rechazados y19negativos de rango/ABI, binding preservado ambos lados.
+Ambos revisores re-verificaron correcciones favorablemente. Home: compatible por
+inspección+test separado, no ejecución integrada de dispatcher ni juego. Primera suite
+475tests140.865s con1fallo/28errores mismos29nombres; final revisada479tests148.492s,
+1fallo/28errores exactamente mismos29nombres de b38ca62, no verde global. Checkpoint
+WIP host, sin cierre lifecycle/Bloque4 ni staging/build/deploy, instalado e709c2f8 intacto.
+Siguiente: evidencia del origen nativo empty_raw/tablas para recuperación autenticada
+tras load sin ampliar MODMEM ni deducir un puntero desde ceros/caché host pre-load.
+
+Checkpoint anterior b38ca62: snapshot de8words de tablas de los dos actores; al take
+valida membresía, personaje/lado y autoridad Gas-O BAG1 del atacante. Captura con drift
+se consume sin take/lookup/hit ni redirección propia.
 Log positivo slot1 reused tras VERIFY. Goldfish confirmó captura pendiente cuando
 cambiaban listaYcontrolador y error del helper ante retiro seguido de stale; ambos
 reproducidos RED134 y corregidos,2revisores favorables después.77tests PASS40.946s;
@@ -27,9 +45,8 @@ Reset/load aún deja tupla publicada sin ownership host: lifecycle no terminado.
 Framework memory.c exige tamaño/cookie MODMEM exactos: añadir journal guest cambiaría
 compatibilidad con savestates previos; NO hacerlo sin decisión explícita. Investigar
 recuperación autenticada compatible antes de elegir. Experimental sigue e709c2f8.
-Siguiente unidad: observador host en init8002BA18 ya opt-in/AOT, invalidar capturas
-aunque punteros/bytes sean idénticos, manteniendo argumentos y homes±870 intactos.
-Es propuesta aún sin implementar; no resuelve ownership serializado de tuplas.
+El observador antes propuesto está implementado solo en fuente/host, no desplegado;
+no resuelve ownership serializado de tuplas. Guard1 continúa bloqueado.
 
 Derivado de la sección «Bloque 3: escenario, HUD y audio re-hit de Heat» y «Bloque 2 sobre la base ±870»; verificar hash de la fuente
 antes de reutilizar. La nota canónica conserva la cronología.

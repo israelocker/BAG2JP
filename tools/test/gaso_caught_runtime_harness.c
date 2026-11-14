@@ -25,6 +25,8 @@
 #define RAM_MASK (RAM_BYTES - 1u)
 #define RAM_BASE 0x80000000u
 #define ENTRY 0x8002d06cu
+#define NATIVE_INIT_SITE 0x8002ba18u
+#define NATIVE_INIT_WORD 0x0c00b617u
 #define PRODUCER 0x8009b5b4u
 #define ACTORS 0x8005f808u
 #define CONTROLLERS 0x8005f820u
@@ -80,6 +82,7 @@ int bag2jp_gaso_caught_owns_slot1(uint32_t side, uint32_t actor);
 
 static PSXModFunctionEntryCallback entry;
 static PSXModFunctionEntryCallback capture_cb;
+static PSXModFunctionEntryCallback native_init_cb;
 static PSXModActivationCallback activate;
 static PSXModActivationCallback session_reset_cb;
 static PSXModActivationCallback savestate_cb;
@@ -88,6 +91,7 @@ static unsigned bank_ready, bank_unavailable;
 static unsigned capture_stored, capture_rejected, entry_taken;
 static unsigned lookup_ready, lookup_rejected;
 static unsigned capture_stale;
+static unsigned capture_generations;
 static unsigned slot1_published, slot1_restored, slot1_dropped;
 static unsigned log_lines, log_entered, log_restore_refused, log_publish_refused, log_lost;
 static unsigned log_reused, log_stale;
@@ -114,6 +118,12 @@ int psx_mod_register_function_entry_plugin(
 int psx_mod_register_instruction_plugin(
     const char *id, uint32_t address, uint32_t expected,
     PSXModFunctionEntryCallback callback) {
+    if (address == NATIVE_INIT_SITE) {
+        assert(strcmp(id, "bag2jp.gaso_caught") == 0);
+        assert(expected == NATIVE_INIT_WORD && !native_init_cb && callback);
+        native_init_cb = callback;
+        return 1;
+    }
     assert(strcmp(id, "bag2jp.gaso_caught_capture") == 0);
     assert(address == PRODUCER && expected == 0xa6a20018u && !capture_cb && callback);
     capture_cb = callback;
@@ -239,6 +249,7 @@ void psx_mod_counter_add(const char *name, uint32_t delta) {
     else if (strcmp(name, "gaso_caught.capture_stored") == 0) ++capture_stored;
     else if (strcmp(name, "gaso_caught.capture_rejected") == 0) ++capture_rejected;
     else if (strcmp(name, "gaso_caught.capture_stale") == 0) ++capture_stale;
+    else if (strcmp(name, "gaso_caught.capture_generation") == 0) ++capture_generations;
     else if (strcmp(name, "gaso_caught.entry_taken") == 0) ++entry_taken;
     else if (strcmp(name, "gaso_caught.lookup_ready") == 0) ++lookup_ready;
     else if (strcmp(name, "gaso_caught.lookup_rejected") == 0) ++lookup_rejected;
@@ -275,6 +286,9 @@ void bag2jp_gaso_tank_play_cues(struct CPUState *cpu, uint32_t return_address) {
     assert(cpu && return_address == ENTRY);
 }
 
+static void put_byte(uint32_t address, uint32_t value) {
+    ram[address & RAM_MASK] = (uint8_t)value;
+}
 static void put_word(uint32_t address, uint32_t value) {
     const uint32_t o = address & RAM_MASK;
     for (unsigned i = 0; i < 4; ++i) ram[o + i] = (uint8_t)(value >> (8 * i));
@@ -332,6 +346,7 @@ static void setup_ram(int side0_character, int side1_character) {
     put_word(0x8009b5acu, 0x90420000u);
     put_word(0x8009b5b0u, 0x00000000u);
     put_word(PRODUCER, 0xa6a20018u);
+    put_word(NATIVE_INIT_SITE, NATIVE_INIT_WORD);
     const int characters[2] = {side0_character, side1_character};
     for (uint32_t side = 0; side < 2; ++side) {
         put_word(ACTORS + 8u * side, actor_of[side]);
@@ -1470,6 +1485,160 @@ static void retirement_can_precede_stale_capture_rejection(void) {
     assert(bag2jp_gaso_caught_hits(1) == hits && !recorded());
 }
 
+static CPUState init_arguments(uint32_t side) {
+    CPUState cpu;
+    memset(&cpu, 0x5a, sizeof cpu);
+    cpu.gpr[REG_A0] = CONTROLLERS + CONTROLLER_STRIDE * side;
+    cpu.gpr[REG_A1] = actor_of[side];
+    cpu.gpr[REG_A2] = STACK + 16u;
+    cpu.gpr[17] = actor_of[side]; /* s1, preserved by existing home callback */
+    cpu.gpr[REG_S2] = cpu.gpr[REG_A0];
+    cpu.gpr[REG_SP] = STACK;
+    return cpu;
+}
+
+static void observe_init(CPUState *cpu, uint32_t address) {
+    const CPUState before = *cpu;
+    const unsigned writes = guest_writes, allocs = allocations;
+    const uint32_t epoch = bag2jp_gaso_caught_epoch();
+    native_init_cb(cpu, address);
+    assert(memcmp(cpu, &before, sizeof before) == 0);
+    assert(guest_writes == writes && allocations == allocs);
+    assert(bag2jp_gaso_caught_epoch() == epoch); /* not the visual tank epoch */
+}
+
+static void native_init_revokes_identical_actor_capture(void) {
+    assert(native_init_cb);
+    activate();
+    for (uint32_t init_side = 0; init_side < 2; ++init_side) {
+        memset(versions, 0, sizeof versions);
+        versions[GASO][0] = versions[HEAT][1] = 1;
+        setup_ram(GASO, HEAT);
+        assert(publish(0, 1) && recorded());
+        CPUState cpu = init_arguments(init_side);
+        const unsigned generations = capture_generations, taken = entry_taken;
+        const unsigned ready = lookup_ready, rejected = lookup_rejected;
+        observe_init(&cpu, NATIVE_INIT_SITE);
+        assert(capture_generations == generations + 1u);
+        assert(!recorded() && !enter(1, 1, HIT_SLOT));
+        assert(entry_taken == taken && lookup_ready == ready && lookup_rejected == rejected);
+        assert(publish(0, 1)); /* a new, post-init capture is still allowed */
+        assert(enter(1, 1, HIT_SLOT) == expect_redirect(1));
+    }
+}
+
+static void unauthenticated_init_does_not_revoke_capture(void) {
+    assert(native_init_cb);
+    activate();
+    for (unsigned variant = 0; variant < 19; ++variant) {
+        live_ram = variant == 17 ? RAM_BYTES : RETAIL_RAM;
+        memset(versions, 0, sizeof versions);
+        versions[GASO][0] = versions[HEAT][1] = 1;
+        setup_ram(GASO, HEAT);
+        assert(publish(0, 1) && recorded());
+        const uint32_t side = variant & 1u;
+        CPUState cpu = init_arguments(side);
+        uint32_t address = NATIVE_INIT_SITE;
+        switch (variant) {
+        case 0: address += 4u; put_word(address, NATIVE_INIT_WORD); break;
+        case 1: put_word(NATIVE_INIT_SITE, 0); break;
+        case 2: cpu.gpr[REG_A0] += 4u; cpu.gpr[REG_S2] = cpu.gpr[REG_A0]; break;
+        case 3: cpu.gpr[REG_A1] += 0x1728u; cpu.gpr[17] = cpu.gpr[REG_A1]; break;
+        case 4: cpu.gpr[17] ^= 4u; break;
+        case 5: cpu.gpr[REG_S2] ^= 4u; break;
+        case 6: cpu.gpr[REG_A2] += 4u; break;
+        case 7: cpu.gpr[REG_SP] = 0; cpu.gpr[REG_A2] = 16u; break;
+        case 8: cpu.gpr[REG_A1] = 0x1f801070u; cpu.gpr[17] = cpu.gpr[REG_A1]; break;
+        case 9:
+            cpu.gpr[REG_SP] = RAM_BASE + live_ram - 24u;
+            cpu.gpr[REG_A2] = cpu.gpr[REG_SP] + 16u; break;
+        case 10:
+            cpu.gpr[REG_SP] = SCRATCHPAD + SCRATCHPAD_BYTES - 24u;
+            cpu.gpr[REG_A2] = cpu.gpr[REG_SP] + 16u; break;
+        case 11:
+            cpu.gpr[REG_A0] = CONTROLLERS + CONTROLLER_STRIDE / 2u;
+            cpu.gpr[REG_S2] = cpu.gpr[REG_A0];
+            cpu.gpr[REG_A1] = actor_of[0] + 0x1728u;
+            cpu.gpr[17] = cpu.gpr[REG_A1]; break;
+        case 12:
+        case 13:
+            cpu.gpr[REG_A1] = variant == 12 ? actor_of[side] + 1u : RAM_BASE + live_ram - 8u;
+            cpu.gpr[17] = cpu.gpr[REG_A1];
+            put_word(ACTORS + 8u * side, cpu.gpr[REG_A1]);
+            put_byte(cpu.gpr[REG_A1] + 4u, side ? HEAT : GASO);
+            put_byte(cpu.gpr[REG_A1] + 5u, side);
+            break;
+        case 14: put_byte(actor_of[side] + 5u, side ^ 1u); break;
+        case 15: put_byte(actor_of[side] + 4u, 0xffu); break;
+        case 16:
+            cpu.gpr[REG_SP] += 1u;
+            cpu.gpr[REG_A2] = cpu.gpr[REG_SP] + 16u; break;
+        case 17:
+            cpu.gpr[REG_SP] = RAM_BASE + RAM_BYTES - 24u;
+            cpu.gpr[REG_A2] = cpu.gpr[REG_SP] + 16u; break;
+        default: put_word(ACTORS + 8u * side, actor_of[side ^ 1u]); break;
+        }
+        const unsigned generations = capture_generations;
+        observe_init(&cpu, address);
+        assert(capture_generations == generations);
+        /* Restore adversarial identity bytes before testing the still valid
+         * capture; the observer must not consume it while arguments are bad. */
+        for (uint32_t actor_side = 0; actor_side < 2; ++actor_side) {
+            put_word(ACTORS + 8u * actor_side, actor_of[actor_side]);
+            put_byte(actor_of[actor_side] + 4u, actor_side ? HEAT : GASO);
+            put_byte(actor_of[actor_side] + 5u, actor_side);
+        }
+        assert(recorded());
+        assert(enter(1, 1, HIT_SLOT) == expect_redirect(1));
+    }
+}
+
+static void init_observer_keeps_published_binding_and_hits(void) {
+    assert(native_init_cb);
+    activate();
+    for (uint32_t recipient = 0; recipient < 2; ++recipient) {
+        const uint32_t source = recipient ^ 1u;
+        memset(versions, 0, sizeof versions);
+        versions[GASO][source] = versions[HEAT][recipient] = 1;
+        setup_ram(source ? HEAT : GASO, source ? GASO : HEAT);
+        assert(publish(source, recipient));
+        assert(enter(recipient, 1, HIT_SLOT) == expect_redirect(1));
+        if (GASO_CAUGHT_CLIP_PUBLISHED) { set_slot_state(recipient, 1, 1); tick(1); }
+        const uint32_t hits = bag2jp_gaso_caught_hits(recipient);
+        assert(publish(source, recipient) && recorded());
+        const Slot1 before = slot1_of(recipient);
+        CPUState cpu = init_arguments(recipient);
+        observe_init(&cpu, NATIVE_INIT_SITE);
+        const Slot1 after = slot1_of(recipient);
+        assert(before.raw == after.raw && before.length == after.length && before.meta == after.meta);
+        assert(bag2jp_gaso_caught_hits(recipient) == hits && !recorded());
+        assert(bag2jp_gaso_caught_owns_slot1(recipient, actor_of[recipient]) == GASO_CAUGHT_CLIP_PUBLISHED);
+    }
+}
+
+static void init_stack_geometry_and_two_pending_sides(void) {
+    assert(native_init_cb);
+    activate();
+    const uint32_t stacks[] = {RAM_BASE + RETAIL_RAM - 28u,
+                              RAM_BASE + RAM_BYTES - 28u,
+                              SCRATCHPAD + SCRATCHPAD_BYTES - 28u};
+    for (unsigned variant = 0; variant < 3; ++variant) {
+        live_ram = variant == 1 ? RAM_BYTES : RETAIL_RAM;
+        memset(versions, 0, sizeof versions);
+        versions[GASO][0] = versions[GASO][1] = 1;
+        setup_ram(GASO, GASO);
+        assert(publish(0, 1) && publish(1, 0) && recorded());
+        CPUState cpu = init_arguments(variant & 1u);
+        cpu.gpr[REG_SP] = stacks[variant];
+        cpu.gpr[REG_A2] = stacks[variant] + 16u;
+        const unsigned generations = capture_generations, taken = entry_taken;
+        observe_init(&cpu, NATIVE_INIT_SITE);
+        assert(capture_generations == generations + 1u && !recorded());
+        assert(!enter(0, 1, HIT_SLOT) && !enter(1, 1, HIT_SLOT));
+        assert(entry_taken == taken);
+    }
+}
+
 int main(int argc, char **argv) {
     assert(argc == 2 && entry && capture_cb);
     switch (atoi(argv[1])) {
@@ -1541,6 +1710,18 @@ int main(int argc, char **argv) {
         break;
     case 22:
         retirement_can_precede_stale_capture_rejection();
+        break;
+    case 23:
+        native_init_revokes_identical_actor_capture();
+        break;
+    case 24:
+        unauthenticated_init_does_not_revoke_capture();
+        break;
+    case 25:
+        init_observer_keeps_published_binding_and_hits();
+        break;
+    case 26:
+        init_stack_geometry_and_two_pending_sides();
         break;
     default:
         return 2;

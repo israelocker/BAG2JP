@@ -2256,3 +2256,21 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Costura existente8002ba18 se puede investigar sin nuevo layout de memoria;
   no está implementado un observador de generación. Sin cambios al proyecto,
   ahorro no medido; el ensayo previo se amplía, no se invalida su lectura de main.
+
+## 20261114-ghidra-native-init-review — observador host, sin editar análisis
+
+- Uso real: puente instalado `D:/Dev/Tools/ghidra-mcp-python/python.exe
+  _work/gaso/probe_call.py`, Ghidra12.1.4 existente. Cada conexión pide
+  `get_program_info` primero; consulta acotada `read_memory
+  {"address":"0x8002ba08","length":32}`. Identidad completa guardada aparte
+  con `get_program_info {}`. No reinicio, instalación ni creación de funciones.
+- Programa main JP `SLPM_862.19`, PSX:LE:32, base80000000/entrada80035d98,
+  SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  Resultado sin gaps: argumentos a0=s2/a1=s1/a2=sp+16 y word0c00b617 del JAL
+  en8002ba18; overlay005 no se presenta como cargado en este programa main.
+- Evidencia `_work/gaso/block2/lifecycle-native-init-review-{mcp,program}.json`.
+  Contraste independiente: fixture host compara word con EXE JP original y
+  sitio opt-in/AOT existente; revisión Goldfish del candidato separada.
+- Dictamen: útil para confirmar la costura exacta de observación; no demuestra
+  recuperación de ownership ni ejecución en partida. Ejecución/preparación y
+  ahorro no medidos. Reusar bytes/xrefs históricos mientras no cambien entradas.
