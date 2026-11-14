@@ -444,6 +444,8 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     if (took)
         assert(strstr(last_log, published ? "slot1 published"
                       : publish_logs ? " refused" : reused ? "slot1 reused" : "entry taken") != NULL);
+    else if (stale)
+        assert(strstr(last_log, "capture stale") != NULL);
     else if (restored)
         assert(strstr(last_log, "slot1 restored") != NULL);
     if (memcmp(&cpu, &before, sizeof cpu) == 0) return 0;
@@ -1396,8 +1398,12 @@ static void capture_identity_drift_is_consumed_without_take(void) {
             default: ram[(actor_of[source] + 5) & RAM_MASK] = recipient; break;
             }
             const unsigned taken = entry_taken, writes = guest_writes, stale = capture_stale;
+            const unsigned ready = lookup_ready, rejected = lookup_rejected;
+            const uint32_t hits = bag2jp_gaso_caught_hits(recipient);
             assert(!enter(recipient, 1, HIT_SLOT));
             assert(entry_taken == taken && guest_writes == writes);
+            assert(lookup_ready == ready && lookup_rejected == rejected);
+            assert(bag2jp_gaso_caught_hits(recipient) == hits);
             assert(capture_stale == stale + 1u);
             assert(strstr(last_log, "capture stale") != NULL);
             assert(!recorded());
@@ -1416,6 +1422,52 @@ static void successful_reuse_is_logged_after_verify(void) {
     set_slot_state(1, 1, 1);
     assert(publish(0, 1) && enter(1, 1, HIT_SLOT));
     assert(strstr(last_log, "slot1 reused side=2") != NULL);
+}
+
+static void replacement_controller_revokes_old_capture(void) {
+    activate();
+    for (uint32_t source = 0; source < 2; ++source) {
+        const uint32_t recipient = source ^ 1u;
+        memset(versions, 0, sizeof versions);
+        versions[GASO][source] = versions[HEAT][recipient] = 1;
+        setup_ram(source ? HEAT : GASO, source ? GASO : HEAT);
+        assert(publish(source, recipient) && recorded());
+        const uint32_t replacement = actor_of[recipient] + 0x4000u;
+        put_word(ACTORS + 8u * recipient, replacement);
+        put_word(CONTROLLERS + CONTROLLER_STRIDE * recipient, replacement);
+        const unsigned stale = capture_stale, taken = entry_taken, writes = guest_writes;
+        const unsigned ready = lookup_ready, rejected = lookup_rejected;
+        const uint32_t hits = bag2jp_gaso_caught_hits(recipient);
+        assert(!enter(recipient, 1, HIT_SLOT));
+        assert(capture_stale == stale + 1u);
+        assert(entry_taken == taken && guest_writes == writes);
+        assert(lookup_ready == ready && lookup_rejected == rejected);
+        assert(bag2jp_gaso_caught_hits(recipient) == hits);
+        assert(!recorded());
+    }
+}
+
+static void retirement_can_precede_stale_capture_rejection(void) {
+    activate();
+    memset(versions, 0, sizeof versions);
+    versions[GASO][0] = versions[HEAT][1] = 1;
+    setup_ram(GASO, HEAT);
+    assert(publish(0, 1));
+    assert(enter(1, 1, HIT_SLOT) == expect_redirect(1));
+    if (!GASO_CAUGHT_CLIP_PUBLISHED) return;
+    set_slot_state(1, 1, 1);
+    tick(1);
+    assert(publish(0, 1));
+    set_slot_state(1, 5, 5);
+    versions[GASO][0] = 0;
+    const unsigned restored = slot1_restored, writes = guest_writes, stale = capture_stale;
+    const unsigned taken = entry_taken, ready = lookup_ready, rejected = lookup_rejected;
+    const uint32_t hits = bag2jp_gaso_caught_hits(1);
+    assert(!enter(1, 1, HIT_SLOT));
+    assert(slot1_restored == restored + 1u && slot1_empty(1));
+    assert(guest_writes == writes + 3u && capture_stale == stale + 1u);
+    assert(entry_taken == taken && lookup_ready == ready && lookup_rejected == rejected);
+    assert(bag2jp_gaso_caught_hits(1) == hits && !recorded());
 }
 
 int main(int argc, char **argv) {
@@ -1483,6 +1535,12 @@ int main(int argc, char **argv) {
         break;
     case 20:
         successful_reuse_is_logged_after_verify();
+        break;
+    case 21:
+        replacement_controller_revokes_old_capture();
+        break;
+    case 22:
+        retirement_can_precede_stale_capture_rejection();
         break;
     default:
         return 2;

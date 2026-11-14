@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque 3 aceptado. Preview de retorno Gas-O corregido en experimental e709c2f8: retrato/nombre desde primera presentación revisada, Heat conservado, grabación aceptada y150saves restaurados.15tests/Goldfish; suite global466tests con1fallo/28errores sin nuevos nombres. Lifecycle CAUGHT y guard1 canónico pendientes."
+summary: "Bloque4: captura obsoleta rechazada antes de matching de actor, log VERIFY y77tests host;470tests globales con1fallo/28errores sin nuevos nombres. Goldfish corregido y re-verificado por2revisores. Selector experimental e709c2f8 intacto; generación nativa/ownership savestate y guard1 aún pendientes."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-14"
@@ -99,6 +99,24 @@ doc_kind: evidence
   host verificado y esta investigación; no cierra la revisión, el lifecycle ni
   el Bloque4, y no autoriza activación/despliegue. Los dos revisores siguen en
   curso; no se inventa conformidad ni se sustituye su resultado por auto-revisión.
+- **Goldfish recibido y triado**,2revisores: inicialmente CON HALLAZGOS.
+  P2 confirmado: cambiar lista Y controlador al actorB dejaba disponible la capturaA
+  porque se filtraba por actor antes de validar drift. Escenario21 RED134 en
+  guard0/1. Ahora se valida cada captura disponible antes del match: stale se
+  consume/loguea y continúa, registros válidos de otro actor se conservan.
+  Hallazgo del harness confirmado: retiro legítimo seguido de stale terminaba
+  con logstale, pero el helper exigía logrestored (escenario22 RED134). Se mantiene
+  control de3writes de retiro y se contabilizan ambos eventos por separado.
+  Cobertura ampliada con lookup_ready/rejected e hits inmóviles en15variantes×2lados.
+- RED de los dos hallazgos:3fallos/7.189s; GREEN77targeted/40.946s;
+ 5/5mutantes por assertion, incluido volver a filtrar por actor antes de drift.
+  Los dos revisores re-verificaron las correcciones estáticamente: favorables,
+  sin nuevos hallazgos del alcance. `capture-identity-verdict.json` conserva triaje;
+  suite global final470tests/128.820s,1fallo/28errores: mismos29nombres, sin
+  nuevos fallos (`lifecycle-review-suite-comparison.json`), no verde global.
+  Fuente revisada `d524cf14f4662be2ac62e2b1b63b08ba1c862444161dbd03328dc7f1b1b98f03`.
+  Sin staging/build/deploy; siguiente observador init8002BA18 sin ampliar MODMEM.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
 - Búsqueda de fuentes del dispatcher: el comando `rg` no existe en PATH (fallo
   conservado en sesión); se localizaron archivos con glob/grep, sin instalar nada.
   Herramientas pertinentes usadas: Ghidra MCP, Capstone y extracción/hashes Python;

@@ -130,6 +130,14 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """Make active reuse observable rather than inferring no refusal."""
         self.run_scenario(20)
 
+    def test_replacement_controller_consumes_capture_for_old_actor(self) -> None:
+        """Changing both list and controller must not strand old authorization."""
+        self.run_scenario(21)
+
+    def test_retirement_and_stale_capture_are_independently_accounted(self) -> None:
+        """Legitimate earlier retirement may write even though a new take is stale."""
+        self.run_scenario(22)
+
 
 MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
 

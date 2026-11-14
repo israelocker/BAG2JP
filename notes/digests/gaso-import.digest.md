@@ -2,13 +2,13 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: guard host de captura obsoleta y log positivo VERIFY en revisión,75tests targeted PASS/4mutantes detectados.468tests globales con1fallo/28errores sin nuevos nombres. Selector e709c2f8 verificado e intacto; lifecycle completo y guard1 pendientes, sin cambio de layout savestate."
+summary: "Bloque4: driftguard+VERIFY host corregidos tras Goldfish,77tests PASS/5mutantes detectados.470tests globales con1fallo/28errores sin nuevos nombres,2revisores favorables tras triaje. Selector e709c2f8 intacto; siguiente observador init8002BA18, sin ampliar memoria ni activar guard1."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-14"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "1ffb0619f95c0f98cff464a90eca2d74037bca753bc22c23791ea06c7d7d54bd"
+source_sha256: "e4ee32fff0fc94994964dbba97df66f1fde5a7fa3f7c92cbfcbe48053b19d7a7"
 ---
 
 # Gas-O: lectura vigente
@@ -18,13 +18,18 @@ de la fuente. Candidato solo host bajo guard0: snapshot de8words de tablas de lo
 dos actores; al take valida membresía, personaje/lado y autoridad Gas-O BAG1 del
 atacante. Captura con drift se consume sin take/lookup/hit ni redirección propia.
 Epoch host reset/load+1 y serial de llamadas NO equivalen a generación nativa/frame.
-Log positivo slot1 reused tras VERIFY. RED3fallos→75tests PASS41.648s;15variantes
-de drift×2lados,4/4mutantes por assertions. Suite global468tests,1fallo/28errores,
-los mismos29nombres; no verde global. Goldfish en curso; sin staging/deploy/juego.
+Log positivo slot1 reused tras VERIFY. Goldfish confirmó captura pendiente cuando
+cambiaban listaYcontrolador y error del helper ante retiro seguido de stale; ambos
+reproducidos RED134 y corregidos,2revisores favorables después.77tests PASS40.946s;
+15variantes×2lados+reemplazo conjunto/retiro,5/5mutantes por assertions. Suite470tests,
+1fallo/28errores, mismos29nombres; no verde global. Sin staging/deploy/juego.
 Reset/load aún deja tupla publicada sin ownership host: lifecycle no terminado.
 Framework memory.c exige tamaño/cookie MODMEM exactos: añadir journal guest cambiaría
 compatibilidad con savestates previos; NO hacerlo sin decisión explícita. Investigar
 recuperación autenticada compatible antes de elegir. Experimental sigue e709c2f8.
+Siguiente unidad: observador host en init8002BA18 ya opt-in/AOT, invalidar capturas
+aunque punteros/bytes sean idénticos, manteniendo argumentos y homes±870 intactos.
+Es propuesta aún sin implementar; no resuelve ownership serializado de tuplas.
 
 Derivado de la sección «Bloque 3: escenario, HUD y audio re-hit de Heat» y «Bloque 2 sobre la base ±870»; verificar hash de la fuente
 antes de reutilizar. La nota canónica conserva la cronología.

@@ -414,15 +414,20 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
     if (!guest_range_ok(cpu->gpr[GASO_CAUGHT_REG_A0], 4u, 0)) return;
     actor = guest_read_word(cpu->gpr[GASO_CAUGHT_REG_A0]);
     for (side = 0; side < GASO_CAUGHT_SIDES; ++side) {
-        if (!captured[side].available || captured[side].actor != actor) continue;
-        /* Consume once, even while no clip is published. */
-        captured[side].available = 0;
+        if (!captured[side].available) continue;
+        /* A replacement controller no longer names the captured actor. Revoke
+         * drift before matching the incoming actor, but leave valid records
+         * for the other actor available until their own entry arrives. */
         if (!gaso_caught_capture_matches((uint32_t)side)) {
+            captured[side].available = 0;
             psx_mod_counter_add("gaso_caught.capture_stale", 1u);
             b1v_log("gaso_caught: capture stale side=%u actor=%08x (identity/tables)",
-                    (unsigned)side + 1u, (unsigned)actor);
-            return;
+                    (unsigned)side + 1u, (unsigned)captured[side].actor);
+            continue;
         }
+        if (captured[side].actor != actor) continue;
+        /* Consume once, even while no clip is published. */
+        captured[side].available = 0;
         ++gaso_caught_hits[side];
         psx_mod_counter_add("gaso_caught.entry_taken", 1u);
         /* Captured recipient identity is only a diagnostic snapshot until P2b
