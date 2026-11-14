@@ -312,3 +312,38 @@ doc_kind: evidence
 - Dictamen: útil para revisión visual de navegación, no prueba de centrado. Preparación/ejecución/revisión
   y ahorro no medidos. No se modificó el original; precisión ±2frames estimada/audio subjetivo humano.
 - Siguiente: inspeccionar la grabación de partida solo tras su aceptación técnica.
+
+## 20261114-ffmpeg-block4-selector — 2026-11-14 UTC — primer nombre tras retorno
+
+- Uso real del skill local: `py -3.13 .agents/skills/ffmpeg-skill/scripts/probe.py
+  _work/recordings/block4-selector-cal/owner.mp4 --json-brief` y mismo probe para
+  `block4-selector-return/owner.mp4`; manifest de ambas capturas accepted=true.
+- Entrada del primer retorno: runtime23bbdabd,203.433991s,1920x1080,media31.939fps
+  (WGC VFR, no confundir con59.9408Hz del juego). No se conformó ni retocó el original.
+  `look.py <owner.mp4> --at 27 --at 75 --at 130 --at 164.4 --at 168.7 --at 173.3
+  --at 180 --at 188.9 --at 193 --at 196 --at 199 --at 202 --no-timecode --width480
+  -o _work/gaso/block2/block4-selector-return-overview.png --json-brief`, precedido
+  por dry-run. `--at` produce PNGs separados (no una hoja aunque se indique tiles);
+  composición PIL ordenada numéricamente, sin alterar fotogramas.
+- Hoja revisada: READY/baile/final, victoria Heat y dueto natural fever2; al retornar
+  retrato Gas-O, pero nombre BI-O en gf17557 y GAS-O desde196s. Hallazgo útil que
+  impide cerrar la corrección parcial y motivó localizar el consumidor nativo.
+- FFmpeg resuelto por skill: D:/ffmpeg/bin/ffmpeg.exe, instalación2024-09-19-git-0d5b68c27c
+  previamente verificada, distinta del backendWGC8.1. Tiempos por --at en VFR pueden
+  saltar al siguiente fotograma disponible; se mantiene límite estimado±2frames.
+  Audio subjetivo no evaluado. Ahorro no medido. Siguiente: revisar nueva toma e709c2f8.
+
+### Resultado del nuevo consumidor (e709c2f8)
+
+- Nueva captura `block4-consumer-return` accepted=true, owner.mp4 analizado con
+  probe.py y look.py (`--at168/180/188/193/194/195/196/199/202 --no-timecode --width480`;
+  dry-run y ejecución separados). Hoja `block4-consumer-review.png` revisada:
+  primera muestra del selector gf17532/t193.400 ya GAS-O (retrato/nombre/fondo),
+  Heat preservado; sin BI-O transitorio hasta202s.
+- `bag2_record.py frames --tag block4-consumer-return --frame17532 --span18 --step1`
+  reutiliza look.py sobre review.mkv.37muestras ordenadas por tiempo; recorte PIL
+  de ambos nombres en `block4-consumer-first-name-frames.png`, todas GAS-O/Heat.
+  No confundir muestras solicitadas con imágenes únicas: WGC VFR puede repetirlas.
+- Dictamen: útil, permite aceptar técnicamente la corrección para esta pareja;
+  conformidad del propietario/matriz de lados siguen aparte. Precisión±2frames
+  estimada, audio subjetivo no juzgado; ahorro no medido.

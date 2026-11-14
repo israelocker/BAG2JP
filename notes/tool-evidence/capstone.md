@@ -11,6 +11,13 @@ doc_kind: evidence
 
 # Capstone: evidencia de uso
 
+## 2026-11-14 — Bloque 3: callbacks de sonido y evento modo1 de Heat/Gas-O en RAM
+
+- Propósito: verificar si el callback de personaje de Heat (`0x801d66e4` vía `0x8003190c`) emite algún cue SPU (`0x8002e478`) para los códigos `mode1` `1/4/0x12d/0x3e9`, complementando las consultas Ghidra MCP sobre el ejecutable principal.
+- Comando: script inline `py -3.13` con Capstone (`CS_ARCH_MIPS`, `CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN`) sobre `_work/versus-runs/20261114T132537881098Z-wider-home-autoplay/wider-initial-camera-ram.bin` (overlay residente de Heat `0x801Dxxxx` y Gas-O `0x801Cxxxx`) y sobre `_work/gaso/block2/mem-80025500.json`.
+- Evidencia: tabla `0x80054fe4` lado 1 apunta a `0x801d66e4..0x801d8070`; la rama `0x801d5e88..0x801d600c` para códigos `0x3e8/0x3e9` solo escribe el estado de llama en `0x801d9a18+0xc` sin llamar a `0x8002e478`; los llamadores de `0x8002e478` de baile en main (`0x800255ac..0x80026ba8`) y `0x8007f180` (66 cues) corresponden al flujo compartido.
+- Validación: coherente con Ghidra MCP (`dec-800342dc.c`, `xrefs-2e478.json`) y con el PCM bit-idéntico entre `clamp` (`mode1`) y `r2` (`mode0`). Resultado: útil; tiempo no medido.
+
 ## 2026-11-14 — Bloque 2: zonas sin función definida en Ghidra
 
 - Propósito: desensamblar 0x8002D500..0x8002D870 y 0x8002AA40..0x8002AE40, donde Ghidra no
@@ -397,3 +404,27 @@ doc_kind: evidence
 - Validación independiente: palabras exactas fijadas en `tools/test/test_bag1_leash.py` (`20` tests host verdes); estado `(0,0)` en baile normal y no-cero en ataques comprobado en `20261113T190419608874Z-gaso-combined-ae-f2/bag2jp_watch.log`. Tiempo/ahorro no medidos. Siguiente: validación en juego autorizada con `BAG2JP.exe` `0665a9c3…`.
 - Medición: ejecución/preparación/retrabajo/referencia no medidos; ahorro no medido.
 - Siguiente: reutilizar bytes y fingerprints mientras005 no cambie; no repetir búsqueda por inercia.
+
+## 20261114-capstone-block4-selector — 2026-11-14 UTC — lectura acotada overlay007
+
+- Tipo: complemento estático a Ghidra MCP, no sustitución de su main japonés.
+- Capstone5.0.7, `py -3.13` inline, MIPS32 LE; `assets/archive/system/007.dbi`,
+  SHA256 e4de48f63850d9728bec04c02fa12519409c6c38773cf0e22b629119591fc9f2;
+  payload tras12bytes, base8008f890. Rangos80090258..80090580 y80091000..80091500.
+- Salida `_work/gaso/block2/block4-selector-native.txt`: referencias a fase80096f94,
+  sin prueba concluyente de cuándo se borra confirmed_chr o se recarga la CLUT.
+- Contraste: callback host y logs históricos explican decisión/cache; esta lectura
+  no demuestra el flujo nativo completo. Dictamen: inconcluso, no atribuir causalidad.
+  Tiempo/ahorro no medidos. Siguiente: observar el retorno en la grabación autorizada.
+
+### Seguimiento del mismo ensayo: consumidor del nombre (evidencia nueva)
+
+- Tras ver BI-O transitorio con retrato Gas-O en la toma aceptada, lectura acotada
+ 80093138..800935b0 del mismo007.dbi/hash con Capstone5.0.7 MIPS32LE.
+  Salida `_work/gaso/block2/block4-name-consumer-mips.txt`.
+- Confirma `80093474=0c024d41` (JAL80093504) ANTES del hook antiguo8009347c;
+  consumidor93504 indexa96dd8+char*8 y lee dimensiones desde9356c.
+  Causa: modificación del descriptor posterior a su consumo, no falta de versión.
+- Contraste independiente: test lee opcode directo del007 original; regresión con
+  sitio real y variantes mixtas RED134→GREEN15/15 al mover el hook antes del JAL.
+  Dictamen de este seguimiento: útil. Ahorro no medido; efecto visual aún debe validarse.

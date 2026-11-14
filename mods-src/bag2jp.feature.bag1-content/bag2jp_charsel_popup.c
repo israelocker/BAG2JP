@@ -39,6 +39,10 @@
 #define CS_MODE       0x8005D2C4u
 #define CS_HUMAN      0x8005E6C8u
 #define CS_FONTS      0x8005E2B8u
+#define CS_GASO_NAME_ENTRY 0x80096E20u /* Character 9's selector name descriptor. */
+#define CS_NAME_FIELDS 5u             /* u, v, width, height, texture sheet. */
+#define CS_NAME_DRAW_SITE 0x80093474u /* Before JAL to per-player name consumer. */
+#define CS_NAME_DRAW_WORD 0x0C024D41u /* jal 0x80093504, original JP overlay007. */
 
 /* SIO-order pad bits (active low in the frames) */
 #define B_UP 0x0010u
@@ -274,6 +278,21 @@ static void cs_publish(void) {
 static void cs_queue_sfx(unsigned cue) {
     if (cue >= 0x200u && cue <= 0x202u) atomic_fetch_or(&s_pending_sfx, 1u << (cue - 0x200u));
 }
+static int cs_gaso_preview(int side) {
+    const CsPopup* p = &s_pop[side];
+    /* The native confirmed-character slot is cleared on selector reentry.
+     * Outside an open/replayed choice, preview the retained version instead. */
+    if (p->phase == P_OPEN || p->phase == P_REPLAY) return p->version != 0;
+    return bag2jp_bag1_get_version(9, side) != 0;
+}
+static void cs_set_gaso_name(int want_gaso) {
+    /* Embedded GAS-O (042.tim) and native BI-O (041.tim) asset rectangles. */
+    static const uint8_t gaso[CS_NAME_FIELDS] = {0, 226, 115, 29, 1};
+    static const uint8_t bio[CS_NAME_FIELDS] = {0, 62, 129, 31, 0};
+    const uint8_t* name = want_gaso ? gaso : bio;
+    for (uint32_t i = 0; i < CS_NAME_FIELDS; ++i)
+        psx_mod_write_byte(CS_GASO_NAME_ENTRY + i, name[i]);
+}
 /* Function-entry callback: guest calls are forbidden from instruction/pad callbacks. */
 static void cs_feedback_hook(struct CPUState* cpu, uint32_t address) {
     const unsigned pending = atomic_exchange(&s_pending_sfx, 0);
@@ -287,7 +306,6 @@ static void cs_feedback_hook(struct CPUState* cpu, uint32_t address) {
     for (int s = 0; s < 2; ++s) {
         const uint32_t b = CS_PLAYER + 0x20u * (uint32_t)s;
         const int chr = (int8_t)psx_mod_read_byte(b + 0x1Au);
-        const int st = (uint8_t)psx_mod_read_byte(b + 0x1Eu);
         const int anim = (uint8_t)psx_mod_read_byte(b + 0x18u);
         const int confirmed_chr = (int)psx_mod_read_word(0x8005E6A0u + (uint32_t)s * 4u);
         int want_gaso = 0;
@@ -299,20 +317,14 @@ static void cs_feedback_hook(struct CPUState* cpu, uint32_t address) {
                 want_gaso = (bag2jp_bag1_get_version(9, s) != 0);
             }
         } else if (chr == 9) {
-            const CsPopup* p = &s_pop[s];
-            if (p->phase == P_OPEN || p->phase == P_REPLAY) {
-                want_gaso = p->version != 0;
-            } else if (p->phase == P_IDLE) {
-                if (st >= 2 || confirmed_chr == 9) want_gaso = (bag2jp_bag1_get_version(9, s) != 0);
-                else want_gaso = 0;
-            }
+            want_gaso = cs_gaso_preview(s);
         }
         if (active_chr != 9) {
             s_cur_gaso[s] = -1;
         } else {
             /* Note: We do NOT overwrite the global table at 0x80096414 with Gas-O color,
              * because that shared global would overwrite Bi-O's background when returning to char select!
-             * The per-player background tint is cleanly handled in cs_char_name_hook at 0x8009347Cu. */
+             * The per-player background tint is handled in cs_char_name_hook before the name draw. */
 
             if (want_gaso != s_cur_gaso[s]) {
                 const int was_switch = (s_cur_gaso[s] != -1);
@@ -461,7 +473,8 @@ static void cs_mirror_hook(struct CPUState* cpu, uint32_t address) {
     cs_log("mirror: player %d keeps costume %c (other game version)", side + 1, cpu->gpr[7] ? 'B' : 'A');
 }
 
-/* Dynamic character name coordinates and per-player background tint hook at 0x8009347C */
+/* Prepare the shared descriptor before EACH player's name consumer, not after
+ * its draw call (8009347C), which would display the other player's last name. */
 static void cs_char_name_hook(struct CPUState* cpu, uint32_t address) {
     (void)address;
     if (!s_enabled || !cs_screen_active()) return;
@@ -470,32 +483,17 @@ static void cs_char_name_hook(struct CPUState* cpu, uint32_t address) {
     const int side = (int8_t)psx_mod_read_byte(s3 + 0x19u);
     const int chr = (int8_t)psx_mod_read_byte(s3 + 0x1Au);
     if (chr != 9 || side < 0 || side > 1) return;
-    const uint32_t b = CS_PLAYER + 0x20u * (uint32_t)side;
-    const int st = (uint8_t)psx_mod_read_byte(b + 0x1Eu);
     const int confirmed_chr = (int)psx_mod_read_word(0x8005E6A0u + (uint32_t)side * 4u);
     const uint32_t select_phase = psx_mod_read_word(0x80096F94u);
     int want_gaso = 0;
     if (select_phase >= 2) {
         if (confirmed_chr == 9) want_gaso = (bag2jp_bag1_get_version(9, side) != 0);
     } else {
-        const CsPopup* p = &s_pop[side];
-        if (p->phase == P_OPEN || p->phase == P_REPLAY) {
-            want_gaso = p->version != 0;
-        } else if (p->phase == P_IDLE) {
-            if (st >= 2 || confirmed_chr == 9) want_gaso = (bag2jp_bag1_get_version(9, side) != 0);
-            else want_gaso = 0;
-        }
+        want_gaso = cs_gaso_preview(side);
     }
-    const uint32_t entry = 0x80096DD8u + 9u * 8u;
     const uint32_t sp = cpu->gpr[29];
+    cs_set_gaso_name(want_gaso);
     if (want_gaso) {
-        /* GAS-O embedded at u=0, v=226, w=115, h=29 on sheet 1 (042.tim) */
-        psx_mod_write_byte(entry + 0u, 0);     /* u */
-        psx_mod_write_byte(entry + 1u, 226);   /* v */
-        psx_mod_write_byte(entry + 2u, 115);   /* w */
-        psx_mod_write_byte(entry + 3u, 29);    /* h */
-        psx_mod_write_byte(entry + 4u, 1);     /* sheet_idx = 1 (042.tim) */
-
         /* Independent per-player background tint on CPU stack:
          * 0x80093480 lbu $a0, 0x28($sp) (R)
          * 0x80093484 lbu $a1, 0x29($sp) (G)
@@ -505,13 +503,6 @@ static void cs_char_name_hook(struct CPUState* cpu, uint32_t address) {
         psx_mod_write_byte(sp + 0x29u, 0xE0u);
         psx_mod_write_byte(sp + 0x2Au, 0x30u);
     } else {
-        /* Stock BI-O at u=0, v=62, w=129, h=31 on sheet 0 (041.tim) */
-        psx_mod_write_byte(entry + 0u, 0);
-        psx_mod_write_byte(entry + 1u, 62);
-        psx_mod_write_byte(entry + 2u, 129);
-        psx_mod_write_byte(entry + 3u, 31);
-        psx_mod_write_byte(entry + 4u, 0);
-
         /* Stock Bi-O blue/purple: R=0x40, G=0x48, B=0x90 */
         psx_mod_write_byte(sp + 0x28u, 0x40u);
         psx_mod_write_byte(sp + 0x29u, 0x48u);
@@ -521,6 +512,8 @@ static void cs_char_name_hook(struct CPUState* cpu, uint32_t address) {
 
 static void cs_vblank(void) {
     cs_stage_vblank();
+    /* Overlay reload restores stock CLUTs independently of our host cache. */
+    if (!cs_screen_active()) s_cur_gaso[0] = s_cur_gaso[1] = -1;
     for (int i = 0; i < 2; ++i) if (s_pop[i].phase == P_OPEN && s_pop[i].open_t < 8) {
         ++s_pop[i].open_t; cs_publish();
     }
@@ -557,7 +550,7 @@ PSX_MOD_CONSTRUCTOR(bag2jp_register_charsel_popup) {
     (void)psx_mod_register_vblank_plugin("bag2jp.charsel_popup", cs_vblank);
     (void)psx_mod_register_function_entry_plugin("bag2jp.charsel_popup", 0x80090258u, cs_feedback_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", CS_MIRROR_SB, CS_MIRROR_W, cs_mirror_hook);
-    (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x8009347Cu, 0x3C038009u, cs_char_name_hook);
+    (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", CS_NAME_DRAW_SITE, CS_NAME_DRAW_WORD, cs_char_name_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x800917A8u, 0x00531021u, cs_stage_random_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x80093DB0u, 0x145E0002u, cs_stage_name_hook);
     (void)psx_mod_register_instruction_plugin("bag2jp.charsel_popup", 0x80093E38u, 0x0C007EFFu, cs_stage_heat_label_hook);

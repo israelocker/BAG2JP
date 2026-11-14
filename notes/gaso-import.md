@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Base ±870 (ff800b28) aceptada por el propietario y en commit local 650d825. Bloque 2 en investigación: tanque independiente de la separación, intercambio nativo solo para personajes 10/14, dueto sin evidencia; fixture P1_DUET habilitado en el harness. Tomas A (ataque) y B (dueto) pendientes de autorización. Snapshot tras el Bloque 2."
+summary: "Bloque 3 aceptado. Preview de retorno Gas-O corregido en experimental e709c2f8: retrato/nombre desde primera presentación revisada, Heat conservado, grabación aceptada y150saves restaurados.15tests/Goldfish; suite global466tests con1fallo/28errores sin nuevos nombres. Lifecycle CAUGHT y guard1 canónico pendientes."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-14"
@@ -10,6 +10,150 @@ doc_kind: evidence
 ---
 
 # Gas-O — ledger canónico
+
+## Bloque 4 y retorno al selector (2026-11-14, autorizado/en curso)
+
+- El propietario aprobó el Bloque 3 y su checkpoint local: «Okay aprobado, continua».
+  Autorizó continuar el Bloque 4 propuesto, incluida su prueba grabada experimental.
+- Requisito añadido: si se eligió Gas-O, al terminar y volver al selector debe
+  aparecer su preview (retrato/nombre), no Bi-O; conservar el comportamiento de Heat.
+  La imagen enviada documenta el síntoma; no hace falta abrir otra captura para entenderlo.
+- Plan acotado: (1) regresión del retorno/preview y corrección mínima; (2) comprobar
+  lookup por rival y lifecycle reset/savestate, log positivo de VERIFY; (3) Goldfish,
+  build experimental y una toma WGC del flujo relevante; (4) presentar evidencia.
+  El guard canónico permanece en 0 durante investigación; su activación pertenece
+  al Bloque 4 aprobado, no a esta corrección aislada. No tocar la instalación estable.
+- Aceptación selector: prueba host RED→GREEN de reentrada con recursos recargados,
+  selección Gas-O/Bi-O por lado y cancelación, más retorno real grabado con Gas-O
+  visible sin reabrir el popup. CAUGHT requiere sus pruebas de lifecycle separadas.
+- Preflight `20261114T183850029279Z-gaso-block4-selector`: PASS; 48 fuentes iguales,
+  única deriva conocida `bag2jp_gaso_caught.c` (guard canónico 0/build 1), recursos iguales.
+- Goldfish del cierre documental del Bloque 3 omitido: solo notas; no aplica.
+- Selector: `cs_feedback_hook` conservaba `s_cur_gaso` aunque los recursos invitados
+  se recargaran; retrato y nombre además descartaban la versión retenida en
+  IDLE sin confirmación y en SWALLOW. Helper compartido `cs_gaso_preview` consulta
+  la versión provisional solo en OPEN/REPLAY y la retenida en el resto; vblank
+  invalida exclusivamente la caché host fuera del overlay del selector.
+- Host RED: 4/6 fallos por assertions con los callbacks antiguos; GREEN 6/6.
+  Goldfish (2 revisores: `ses_e24a10fb7ffeEiHIQquvnIxeRM`,
+  `ses_e24a10f92ffekfAVkwhMUmj6of`): **SIN HALLAZGOS BLOQUEANTES** en fuente
+  SHA256 `28dcd9ed9467bbb33805930e453e85dbff3aaafee4ffd0437e0874adeb60a572`.
+  Cobertura insuficiente confirmada y ampliada a 12 tests: lados mixtos, REPLAY,
+  Heat, escenario y caché activa. Cancelación sintetiza SWALLOW, no pulsa el pad.
+  12/12 PASS (2.266 s); 2/2 mutantes por aserción (lado equivocado/caché obsoleta).
+  No se repitió review del mismo código de producción. Spec y evidencias en
+  `_work/goldfish/spec-block4-selector-preview.md` y `_work/gaso/block2/block4-selector-*`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Suite global: 457 tests, 1 fallo y 28 errores (131.505 s): **no verde**.
+  Fallo `test_strike_costume_assets.test_package_keeps_models_separate_from_texture_packs`
+  ("Existing Heat entries must all be preserved"); errores en visual_regions,
+  caught_entry y payload/assets Heat/Strike. Nombres y trazas completos conservados
+  en `block4-selector-full-suite.log`; no se alteraron estos módulos para ocultarlos.
+- Build `gaso-selector-return`: PASS 38.628 s (2 jobs), advertencia heredada
+  `-Wa,-mbig-obj` sin uso. Deploy EXE-only `23bbdabdc6fce9f23a6839088812bf74c018b3ea940ff92ce763e32cbabbd2d2`;
+  respaldo `deployment-backup-selector-return`, 5 configuraciones protegidas,
+  paquetes sin cambios. Calibración `block4-selector-cal` aceptada (552 latidos,
+  1 stall, 3293 pares audio/0 descartes); 9 imágenes de selector/bordes revisadas,
+  catálogo `b728d1a0…`. Toma `block4-selector-return` completada309.047s con
+  150 saves/configuraciones restaurados; finalización de la grabación en curso.
+  El log del popup registra una nueva publicación del retrato Gas-O al retorno,
+  sin reabrir el popup; aún no equivale a aceptación visual.
+- **Primera toma: captura aceptada, corrección funcional parcial.**
+  `block4-selector-return` WGC accepted=true:2035latidos,4tardíos,1stall117ms,
+  12163pares audio/8descartes,residuo17.12ms,ventana8.95ms. READY/baile/final,
+  victoria Heat, dueto natural fever2 (sin fixtures) y retorno observados.
+  En `block4-selector-return-overview.png`: retrato Gas-O al retornar, pero el
+  primer nombre visible aún BI-O (gf17557); a196s ya GAS-O estable. **No cerrar**
+  el requisito con esa toma. Es evidencia nueva, no motivo para repetir reviews
+  del mismo candidato.
+- Causa acotada del nombre inicial: el descriptor solo se actualizaba al alcanzar
+  el callback animado de dibujo. Nueva regresión escenario12 comprueba el nombre
+  inmediatamente tras actualizar retrato, antes de invocar ese callback: RED134.
+  Helper `cs_set_gaso_name` comparte los cinco bytes de descriptor y prepara el
+  nombre junto al primer retrato, solo en char select; el callback por lado sigue
+  reaplicándolo para variantes mixtas. 13/13 PASS4.430s; mutante de llamada temprana
+  omitida muere por aserción. Fuente `1f927ef2699d5e31e5bcc3366fc7bf7c92578a11ec9cea2890617759c6960b3a`.
+  Build de ese candidato PASS34.753s, **no desplegado**: Goldfish delta confirmó
+  que preparar un descriptor global en el bucle de ambos jugadores deja la variante
+  del último lado. El segundo revisor lo clasificó como garantía no probada;
+  regresión mixta reprodujo el fallo por aserción: hallazgo confirmado.
+- Causa nativa verificada (Capstone sobre007 JP, SHA e4de48f6…):
+  `80093474: JAL80093504` (`0c024d41`), delay NOP, **después** hook antiguo8009347c.
+  `80093504` ya consume `80096dd8 + char*8`; el hook anterior llegaba tarde y podía
+  usar el nombre del otro jugador durante una trama. Evidencia acotada
+  `block4-name-consumer-mips.txt`; no se modificó el proyecto Ghidra.
+- Sustitución: eliminada la escritura temprana global del bucle; el MISMO hook
+  de nombre/tinte se mueve a80093474, antes de cada consumidor individual, con
+  guard original0c024d41. No aumenta el número de hooks ni toca cámara/Heat.
+  Regresión usa el sitio realmente registrado y ambos órdenes Gas-O/Bi-O antes
+  de consumir el descriptor: RED134→GREEN15/15 (4.276s), incluido opcode nativo.
+  Fuente `9c7cec678d3ca1122ebf3814744005238003a08bf6bfd7c90620ab4cb55cf635`.
+  Build `gaso-selector-name-consumer` PASS34.113s; ambos revisores del delta
+  favorables tras comprobar la sustitución (ver `block4-selector-verdict.json`).
+  Límite del review: el harness no ejecuta el JAL nativo ni demuestra el tinte
+  tras esa llamada. La nueva toma debe comprobarlo, no extrapolar los tests.
+  Deploy EXE-only `e709c2f8…`, respaldo `deployment-backup-selector-name-consumer`;
+  calibración `block4-consumer-cal` accepted=true (546latidos,0stalls,
+  3247pares audio/0descartes),9imágenes revisadas y catálogo aceptado.
+  Partida `block4-consumer-return` en curso; no aceptación anticipada.
+- La toma final terminó309.897s, `restoration.verified=true` y150saves originales
+  restaurados. Logs: nueva publicación Gas-O al retornar, sin volver a abrir popup;
+  video `_work/recordings/block4-consumer-return/owner.mp4` **accepted=true**,
+  sin rechazos:2033latidos/3tardíos,1stall99ms,jitter12.06ms,59.94084Hz;
+  12191pares audio/3descartes,44057Hz,residuo16.39ms,ventana10.5ms.
+- **Revisión final del selector: PASS técnico.**
+  `_work/gaso/block2/block4-consumer-review.png`: final/victoria Heat, fever en
+  solitario y retorno; primer selector visible en muestra193s (imagen gf17532,
+  t193.400) ya muestra retrato GAS-O, nombre GAS-O y fondo verde; Heat conserva
+  retrato/nombre. Sigue correcto a194/195/196/199/202s, sin reabrir popup.
+  `bag2_record.py frames --tag block4-consumer-return --frame 17532 --span18 --step1`
+  produce37muestras revisadas en `block4-consumer-first-name-frames.png`, todas
+  GAS-O/Heat, sin BI-O. WGC es VFR y puede repetir/saltar fotogramas; no se afirman
+  37imágenes distintas ni latencia calibrada (±2frames sigue estimación).
+  El JAL tardío mutado vuelve a fallar por aserción (consumer-mutation.json).
+- Suite final del código actual: **466tests,1fallo/28errores,153.189s**;
+  mismos29nombres que la corrida previa, ningún nombre nuevo. No es verde global.
+  `block4-consumer-final-full-suite.log` y `block4-full-suite-comparison.json`.
+  Preview aprobado técnicamente solo para P1Gas-O BAG1 A frente a Heat BAG1 A;
+  lados/variantes opuestos cubiertos en host, matriz real sigue en Bloque5.
+  Conformidad del propietario sobre esta corrección todavía pendiente.
+- **Siguiente unidad del Bloque4 (autorizada):** resolver generación y ownership
+  CAUGHT tras reset/load, con prueba host RED→GREEN y evidencia nativa pertinente;
+  añadir trazabilidad positiva VERIFY. Guard canónico0 hasta resolver esas puertas.
+  No repetir calibraciones/tomas del selector mientras e709c2f8 y recursos no cambien.
+  No nuevo snapshot pesado: checkpoint de candidato, no cierre total de Bloque4.
+- Auditoría CAUGHT: el lookup ya verifica los clips auténticos de 0/1/9 por versión
+  y falla cerrado para otros rivales (harness escenario 9). Reset/load invalida
+  registros host pero deja una tupla publicada en guest RAM (comentario de fuente
+  684..686): sigue siendo una limitación real, no lifecycle productizado.
+  No se activa el guard canónico solo para dar por terminado el Bloque 4.
+- Framework pin1a3fc0db303a, `mod_runtime.cpp:2769..2800`: tras restaurar guest RAM,
+  reaplica main writes e invoca los callbacks savestate de plugins activos. No se
+  serializa automáticamente el ownership CAUGHT. Esta lectura es análisis de fuente,
+  no una prueba de carga real. Siguiente unidad: demostrar recuperación segura del
+  binding/arena tras load y generación de tablas; no inventar continuidad del host.
+- `bag2jp_bag1_load_latch.h` registra solo los packs HUD53/54/125/126 y se olvida
+  tras savestate; no autentica generaciones de actor/tablas CAUGHT. No reutilizarlo
+  como una prueba de generación completa. El callback session_reset del framework
+  prohíbe explícitamente mutar guest RAM; no resolver el residuo escribiendo ahí.
+
+## Bloque 3: escenario, HUD y audio re-hit de Heat (2026-11-14, aceptado por el propietario)
+
+- **Sin recompilación ni recalibración en Bloque 3**: el payload desplegado en `BAG2JP-exp-8mb` (`847058C4`, con `stage197` `b663417f` en `0x849800`) coincide con su copia canónica y de build; el código del shim `bag2jp_bag1_stage.c` es `5F19F0ED` en ambas fuentes, compilado en el EXE `ff800b28`. Son entradas diferentes verificadas por separado, no igualdad de bytes entre payload y fuente C.
+- **Toma grabada `block3-stage-c`** (`_work/versus-runs/20261114T172952125209Z-block3-stage-c`, autorización previa del propietario): juego natural en autoplay (Gas-O BAG1 A vs Heat BAG1 A en `GasOBAG1`, `debug_fixtures = {}`, 150 saves y ajustes restaurados).
+  - Grabación WGC `_work/recordings/block3-stage-c/owner.mp4` (`d5eee3454fd7048f…`): `manifest.json` **`accepted: true`** (`2003` latidos, `1` tardío, `0` stalls, jitter p99 `10.97 ms`, `59.941 fps`; `11977` pares audio, `0` descartes, `44055 Hz`, residual p99 `17.29 ms`, ventana `9.52 ms`).
+  - `bag2jp_watch.log` (`801E0104:4`, `801E0108:1`, `801E0109:1`, `801DECC0:2`, `801DECC2:2`) y `_work/gaso/block2/take-c-review.json`:
+    - `0` ataques (`0` líneas `gaso_tank` / `request 202`).
+    - Eventos de puntaje B1ST: `level` `0 -> 1` en `gf10298`, `1 -> 2` en `gf12862` (nunca retrocede), `previous level` sigue al fotograma siguiente, pulso de beat flags y fin de canción `0x40` en `gf15750`.
+    - Ventilador (`801DECC2`): velocidad `0` en nivel 0 (fijo en la intro), rampa a `128` en nivel 1 y a `512` en nivel 2 sostenida hasta el final (giro verificado en RAM; velocidad de rotación no separable en capturas fijas).
+    - Cámara intro (`take-c-sheet-intro.png`, 17.5–27 s): tubo -> paso por el ventilador -> sala -> plano frontal -> `Ready`.
+    - Rótulo HUD `GAS-O` visible y legible; pilares rojos iluminados en niveles altos (`take-c-sheet-song.png`), `1 Player Win` (Gas-O), fever en solitario y retorno limpio al selector.
+    - Límites declarados: pantalla VS sigue con arte de Bi-O (fuera de alcance), velocidad del ventilador juzgada solo por RAM, sin video de referencia BAG1 para cronometrar cámara/ventilador, audio subjetivo requiere escucha humana y latencia estimada ±2 fotogramas.
+- **Resolución del audio re-hit de Heat (sin cambio de código)**:
+  - La comparación continua de PCM de `gaso-clamp-last-heat-bag1` (`e165817c`, `mode1` re-hit `gf7437`) contra `gaso-rehit-mode0-heat-bag1-r2` (`18590587`, `mode0` re-hit `gf8047`) en `re_hit[-200..+300]` (`367,500` muestras) da **`max_abs_diff = 0`** (bit-idéntico).
+  - La diferencia detectada antes en `gaso-rehit-mode0-heat-bag1-r3` (`18590587`, `mode0` re-hit `gf7430`) a `re_hit + 46.18` fotogramas correlaciona **`1.0000`** (`rms_diff = 40.03`, `max |d_re - d_1st| = 389.0`) con `(slide_diag_1st - clamp_1st)` (`20261113T085539682518Z-gaso-slide-diag-heat-bag1`, `23015cb8`, `mode1` vs `mode1` en `1st_hit + 46.18`). En `1st - 670..-590` también ocurre una variante análoga (`|clamp - r2| = 8776.9` vs `|r2 - r3| = 27.0`).
+  - Ghidra MCP (`SLPM_862.19`: `FUN_800342dc`, `0x80025500`, xrefs de `0x8002e478`) y Capstone sobre el volcado RAM `wider-initial-camera-ram.bin` confirman que la tabla `0x8007f180` (66 cues) y el callback de Heat `0x801d66e4` (`0x8003190c`) para los códigos `mode1` `1/4/0x12d/0x3e9` solo actualizan estado/llama (`0x801d9a18+0xc`), nunca disparan cues SPU. La diferencia de `r3` es una variante de voz/SFX elegida por RNG nativo; `gaso_caught_can_continue` (`mode0`) es equivalente en audio a `mode1`.
+- **Cierre:** el propietario aprobó `block3-stage-c` y continuar el Bloque4 («Okay aprobado, continua»). Estado y requisito adicional del selector en la sección vigente superior. La publicación canónica CAUGHT sigue pendiente del lifecycle, no de repetir la conformidad del Bloque3.
 
 ## Bloque 2 sobre la base ±870: investigación interna (2026-11-14, estado vigente)
 

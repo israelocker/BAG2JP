@@ -1,22 +1,55 @@
 ---
 id: gaso-import-digest
-title: "Gas-O: centrado final BAG1 experimental"
+title: "Gas-O: Bloque 4 y preview de retorno"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Candidato GO+2s ±870 (ff800b28) en experimental; partida WGC aceptada: cuerpos cerca de los puntos medios de barra, final ±870/Z0, fever y selector. Pendiente conformidad del propietario. Sin Bloque2, commit ni snapshot."
+summary: "Bloque3 aceptado. Selector e709c2f8 verificado: retrato/nombre Gas-O al retorno, Heat conservado, grabación accepted=true,150saves restaurados;15tests y Goldfish triado.466tests globales con1fallo/28errores sin nuevos nombres. Pendientes conformidad del preview y lifecycle CAUGHT/guard1 canónico."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-14"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "3020fc5146767db1f381f3cc3a9b9d861218f5a2a241e7b3f48deeede447eb47"
+source_sha256: "6be1c013fd800012c704ded7e8d642680746f3a4eb3f9cf5046390377480e2ee"
 ---
 
 # Gas-O: lectura vigente
 
-Derivado de la sección «Referencia GO + 2 s: candidato ±870»; verificar hash de la fuente
+Derivado de la sección «Bloque 3: escenario, HUD y audio re-hit de Heat» y «Bloque 2 sobre la base ±870»; verificar hash de la fuente
 antes de reutilizar. La nota canónica conserva la cronología.
 
-- **Vigente:** el propietario fijó la referencia inicial en GO + 2 s (cámara asentada
+- **Bloque 4 (2026-11-14, autorizado):** conservar preview Gas-O al volver al selector,
+  sin reabrir popup. Primer candidato `23bbdabd` mostró retrato Gas-O, pero nombre BI-O
+  transitorio al retornar en captura aceptada: no cerrar con esa evidencia parcial.
+  Candidato temprano global descartado SIN deploy tras Goldfish: variantes mixtas
+  se sobrescribían. Capstone/fixture007 confirmaron que hook9347c era posterior a
+  JAL93474->93504 (consumidor del nombre). Se mueve el MISMO hook antes del JAL.
+  Fuente `9c7cec67…`, 15 tests PASS, revisión delta favorable tras corregir hallazgo.
+  Build34.113s, EXE experimental `e709c2f8…`, backup y recursos conservados.
+  `block4-consumer-cal` accepted=true y catálogo revisado; `block4-consumer-return`
+  **accepted=true**,2033latidos/1stall99ms,12191pares audio/3descartes;150saves/configs
+  restaurados. Retrato y nombre GAS-O ya en primer selector revisado (gf17532,
+  t193.400), Heat intacto;37muestras consecutivas del reloj sin BI-O (WGC VFR puede
+  repetir/saltar imágenes). Correcto hasta202s sin reabrir popup; conformidad pendiente.
+  Suite final466tests,1fallo/28errores: mismos nombres, no verde global.
+  Siguiente unidad autorizada: generación/ownership CAUGHT tras reset/load y logVERIFY,
+  no repetir selector sin nuevos inputs. Fuente CAUGHT sigue guard0:
+  reset/load deja una tupla publicada sin ownership host; resolver antes de productizar.
+  Suite global457tests,1fallo/28errores en otras costuras; no es una suite verde.
+- **Bloque 3 (2026-11-14, aceptado por el propietario):** el payload desplegado (`847058C4`, `stage197`
+  `b663417f`) coincide con el canónico (`bag2jp_bag1_stage.c` `5F19F0ED`), sin rebuild.
+  - Toma natural `block3-stage-c` (`ff800b28`, Gas-O BAG1 vs Heat BAG1 en `GasOBAG1`, 150
+    saves/ajustes restaurados): WGC **`accepted: true`** (`2003` latidos, `0` stalls, jitter
+    p99 `10.97 ms`, `59.941 fps`, `11977` pares audio `0` descartes, `owner.mp4` `d5eee345…`).
+    `0` ataques; `level` `0->1` (`gf10298`), `1->2` (`gf12862`), fin `0x40` (`gf15750`);
+    ventilador `0->128->512`; intro tubo->ventilador->sala->Ready; HUD `GAS-O` legible;
+    pilares rojos, `1 Player Win`, solo fever y selector. Límites: VS Bi-O fuera de alcance,
+    giro del ventilador medido en RAM, sin video BAG1 de referencia, audio subjetivo humano,
+    ±2 fotogramas.
+  - Audio re-hit de Heat (sin cambio de código): `clamp` (`mode1`) vs `r2` (`mode0`) es
+    **bit-idéntico** (`max_abs_diff = 0` en 367,500 muestras `re_hit[-200..+300]`). La diferencia
+    de `r3` a `+46.18` correlaciona `1.0000` con `slide_diag_1st - clamp_1st` (`mode1` vs `mode1`)
+    y Ghidra/Capstone confirman que `mode1` (`0x801d66e4`) no llama a `0x8002e478`: es variante
+    RNG nativa.
+- **Vigente (base ±870 y Bloque 2 aceptados):** el propietario fijó la referencia inicial en GO + 2 s (cámara asentada
   T=[0,692,3028]). Medición `go-plus2-measure` aceptada; modelo GTE 0.75/OFX256 da ±870
   (zoom128: ±435). Solo cambia `B1HOME_WIDE`; radio 199, guardas y cámara nativa intactos.
 - 23 tests PASS, 11/11 mutantes; dos Goldfish triados (`triage-go-plus2-anchor.md`).

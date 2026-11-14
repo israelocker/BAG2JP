@@ -11,6 +11,12 @@ doc_kind: evidence
 
 # bag2_record.py - historial
 
+## 2026-11-14 - Bloque 3: toma natural block3-stage-c
+
+- Propósito: verificar en juego el escenario GasOBAG1 (ventilador, cámara intro, eventos de puntaje B1ST y rótulo HUD GAS-O) sobre la base ±870 (`ff800b28`, `bag1_alt.bin` `847058C4`).
+- `run_recorded_block2.py` (sin `--fixture`, autoplay natural) + `finalize --tag block3-stage-c`: `accepted: true` bajo `wgc`, `2003` heartbeats (`1` dropped_late, `0` stalls, jitter p99 `10.97 ms`, `59.941 fps`), `11977` pares audio (`0` descartes, `44055 Hz`, residual p99 `17.29 ms`, ventana `9.52 ms`). `owner.mp4` SHA-256 `d5eee3454fd7048f…`. 150 saves y ajustes restaurados.
+- Revisión: hojas `take-c-sheet-intro.png` y `take-c-sheet-song.png` + `bag2jp_watch.log` en `_work/gaso/block2/take-c-review.json`. Límites: latencia de pantalla ±2 fotogramas estimada; audio subjetivo requiere escucha humana; velocidad del ventilador juzgada solo por RAM. Resultado: útil; tiempo no medido.
+
 ## 2026-11-14 - Bloque 2: tomas block2-attack-a y block2-duet-b
 
 - Propósito: ataque Gas-O (tanque/CAUGHT) y fever de dueto sobre la base ±870, runtime ff800b28.
@@ -648,3 +654,33 @@ Skill: `bag2-game-recording` (`D:/Dev/Tools/agent-data/shared/agents/skills/bag2
 - Pruebas host (`py -3.13 -m unittest -v tools.test.test_recording_window tools.test.test_bag2_record tools.test.test_audio_clock_probe tools.test.test_anim_trace_samples`): **45 PASS en 7.162 s** (incluidos casos RED→GREEN).
 - Prueba E2E viva con ventana Win32 `320x240` totalmente tapada por `OCCLUDING_WINDOW` roja topmost (`_work/gaso/drift/end-center/wgc-e2e-smoke/`): `review_mid_wm_timer.png` mostró **`gf 253` == `E2E 253`** sin oclusión ni bordes; corrida con audio (`manifest-smoke.json`): `accepted: true`, `capture_backend: "wgc"`, `jitter_p99_ms: 4.5`, `59.923 fps`, `stalls: 0`, `audio dropped: 0`.
 - Goldfish (`_work/goldfish/wgc-capture-integration-verdict.json`): dos revisores (`ses_e265f0a9effewK76LIUQpl6gqe`, `ses_e265f0a9cffepl5GdjBuDpqwK7`) **SIN HALLAZGOS BLOQUEANTES**; 3 ajustes menores aplicados y re-probados. Límite pendiente: prueba real con `BAG2JP.exe` SDL3/D3D11 bajo WGC (y la pausa periódica de ~293 ms del emulador sigue sin resolverse).
+
+## 20261114-bag2-record-block4-selector — 2026-11-14 UTC — preview tras retorno
+
+- Uso real autorizado; WGC y audio PCM exacto. Wrapper existente
+  `run_recorded_block2.py --action probe --temporary-controls --audio-dump`
+  con tags `block4-selector-cal` (23bbdabd) y `block4-consumer-cal` (e709c2f8).
+  `bag2_record.py finalize --tag <tag>` una vez por captura; ambas accepted=true.
+  Primera:552latidos/1stall,3293pares audio/0descartes,15.31msresiduo,2.08msventana;
+  segunda:546latidos/0stalls,3247pares/0descartes,14.96msresiduo,2.53msventana.
+  Nueve imágenes/bordes de cada catálogo revisadas y aceptadas por separado.
+- `run_recorded_selector_return.py --action run --tag block4-selector-return
+  --temporary-controls --audio-dump --p1-character gaso --p1-version BAG1
+  --p2-character heat --p2-version BAG1 --stage GasOBAG1 --finish`:
+  pin23bbdabd, sin fixtures,309.047s,150saves/configs restaurados. La cola de3s
+  conserva retorno sin entrada de pad. Finalize accepted=true:2035latidos/4tardíos,
+  1stall117ms,12163pares/8descartes,17.12msresiduo,8.95msventana.
+- Dictamen: útil, **captura aceptada pero corrección funcional parcial**. FFmpeg
+  detectó retrato Gas-O con nombre BI-O transitorio al retornar (gf17557), corregido
+  más tarde. No ocultar esa evidencia ni tratar grabación aceptada como aprobación.
+- Nuevo runtime e709c2f8 mueve hook antes del consumidor de nombre; la nueva toma
+  `block4-consumer-return`:309.897s,150saves/configs restaurados; finalize una vez,
+  accepted=true,sin rechazos,2033latidos/3tardíos,1stall99ms,12.06msjitter,
+  59.94084Hz,12191pares audio/3descartes,16.39msresiduo,10.5msventana.
+- Revisión FFmpeg: retrato y nombre GAS-O en primer selector muestreado gf17532,
+  t193.400, Heat correcto y sin reabrir popup, hasta202s. `frames --frame17532
+  --span18 --step1` y hoja `block4-consumer-first-name-frames.png`:37muestras sin BI-O;
+  VFR puede repetir/saltar fotogramas, ±2frames estimado. Útil para el requisito;
+  no valida matriz de rivales ni lifecycle CAUGHT.
+- Versiones de grabador/backend conservadas de la instalación verificada. Tiempo
+  de pared de cada run en result.json; ahorro y retrabajo manual no medidos.

@@ -11,6 +11,16 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 20261114-ghidra-block3-rehit-audio - origen del sonido re-hit en Heat y despachador SPU
+
+- Propósito: comprobar si el modo1 nativo de Heat dispara algún cue SPU en el re-hit que `mode0` (`gaso_caught_can_continue`) pudiera omitir.
+- MCP stdio (`_work/gaso/probe_call.py`, `SLPM_862.19`, sin modificar análisis ni crear funciones):
+  - `get_xrefs_to` sobre `0x8002e478` (`_work/gaso/block2/xrefs-2e478.json`, 28 llamadores en main).
+  - `decompile_function_by_address` sobre `0x800342dc` (`dec-800342dc.c`), `0x8002e2d0`, `0x8002e478`, `0x8003190c`.
+  - `read_memory` sobre `0x80025500` (1024 B, `mem-80025500.json`) y `0x80054fe4` / `0x80031900`.
+- Validación independiente: Capstone sobre las tablas y callbacks de Heat/Gas-O en el volcado RAM `wider-initial-camera-ram.bin` y comparación continua de WAVs (`clamp` vs `r2` bit-idénticos `max_abs_diff = 0` en 367,500 muestras; `clamp_re - r3_re` correlaciona `1.0000` con `slide_diag_1st - clamp_1st` en `mode1` vs `mode1`).
+- Resultado: útil; descartó falta de cues en `mode0` y probó que la diferencia de `r3` es una variante RNG nativa. Tiempo no medido.
+
 ## 20261114-ghidra-block2 - correa, intercambio de lados y fever sobre ±870
 
 - Propósito: riesgos del Bloque 2 (ataques/CAUGHT/dueto) con homes ±870.
@@ -2198,3 +2208,21 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Dictamen: útil para confirmar identidad y límite de alcance; no diagnostica por sí solo
   la pausa. Sin equivalencia nueva que justifique repetir funcmatch, ni nueva grabación que
   justifique inspección FFmpeg. Tiempo/ahorro no medidos. Pendiente evidencia viva autorizada.
+
+## 20261114-ghidra-block4-selector — 2026-11-14 UTC — retorno al selector Gas-O
+
+- Tipo: consultas MCP de solo lectura con instancia GUI existente; sin cambios de análisis.
+- Ghidra12.1.4; `D:/Dev/Tools/ghidra-mcp-python/python.exe _work/gaso/probe_call.py`:
+  `get_program_info {}`, `read_memory {address:0x8003190c,length:148}` y
+  `decompile_function_by_address {address:0x8001f874}`. Cada conexión pide info primero.
+- Main japonés SLPM_862.19, PSX LE32, SHA256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe;
+  sin overlay007 seleccionado en el proyecto. Salidas `block4-*-mcp.json` y
+  `block4-program-info.json` en `_work/gaso/block2/`.
+- Resultado: el loader usa tabla8005d410 y CdRead para cargar recursos. No prueba por
+  sí mismo la invalidación del retrato. La lectura3190c era del contexto CAUGHT previo
+  y no añadió información pertinente al preview: irrelevante para ese defecto.
+- Contraste: regresión host ejecuta callbacks de producción (RED4/6→GREEN12/12);
+  la recarga efectiva y el renderer quedan para la toma WGC autorizada.
+- Dictamen: útil para confirmar binario/costura de carga; inconcluso para el retorno
+  nativo aislado. Tiempo/ahorro no medidos. No funcmatch: no se buscan equivalentes BAG1.
