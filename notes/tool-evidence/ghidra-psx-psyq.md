@@ -11,6 +11,21 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 20261114-ghidra-block2 - correa, intercambio de lados y fever sobre ±870
+
+- Propósito: riesgos del Bloque 2 (ataques/CAUGHT/dueto) con homes ±870.
+- MCP por el puente stdio (`_work/gaso/probe_call.py`, javaw 63424): `get_program_info`
+  → `SLPM_862.19`; `get_xrefs_to` 0x8005F820 (1 PARAM en FUN_8001E0F4), 0x8005F848 (0),
+  0x8002CD48 (llamada en 0x8002D81C, sin función definida); `get_function_by_address`
+  0x8002D818/0x8002AD1C → FUNCTION_NOT_FOUND; `read_memory` 0x8002D500/880,
+  0x8002AA40/512, 0x8002AC40/512 (salidas en `_work/gaso/block2/`).
+- Validación independiente: Capstone sobre los mismos bytes (ver capstone.md).
+- Resultado: útil. El clamp usa ctl+0x28/0x38 con banderas dancer+3 y ctl+0xC; en
+  0x8002ABE4..AD44 hay un intercambio de home/radio entre lados solo para los personajes 10/14.
+  No se crearon funciones ni se modificó el proyecto. Tiempo no medido.
+- Siguiente: el código de fever del overlay 005 no está en el programa principal; el dueto se
+  comprobará en juego.
+
 ## 20261114-ghidra-initial-anchor — offset nativo y referencia READY
 
 - Puente stdio instalado, Ghidra12.1.4 e instancia existente preservados. Consultas con

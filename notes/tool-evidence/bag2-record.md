@@ -11,7 +11,18 @@ doc_kind: evidence
 
 # bag2_record.py - historial
 
-## 2026-11-14 — go-plus2: medición, calibración y partida aceptadas técnicamente
+## 2026-11-14 - Bloque 2: tomas block2-attack-a y block2-duet-b
+
+- Propósito: ataque Gas-O (tanque/CAUGHT) y fever de dueto sobre la base ±870, runtime ff800b28.
+- `run_recorded_block2.py --fixture …` + `finalize --tag block2-attack-a`: accepted=true,
+  1998 heartbeats (1 perdido), 1 stall, jitter p99 11.1 ms, 59.938 fps; 11959 pares audio,
+  1 descarte, residual p99 16.47 ms, ventana 8.11 ms.
+- `finalize --tag block2-duet-b`: accepted=true, 2020 heartbeats, 1 stall, jitter p99 9.7 ms,
+  59.940 fps; 12103 pares audio, 28 descartes, residual p99 16.07 ms, ventana 7.06 ms.
+- Revisión: hojas ffmpeg (`_work/gaso/block2/take-*-sheet-*.png`) ubicadas por `events.json`
+  y `frames`. 150 saves/configs restaurados en ambas. Resultado: útil; tiempo no medido.
+
+## 2026-11-14 - go-plus2: medición, calibración y partida aceptadas técnicamente
 
 - Propósito: referencia GO+2 s del propietario y validación del candidato ±870.
 - `finalize --tag go-plus2-measure` (runtime 26c21150…): accepted=true, 323 heartbeats,

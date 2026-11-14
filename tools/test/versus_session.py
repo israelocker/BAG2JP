@@ -27,7 +27,20 @@ RESULT_STATE = 0x8005D3E0  # result-screen announcer state (overlay at 0x80098C8
 HELPER_CALLS = 0
 MAX_WATCH = 32  # bag2jp_anim_trace.c MAX_WATCH; the runtime silently drops extra entries
 DEBUG_ENV_ALLOWLIST = ("BAG2JP_TEST_HEAT_ATTACK", "BAG2JP_TEST_STRIKE_ATTACK", "BAG2JP_TEST_GASO_ATTACK",
-                       "BAG2JP_TEST_ORDERED_DUEL", "BAG2JP_TEST_B1M_TIMING")
+                       "BAG2JP_TEST_ORDERED_DUEL", "BAG2JP_TEST_B1M_TIMING", "BAG2JP_TEST_P1_DUET")
+
+
+def armed_debug_fixtures(environ: dict[str, str]) -> dict[str, str]:
+    """Allowlisted BAG2JP_TEST_* fixtures present in environ; recorded so a fixture run is never archived as natural play."""
+    return {key: environ[key] for key in DEBUG_ENV_ALLOWLIST if key in environ}
+
+
+def build_game_env(environ: dict[str, str]) -> dict[str, str]:
+    """Drop every BAG2JP_* variable except allowlisted fixtures; always enable the trace."""
+    env = {key: value for key, value in environ.items() if not key.startswith("BAG2JP_")}
+    env.update(armed_debug_fixtures(environ))
+    env["BAG2JP_ANIM_TRACE"] = "1"
+    return env
 
 
 def parse_watch_extra(text: str) -> list[tuple[int, int]]:
@@ -150,6 +163,7 @@ class Session:
         self.watch_cues = False
         self.watch_extra: list[tuple[int, int]] = []
         self.spu_cue_dump: int | None = None
+        self.debug_fixtures: dict[str, str] | None = None  # fixtures in the launched env; None until launch
 
     def start(self) -> None:
         """Refuse active sessions; launch with only explicit debug instrumentation."""
@@ -163,11 +177,7 @@ class Session:
         for side in (1, 2):
             for action in nav.TEMPORARY_KEYS[side]:
                 nav.key_for(self.bindings, side, action)
-        env = {key: value for key, value in os.environ.items() if not key.startswith("BAG2JP_")}
-        for key in DEBUG_ENV_ALLOWLIST:
-            if key in os.environ:
-                env[key] = os.environ[key]
-        env["BAG2JP_ANIM_TRACE"] = "1"
+        env = build_game_env(dict(os.environ))
         if self.ram_dump_frame is not None:
             if self.ram_dump_frame <= 0:
                 raise ValueError("RAM dump frame must be positive")
@@ -192,6 +202,7 @@ class Session:
         except Exception:
             pass
         self.started = time.time()
+        self.debug_fixtures = armed_debug_fixtures(env)
         self.process = subprocess.Popen([str(GAME / "BAG2JP.exe"), "--no-launcher"], cwd=GAME,
                                         env=env, stdout=self.logs[0], stderr=self.logs[1])
         self.identity = process_identity(self.process.pid)
@@ -491,6 +502,7 @@ def main() -> int:
     session.spu_cue_dump = args.spu_cue_dump
     files = nav.IsolatedFiles(GAME, run, safe_to_restore=lambda: session.process is None or session.process.poll() is not None)
     result = {"status": "failed", "requested": vars(args), "runtime_sha256": executable_hash,
+              "debug_fixtures": None,
               "visual_review": "pending", "evidence": str(run),
               "script_sha256": {name: nav.sha256(Path(__file__).with_name(name)) for name in
                                 ("versus_navigation.py", "versus_session.py", "bag2_versus.ps1")}}
@@ -499,6 +511,7 @@ def main() -> int:
         with files:
             try:
                 session.start()
+                result["debug_fixtures"] = session.debug_fixtures
                 session.menu()
                 if args.action == "probe":
                     catalog = session.probe(executable_hash)

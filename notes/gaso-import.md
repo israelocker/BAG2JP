@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Referencia GO+2s del propietario: candidato ±870 (ff800b28) desplegado en experimental, radio199/cámara intactos; 23 tests, 11 mutantes, Goldfish triado. Partida go-plus2-autoplay aceptada: cuerpos cerca de los puntos medios de barra, final ±870/Z0, fever y selector. Pendiente conformidad del propietario. Sin Bloque2, commit ni snapshot."
+summary: "Base ±870 (ff800b28) aceptada por el propietario y en commit local 650d825. Bloque 2 en investigación: tanque independiente de la separación, intercambio nativo solo para personajes 10/14, dueto sin evidencia; fixture P1_DUET habilitado en el harness. Tomas A (ataque) y B (dueto) pendientes de autorización. Snapshot tras el Bloque 2."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-14"
@@ -11,7 +11,73 @@ doc_kind: evidence
 
 # Gas-O — ledger canónico
 
-## Referencia GO + 2 s: candidato ±870 (2026-11-14, estado vigente)
+## Bloque 2 sobre la base ±870: investigación interna (2026-11-14, estado vigente)
+
+- Encargo: «Si continúa» (empezar el Bloque 2 por la investigación). Objetivo: ataques,
+  CAUGHT y fever de dueto correctos con homes ±870. Check: tomas grabadas y aceptadas, con
+  revisión fotograma a fotograma. Las partidas requieren autorización del propietario.
+- Ghidra MCP (`get_program_info` → `SLPM_862.19`, javaw 63424) + `read_memory` y Capstone
+  local (sin crear funciones en el proyecto):
+  - El clamp nativo `0x8002D81C → FUN_8002CD48` usa `ctl+0x28` como centro y `ctl+0x38`
+    como radio, y solo actúa si `dancer+3` y `ctl+0xC` son distintos de cero.
+  - `0x8002ABE4..0x8002AD44` intercambia home X/Y/Z (`+0x28..+0x34`), radio y `+0x40`
+    entre los controles de ambos lados, **solo si el bailarín es el personaje 10 o 14**
+    (`lbu 4(s1) == 0xA/0xE`) y su raíz X cruza la del rival. b1home ya excluye 10/14; el
+    caso límite es un rival BAG2 10/14 frente a un BAG1, que heredaría ±870. Va a la matriz
+    de pruebas, sin cambio de código.
+- Tanque Gas-O (`bag2jp_gaso_tank.h:528-531, 618-621`): sigue la raíz del rival en cada
+  fotograma, sin depender de la separación. Riesgo bajo; falta comprobarlo en juego.
+- RAM de `go-plus2-autoplay`: en la fever en solitario el juego fija el home del ganador a 0
+  (absoluto, gf16488). El perdedor conserva -870 (en nativo serían -520). **Dueto sin
+  evidencia**: no se sabe si la coreografía usa homes absolutos o los ±870 heredados.
+- Fixture de dueto: `BAG2JP_TEST_P1_DUET` (`at_duet_rng`, solo con traza y guardas nativas)
+  no llegaba al juego, porque `versus_session.DEBUG_ENV_ALLOWLIST` no lo incluía. Añadido
+  con TDD (`test_versus_session_env.py`: RED → GREEN; 5 tests con `test_score_fixture`).
+  Runner `_work/gaso/block2/run_recorded_block2.py --fixture …` (lista blanca, 2 tests).
+- Goldfish (2 revisores) y triaje en `_work/goldfish/triage-block2-duet-fixture-env.md`:
+  - Hallazgo alto: las guardas del dueto exigen Heat en ambos lados con trajes A/B. Con Gas-O
+    el fixture nunca se activaría. Heat BAG1 sigue siendo el personaje 0 (la versión es una
+    bandera aparte), y la toma `20261104T054824756883Z-heat-p1-duet-rng-hook-bag1` (Heat
+    BAG1 A/B) ya registró `duet RNG seed1` y `fever2` en juego.
+  - El mismo fixture fuerza puntuaciones 500000/500100: no es juego natural.
+  - Corregido: `versus_session.build_game_env`/`armed_debug_fixtures` (funciones puras) y
+    `result.json` registra `debug_fixtures`; el runner acepta un único fixture y rechaza
+    `--fixture=`. El test del runner recorre la ruta real `run_recorded_go_plus2` →
+    `run_recorded_dance_center.main`; el mutante «fixture antes de la limpieza» muere.
+    Tests: 8 (env + score fixture) y 2 (runner) OK.
+- Goldfish ronda 2 (`spec-block2-env-builder.md`): aprobado con cambios. `debug_fixtures`
+  se toma ahora del `env` real que recibe `Popen` (test con `Popen` simulado, RED → GREEN,
+  9 tests OK); el test del runner restaura `sys.modules`/`sys.path`. El EXE desplegado
+  `ff800b28` contiene ambos fixtures. El árbol de compilación define
+  `GASO_CAUGHT_CLIP_PUBLISHED 1`: la toma A activa la publicación del clip en juego.
+  Criterios de aceptación de A y B en el triaje.
+- Tomas propuestas (EXE `ff800b28…` ya desplegado, sin rebuild, escenario GasOBAG1):
+  A. Gas-O BAG1 A contra Heat BAG1 A, `--fixture BAG2JP_TEST_GASO_ATTACK`: tanque/CAUGHT y
+     reacción con ±870, correa 199, cierre y selector.
+  B. Heat BAG1 A contra Heat BAG1 B, `--fixture BAG2JP_TEST_P1_DUET`,
+     `--watch-extra 80008548:4`: fever de dueto con ±870. Aceptación: `debug_fixtures`
+     correcto, línea `duet RNG seed1`, `fever2`, grabación aceptada y revisión de posiciones.
+- Tomas autorizadas («Okay continúa»), EXE `ff800b28`, 150 saves y ajustes restaurados en ambas:
+  - **A** `block2-attack-a` (grabación aceptada, 1998 latidos, jitter p99 11.1 ms): fixture
+    de ataque ×4; tanque sobre el rival en X 682/681 (home 870 ± 199) en gf7744 y gf7947;
+    CAUGHT: publicado gf7744, entrada gf7746, la segunda entrada reutiliza el clip tras
+    VERIFY (camino sin log, `gaso_caught.c:401-410`), restaurado gf8165; 0 pérdidas o
+    rechazos. Cues 6906/690a despachados. Correa ±870/199 hasta la liberación nativa; fever
+    en solitario de Heat (home 0) y selector. Muestras de pelvis fuera de 870±199: 12/123
+    (referencia sin ataque 20/123). `_work/gaso/block2/take-a-review.json`, hojas `take-a-sheet-*.png`.
+  - **B** `block2-duet-b` (grabación aceptada, 2020 latidos, 28 pares de audio descartados):
+    `duet RNG seed1` y puntuaciones forzadas 500000/500100 (no es juego natural); `fever2`
+    en f016519. `0x80008548` = `BF54BC7E` en f016519, exactamente 9 `rand` tras la semilla 1.
+    En el dueto los homes siguen en ±870 (radio INT_MAX); la coreografía acerca a los dos
+    bailarines (P1 -157..-493, P2 +391..+662) y en imagen bailan juntos cerca del centro.
+    `take-b-review.json`, `take-b-sheet-duet.png`.
+  - Sin verificar: separación de referencia del dueto nativo con ±520, audio subjetivo y
+    latencia de pantalla (±2 fotogramas estimados).
+- **Conformidad del propietario** con A y B tras ver ambos `owner.mp4` («okay esta bien»,
+  2026-11-14). Incluye el commit local y el snapshot propuestos. No acepta el audio por
+  separado ni convierte en aceptados los candidatos offline (ventilador, cámara, eventos).
+
+## Referencia GO + 2 s: candidato ±870 (2026-11-14, aceptado por el propietario)
 
 - Corrección del propietario: «la camara que tienes que tomar para la posicion inicial
   correcta debe ser 2 segundos despues de que la palabra Go aparezca». Sustituye la referencia

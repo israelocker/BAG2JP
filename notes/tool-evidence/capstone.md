@@ -11,6 +11,17 @@ doc_kind: evidence
 
 # Capstone: evidencia de uso
 
+## 2026-11-14 — Bloque 2: zonas sin función definida en Ghidra
+
+- Propósito: desensamblar 0x8002D500..0x8002D870 y 0x8002AA40..0x8002AE40, donde Ghidra no
+  tiene función definida, sin crear funciones en el proyecto.
+- Comando: `py -3.13 _work/gaso/block2/disasm_range.py <read_memory.json>` (MIPS32 LE) sobre
+  los bytes de `read_memory` de Ghidra MCP; salidas en `_work/gaso/block2/dis-*.txt`.
+- Evidencia: secuencia `addiu a0,s3,0x28 / lw a2,0x38(s3) / jal 0x8002CD48` (clamp) y bloque
+  de intercambio `+0x28..+0x38` condicionado a `lbu 4(s1) ∈ {0xA, 0xE}`.
+- Validación: coherente con la descompilación previa de FUN_8002CD48 y con los offsets de
+  ctl documentados. Resultado: útil; tiempo no medido.
+
 ## 2026-11-13 — Contraste del hook HUD overlay005
 
 - Propósito: contrastar registros y palabras del consumidor nativo del HUD con el

@@ -8,7 +8,7 @@ created: "2026-11-14"
 updated: "2026-11-14"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "f214384b0a3de13bcd3d088924ac94d6f868b40763d2fe0cbcaecc351a5b1ae1"
+source_sha256: "1a09b45bca4652629064e41bd3b4448b63c49e56fc8df40b9501c17429843b1a"
 ---
 
 # Gas-O: lectura vigente
@@ -26,8 +26,14 @@ antes de reutilizar. La nota canónica conserva la cronología.
   la muestra RAM más cercana llega +0.88 s tarde (estimación visual, ±2 fotogramas).
 - RAM: homes ±870, radio 199; final anim67/68 [-870,312,0]/[870,520,0]; INT_MAX, fever y
   selector observados. Hojas `go-plus2-match/` sin recortes visibles.
-- **Conformidad del propietario** (2026-11-14) y commit local WIP del árbol completo.
-  Snapshot tras el Bloque 2. Siguiente: Bloque 2 (ataques/CAUGHT/dueto/cierre). Histórico: READY ±1300 quedaba hacia el borde exterior a GO+2 s; ±700 hacia dentro.
+- **Conformidad del propietario** (2026-11-14) y commit local WIP 650d825. Snapshot tras el
+  Bloque 2. Investigación del Bloque 2: tanque independiente de la separación; intercambio
+  nativo de lados solo para los personajes 10/14; dueto sin evidencia. `BAG2JP_TEST_P1_DUET`
+  ya llega al juego y `result.json` registra los fixtures armados. El fixture de dueto exige
+  Heat contra Heat con trajes A/B, así que la toma B es Heat BAG1 A contra Heat BAG1 B.
+  Tomas A `block2-attack-a` (tanque/CAUGHT/fever en solitario/selector) y B `block2-duet-b`
+  (dueto con homes ±870 que se mantienen; bailarines cerca del centro) grabadas y aceptadas
+  técnicamente. Siguiente: conformidad del propietario, commit local y snapshot. Histórico: READY ±1300 quedaba hacia el borde exterior a GO+2 s; ±700 hacia dentro.
   Lo siguiente es evidencia anterior:
 
 - Owner pidió terminar más centrados, como al inicio. El radio 318 separaba pero dejaba
