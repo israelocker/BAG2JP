@@ -1,0 +1,5560 @@
+{
+  "schema": 1,
+  "assessment": "automated_triage_only_not_semantic_clearance",
+  "source_commit": "28fc1e917fd4d3f7ddc6f557d5b333a6a617f9d0",
+  "source_commit_role": "base_commit_only_file_hashes_identify_actual_examined_bytes",
+  "created_utc": "2026-11-15T13:30:12.060940+00:00",
+  "snapshot_kind": "current_worktree_not_clean_commit",
+  "extractor": {
+    "path": "_work/configuration/audit_development.py",
+    "sha256": "345008c00d83fb25655051404aa0f71f782c492e3701fe941cf5de41cd3ab519",
+    "command": "py -3.13 _work/configuration/audit_development.py",
+    "status": "local_research_extractor_not_yet_a_versioned_compliance_tool"
+  },
+  "full_report": {
+    "path": "_work/configuration/development-audit.json",
+    "sha256": "c75f6dfc3fd59b9347b985d3987cb452a398891706dd3d1412922d154efc585d"
+  },
+  "invalidation_rule": "Re-review a consumer when its hash or the hashes/contract of its configuration authority and dependencies change; no prior semantic clearance is implied by this snapshot.",
+  "scope": "All existing Git-tracked canonical files; untracked paths inventoried separately, not modified.",
+  "limits": [
+    "Candidate lines are signals, not confirmed defects or complete semantic analysis.",
+    "Relative/default/environment/numeric candidates need consumer-by-consumer review.",
+    "Native constants, fixtures, hashes, generated assets and history are not automatically configurable.",
+    "External build tree and installed scripts need their own bounded inventory; no recursive external scan."
+  ],
+  "summary": {
+    "tracked_existing_files": 471,
+    "classifications": {
+      "asset_or_nonexecutable_metadata": 3,
+      "configuration_authority": 2,
+      "documentation_not_executable": 144,
+      "framework_patch_or_title_config_review_generator_not_literal_patch": 6,
+      "ghidra_script_review_host_paths_native_constants_separately": 2,
+      "harness_configuration_separate_bootstrap_contract": 1,
+      "host_tool_review_configuration_candidates": 82,
+      "installer_template_review_portable_generation": 4,
+      "package_host_tool_review_configuration_candidates": 36,
+      "package_resource_manifest_or_data_keep_runtime_contract": 28,
+      "profile_contract_or_cache_review_authority": 19,
+      "runtime_native_not_host_toml": 50,
+      "test_review_real_dependencies_keep_synthetic_values": 94
+    },
+    "files_by_candidate_kind": {
+      "machine_path": 51,
+      "relative_location": 127,
+      "environment_input": 10,
+      "cli_default": 42,
+      "native_constant": 87,
+      "config_consumer": 8
+    }
+  },
+  "files": [
+    {
+      "file": ".gitignore",
+      "sha256": "20f08d8d7e49a1bb5f2b0eead2b34e6d6912426e8dce42625230428c2441f266",
+      "bytes": 473,
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {}
+    },
+    {
+      "file": ".opencode/opencode.json",
+      "sha256": "f6efd20263e4893fe7f1f5f164e4686a4df60890b5a83dddcc8d7b749c089ed2",
+      "bytes": 3538,
+      "classification": "harness_configuration_separate_bootstrap_contract",
+      "candidates": {
+        "machine_path": [
+          2,
+          7,
+          13
+        ]
+      }
+    },
+    {
+      "file": "AGENTS.md",
+      "sha256": "b0e874115bd66b31b7df43317b450c0b51cefd6f46fbff1b185582ebf434b327",
+      "bytes": 16831,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "ARCHITECTURE.md",
+      "sha256": "9799f307147464fb3a4e8475490bf279f781b6f42a64969b17146f1d5d0b8fd7",
+      "bytes": 2314,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "CHANGELOG.md",
+      "sha256": "f5506b41e977cde2fc54d5dc05051c09a1790b0f65460a6bb2073eed2e81835f",
+      "bytes": 943,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "CHARACTER_IMPORT.md",
+      "sha256": "35d1b4b2ed1800abb81c04d66e1aab1fc84a172c248da9132d8662fa41b0c4b3",
+      "bytes": 16721,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "CONTRIBUTING.md",
+      "sha256": "4162e736ccb0b8747205c30915d40ed1e46db8bfbc9d7bd08e38aa5458710562",
+      "bytes": 1463,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "HANDOFF.md",
+      "sha256": "1f15cbb86bee96a83b862696f475e8fde5e760ed1c711fa668ee6608d753b6df",
+      "bytes": 23732,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "IMPORT_STANDARD.md",
+      "sha256": "b8032c6e8c0cc12c5dffa4edabe8c2effff9a8dd54b9fb6d6966c6faff405806",
+      "bytes": 4026,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "MAINTENANCE_GUIDE.md",
+      "sha256": "d40de4b1df250c5cc6a0bdd44e5e4999017f6aafd0840a88d0a0e58e7668f718",
+      "bytes": 2213,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "NOTES.md",
+      "sha256": "64ef8c42197fdbea0aab9ea4a481c35b2c91689a7e8ac51bc94138d3909e6e0c",
+      "bytes": 2327,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "README.md",
+      "sha256": "63cda39a377f8c885211c98e17818c6bda42a5a09dfc64e84e4c770dde905d65",
+      "bytes": 735,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "agent-skills/archive/bag1-import-before-audit.md",
+      "sha256": "4167fd1abe679cd61c1af0f27483097f8734944fb71dbc8330c1b5ec813dee4a",
+      "bytes": 5714,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "agent-skills/bag-animation-matching/SKILL.md",
+      "sha256": "804fdc20c46d79ffd5e975774fc5e40f54f8359cd7188a8299ba3554bc8ce5dd",
+      "bytes": 2095,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "agent-skills/bag-character-pipeline/SKILL.md",
+      "sha256": "28339f5e497afef041c6045966e6f8209f89577fd4a58a1b749ba5cd736209b6",
+      "bytes": 2102,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "agent-skills/bag-reference-cache/SKILL.md",
+      "sha256": "5bafd03a422e6989b5fdb0ece82f06e17a0dee4ce45d25e810e06fd55e482328",
+      "bytes": 1383,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "agent-skills/bag1-import/SKILL.md",
+      "sha256": "9988a28847796262ca5d7dd28928fa4c7d512bf734d324b606193f322f3fc515",
+      "bytes": 1472,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "config/project.local.example.toml",
+      "sha256": "ec71ea7efa0a1c47150472fad1bc19eaa1a600995f5138a3905c783325b32f93",
+      "bytes": 614,
+      "classification": "configuration_authority",
+      "candidates": {}
+    },
+    {
+      "file": "config/project.toml",
+      "sha256": "78d8a893d909f6b76298056216e30af7e95c8fbb8e574262d78ec1f006980093",
+      "bytes": 362,
+      "classification": "configuration_authority",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/ARCHITECTURE-before-audit.md",
+      "sha256": "62bc81d1d0d86a1158f9c5924dc3eb4e35f626d6983ca192f8f4976008d400e6",
+      "bytes": 19270,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/CHANGELOG-before-audit.md",
+      "sha256": "d1f85028d4e4f18c70a5f397da88ec8002d0069821d4b358046368c6b568efd7",
+      "bytes": 3104,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/CONTRIBUTING-before-audit.md",
+      "sha256": "785c987c731f16a3267df24ae5f3b480aeccc77e8a88118d3fe92c7328c1e1db",
+      "bytes": 11678,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/IMPORT_STANDARD-before-audit.md",
+      "sha256": "7ad12e78ea85a507cfd6ab5de6248cde7113f984c1a6a8d589e3fe2643d7b67f",
+      "bytes": 10725,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/MAINTENANCE_GUIDE-20261101.md",
+      "sha256": "535b72b3cdb231089e9765c4ee220258e77e74ce0b39eab26ff7c6be05601833",
+      "bytes": 4485,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/index-before-audit.md",
+      "sha256": "1dd3a5e9f4cbcccc86e9162d6167926e5330446a86d3a19968cbd89d7c95aa56",
+      "bytes": 6423,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/model-routing-before-audit.md",
+      "sha256": "d042174ef436b574e191a64f0f8010e5b46bcd510286179d51355ce2fe2f22c7",
+      "bytes": 6309,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/paths-before-audit.md",
+      "sha256": "2fa27ee932802bdfb20376504d0a08840b3f98dba1493dc7a04a307633943ad4",
+      "bytes": 5666,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/system_config-before-audit.md",
+      "sha256": "266a3aea59a900728d8675db6c4f42c2cb317346a877be20c21d15fd53912fd0",
+      "bytes": 3532,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/archive/workflows-before-audit.md",
+      "sha256": "b028dea324698f5d535f5e8d2dd7f65312f0cd5c7d730cc3ec02a8e90b8594f8",
+      "bytes": 5945,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/coding-standards.md",
+      "sha256": "5b02608d4bdd411aa00173794016a5d2fccc7a2445ce705e2bbc88fcd5d57bd1",
+      "bytes": 12180,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/data-dictionary.md",
+      "sha256": "dbff7bb74412566f7f69097db3dcfd35d9c16eefcc24aae9adbfaf64f8c226da",
+      "bytes": 10481,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/index.md",
+      "sha256": "19c5d47b2f14c3f381607157c1e197ae2db76b8547ae8c16c53545665a80c5d9",
+      "bytes": 566,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/model-routing.md",
+      "sha256": "05940d32f16e52ca28649e06fba85515eb909632d30c73d2bcc6e453d147bb20",
+      "bytes": 3798,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/paths.md",
+      "sha256": "71a224bc0f00cdf900424456e790762c0a1beca24de5ac1b3f69c9c4baf37e77",
+      "bytes": 2608,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/superpowers/specs/2026-11-15-host-configuration-design.md",
+      "sha256": "460dc5bf90e68fd7d5096a0be3f97529b6838b4dcc6f5c54f0a0e34b103277a3",
+      "bytes": 11285,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/templates/note-template.md",
+      "sha256": "4370ea4f7d65058cfeb2f58b1d60e609bed3ca81e6d1139c87076fdfa3b86c19",
+      "bytes": 1328,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "docs/workflows.md",
+      "sha256": "ff82563785f484a3222d467cac08f19f83e9bd6aededd60595538e3e498ecf29",
+      "bytes": 1125,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "ghidra-scripts/ExportSeeds.java",
+      "sha256": "a42efe49048cf4846f385aa4a4879e9f2cf454b49476e9ea2b234cb398415c27",
+      "bytes": 998,
+      "classification": "ghidra_script_review_host_paths_native_constants_separately",
+      "candidates": {}
+    },
+    {
+      "file": "ghidra-scripts/FuncStats.java",
+      "sha256": "617bc17a024c2a55e12c6d5b0680c5cbb9b0134f29e42cd836482415feb7870d",
+      "bytes": 634,
+      "classification": "ghidra_script_review_host_paths_native_constants_separately",
+      "candidates": {}
+    },
+    {
+      "file": "installer/LEEME.txt",
+      "sha256": "c346270e995faa58c36c9fb8dd952d8564d5767d3dc155ae10f8be055d826b72",
+      "bytes": 2985,
+      "classification": "installer_template_review_portable_generation",
+      "candidates": {}
+    },
+    {
+      "file": "installer/bag2jp_online.nsi",
+      "sha256": "a597027750b16327bfbab57a3957d35083e11b45df59ecc85f51e7a96c632092",
+      "bytes": 11933,
+      "classification": "installer_template_review_portable_generation",
+      "candidates": {
+        "relative_location": [
+          22
+        ]
+      }
+    },
+    {
+      "file": "installer/build.sh",
+      "sha256": "4598ebfb80987707feffc246352eb84aa1fb2a164248600e852f427799b97685",
+      "bytes": 686,
+      "classification": "installer_template_review_portable_generation",
+      "candidates": {
+        "machine_path": [
+          6
+        ]
+      }
+    },
+    {
+      "file": "installer/settings.toml",
+      "sha256": "b1485af12c58ff96b96bcc47425af57756a9bb6d4d74f14ed658ffc2693dfb8a",
+      "bytes": 1107,
+      "classification": "installer_template_review_portable_generation",
+      "candidates": {
+        "machine_path": [
+          31
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.content.bag1-visuals/1.0.0/manifest.toml",
+      "sha256": "dd0df1e2952d617177a3e2fef7cb854bc8ad688d3e139577c8d0807a20a471e1",
+      "bytes": 1352,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {
+        "cli_default": [
+          28,
+          44
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.debug.anim-trace/1.0.0/manifest.toml",
+      "sha256": "bcd398acb5718f7372947257890ce11ec1788cafc05ea0962c90a2306e2fb41e",
+      "bytes": 560,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.debug.anim-trace/bag2jp_anim_trace.c",
+      "sha256": "7d336bb51dfe402719ec5f205b8408964a6e3ec8156a95277c017eb1bea98c34",
+      "bytes": 19099,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "environment_input": [
+          46,
+          47,
+          48,
+          49,
+          50,
+          114,
+          158,
+          184,
+          195,
+          203,
+          205,
+          207,
+          231,
+          255,
+          263,
+          285
+        ],
+        "native_constant": [
+          2,
+          3,
+          101,
+          123,
+          260
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.debug.anim-trace/bag2jp_attack_fixture.h",
+      "sha256": "81e4b4be47c65cdfcfb851544160d8e6a433e27bb6f245f07f0a7f3dc9c2a5c9",
+      "bytes": 4560,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          56,
+          57
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.debug.anim-trace/bag2jp_score_fixture.h",
+      "sha256": "66c779de4623801e61cb96704cc734ef82923140c35396580c0e9cd9fc256982",
+      "bytes": 3880,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.debug.anim-trace/bag2jp_system_error_probe.h",
+      "sha256": "99dedfcf00269a83a36e412b22daa4d6573342c91783677439c560c37b6937c8",
+      "bytes": 1791,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.debug.anim-trace/bag2jp_vram_dump.h",
+      "sha256": "36d63cd2e322c10e64220468ec51ee63caf7b7341adbdb0d05bde472141b5363",
+      "bytes": 1768,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.enhancement.hd-intro/1.0.0/manifest.toml",
+      "sha256": "9a1058b257d66829cfcb97aa1bb796fe90382ba0e291f57c1a4b2a055251ed51",
+      "bytes": 693,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.enhancement.hd-intro/bag2jp_hd_intro.c",
+      "sha256": "0f65741d85ba9689beda1274df56060132bc313f144e19c55199a49dabbe475b",
+      "bytes": 13670,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.experimental.expanded-ram/1.0.0/manifest.toml",
+      "sha256": "3951b3c72cb39c06d8c593021916f60201874a251938ab110c22cee87c1e5fbd",
+      "bytes": 933,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {
+        "native_constant": [
+          6,
+          28
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.autoplay/1.0.0/manifest.toml",
+      "sha256": "698140ba68cf9d4b1078f233fba7f0b766e58c421c34e12d0d63224702b7e153",
+      "bytes": 1412,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {
+        "cli_default": [
+          31,
+          40,
+          49
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.autoplay/bag2jp_ap2_no_attack.h",
+      "sha256": "b534206a781dea707161e60440da19562b1dff65762b3685d1f7c9ea8dfaf34c",
+      "bytes": 2334,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          3,
+          4,
+          5,
+          7,
+          8,
+          9,
+          17
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.autoplay/bag2jp_mods.c",
+      "sha256": "5e5623c25822fbac794c4642b0d6ad3aa0318337508c571cd37d0a31e6eb78ad",
+      "bytes": 10344,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "relative_location": [
+          4
+        ],
+        "native_constant": [
+          20,
+          21,
+          22,
+          27,
+          28,
+          29,
+          33,
+          36,
+          92,
+          159,
+          161,
+          163,
+          165
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml",
+      "sha256": "00e9462367ba5eb845628ebf7148207fd05caf33b9f8ff2f0ee23806aa73a2af",
+      "bytes": 5139,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {
+        "cli_default": [
+          31,
+          51,
+          75,
+          84,
+          100,
+          116,
+          132,
+          148,
+          164
+        ],
+        "native_constant": [
+          185
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/bio_bag2.png",
+      "sha256": "a69c3621a4d84234db5f277a1592d98ae4fcc38a331429ec00f2e1b15576d761",
+      "bytes": 10015,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/font_a03.png",
+      "sha256": "9c537727b94e3354240af9b37135c6cd2eeda93655270614ffad83ad6642daab",
+      "bytes": 183091,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/font_a05.png",
+      "sha256": "4c06b4547849d5768fe9ec1a7ebe068d03da40465bdfd93db82949d35fb94cc7",
+      "bytes": 180048,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/font_a06.png",
+      "sha256": "9e2bf18f9d848e7b637f6789972f0c89df9d52458a709c8bfb8b1c436bd11ce4",
+      "bytes": 181520,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/gaso_bag1.png",
+      "sha256": "081b2cb1896a4de33f2fdf2a027eb71a6a4ec8c2158544c0d124bdd2b432e69f",
+      "bytes": 23662,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/gaso_bag2.png",
+      "sha256": "a69c3621a4d84234db5f277a1592d98ae4fcc38a331429ec00f2e1b15576d761",
+      "bytes": 10015,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/heat_bag1.png",
+      "sha256": "957947268daa95e0f119c4c3ad716a6f6d0318ce1d37667bd32dee45d64b9146",
+      "bytes": 20915,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/heat_bag2.png",
+      "sha256": "1b646f4bd637cbc38b24b691c76bec70c919e328825d5d0b8b53503ce00acddf",
+      "bytes": 10762,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/strike_bag1.png",
+      "sha256": "4e00b2c6c51362096ba52831c30be893a541d8fac5742d4a8f3b982ae4b52aa1",
+      "bytes": 11872,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets/strike_bag2.png",
+      "sha256": "a58c18b45e85ffae22bd868373c9d022a92a6947868817e3629798630e7e8ce7",
+      "bytes": 10177,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_alt_index.h",
+      "sha256": "ac74cee63db85fa1fd88752bd9d2bcd73629d62e37cc2143dbc811a38d239301",
+      "bytes": 2822,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_center.h",
+      "sha256": "0f403f1a347bf39dfc04320c32ceb854e4c166ec69331f102152129d2b33b883",
+      "bytes": 6421,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          3
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_ending_data.h",
+      "sha256": "9875ff91e3617cb3ace20a9a9c44d633e45f94253945af96ddbe46b53e3d2866",
+      "bytes": 3711,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "relative_location": [
+          1
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_endings.c",
+      "sha256": "e0b2cb751ae8e5de818517d6e015de4ce9b9bbcc1f46265f5315c6a17c3da8cf",
+      "bytes": 6675,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          24
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_home.h",
+      "sha256": "fcfe965b9acb7b1a021723c63ec517ba7b94312f86012504fef48c074d849502",
+      "bytes": 3026,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_hud.h",
+      "sha256": "83859d39036408aa54ac276549ff1630aef488bba2c6ceedc7a339ce2b20544f",
+      "bytes": 3090,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_leash.h",
+      "sha256": "6747ed13fbebd8cdbd9e3ea2fb3a65fcce2b8ffdbbcc69635a885a64ccc555d9",
+      "bytes": 4178,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          2,
+          3,
+          4,
+          5,
+          7,
+          13,
+          26,
+          49
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_load_latch.h",
+      "sha256": "97ad496c9a3b0405db5180412dce14a5da3df2a62b20becddc4ce1ba12da8f8e",
+      "bytes": 2663,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          2,
+          5
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_stage.c",
+      "sha256": "5f19f0eda31228c8031156d4f39fddaa93831d497107e9a0563aca7e43709d5f",
+      "bytes": 18523,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "environment_input": [
+          120,
+          199,
+          321
+        ],
+        "native_constant": [
+          5,
+          8,
+          9,
+          10,
+          11,
+          12,
+          19,
+          20,
+          86,
+          87,
+          146,
+          368
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_versions.c",
+      "sha256": "07abe733f5838cd8c372c714ba294ab3cdd647c4a235f187ae87374686b3aedf",
+      "bytes": 19663,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          7,
+          11,
+          126,
+          130,
+          142,
+          212
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_adapter.h",
+      "sha256": "dbec760402ded7ec521dd2864fca5a6e6dc510785ca579b47c686e228159ef2b",
+      "bytes": 15354,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_bank.c",
+      "sha256": "6bf325df32f9b1299611c0e9fc2f88a83107937a914f2ee5300f078f2397024f",
+      "bytes": 1967,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_bank.h",
+      "sha256": "461e92047c894d074b6cedf470bbb9282600ef2170c3769f4806c9e4d901987b",
+      "bytes": 1181,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_bank_data.inc",
+      "sha256": "4f71657647127c2b249010304dbe89718c634d1106e775ec293c35d28763abf1",
+      "bytes": 6828,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_binding.h",
+      "sha256": "589eca083c9145855c86c86dd378dbba5d575cb6523250cab6ebd135b098bda4",
+      "bytes": 12882,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_context.c",
+      "sha256": "532a9dbd6005ad90e28d8cbe2ce7a395b18bab63dfc437e8a2bcde7cceee5b11",
+      "bytes": 4246,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_context.h",
+      "sha256": "f704da26f352aa924dd5834f0cab1cbf1320c9e796c19eccaf66594fccc0ddb8",
+      "bytes": 1194,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_entry.h",
+      "sha256": "851b00b38dd6e18a51d6606f6ae954e12751667a3c664fe00b31dc3168f5902f",
+      "bytes": 3170,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_loan.h",
+      "sha256": "aebf5bc479f9d95c01cacf77dab229ca16d73b58317e44662dd5942594f6ecfb",
+      "bytes": 4740,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_source.c",
+      "sha256": "ef7d1499f5e91195b99d5dd4438c7dbaf6ee17dcac2e9d604b9cd004f676e877",
+      "bytes": 5171,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_caught_source.h",
+      "sha256": "a222bd6ee7c814ac4efe52c2dbc7dc0eba931429b53cf6ff36e636ad5ffb449a",
+      "bytes": 1772,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_charsel_popup.c",
+      "sha256": "9c7cec678d3ca1122ebf3814744005238003a08bf6bfd7c90620ab4cb55cf635",
+      "bytes": 29606,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "relative_location": [
+          24
+        ],
+        "native_constant": [
+          4,
+          8,
+          15,
+          45,
+          325,
+          462,
+          498,
+          499,
+          500
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_gaso_bubble.h",
+      "sha256": "7bcd95afa1b9c2957ea481455fa8f8caef9e12335dae35ff6f6dd38ad30aa2a3",
+      "bytes": 1366,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_gaso_caught.c",
+      "sha256": "dc9eb3f61c7914b6de36840ee0e30ae0822dbee393f37d698df431e9fb5069f2",
+      "bytes": 48259,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          21,
+          92,
+          139,
+          193,
+          194,
+          195,
+          196,
+          364
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_gaso_tank.h",
+      "sha256": "78fb979e217600948869adc54a9384ff8b81660b77e33a9544e19fdcc55cc8ab",
+      "bytes": 36703,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          5,
+          44,
+          212,
+          624,
+          675
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_heat_flame.h",
+      "sha256": "08d3b30388864b7fab4fabb3732a23b43cb3a8850f5c57ca0340e94bdfd22d56",
+      "bytes": 24770,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          5,
+          17,
+          24,
+          73
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_model_region.h",
+      "sha256": "17bd068862f28e024f048ce351971b6fa6c92f0ebffce772f2e44974e731c181",
+      "bytes": 2466,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          3,
+          4,
+          5,
+          8
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_stage_select.inc",
+      "sha256": "5acffa8eca13ae5920a6bab5797e0e9d5d513096cf363d8db985c6481be78737",
+      "bytes": 8638,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_stage_select_patches.h",
+      "sha256": "08f1b68a93f77c0502c9ac28285bd9edb8f0efc4e9aff59b3e5b570e28a97964",
+      "bytes": 1654,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_stage_visibility_test.h",
+      "sha256": "fa817dbdc4161cc139a96423dba0b7357a6411df836d53aaa5e09983ad0dac3d",
+      "bytes": 1932,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          7
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_strike_bag1_draw.h",
+      "sha256": "1e6e436cd1bc9e1eed8880d2e11db24d5d20a2b720cac5b92d91a2c8acd17a0a",
+      "bytes": 9082,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_strike_bag1_fx.h",
+      "sha256": "e9b9c17e49d1624a285ca2521ab568b425852e7e18b080dff02054d90d8280e3",
+      "bytes": 4204,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_strike_lighting.h",
+      "sha256": "0d5badf2bc14aee8a8e38845c79d6e7fc99041e04ecb2f47a4098eebae9d779f",
+      "bytes": 2120,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/bag2jp_strike_shot.h",
+      "sha256": "e2cdcd54596bd7186a4e1a9be9d814de4f04217aacefd4f31ebbabb5f9818aba",
+      "bytes": 14329,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          22,
+          44,
+          45,
+          60,
+          175
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/blockmap.json",
+      "sha256": "60e6899219d02e10fe70771de2c67970b239b752e326687d707aca105b1c24e5",
+      "bytes": 25665,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/blockmap.py",
+      "sha256": "f236ca1c186343c307bb6ec4c52f7f3b7829b0dc34e1b6ad1f964a01c5f239ea",
+      "bytes": 2244,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          4,
+          5,
+          15,
+          38
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/match.py",
+      "sha256": "41f1b39b012550aa93e7c6e44e1063a959e28d002e2606b0a82a2b44e800c48a",
+      "bytes": 2229,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          3,
+          41
+        ],
+        "cli_default": [
+          40
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/quickid.py",
+      "sha256": "f36fc205f7bdcf1bd5d04f2bf1d95dc185a2a21b0ccdc83b2b95be2187a2e1a8",
+      "bytes": 601,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/render2.py",
+      "sha256": "96bcd077d9a6ce60e023ea2b3d2ea9383bea8438010de909b3f83b94d8c7a7c9",
+      "bytes": 9594,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          15
+        ],
+        "relative_location": [
+          13,
+          15
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/segmap.json",
+      "sha256": "6f383baf7de755c6bf1ffb1ea4b85211565bc74d7505de94351b0165619bcb41",
+      "bytes": 1267,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/segmap.py",
+      "sha256": "b6b42ad26945fe71257e57d5acd602ed54771fbe6238e37448343d5011dc7da6",
+      "bytes": 3428,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          3,
+          18,
+          70
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.endings-view/1.0.0/manifest.toml",
+      "sha256": "56474608f2fc9c0b48a6e0d50b29dcc9eb1c963275361d9f7e71937f3614cd09",
+      "bytes": 870,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {
+        "cli_default": [
+          30
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.endings-view/1.0.0/menu_hd/ready.txt",
+      "sha256": "2d5602a5852f3734e4ba4b35149b1bccab22e022dd8f684e0e542398add8347d",
+      "bytes": 939,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.endings-view/1.0.0/menu_hd/texupload-P4-D4255CD8ACD2DF66-A8C5D7D627730B15-48x120-0-0-192x120-P0-15.png",
+      "sha256": "f3b06511809454ed20b683946ca499e4c268db023af664e6c8aa6ee73fee4562",
+      "bytes": 615915,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.endings-view/1.0.0/menu_hd/texupload-P4-D4255CD8ACD2DF66-FB65B34C7CE811F3-48x120-0-0-192x120-P0-15.png",
+      "sha256": "419dd869e5d75e9ece2cc27ccb682a2ead2980b39287bdd39f194300b81e79c5",
+      "bytes": 644981,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.endings-view/README.md",
+      "sha256": "723836a40081ebfce3876344410e1f70cce9079c8122e31e84a557041d0950fe",
+      "bytes": 2311,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.endings-view/bag2jp_endings_view.c",
+      "sha256": "b9f2eef12903d960cb5f5a3a3848b9aa30c3f76521037370bfeefebcae4f8ec3",
+      "bytes": 14272,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          4,
+          14,
+          35,
+          112
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.endings-view/build_hd_menu.py",
+      "sha256": "a21bb69bffad8e0e9e2d65f28da5b96eca7f1b6e6ddbd5a5297560b695bcb9ad",
+      "bytes": 5473,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {
+        "relative_location": [
+          14,
+          15,
+          104
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.mods-menu/1.0.0/manifest.toml",
+      "sha256": "9a747bab353cadc74edd19e76f1c2a02062ede50c1a987d56d6fe0fd771cc9ee",
+      "bytes": 836,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {
+        "cli_default": [
+          26
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.mods-menu/bag2jp_mods_menu.c",
+      "sha256": "7d185803145355374305dffe0aa4c6dfead827c2e962e07c0a62e225c76559e1",
+      "bytes": 31919,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "relative_location": [
+          5,
+          28,
+          108
+        ],
+        "native_constant": [
+          3,
+          11,
+          12,
+          13,
+          17,
+          21,
+          39
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.netsync/bag2jp_online_servers.txt",
+      "sha256": "7cea4f01a64b52060a3fc535e08ab08a288911de6b915c7fdd45246e5b61638c",
+      "bytes": 364,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.feature.netsync/manifest.toml",
+      "sha256": "59617394d539343f40a8850686aee5f3ce2980beee0031325eb75c5a02e8f769",
+      "bytes": 1373,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {
+        "cli_default": [
+          27
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.feature.netsync/src/bag2jp_netsync.c",
+      "sha256": "5617212143b86ecd34b302cee492a929d2cd62ca450c385a53fb4759ce1e8351",
+      "bytes": 53629,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "environment_input": [
+          674,
+          848,
+          905
+        ],
+        "native_constant": [
+          23,
+          24,
+          27,
+          28,
+          31,
+          34,
+          36
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.hd-texture-pack/SLPM-86219/config.yaml",
+      "sha256": "4290eb09f02be5d5d353598379aa35a997026cfd8251fdba0d45199e2a189763",
+      "bytes": 72,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.hd-texture-pack/tools/esr_each.ps1",
+      "sha256": "089b74646acafb1915d5f8853bc707b7e7ebed9e3f627736d107f03e974a35aa",
+      "bytes": 779,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          4,
+          5
+        ],
+        "relative_location": [
+          4
+        ],
+        "cli_default": [
+          3
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.hd-texture-pack/tools/font_hd.py",
+      "sha256": "0f09074dd2925beee8c09800ed17e9a9e7006897170ab0ce6e3eef452874cfbd",
+      "bytes": 5773,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          43
+        ],
+        "relative_location": [
+          9,
+          41,
+          43,
+          61,
+          69,
+          99
+        ],
+        "native_constant": [
+          70,
+          74
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.hd-texture-pack/tools/gen_charsel_pack.py",
+      "sha256": "c05395962a028a22c974793b6ae93c7bc6624fef3df2d1ecc9d7dbce7d60733a",
+      "bytes": 10998,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          132
+        ],
+        "relative_location": [
+          129,
+          130,
+          132
+        ],
+        "native_constant": [
+          25,
+          26
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.hd-texture-pack/tools/gen_ui_pack.py",
+      "sha256": "135fc13ed2ca667c478b191e368aa3320f9c5520f0a3e93b4dc9f1cff7def53e",
+      "bytes": 8748,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          13,
+          16,
+          17,
+          19
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.hd-texture-pack/tools/validate_pack.py",
+      "sha256": "86621b36ddd15502499d6472676db2125c249d14f386c8c593b417f5d796ec16",
+      "bytes": 1395,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/1.0.0/PAYLOAD_README.txt",
+      "sha256": "4336966eb0309e8a974ffd427cf92bc2b28557715f9ab2decf219fe20da98997",
+      "bytes": 66,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/1.0.0/manifest.toml",
+      "sha256": "df38263e82e4364d749a59082d183acead5d09cf986d7e30ccc62acf816a5d66",
+      "bytes": 36408,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {
+        "cli_default": [
+          26,
+          42,
+          58,
+          74,
+          90,
+          110,
+          126,
+          135,
+          151,
+          167
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/bag2jp_command_buttons.c",
+      "sha256": "a85e7934c2b691213cf7d2971fa35125f153ae5834bf782f21f34cd12d88ee96",
+      "bytes": 2261,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "native_constant": [
+          3,
+          4,
+          7
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/bag2jp_hq_songs.c",
+      "sha256": "e5ef426bb8942b5f939ef6ea6cd8c2613976d4c13941d27a451d46a1267c121e",
+      "bytes": 6385,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/bag2jp_hud.c",
+      "sha256": "75fa8529149f1fbe0729489a2ba6fa4a31b291c225b7c4b44db2e3ba5e93ceee",
+      "bytes": 1083,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/bag2jp_hud.h",
+      "sha256": "a97686e3a255775cb2355b7950e60898952f114ce52e3d705be493dfabe42755",
+      "bytes": 248,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/bag2jp_vs_screen.c",
+      "sha256": "2fa96f07f3bec9ff7ba546b69aa713576c6f121c746d8fe56c4e903f112d2c87",
+      "bytes": 10191,
+      "classification": "runtime_native_not_host_toml",
+      "candidates": {
+        "relative_location": [
+          16
+        ],
+        "native_constant": [
+          10,
+          11,
+          12
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/jp_vs_us_differences.png",
+      "sha256": "38ecef8fc82455c92c1e563255b25f25ca52e1616a0135ffc65afa8a32637656",
+      "bytes": 1045637,
+      "classification": "package_resource_manifest_or_data_keep_runtime_contract",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/build_announcer.py",
+      "sha256": "8e31f54be568a8f36d53987d50c7264756600be4e4cc7259a7704d2e7cb9b79a",
+      "bytes": 4229,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          9,
+          11,
+          12
+        ],
+        "relative_location": [
+          9,
+          11,
+          12
+        ],
+        "cli_default": [
+          70
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/build_buttons.py",
+      "sha256": "49c7512b98cb8078af1f83bbee367d1d4b34a2987db628f4750f5d0dac474bc1",
+      "bytes": 3116,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          10
+        ],
+        "relative_location": [
+          10,
+          12,
+          14,
+          15
+        ],
+        "cli_default": [
+          27
+        ],
+        "native_constant": [
+          8
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/build_regional.py",
+      "sha256": "098e7851e860a6cb86ef58094deb8b953ba62186e6beaeab2e7cec967cf0b345",
+      "bytes": 9134,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          7,
+          10,
+          12
+        ],
+        "cli_default": [
+          156
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/build_vs.py",
+      "sha256": "87a2094740b5fd83a456f149c2add3822238b0fe5c3303cdcc607edcae10b9f7",
+      "bytes": 4308,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          12,
+          13
+        ],
+        "native_constant": [
+          5
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/build_vs_option.py",
+      "sha256": "a091d22cf61edcb5ab9a4d773384b84184693f85afce816a0e4acfe6ebd82e6f",
+      "bytes": 1281,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          39
+        ],
+        "cli_default": [
+          10,
+          26
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/build_xa.py",
+      "sha256": "963ce59f4ab0ea25966642f8f63e5a15b77b556946e0f0e955f932630a0c8389",
+      "bytes": 5063,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          11,
+          13,
+          14
+        ],
+        "relative_location": [
+          11,
+          13,
+          14,
+          94
+        ],
+        "cli_default": [
+          68,
+          74
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/diff_members.py",
+      "sha256": "cb252d2feba398e7d8d3bcf76baca1a5dae2038490daa85c42b34485f7b2e4ff",
+      "bytes": 1625,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          2
+        ],
+        "relative_location": [
+          2,
+          3
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/entry_map.json",
+      "sha256": "2edca75e6e61204f493b57d7111988543e7336ab5f4416cbba21402fd5f2d126",
+      "bytes": 75767,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/funcdiff.py",
+      "sha256": "edd9ff4fb284fe20c937a8eeac940800e2fe82e9846fad304d15172b16193126",
+      "bytes": 3145,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/groups.py",
+      "sha256": "24f0438caf7918f59a8d3710e7bbf0a2b9bdf973455a391f9016c4bf1103a480",
+      "bytes": 2306,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          3
+        ],
+        "relative_location": [
+          3,
+          4,
+          5,
+          6
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/blockmap.json",
+      "sha256": "f2d37999ac1a1ab463c7f267b2c3b3c37b7155506f9b65c04f18bca56c61bf41",
+      "bytes": 404222,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/blockmap.py",
+      "sha256": "571deca05a52f1ef811365fc28c4f817381d218ed3ff5c72074a7035f0b72c9b",
+      "bytes": 2232,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          4,
+          5,
+          15,
+          38
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/match.json",
+      "sha256": "dd3d6cc4b1f35118bad11e56cf90104d3aea92dc3d58f329f458b13973a1d249",
+      "bytes": 17874,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/match.py",
+      "sha256": "b7bccac73174a9a6dadd4459ec1ddbc186d3ec7e1465cd839864170f3781b00e",
+      "bytes": 2220,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          3,
+          41
+        ],
+        "cli_default": [
+          40
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/render.py",
+      "sha256": "0c33cb106d8f6cf6e5903e6ff20fd198db4686646ac344f593f13dcfc4c5655a",
+      "bytes": 4009,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          9,
+          64
+        ],
+        "relative_location": [
+          8,
+          9,
+          26,
+          52,
+          63,
+          64
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/render2.py",
+      "sha256": "214d0afb9889c0c0bc7cca9d324f91b9c94c5b7dfdc1eb71d9ee30d0c9946457",
+      "bytes": 9593,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          15
+        ],
+        "relative_location": [
+          13,
+          15
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/render3.py",
+      "sha256": "f126670ad6420eb9fc1bd461db16997bcac8f1a30b9ef9b22e72afb86daa3089",
+      "bytes": 5902,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/render_all.py",
+      "sha256": "b4b4cc139dbca96ac97dd5458b931ca17b5c2c42ed3beb9e078f7952f4f4c06b",
+      "bytes": 1942,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          7,
+          10
+        ],
+        "relative_location": [
+          5,
+          7,
+          10,
+          13,
+          17,
+          27,
+          28
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/segmap.json",
+      "sha256": "9a93965ffcb232cfb5067bce27db50abd0549b00feab9cdea14555b46e351671",
+      "bytes": 13047,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/hq/segmap.py",
+      "sha256": "dc556e95997abc4b05f6e0a24aaf91d7f0bd48b5004fbcf11837154845f00eb9",
+      "bytes": 3676,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          3,
+          20,
+          72
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/map_entries.py",
+      "sha256": "ab7217fea204708a41885356bc7439250f2a9a26c944908038ffb81ade97a113",
+      "bytes": 2036,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          2
+        ],
+        "relative_location": [
+          2,
+          3,
+          37
+        ]
+      }
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/member_diff.json",
+      "sha256": "1b2f35a27ad5c34237415658e9b169be293280a1e495d3bbe84dab6385c0f4d9",
+      "bytes": 21971,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/mipsdis.py",
+      "sha256": "6900aed30d991a0efaef18aaae5908f5a0fb6e45b4dee63197085c602623072d",
+      "bytes": 317,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "mods-src/bag2jp.localization.regional/tools/preview_vs.py",
+      "sha256": "55bcc624d6c59566c9a4e7e6d048bcd5652f03f8e7f64071f9742eae97af91f2",
+      "bytes": 1313,
+      "classification": "package_host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          3
+        ]
+      }
+    },
+    {
+      "file": "notes/NOTES.idx",
+      "sha256": "194614114205aee64be24ae2175e430161e6f334d38fdab1c83399035480a442",
+      "bytes": 184,
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {}
+    },
+    {
+      "file": "notes/agent-handoff.md",
+      "sha256": "ba88a361186caec6b41565692c121d9c96f9a1908f6054affd88d96ecfefbd68",
+      "bytes": 1477,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/NOTES-before-audit.idx",
+      "sha256": "0b686477f101884fb2f8659babdda03f973fc45e35d2b22585e34c5bf4391b2a",
+      "bytes": 3144,
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/agent-handoff-before-audit.md",
+      "sha256": "5e39c2f53876b1e26de436dea7ecb8c3ad0e240faf473437cfc2d039889babc2",
+      "bytes": 2729,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/assets-before-audit.md",
+      "sha256": "ea43b46af59a864e72f6e2b292b24d1585d809a3e06f8f92ae4f4e1b6a06cede",
+      "bytes": 2006,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/bag1-character-before-audit.md",
+      "sha256": "e47730e9ba3f42dfee1a0237c08fbefbfc5fce3d7cb46fdbdd06d0d514a9589e",
+      "bytes": 32141,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/bag1-stage-song-before-audit.md",
+      "sha256": "bad736569074fca531f3948cc2b3c2f8089cefd5b5bd782e179ec789945b61f6",
+      "bytes": 13166,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/character-pipeline-before-audit.md",
+      "sha256": "27b410817dea065c508488974112322617dc6ce4c4fb83e9dec581a5c7b495c6",
+      "bytes": 11115,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/digests/bag1-character-before-audit.md",
+      "sha256": "7ac36d842227f221131128fbf5a32b2beb101f88717ddadacc0cb3fa5c28901b",
+      "bytes": 4239,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/digests/bag1-stage-song-before-audit.md",
+      "sha256": "92fefdb5e3bab3709c7cd242679d70d5b865a2ed8f33d38732ef3ed0f1d36faa",
+      "bytes": 4785,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/digests/character_import-before-audit.md",
+      "sha256": "01fbeec7f516c0c5bccb7cd600fcfc96c48a3d0de5f3fed3fbee0c47284b1995",
+      "bytes": 7335,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/digests/character_workflow-before-audit.md",
+      "sha256": "423aea73b467fa576814754f40e3be44609ce9c96814c1db6e17200e0fe86f19",
+      "bytes": 6142,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/digests/online-before-audit.md",
+      "sha256": "83920a948e691340f74bb0f50fb06bf94f697364b7a8a14f38103afadc7b725a",
+      "bytes": 5776,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/digests/project-before-audit.md",
+      "sha256": "c221ea2b96e48b50d5398cfd3785bf282ea17dd693e4ecbe108818714b63a431",
+      "bytes": 3537,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/endings-view-before-audit.md",
+      "sha256": "a093990ad84452134fb0d1e240324a74831c0b95898eb2c64db7aefb1a153dbc",
+      "bytes": 12037,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/online-before-audit.md",
+      "sha256": "469a3f0c18e4e426fee9242b5f752913397f52183bbd737f998603175e29df65",
+      "bytes": 12659,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/project-before-audit.md",
+      "sha256": "b2373aeda60006f96879c2a7885877aa3b083262520e6a0a277ef2594e80b204",
+      "bytes": 12614,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/regional-before-audit.md",
+      "sha256": "48a95a650b70afccaa17ee62121d6704a51789bbe53d417d22df522a54ac310e",
+      "bytes": 10902,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/strike-recovery-before-audit.md",
+      "sha256": "f78224093871afc84e6d3c3164130aed07dc90ba1f38ba0f6531adde56a69c52",
+      "bytes": 12700,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/ui-mods-before-audit.md",
+      "sha256": "25ce6f991791a5fdf4f55f7403656f5276e2609510446aea599a2d94690662b0",
+      "bytes": 5830,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/bag1-character-clean.md",
+      "sha256": "823b0ebb9a4af1a235f31a36954e328cec5175c61b3890cad4c080ba2f1a6996",
+      "bytes": 3492,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/bag1-character-optimized.md",
+      "sha256": "b6b1946a70af48de3d0c7e3c62bdc00d8e76cd3a5dab4b33975080c77d8567ec",
+      "bytes": 1662,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/bag1-stage-song-clean.md",
+      "sha256": "5140536d4608819bc1b7f84cd5393f9e51af408ff2f9022480964f8caedfe78f",
+      "bytes": 2722,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/bag1-stage-song-optimized.md",
+      "sha256": "202061c79fe2760cca46df298c43ec251eccaebed8ca8bb0201247dd7d44d385",
+      "bytes": 2152,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/character-pipeline-clean.md",
+      "sha256": "b33c8f7a2880d32b0d0ca50ea25d1c783baf9c9b425b6ee6b87d9bd4f7f3715b",
+      "bytes": 5368,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/character-pipeline-optimized.md",
+      "sha256": "9aa7d86618d00d80e0f199b5d2d34fe74c75177aaabaca4bc710c7a8d008c00a",
+      "bytes": 3906,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/endings-view-clean.md",
+      "sha256": "ebb9de0effc73f4c83f4117fca8ea8b30c1bfb471007e842409fe533625c238d",
+      "bytes": 2374,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/endings-view-optimized.md",
+      "sha256": "0bea509b32d470d5f0a17d0ed7549f16589dc7ffbe21efe7db9fa3120ce3b8b8",
+      "bytes": 1904,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/online-clean.md",
+      "sha256": "41cd0e7fcc4115e06b98ceee66ae67a5d394afa84de6c850cf46de1c5b457eb8",
+      "bytes": 2816,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/online-optimized.md",
+      "sha256": "8dfd86b2bb7510545d6d14087fed702e1f524f86ad853f7f606b42856dd2215d",
+      "bytes": 2133,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/regional-clean.md",
+      "sha256": "223e04eec598d724597772d8308b9d452dd62a648d89379957b9f8b9dd93f9be",
+      "bytes": 2676,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/archive/variants/regional-optimized.md",
+      "sha256": "ef61844345c73ad7183eed17313e36098bef5ff7ded283da3f0eb1256dfa6998",
+      "bytes": 2491,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/assets.md",
+      "sha256": "45ce0a9961328afa62cc2b7bfe4389656b6a3eacfbec462be37a2056673265a9",
+      "bytes": 12437,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/bag1-character-clean.md",
+      "sha256": "1ab0b96f403565e97cc1e41a91c36fe01cbed1803c2cb0a9488b5a92379da21c",
+      "bytes": 397,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/bag1-character-optimized.md",
+      "sha256": "1d448796610116793a1f1693d50f3709984f05a519eccb0289bdc9a4b442adc6",
+      "bytes": 402,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/bag1-character.md",
+      "sha256": "d163901ab9a372242a70f9fe321ab089bfc5fbc81d2bf38238bd54492925ea55",
+      "bytes": 32569,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/bag1-stage-song-clean.md",
+      "sha256": "b7e1f3d23c48781583d0cd3b8f36e34aada2fa49103170c1a4f37ccadf1a39e3",
+      "bytes": 415,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/bag1-stage-song-optimized.md",
+      "sha256": "ca629e327090813dfe959676112f1be8b1d6df18024b9e1fa883a9aa2a42a51b",
+      "bytes": 420,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/bag1-stage-song.md",
+      "sha256": "780766da3ce9c02cac60a5b87a633435898987c6993fa548f1c0703be27b3008",
+      "bytes": 55005,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/character-alternate-entries.md",
+      "sha256": "1cb64d0e5abfff567ecf6351e86bd78bfcceb84b0afdb6fe881f59428cc3f735",
+      "bytes": 11943,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/character-import-testing.md",
+      "sha256": "9805c699d539d8980df2604fb3d83048e1ae98a4941bad0f2f8c5bd4c21753af",
+      "bytes": 15662,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/character-pipeline-clean.md",
+      "sha256": "39b840736ad902a6764f2cc7968ba0234cbc63931624ac3d84e039665248d22d",
+      "bytes": 415,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/character-pipeline-optimized.md",
+      "sha256": "4b7af5f246a4998a30ff141f03fea2c69669e1705be6846df78f49953669af8f",
+      "bytes": 420,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/character-pipeline.md",
+      "sha256": "657759bff394c8ab268b8b88313f1b669098d2620dc1f6c6ec4c0268f2855364",
+      "bytes": 17557,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/assets.digest.md",
+      "sha256": "86fa33ad5085d06bd47976b2a02efe674437db8979bb62485a04821beb784fbb",
+      "bytes": 1998,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/audit-docs.digest.md",
+      "sha256": "adaf1bd5e1aadd8615b337460bb9fa46a654ebd3236a79083bc4403e6e8c4825",
+      "bytes": 1362,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/bag1-character.digest.md",
+      "sha256": "7d8ec9f229b7d700b03aada4cc3dca2bbe733ac2ac90e5ce4e424db69cb9b91d",
+      "bytes": 3138,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/bag1-stage-song.digest.md",
+      "sha256": "f91bbefe08b9ca0f0a616fa7bcba0926a81216011613658237b86f34aa997dad",
+      "bytes": 3208,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/character-alternate-entries.digest.md",
+      "sha256": "0124aad810d4d0226482e36986e2f747ae5dbc61edc6fca6f42d68254b80cd59",
+      "bytes": 2457,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/character-import-testing.digest.md",
+      "sha256": "7cf13c832b822eca40cc146741fe510160c49517301123f4cbc2266566a3c521",
+      "bytes": 2170,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/character-pipeline.digest.md",
+      "sha256": "c00f689405bd5862fce8ddae49affc11942e4c2ac6475d218e7e8e868dc7df92",
+      "bytes": 3707,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/character_import.digest.md",
+      "sha256": "6959ce55d248842f0e4faf7738a0a15c24bb8a9dd85e9e87a696a8194965271c",
+      "bytes": 2301,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/character_workflow.digest.md",
+      "sha256": "c8e7d24f5526f68d1bf9a4402ed03277fa9c2b69ebf5e1f491d597eb4509ce2e",
+      "bytes": 1154,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/gaso-import.digest.md",
+      "sha256": "9e8d1ac3d77465797443a68b531c78d8c9811322e075b32d975467058edc2ba9",
+      "bytes": 21503,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/host-configuration-design.digest.md",
+      "sha256": "11c8957dc99f89cbb601245dcf7957d5619464834330776f1c019599f6e00e42",
+      "bytes": 2189,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/host-configuration-foundation-plan.digest.md",
+      "sha256": "1447fd4e09794234dbc0e7dd47867fbaae7893e45379cf2fa14f4a5ee5dfb470",
+      "bytes": 2215,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/import_standard.digest.md",
+      "sha256": "3c5140e0a0d7e5fe910f0d3fe6832bec8b6750dff84f5751c888fc809b40bb47",
+      "bytes": 2200,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/online.digest.md",
+      "sha256": "1434dbd74fb2d47091ceef8434e08fc234454026dac7520b0a370d5f0a119611",
+      "bytes": 830,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/project.digest.md",
+      "sha256": "8347ec9fc0fd984679f37f7428c4c47f00e74f3b3ab514c0a64c057ee8929e33",
+      "bytes": 824,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/strike-recovery.digest.md",
+      "sha256": "2afa7f17ee44b00626a6649084a235e11423d31194ea4a8d41d96dfbcc7d3649",
+      "bytes": 16144,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/test-versus-navigation.digest.md",
+      "sha256": "2662727e6fc7ebc40b81dfc0d2da3f0705001be941f8eebd2a167f0d07d863b6",
+      "bytes": 1555,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/versus-navigation.digest.md",
+      "sha256": "08ae1b11b19a5d1ea2400516d6da3b0ddb8913b823e43b5a13eee77ba1c10338",
+      "bytes": 1810,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/digests/versus-session.digest.md",
+      "sha256": "18528e5f00429831df05709f21b3b999e9e0e2c95998fd8eb44092b5bf5e3002",
+      "bytes": 2175,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/documentation-audit.md",
+      "sha256": "3026cf7b83dcd793592b07c82f576d0f0488b61a45dfc97c074154bf9899bad7",
+      "bytes": 17830,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/endings-view-clean.md",
+      "sha256": "64d95bf7d8a12bf70481336f7f8616052d466ae560bc7323f60e4c1a68348bc0",
+      "bytes": 392,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/endings-view-optimized.md",
+      "sha256": "b7578bb9d9995a5807aecd499e40e07ed8a5d4a13430d6073c02ddb967f09e0a",
+      "bytes": 397,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/endings-view.md",
+      "sha256": "11b4c8ae85a1d4cce166d4742acb449e73e947ad0ae588f1639e86c336d920b4",
+      "bytes": 4769,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/game-controls.md",
+      "sha256": "bffafef769c6e8939ea1f972ff6cd391c673b237401e20fedb9c7768de98b77a",
+      "bytes": 6921,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/gaso-import.md",
+      "sha256": "c6d2685cf7aebf811bbcb0c23202d79e00cd98ccd345b50862ec5c6f0b50ebc7",
+      "bytes": 509080,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/goldfish-review.md",
+      "sha256": "2700794af023d370915865b854193d6ef59587dfeb59bc40668aa63ab13db307",
+      "bytes": 7749,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/online-clean.md",
+      "sha256": "667b2adbe4f67888be570b8b6cf4788cc7e02794f72e60d41c6787883b322e1d",
+      "bytes": 367,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/online-optimized.md",
+      "sha256": "c1b36b444dca88f06495dc198ae2454751155c7ff6d6e2e9cf9c277b40814120",
+      "bytes": 372,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/online.md",
+      "sha256": "f443abb0f0de5770a8dacf1ac89a012751671ccec3065ae76a6e0906c1b86358",
+      "bytes": 2155,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/project.md",
+      "sha256": "dcc3ec4740ea91be60cbb722dec19cb23e678f24e6d56d8998d4257de5e47f53",
+      "bytes": 7749,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/regional-clean.md",
+      "sha256": "bad4537d8d2721013b3b9d1930759448f771c1d69b490d40e71a9db39b2733f4",
+      "bytes": 377,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/regional-optimized.md",
+      "sha256": "f80417aecc787725d397345d7a246279d7522dd917bfffc5ceb1f05ee4158170",
+      "bytes": 382,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/regional.md",
+      "sha256": "be13e46ab3659c6c4db67a39f78a39df4f6208bacc943585da162c7f63b1c077",
+      "bytes": 2529,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/strike-recovery.md",
+      "sha256": "6a5489f8ac3a4afbe41fcc58f15f4f0973914ce0b3a7c06ca584eb55d0057e1f",
+      "bytes": 81446,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/asm-differ.md",
+      "sha256": "ccca26b71eb9b69481a8cae2bdc82bb4c39200cb5ff41a70341788a8864d7279",
+      "bytes": 1618,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/bag2-record.md",
+      "sha256": "4996aba1b1580b040325ec510fc05a95e8ab4ebda4b72505e379073f87402078",
+      "bytes": 77252,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/capstone.md",
+      "sha256": "3da7e96965ca31686e7931e9de4358a0be3a30f5573db61b75102204833364db",
+      "bytes": 35477,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/dumpsxiso.md",
+      "sha256": "9dd61d073384ee7b1d25a64b597c9d37787c3e5eb08743b33afe05374bc0a9e1",
+      "bytes": 3567,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/ffmpeg-skill.md",
+      "sha256": "9602c3755cf8e94c49b5d5036be3cbdf9ffba8c23b9ef4e023f9990f38deebb0",
+      "bytes": 31310,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/funcmatch.md",
+      "sha256": "c67fe785c842f18be46d749b05df7046b90dd1777f170df47d1ea20e88114bd2",
+      "bytes": 4437,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/ghidra-psx-psyq.md",
+      "sha256": "3a01cd2819cdc927482b607cc9e5cb44399293f098f72189e850ad404371451c",
+      "bytes": 202390,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/jpsxdec.md",
+      "sha256": "d75a1bcbf1df2a55621cb0faf471700ef963bac87281e3ae8bbfa81a5b96837f",
+      "bytes": 10649,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/m2c.md",
+      "sha256": "3d001d918fee31942244bca19a7ca3d51bacedc801c40d1b384b2d0c64223b51",
+      "bytes": 1185,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/mkpsxiso.md",
+      "sha256": "b7d97ac5f949be37493a887bb86f549a3b0221d116f25308ae93b237d67ebf88",
+      "bytes": 1146,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/pcsx-redux.md",
+      "sha256": "7d455e8a0fa77ce6210406476c38f3c453cb1baac5ac05213a1898d2c32b0107",
+      "bytes": 1274,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/psxrecomp-interpreter.md",
+      "sha256": "038557dc1a218f20b8efb8c828e096ebe8497e93443f17deffcbf4327c84e22a",
+      "bytes": 2343,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/spimdisasm.md",
+      "sha256": "a0952db51d00e67870e1c57472b041ae0fdb249c0fb1839437f9de000ab99183",
+      "bytes": 1158,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/tool-evidence/timedit.md",
+      "sha256": "a08f7f66887b12b51e62a66a6c573c5c9f6379a6bb1f43295a4e97c16b4cf2dc",
+      "bytes": 3009,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "notes/ui-mods.md",
+      "sha256": "41c913940c4b74007d8ea0208f1b23d562f3818857f7c91b30ac797210a04ba3",
+      "bytes": 1124,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "patches/BAG2JP-CMakeLists.txt",
+      "sha256": "93fb3c93fe0f383c9656042e6745124f97777835fc17851397c7b1355ff58610",
+      "bytes": 4768,
+      "classification": "framework_patch_or_title_config_review_generator_not_literal_patch",
+      "candidates": {
+        "machine_path": [
+          41
+        ],
+        "relative_location": [
+          29,
+          33,
+          48,
+          49,
+          58
+        ]
+      }
+    },
+    {
+      "file": "patches/BAG2JP-game.toml",
+      "sha256": "a35aef827e6652463f1417de578462dd47c84b7e29199682d356917d1d064009",
+      "bytes": 3736,
+      "classification": "framework_patch_or_title_config_review_generator_not_literal_patch",
+      "candidates": {
+        "native_constant": [
+          10,
+          11,
+          13,
+          36,
+          37
+        ]
+      }
+    },
+    {
+      "file": "patches/psxrecomp-disabled-display-hud-present.patch",
+      "sha256": "062d7ab260125b06d457a55490ec9bd4c0800e7799e9ad2fe48d1cfadd435617",
+      "bytes": 2676,
+      "classification": "framework_patch_or_title_config_review_generator_not_literal_patch",
+      "candidates": {}
+    },
+    {
+      "file": "patches/psxrecomp-display-pixel-aspect.patch",
+      "sha256": "0a25564a1bbb4e8c293ff76a97332098a41a5bdb5661febd58c24ef2e7e337da",
+      "bytes": 4634,
+      "classification": "framework_patch_or_title_config_review_generator_not_literal_patch",
+      "candidates": {}
+    },
+    {
+      "file": "patches/psxrecomp-host-movie-layer.patch",
+      "sha256": "85f75ea6d197a5b91dae20d67e3e3cfeac7228f8a029cfeaa2f5959977a6aedc",
+      "bytes": 7352,
+      "classification": "framework_patch_or_title_config_review_generator_not_literal_patch",
+      "candidates": {}
+    },
+    {
+      "file": "patches/psxrecomp-xa-host-filter.patch",
+      "sha256": "b63140d0607e303f86f010ea58ad878e28ec133406e68c529a92109a5f6adf77",
+      "bytes": 2353,
+      "classification": "framework_patch_or_title_config_review_generator_not_literal_patch",
+      "candidates": {}
+    },
+    {
+      "file": "plans/archive/documentation-evidence-audit.md",
+      "sha256": "c97107261206f53c094434b6436fabbc653fcb1c5055743d7fd11220cc3bc3f4",
+      "bytes": 8011,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/archive/host-configuration-foundation.md",
+      "sha256": "29e870dd6ad0c5a75dd250ccbce04117d62d3e8d0e71429102280e0c44122b2d",
+      "bytes": 19593,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/archive/ps1-community-tools-install.md",
+      "sha256": "ae70a210b4f8d24f14f5b2530fc204f7ad3d0fde5fa6979fa849d5d2747c3318",
+      "bytes": 4692,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/archive/reusable-import-process-audit.md",
+      "sha256": "c16105093fae21540a54035b332ffde835149329b485800376bfd65542eeae29",
+      "bytes": 8172,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/archive/standards-coverage-recheck.md",
+      "sha256": "e3daaf0cf9a87cf1f3c0edf651ff5a5f965f514403e6258c43fbede2967811ce",
+      "bytes": 4327,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/archive/versus-navigation.md",
+      "sha256": "53974fa46104826eaf5f59ce11f2858e6d31678ffaa72d6cdc3932514259452a",
+      "bytes": 8476,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/gaso-attack-effect.md",
+      "sha256": "8b5b6515016de6ffb9fa0cbbfd9222fd8648d0bc2ebb1d35536edfd2a07cf493",
+      "bytes": 15345,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/gaso-import.md",
+      "sha256": "d3f7730873d745de89f0456471c336b0a57287efb81053a22b5108ad3978eff6",
+      "bytes": 14336,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/gaso-native-reference.md",
+      "sha256": "d0dbf931e96a9cfa06439b018af610e5d40409872bb519f18a76df8f2cd55950",
+      "bytes": 5706,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/heat-attack-effect.md",
+      "sha256": "b3e730a28c354c48bb21a577a2e7ed917dcc84fe9df2ed30146d8df21a9d5442",
+      "bytes": 9007,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/pending/character-import-standardization.md",
+      "sha256": "dd633b736c19a4970275df5401e1cb34b445a729a42117bfc7bdc056d0c0d3d1",
+      "bytes": 5511,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/pending/context-optimization.md",
+      "sha256": "2013ccb87b7c3e72c7b68559c00c6e7852bb1013f6f0ef31a6480ec3c2742213",
+      "bytes": 6429,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/pending/savestate-recording-audio.md",
+      "sha256": "e55b2287bd1a0489e1347fec3d37eb16600449da15b7149057ce5d1e371333bf",
+      "bytes": 14918,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/strike-bag1-stage-song.md",
+      "sha256": "cfbd0dd1359f10a2527a57cb85eac86cb127deff18a37952fde4257753fb39d9",
+      "bytes": 17779,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/strike-comparison-graphics.md",
+      "sha256": "4a59634dff37b826a437d7cf8e7b937dda7e82871120d654fc8a6fb978f835f8",
+      "bytes": 5188,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/strike-shot-effect.md",
+      "sha256": "ea6e7c78a9296b160a6ba380608fd6cfe5ffdf14e6a5436c1d232ef646cf5a8d",
+      "bytes": 22538,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "plans/strike-skeleton-motion-recovery.md",
+      "sha256": "2007313cc866358ec19878b3af84cb995e27e6390cf6f9b1c3bdce053eed0795",
+      "bytes": 2593,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "system_config.md",
+      "sha256": "97529685dc44a3e7c9a15a2c1bd207fc8a330ed4f9550fb0822a874d9ddf0c0d",
+      "bytes": 8301,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/alternate_payload.py",
+      "sha256": "865cc8ad0cf24af4250c3d421582d0a34474844d39b1096748528204dda855d1",
+      "bytes": 2031,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/anim_remap.py",
+      "sha256": "a9a5cbc3d59efe7f2c6f850fac4173c5a750ec551108533488d03d66ef332cc6",
+      "bytes": 8664,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          49,
+          51,
+          53,
+          55,
+          67
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/anim_remap_gaso.py",
+      "sha256": "2d6128d061a54bf2cca553c353a09d675be042e7aa44ca62a732bca4c9c0a197",
+      "bytes": 5841,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          82
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/anim_remap_strike.py",
+      "sha256": "f110a3f9cbd9d09970e42bd3eca2315c61f877b8872605f78c8960a15cca9e1b",
+      "bytes": 4914,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          81
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/animation_policy.py",
+      "sha256": "1d566db8c3309fc0217239e7cffdd60951a9dde2e0856ff473e4f4b5066d10a3",
+      "bytes": 2171,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/animlib.py",
+      "sha256": "cd4c4110c6194be96b64357756389845d2e0fe3511259d2e6dc51340a3ee34dd",
+      "bytes": 965,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/audit_animation_roles.py",
+      "sha256": "b89355953939cd8b0627e1acbd6c25d9ecb7e6ec503331f091d6b82225043691",
+      "bytes": 16847,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          78,
+          79,
+          80,
+          81,
+          85,
+          138,
+          139,
+          140,
+          155,
+          251,
+          253,
+          264
+        ],
+        "cli_default": [
+          13
+        ],
+        "native_constant": [
+          46,
+          48,
+          50,
+          52,
+          54,
+          56,
+          61,
+          63,
+          65,
+          67,
+          68,
+          82,
+          83,
+          84
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/bag2jp_anim_trace.c",
+      "sha256": "e0e5787424da7e27cd46d5726c50d55c2946047c5f1d2174e8a14822f8cb70f0",
+      "bytes": 6594,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "environment_input": [
+          43,
+          59,
+          67,
+          69,
+          71
+        ],
+        "native_constant": [
+          2,
+          3,
+          21
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/build_caught_bank.py",
+      "sha256": "989cb609674d6b2fa857f493f0bb82938dc3d903f531b2c8fbe635657ff2cf37",
+      "bytes": 4038,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/build_gaso_assets.py",
+      "sha256": "741c62a217108acdb7a5f555739f12eb6bcc8fc4f6f534ed1d076e439bf67505",
+      "bytes": 9355,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          50,
+          51,
+          52,
+          54,
+          55
+        ],
+        "cli_default": [
+          177
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/build_heat_stage_test.sh",
+      "sha256": "d574f3a4c96398c49a388394b234df2fd77f6786aebac425cdb93f08a2cb181e",
+      "bytes": 4103,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          7,
+          61
+        ],
+        "relative_location": [
+          7,
+          8,
+          9,
+          34,
+          61
+        ],
+        "environment_input": [
+          21,
+          24,
+          39,
+          45
+        ],
+        "native_constant": [
+          4,
+          30
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/build_heat_test.sh",
+      "sha256": "fe8641c34aa8ea8bde2c0ec657b0b47959bb6420916d39d3d1f6cbd10d1eeb25",
+      "bytes": 3941,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          8,
+          49
+        ],
+        "relative_location": [
+          5,
+          8,
+          9,
+          10,
+          13,
+          14,
+          49
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/build_regional_variants.py",
+      "sha256": "6e2c18bed043a9bf7d4fa7e1cdeab661db7c88866d3551f62a3501abc130a516",
+      "bytes": 5976,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/build_stage_package.py",
+      "sha256": "38d63f21c47dcbceb5a67c457d0ede8735f044e64f348671f67b9f2c6cadda25",
+      "bytes": 6676,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          30
+        ],
+        "cli_default": [
+          119
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/build_stage_previews.py",
+      "sha256": "cb0e797a77dbca9d5e0d6fdefa3552e36d722bf802b429069f8a1db31e089dcf",
+      "bytes": 2306,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          16,
+          17
+        ],
+        "cli_default": [
+          15,
+          16,
+          17,
+          18
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/cache/heat.cache.json",
+      "sha256": "245d78d6d48d29351ae1ca733fd0e24c2c53c015cf4e93ebe4c5d33185664f2e",
+      "bytes": 574,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "machine_path": [
+          4,
+          13
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/cache/strike.cache.json",
+      "sha256": "637b2a41b59c99d4969e901ac9b813b19572e5039003a81c97c8c0263022628b",
+      "bytes": 816,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "machine_path": [
+          13,
+          17
+        ],
+        "relative_location": [
+          13,
+          17
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/character_workflow.py",
+      "sha256": "b1ef179841f711e8e0167458ff6d898e7913570752c731ef8faac3aacbe96d34",
+      "bytes": 20059,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          318,
+          321,
+          326
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/check_payload_manifest.py",
+      "sha256": "484331d3e997654b3c8e5b24f26d5e2846eab365319bcd08e8fff66300c60066",
+      "bytes": 3811,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          60,
+          61,
+          62
+        ],
+        "cli_default": [
+          68,
+          69
+        ],
+        "config_consumer": [
+          23,
+          27,
+          28,
+          56,
+          77,
+          78
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
+      "sha256": "0d616c8b0061f7f6953b5d04e8cb520c8adc63ba7943c3f7b135540687cdcb78",
+      "bytes": 16520,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          8,
+          12,
+          352,
+          356
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/contracts/caught-bank.json",
+      "sha256": "894671369e796db4fb0cbf3bacce7c721b56bb9298305a9558f5212a189864fe",
+      "bytes": 1036,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          6,
+          13,
+          20
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/contracts/gaso-animation-contract.json",
+      "sha256": "c2384019e31ca1160d2f875221694ddd2b2e18eb5340d43b6e313e0db9427131",
+      "bytes": 53430,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          6
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/contracts/strike-animation-contract.json",
+      "sha256": "9dd0a41b52ffcdb48b5b3a4d5cf042abe55164bfd8cda2b28ac7f6fe62489818",
+      "bytes": 56409,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          6
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/dbi_word_contract.py",
+      "sha256": "b0279629492bbefc8b0a3217a8e410297a8c20796cf3bb2af3f0c4bfeff59003",
+      "bytes": 2890,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/fever_entries.py",
+      "sha256": "817b68e79d6868eb201924b336e8867b4af111ee7aa76e2a2b9ce23a2c4ed375",
+      "bytes": 677,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          8,
+          10
+        ],
+        "native_constant": [
+          2,
+          9
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/funcmatch.py",
+      "sha256": "f296ea81ad74cf3d38aa61cf18ed24db7f986d57ef098e8e839231b06a914a2e",
+      "bytes": 1409,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          4
+        ],
+        "native_constant": [
+          5
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/generate_gaso_contract.py",
+      "sha256": "b635a8fbbfe2ec10f67691f8d1a878df09e50efa4b7b7babb2546e76c5f5edab",
+      "bytes": 4794,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          28,
+          55
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/generate_strike_contract.py",
+      "sha256": "23787bdfae2e701f227350f3a077577e15f77349a0795671f251b5f370a8daa7",
+      "bytes": 6408,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          31,
+          60
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/inspect_character_entries.py",
+      "sha256": "c47f6c4f61f0b4534d421642bf52ab5b5177db923ff681908b8abcb220a0e64e",
+      "bytes": 6329,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          26,
+          27
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/iso_extract.py",
+      "sha256": "f68a5c4ddf62fbbb238076e9775871c175e8c91b346de7079f4df36747781395",
+      "bytes": 2003,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/make_alt_entries.py",
+      "sha256": "8254e38b10174c732c411f4bbe59297c5d2bd9bb7b8658234e91c8f126567d75",
+      "bytes": 5029,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          6,
+          18,
+          19
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/make_alt_entries_exact.py",
+      "sha256": "d2c85a96de8934d97e00e5152eda1786caa5e14bc5ef08682157eaa80c2ce168",
+      "bytes": 7414,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/model_bag1_to_bag2.py",
+      "sha256": "6f48c63bb487bf7b7b6ad8ef8da7baf40f21975cb7ac6572f5fd16829e1e2566",
+      "bytes": 7543,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          13
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/motion_codec.py",
+      "sha256": "f6cd9efd6fa0ab7f7a145d33b25f3aa5cc53b223b3066f447263ef7c69627c3f",
+      "bytes": 4103,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/patch_gaso_dbi.py",
+      "sha256": "31753beadbf280232aa8ab8096141c543b3817ff73bce1c3bde7732197831cb8",
+      "bytes": 9008,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          4,
+          7
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/patch_heat_dbi.py",
+      "sha256": "67366f5d686ab5add5ca4ad1a54ade04068ed24057ec60070dd9a9dc43d48a55",
+      "bytes": 3711,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          3,
+          9,
+          10,
+          12,
+          24,
+          26
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/patch_heat_face_payload.py",
+      "sha256": "b10042ad50bb050e4edab41deee7992b72cda94dec04addf1b135103c59ad19e",
+      "bytes": 2030,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/patch_strike_dbi.py",
+      "sha256": "c731114df1bde68c9189fee39e6cdc503889e9caf415418a98cd0225cade3952",
+      "bytes": 1981,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          31,
+          33,
+          35,
+          36
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/port_bag1_stage.py",
+      "sha256": "d25bdaf9497775cd40cde610d6c1f7f94de87230d60acb40bc175087b1514008",
+      "bytes": 23051,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          1,
+          2,
+          5,
+          11,
+          12,
+          20,
+          22,
+          23,
+          24,
+          25,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          98,
+          137,
+          140,
+          164,
+          213,
+          214,
+          218,
+          246,
+          247,
+          251,
+          252,
+          253,
+          254,
+          255,
+          306,
+          307,
+          308,
+          327,
+          328,
+          338,
+          344,
+          347,
+          348,
+          350,
+          355,
+          365,
+          370,
+          377,
+          378,
+          379,
+          382,
+          383,
+          384,
+          385
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/preserve_announcer.py",
+      "sha256": "35f1fe6bf8c2aa7ef7b277f38d3993fab3ad079613ab4e393a738a81006cc0e9",
+      "bytes": 7277,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/profiles/gaso-animation-policy.json",
+      "sha256": "6d69714b04cc1fc23212795d9c97c6ce548e40c0457c566388351914848c3686",
+      "bytes": 6333,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          319,
+          323,
+          327
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/gaso.json",
+      "sha256": "15cf58142d846a83d046b2c34807b3be119a1ba307ff7f8ac2d2d5ab2c0827df",
+      "bytes": 7032,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "machine_path": [
+          13,
+          14,
+          28
+        ],
+        "relative_location": [
+          13,
+          14,
+          22,
+          26,
+          44,
+          45,
+          46,
+          47,
+          48,
+          90,
+          91,
+          92,
+          93
+        ],
+        "native_constant": [
+          16,
+          22,
+          63
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/heat-animation-policy.json",
+      "sha256": "3341c14a8803c48db2202ca53186684f5eb5f69a43d7bde48da5ca6980111ec9",
+      "bytes": 5221,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          246,
+          250,
+          254,
+          258,
+          268
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/heat.json",
+      "sha256": "9345cdf62f96697e3b72820c5caa188348b3e8fef455d34e9b82e887237a076a",
+      "bytes": 1292,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "machine_path": [
+          11
+        ],
+        "relative_location": [
+          9,
+          35
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/regional_variants.json",
+      "sha256": "da31657be08bdae228f8a546d6b1964c082adc9a514b326ba04361ad147ad9e7",
+      "bytes": 3811,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "machine_path": [
+          4
+        ],
+        "relative_location": [
+          6,
+          7,
+          9
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/stages/gaso.json",
+      "sha256": "f7d90db832b5eb65877d03b7f1675017f149f0964e9c7d9bd51d96d8202e24d8",
+      "bytes": 4965,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "native_constant": [
+          8,
+          68,
+          69,
+          70,
+          72,
+          73,
+          75,
+          76,
+          77,
+          78,
+          80,
+          81,
+          84,
+          89,
+          90,
+          91,
+          94,
+          95,
+          96,
+          99,
+          100,
+          101,
+          104,
+          105,
+          106,
+          109,
+          110,
+          111,
+          114,
+          115,
+          116,
+          119,
+          120,
+          121,
+          124,
+          125,
+          126,
+          129,
+          134,
+          140,
+          141,
+          142,
+          143,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          160,
+          162,
+          165,
+          167,
+          170,
+          172,
+          175,
+          177,
+          180,
+          182,
+          185,
+          187,
+          190,
+          192,
+          195,
+          197,
+          200,
+          202,
+          205,
+          207,
+          210,
+          212,
+          215,
+          217,
+          220,
+          222,
+          225,
+          227,
+          230,
+          232,
+          235,
+          237,
+          240,
+          242,
+          245,
+          247,
+          250,
+          252,
+          255,
+          257,
+          260,
+          262,
+          265,
+          267,
+          270,
+          272
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/stages/heat.json",
+      "sha256": "2a9214f03c8576e3a2406f70331ca6b02ba564b581877c6dc0dd364e1a01e57f",
+      "bytes": 1310,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "native_constant": [
+          3,
+          4,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/stages/strike.json",
+      "sha256": "da8607354bc355ad87b2e92ccadbce7efa1657af5f9d373d560951a5afb403f3",
+      "bytes": 1983,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          4,
+          5,
+          6,
+          7
+        ],
+        "native_constant": [
+          8,
+          21,
+          22,
+          23,
+          25,
+          26,
+          27,
+          28,
+          30,
+          31,
+          32,
+          33,
+          34,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/strike-animation-policy.json",
+      "sha256": "a1d2843bb939a7e999e0c4bde515b73fd52cb19e949454a3cd1d992b1ca8bd6c",
+      "bytes": 6501,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          312,
+          316,
+          320,
+          324
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/strike-lighting-profile.json",
+      "sha256": "f062ce7244f4c0df27d5e780827e294d19edfe0df874ed6bc1c9e206203160fc",
+      "bytes": 1281,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          34,
+          35,
+          36
+        ],
+        "native_constant": [
+          26,
+          27,
+          28
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/strike-skeleton-contract.json",
+      "sha256": "1845bc659410a3b29ee0dd781ef1ba907251b27d8ac8e14c5b58357fbe8bcfed",
+      "bytes": 998,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          7
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/strike-texture-contract.json",
+      "sha256": "3345d5be25a123ef96caf4eafe9883976003b9b37457081278448e2438dce786",
+      "bytes": 1634,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "relative_location": [
+          9
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/profiles/strike.json",
+      "sha256": "4a82b957cfd4b69a92fdfd81f7bcfe2030a4a326383b66e6ebe367e72d90f480",
+      "bytes": 10719,
+      "classification": "profile_contract_or_cache_review_authority",
+      "candidates": {
+        "machine_path": [
+          18
+        ],
+        "relative_location": [
+          16,
+          38,
+          50,
+          65,
+          70,
+          75,
+          81,
+          87,
+          93,
+          101,
+          106,
+          112,
+          118,
+          124,
+          130,
+          139,
+          153,
+          160,
+          174,
+          181,
+          188
+        ],
+        "native_constant": [
+          11
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/rebase_cues.py",
+      "sha256": "82e2608d94ced22f0b6c5fd2afd3441b12c6103d3755c8308b4f98c1b533c874",
+      "bytes": 2529,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          3
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/rebuild_animation_payload.py",
+      "sha256": "42d22832cc99cbb97f603bfc2df851d43e20929238c3c7b49964b4674fc14510",
+      "bytes": 2977,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/rebuild_dfs_members.py",
+      "sha256": "c33f35fc493e106547bbe04c53b7337ce05fab440cfac862ead1e86ed2450efb",
+      "bytes": 5706,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          125
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/reqmap.py",
+      "sha256": "c31c8f6d609b1a178f3e78e3c1da387fea21b33fe32af810da5e8124988438f4",
+      "bytes": 1422,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          4,
+          5
+        ],
+        "native_constant": [
+          6,
+          8,
+          10,
+          11,
+          12,
+          14,
+          16,
+          17,
+          18,
+          20,
+          22,
+          24,
+          25
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/restore_heat_winner.py",
+      "sha256": "b7ba6b874a70d183c624f8322b0d86fd5f9ec44ad2d30826112839005b84c19e",
+      "bytes": 3672,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          44
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/song_ending.py",
+      "sha256": "58aba342f3698facaf1e9098b4e3e54d5ddd39d807f8e2027587b51a25eceba4",
+      "bytes": 1758,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          4
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/stage_geometry.py",
+      "sha256": "9294b8af066f71caf0b508a172c8cf80f98d40c26cfc6e68ff3315b32d7d6f10",
+      "bytes": 5697,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1import/tim_retarget.py",
+      "sha256": "04624995e2c1f0556612d321b391d5927c95709245918204f218b32a65939a3d",
+      "bytes": 8583,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          150
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/vab_budget.py",
+      "sha256": "97058acd4bcac52da4b47ee83e278da6c9ff2ab4982129e8151d6537966d98f1",
+      "bytes": 9817,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1native/README.md",
+      "sha256": "c4da0664a0c133a661e2854b426975987357e06a54a7e13a02fc04e2021d2349",
+      "bytes": 2300,
+      "classification": "documentation_not_executable",
+      "candidates": {}
+    },
+    {
+      "file": "tools/bag1native/attack_bot.py",
+      "sha256": "d02605a8ec9e61e1e940b1b4cd87a97b58cff7ea68fc50f2cd640e887311ca56",
+      "bytes": 3498,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          47,
+          48,
+          49,
+          50,
+          51,
+          52
+        ],
+        "native_constant": [
+          7,
+          9,
+          27
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1native/bag1_mem.py",
+      "sha256": "132b8b5e2f61c73d2e9657d8807b731fdb56aafe10211d9b934afe2d69beecc5",
+      "bytes": 5755,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          9,
+          24,
+          85
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1native/run_match_and_attack.py",
+      "sha256": "3668b33dda820152ad803f14aa34e825e6ad74b336b85caebbc7f41785a644f6",
+      "bytes": 5890,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          138
+        ],
+        "cli_default": [
+          58,
+          59
+        ],
+        "native_constant": [
+          93,
+          96,
+          97,
+          108
+        ]
+      }
+    },
+    {
+      "file": "tools/re/gen_disasm.py",
+      "sha256": "27cf15387686f48096ff306d75d2adfdc72187d4ca9a0eed45d6fdf848f10644",
+      "bytes": 5346,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/accept_versus_calibration.py",
+      "sha256": "f2987db26e06d1a8e6289da14a506634eaf28644a71ce65808a1e9a8ea8e52d9",
+      "bytes": 2517,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          9,
+          22
+        ]
+      }
+    },
+    {
+      "file": "tools/test/ap2_no_attack_harness.c",
+      "sha256": "33cf7303235104e9979f299e3297f81df4f928564376b8ce547f5e99ef84bda7",
+      "bytes": 3390,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "native_constant": [
+          26,
+          27
+        ]
+      }
+    },
+    {
+      "file": "tools/test/bag1_leash_harness.c",
+      "sha256": "ea798a73f9fd1e3d250540429b4d958282b1826d9197e7f1d6433a048c117ae5",
+      "bytes": 22049,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "native_constant": [
+          22,
+          34,
+          372,
+          389
+        ]
+      }
+    },
+    {
+      "file": "tools/test/bag2_endings_acceptance.ps1",
+      "sha256": "eb6a03f5b12d965f2da1f5c46cf464be2dd73dcad5e9363695adf5b71f502a7e",
+      "bytes": 4230,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          6,
+          7,
+          9,
+          17
+        ],
+        "relative_location": [
+          8,
+          12
+        ],
+        "environment_input": [
+          30,
+          31,
+          32
+        ],
+        "cli_default": [
+          3,
+          4,
+          18
+        ]
+      }
+    },
+    {
+      "file": "tools/test/bag2_endings_view.ps1",
+      "sha256": "9d194e0a7ce1036ca7a51b56b7f2a26214dd1778d27cb0c1675fca2f79b7d278",
+      "bytes": 2500,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          6,
+          7,
+          8,
+          27
+        ],
+        "relative_location": [
+          7
+        ],
+        "cli_default": [
+          3,
+          4,
+          19
+        ]
+      }
+    },
+    {
+      "file": "tools/test/bag2_record.py",
+      "sha256": "88f7d437aa081c6072c6663ccfe6ca4b076449e5bb8be5f9113b882a2c4bf594",
+      "bytes": 49678,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          76,
+          81
+        ],
+        "relative_location": [
+          37
+        ],
+        "environment_input": [
+          637
+        ],
+        "cli_default": [
+          151,
+          265,
+          402,
+          1006,
+          1007,
+          1008,
+          1009,
+          1010,
+          1017,
+          1018
+        ]
+      }
+    },
+    {
+      "file": "tools/test/bag2_report.py",
+      "sha256": "2610bb61d16b7bc71a0052d93bba5a6da16c27400acc7dc2828cc0890354241e",
+      "bytes": 7380,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          50,
+          51,
+          52,
+          53
+        ],
+        "config_consumer": [
+          28,
+          32,
+          33,
+          34,
+          39,
+          40,
+          41,
+          57,
+          58
+        ]
+      }
+    },
+    {
+      "file": "tools/test/bag2_versus.ps1",
+      "sha256": "7f73f505bb7f3a93422bbdaadd126aa205f579ee73ece545ae81d70dd6930fd1",
+      "bytes": 1477,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      }
+    },
+    {
+      "file": "tools/test/capture_dance_view.ps1",
+      "sha256": "1a583151444e05c013588da8cb704b6bf63afacfcf566f5b3dd85cd66038b831",
+      "bytes": 2948,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          5,
+          6
+        ],
+        "cli_default": [
+          5,
+          6,
+          29,
+          49
+        ]
+      }
+    },
+    {
+      "file": "tools/test/caught_adapter_harness.c",
+      "sha256": "d12d2f68066204c16c2000bede616ba2dbd4de745c48eb4589df4189e9b52a81",
+      "bytes": 45284,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/caught_bank_harness.c",
+      "sha256": "ff1375c0f1dc3a557423df917e769a5109418cced68c11e69fccf09357e7c315",
+      "bytes": 6027,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/caught_binding_harness.c",
+      "sha256": "20d69a9207ba33987eb72c5767eed42b2cab6f7726ba4dfdcc543f0b888628c7",
+      "bytes": 8010,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/caught_context_harness.c",
+      "sha256": "24efeb892beb4acc15b33aa5d182f0e9dbd1f8ac43bdc5dc7a61538a272e6b73",
+      "bytes": 8172,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/caught_entry_harness.c",
+      "sha256": "f985a205b1c14f12b5fdb66432052f5261e9e9c50e56ae12a91ef149d93f60ff",
+      "bytes": 10788,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/caught_integration_harness.c",
+      "sha256": "cb214f08c65f3863a89e08f75085617c94f249772d96df66b59f0087cc5aef47",
+      "bytes": 7705,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "native_constant": [
+          1,
+          70
+        ]
+      }
+    },
+    {
+      "file": "tools/test/caught_loan_harness.c",
+      "sha256": "4725b58582ba3103521c76ebe898c24332cefca9c7212de7661e37a28795a0d8",
+      "bytes": 9363,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/caught_owned_clip_harness.c",
+      "sha256": "c90b8c36eddfdbabf2df0f9c9d1501ef21c6e38af8c9e7ca7a8678283f5e520b",
+      "bytes": 8353,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/caught_source_harness.c",
+      "sha256": "6abbed0bf8f8d0ba65e7f941ef29a38ba7b4bf83b4f4d06d6dd77315a9de3eac",
+      "bytes": 9592,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/charsel_preview_harness.c",
+      "sha256": "72ade8ec921e8d008260ed1ec79b91eb0bd7f4d70c584b3e23c950e11d922a23",
+      "bytes": 7767,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/combat_inputs.py",
+      "sha256": "5e5fb04850b825d5327a6e30917f2bcf6463b35fc84124caf78b8290f91caba3",
+      "bytes": 7125,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          26
+        ]
+      }
+    },
+    {
+      "file": "tools/test/discover_strike_id.py",
+      "sha256": "8bef899c75b61a4489953a155acce463710e99cfab1074cc0c2d3f904dc314e5",
+      "bytes": 8919,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          20
+        ]
+      }
+    },
+    {
+      "file": "tools/test/discover_strike_id_p1.py",
+      "sha256": "05a132c305b6f3bbd72bca011bc16108a03b1aa9720a14f097230580903af3c3",
+      "bytes": 8219,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          20
+        ]
+      }
+    },
+    {
+      "file": "tools/test/endings_view_stubs/SDL3/SDL.h",
+      "sha256": "a015ca85d4ba3aa1a2547a27ac416c0ad6a4eeabd9eaaf55e73b612a9f339f45",
+      "bytes": 76,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/endings_view_stubs/cpu_state.h",
+      "sha256": "b15b9ddfabb6d68bc7b546b441b9d1ec772a3148baa928500b7c207e0f4e8bfa",
+      "bytes": 72,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/endings_view_stubs/gpu_hd_textures.h",
+      "sha256": "b9e5dbee2f4652efe1c54d84a417449173cae0949608e40f057c1c33aff19893",
+      "bytes": 61,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/endings_view_stubs/mod_plugins.h",
+      "sha256": "ddfd45dbef284398d46a5ff607bc969c46542901b8b29be45d9c98f50ecac363",
+      "bytes": 1085,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/gaso_caught_runtime_harness.c",
+      "sha256": "1e773c9ab0dc3c0f9da10c6b9be2ee1e4c327f7fbb643f995b174168cc5bd379",
+      "bytes": 90707,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/gaso_hud_harness.c",
+      "sha256": "aa19b4af9fde9a3f7cbe0dd1917257ea99c74b065a8d5181433703c45a21ea00",
+      "bytes": 9966,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "native_constant": [
+          172,
+          183,
+          189,
+          190,
+          191,
+          192,
+          202,
+          208
+        ]
+      }
+    },
+    {
+      "file": "tools/test/gaso_tank_harness.c",
+      "sha256": "bda03ae3771c88e05399be2b12032e70b2565b4d80d0a348a5ce433169d57871",
+      "bytes": 29886,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/preview_endings_label.py",
+      "sha256": "d113de81f324d4c4344645882621ac1d335e6f778f9e8405578996703a1a3bdc",
+      "bytes": 1165,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          10,
+          23
+        ]
+      }
+    },
+    {
+      "file": "tools/test/process_audio_capture.cs",
+      "sha256": "c1925b46fe8418e8bb065d58f9b7ef05ff1409451e41feede3e83405f5dcb88f",
+      "bytes": 17159,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "native_constant": [
+          70,
+          125
+        ]
+      }
+    },
+    {
+      "file": "tools/test/process_audio_capture.ps1",
+      "sha256": "e82803928bd259028dd1eff7535c4abeeeb6712f550cd1bbd405e3b5502aa4e5",
+      "bytes": 300,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/process_audio_capture.py",
+      "sha256": "11c3c4fde57eb68f77bd105846aa199fba5dea446027bda5567ae3c71768ed44",
+      "bytes": 17082,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/recording_window.py",
+      "sha256": "27fe3c09ffe047257ecf8f5bfa35b991aa5c0a28f273fd5f3665df4d1f8c9479",
+      "bytes": 14226,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/stage_select/run.sh",
+      "sha256": "d2fcf2109ff687fde6ac6ccb9ba66d39f4d1bc79c01b9f09cc49bd878c0a04b5",
+      "bytes": 512,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          3
+        ]
+      }
+    },
+    {
+      "file": "tools/test/stage_select/stubs/SDL3/SDL.h",
+      "sha256": "8003db08eac6399359a352b91d02588919e8c64f557ec85aee805a720ceb6957",
+      "bytes": 98,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/stage_select/stubs/mod_plugins.h",
+      "sha256": "7c9c00ca6fccfdb7af3409f7e4ac58a562fcfadd82915ce3e8f47633b89f1cb1",
+      "bytes": 746,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/stage_select/test_native_menu.py",
+      "sha256": "5e29e4c2282bb9af00bec22a6c3f94760ee80a3dcb14397a971e32a73253cd61",
+      "bytes": 3390,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          10
+        ],
+        "cli_default": [
+          10
+        ],
+        "native_constant": [
+          15,
+          24,
+          28,
+          38,
+          39,
+          59,
+          60,
+          61
+        ]
+      }
+    },
+    {
+      "file": "tools/test/stage_select/test_stage_version.c",
+      "sha256": "4d423ba575acd38d5682f0268009373a14cd5c44ba6463f5ed99891a280b6a11",
+      "bytes": 2653,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/strike_acceptance_batch.py",
+      "sha256": "c1cfdfbae80d90cf6181dc76e1621cacae130ab1d91d5ad966472f5c6aa485eb",
+      "bytes": 9189,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          174
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_anim_trace_samples.py",
+      "sha256": "0b96340febef2cdc57142666f2eef272f49b3f578662a65e9f5e2bad6a864698",
+      "bytes": 4278,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_animation_policy.py",
+      "sha256": "8c5da6b00c466c634010a57ef8bae90039a197a2ad2695aafef8e3d72f40b86d",
+      "bytes": 2232,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          11,
+          21
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_animation_policy_shared.py",
+      "sha256": "cf9d38f91e1cd65e2ec755fcb5784a1f2f47829abefab46bfaf38df3df4aadaf",
+      "bytes": 2293,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_ap2_no_attack.py",
+      "sha256": "02bc7e7dc36073188999a641679cd4749dd294d50016894c89ecbc67a96c8696",
+      "bytes": 1356,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          27
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_attack_fixture.py",
+      "sha256": "a292f3d351b86f2e7572b825f2df6715937c0a4b5dccc2d2159de1137ad2cdfe",
+      "bytes": 8781,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          50,
+          52,
+          91,
+          93,
+          132,
+          134,
+          171,
+          173
+        ],
+        "relative_location": [
+          13,
+          59,
+          101,
+          141
+        ],
+        "native_constant": [
+          20,
+          21,
+          22,
+          23,
+          24,
+          32,
+          33,
+          34,
+          36,
+          38,
+          39,
+          41,
+          42,
+          43,
+          45,
+          46,
+          66,
+          67,
+          68,
+          69,
+          70,
+          75,
+          81,
+          87,
+          107,
+          108,
+          109,
+          110,
+          118,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          147,
+          148,
+          149,
+          155,
+          156,
+          159,
+          161,
+          162,
+          163,
+          164,
+          165,
+          166,
+          167
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_attack_trace_callback.py",
+      "sha256": "69ca906f909d998bb02edb2175f2e4b24198b009bef4d30fdbdef8ee60f0004e",
+      "bytes": 5285,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "native_constant": [
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_audio_clock_probe.py",
+      "sha256": "c138c22dc2e096bad3e2fdcd34406e1725b5cecbdc6f2516d4655dbb5476e1d6",
+      "bytes": 3908,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_bag1_dancer_scale.py",
+      "sha256": "b64c7762657a0e6f1ce185e9d8d1a0f64f8af396413056976d0fa762b510616e",
+      "bytes": 3277,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_bag1_endings.py",
+      "sha256": "06298878d50e7540af8e1f56e914332e340668db780a1ac173ad193c8ac67438",
+      "bytes": 5158,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          127
+        ],
+        "relative_location": [
+          12
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_bag1_home.py",
+      "sha256": "5381df425455f9e63d7d518bc07d1474c9b72b201d98a170c861277f0b86c951",
+      "bytes": 5528,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "native_constant": [
+          101,
+          108
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_bag1_leash.py",
+      "sha256": "310e1324789e240a328b1fcc42b51c94acbd07b83dafa07268e7e1cf27a22025",
+      "bytes": 12009,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          157,
+          195
+        ],
+        "native_constant": [
+          152,
+          153,
+          161,
+          162,
+          163,
+          164,
+          165,
+          166,
+          167,
+          168,
+          169,
+          170,
+          172,
+          173,
+          174,
+          175,
+          176,
+          177,
+          178,
+          179,
+          180,
+          181,
+          182,
+          183,
+          184,
+          185,
+          197,
+          198,
+          199,
+          200,
+          201,
+          202,
+          203,
+          204,
+          205,
+          206,
+          207,
+          211
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_bag1_stage_audio.py",
+      "sha256": "ed577f37d68af525c7d109f3df20e1f4465cc5d4ca4d14f55f5e2e77afb1f63b",
+      "bytes": 11761,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          166
+        ],
+        "relative_location": [
+          163
+        ],
+        "native_constant": [
+          84,
+          156
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_bag1_stage_shim.py",
+      "sha256": "674751fd7feca964e315b85a0ccdb8b955917dbdf0fe95e8fd438ac0fc2f5f02",
+      "bytes": 6971,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          134
+        ],
+        "relative_location": [
+          21
+        ],
+        "native_constant": [
+          48,
+          49,
+          53,
+          54,
+          61,
+          110,
+          115
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_bag1_visual_regions.py",
+      "sha256": "413ead7fc7fac5880d85fbcb73322b84b37b01d085a41bf1ae0502ff2d80946c",
+      "bytes": 7187,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_bag2_record.py",
+      "sha256": "fb9582bcb216767277f030ef5e31f4f001dab7b9ff9813fdb1a9ad38b83cce07",
+      "bytes": 41233,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_caught_adapter.py",
+      "sha256": "a2e2105f24847d5a8f2a8dd15e3bd4ab640f060d1f35b5b48bc24b5ab27ca8d0",
+      "bytes": 5068,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_caught_bank.py",
+      "sha256": "026c8f2340b598b8b77f02b47448c2b431a7431ce525b1d77a66d6d64789519e",
+      "bytes": 6606,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          46,
+          56,
+          79
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_caught_binding.py",
+      "sha256": "c1e8ce8dc128baf23185707c80936333dcbbf770a19f62995aac80dbd59d28cc",
+      "bytes": 2331,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_caught_context.py",
+      "sha256": "9e1534242b43be0f3db9318fbf63ddaf9ff37d7f1d5e4d922177fa9a5b96a785",
+      "bytes": 3324,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          15,
+          16
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_caught_entry.py",
+      "sha256": "bf15030775f2cda42245743d42823cd8452edee1f70d78ed3f3bc2f8ad5bd7f6",
+      "bytes": 2333,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_caught_integration.py",
+      "sha256": "c1424bfde4e4df2e5280da6695c34f9dfebf56eb881135fc5e2df22024fa6581",
+      "bytes": 3257,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          16,
+          17
+        ],
+        "native_constant": [
+          1
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_caught_loan.py",
+      "sha256": "ee977db5fcaceaefae88045c726b3e3f48226fb5474eb54c994c594089d8d8b9",
+      "bytes": 3356,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_caught_owned_clip.py",
+      "sha256": "054440551196a354180e4c1e9cb92197f05fb88214d550c3cd6c90088f9e1652",
+      "bytes": 2847,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_caught_source.py",
+      "sha256": "1b4506f75136cc1b0938591755c03ae6b799c35942e59804cc6f6869e90e45bc",
+      "bytes": 3458,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          15,
+          16
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_character_workflow.py",
+      "sha256": "b77fb7ec2db5e2856c27a7671ba9f38a85aca01b93c1bb6166360f4452107577",
+      "bytes": 10528,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_charsel_preview.py",
+      "sha256": "52bcda359b5fb7867f3ae82d856efd74068ed806f331049e8b194a5999620238",
+      "bytes": 5638,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          128
+        ],
+        "native_constant": [
+          129
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_combat_inputs.py",
+      "sha256": "6fa944602c7cf9a0df26ba3f3155c2a7eb5cc4ad4aa238b4bb203ab7380ffd57",
+      "bytes": 1710,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "native_constant": [
+          14
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_dbi_word_contract.py",
+      "sha256": "8b6bd99328feb079d58ccf96dc268fd3132d102693412a408506b7cf8b2237c3",
+      "bytes": 3733,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          50,
+          56
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_display_pixel_aspect.py",
+      "sha256": "4aa3d920fcd8bbc6124782a50be57e1b72131b290330723630016ff31e7eca50",
+      "bytes": 5153,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_endings_view.c",
+      "sha256": "ad521d1671fd6727d6a1a0dec455afce9005968b843d441b3937dd0bff6c6a38",
+      "bytes": 5755,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          29
+        ],
+        "native_constant": [
+          74,
+          88
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_endings_view.py",
+      "sha256": "719149183b2fe74ff088125653d1a4642e51a4fa3c5b4530f5d68317ab67abd5",
+      "bytes": 1147,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_gaso_bubble.py",
+      "sha256": "d816ebd0919f251af947f93ba4023abaf65874597b7099231eb5706bc42370b0",
+      "bytes": 3072,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_gaso_caught_runtime.py",
+      "sha256": "00a7e67ae5efc3a3f5b33ede66cee1289549ca7cf3bb6ead2941e4ed16184a71",
+      "bytes": 14089,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          180
+        ],
+        "environment_input": [
+          14,
+          248
+        ],
+        "native_constant": [
+          232,
+          238,
+          255,
+          267,
+          270
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_gaso_dbi_patch.py",
+      "sha256": "e730a0ac3ca61489ef517d8489484da7520ceb9b69a4bb8e6ddae3dd8a8921eb",
+      "bytes": 4259,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          21
+        ],
+        "native_constant": [
+          40,
+          55,
+          86
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_gaso_fever.py",
+      "sha256": "bc74569cc2f5aa3602cb8f170c4a2675134d60186d085ed0685453a3911cb2db",
+      "bytes": 1970,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          13,
+          14
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_gaso_hud.py",
+      "sha256": "9ed39392c9dba1781e247e7a9fe88cd8cbf86a53e3c2f5d11218da07c23df9c5",
+      "bytes": 6067,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          29,
+          43,
+          49,
+          60,
+          90,
+          101
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_gaso_hud_runtime.py",
+      "sha256": "2254a69c9f2b1ed15065be584c3571ca1875dd98aa7da27475361809052097f1",
+      "bytes": 2469,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          27,
+          33
+        ],
+        "native_constant": [
+          37,
+          38,
+          39
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_gaso_stage_fan.py",
+      "sha256": "379efb4cade505738db558c9612e8bda95ae0efd9468c3c9ae825163a3ab73d4",
+      "bytes": 4312,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          69,
+          82
+        ],
+        "native_constant": [
+          15,
+          44,
+          45,
+          50,
+          59,
+          64,
+          65,
+          75
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_gaso_tank.py",
+      "sha256": "754d91f636317bcb69c438c8663a2ada5fe002538b0c79281cd391397a8f8ed1",
+      "bytes": 5032,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_hd_menu_assets.py",
+      "sha256": "c2399755d4de684fb7c9c1768f08bf510c0ec7424f2254732a13495205790543",
+      "bytes": 2214,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          14
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_heat_announcer.py",
+      "sha256": "1a3e8528499c91164859b63fbb4b069f12fd8a7058890f04e94c8899bf670d2b",
+      "bytes": 3020,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          15,
+          16
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_heat_costume_assets.py",
+      "sha256": "175bbc0dd702ca98c80d8f76e1cf61ed7bd945b4d730afd163cddbb439c174af",
+      "bytes": 2908,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          18,
+          40,
+          47
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_heat_dbi_face_patch.py",
+      "sha256": "512046aa57fa774376fa6ca35d6c5f0b8d027bde26dd552dd8a10c60a2caf452",
+      "bytes": 2910,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          28,
+          52
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_heat_flame_effect.py",
+      "sha256": "eb7716bda439f4141a874d581cc484ce25a58bba0cd10f3c57f9933a2aa69c0f",
+      "bytes": 5720,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          11
+        ],
+        "relative_location": [
+          18
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_inspect_character_entries.py",
+      "sha256": "f9271aeb2b067860a2827f31cb46a29d11f845707d19a4cf7c2d929959e64685",
+      "bytes": 1858,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "native_constant": [
+          35,
+          38
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_mod_instruction_sites.py",
+      "sha256": "a9c4cb47abc066133b91eb35538ded4ca69c15cb88f54121d5b61e3c09372bfa",
+      "bytes": 3717,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          15
+        ],
+        "native_constant": [
+          16,
+          19,
+          20,
+          21,
+          51
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_model_region.py",
+      "sha256": "f96d5979d4af726ad26637d4eeb5dad62b072ccc8a73b4c4e9d26e56590de61c",
+      "bytes": 2917,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          11
+        ],
+        "relative_location": [
+          18
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_motion_codec.py",
+      "sha256": "d230e6b80a64f8bfbbdc389c6e6ad4e3b32113f18b5cef6b5754e48a514a3071",
+      "bytes": 2685,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          11
+        ],
+        "native_constant": [
+          51,
+          52,
+          54
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_payload_manifest_config.py",
+      "sha256": "2bc8d42857c3fafe787bfdac74366fd4e6a9f7cd2117edbd34ce9ac0ee2355d4",
+      "bytes": 11984,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          63,
+          64,
+          65,
+          145,
+          146,
+          153,
+          227,
+          228,
+          229,
+          230
+        ],
+        "config_consumer": [
+          16,
+          60,
+          70,
+          74,
+          86,
+          88,
+          148,
+          149
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_preserve_announcer.py",
+      "sha256": "c1f3b6193ceceb5241069a0918b889d6ef4472ab60a0abaf08ba722a97c02815",
+      "bytes": 3167,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          23,
+          57
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_process_audio_capture.py",
+      "sha256": "86891bcdc067c28a81ee363cf62c0cafd3c8dcc8553146cbee8fa3cb219868a5",
+      "bytes": 13410,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          17
+        ],
+        "relative_location": [
+          204
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_ram_dump_extent.py",
+      "sha256": "c469eebb9f5fcbd732a2a4aee5c9f26aa0f31a06cef4d35ced1db2b199138798",
+      "bytes": 1732,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          35
+        ],
+        "relative_location": [
+          31
+        ],
+        "environment_input": [
+          16
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_rebuild_dfs_members.py",
+      "sha256": "d085290efb660bd9acb37b43393e2cd02237ea36340afaa4afc43e02739fb104",
+      "bytes": 3333,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_recording_window.py",
+      "sha256": "3324eedeb9f498fdcdd190b0ab3f59fc1aad2d92062994672777cf1c0ef0e8e7",
+      "bytes": 10916,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_score_fixture.py",
+      "sha256": "7eb515027809510790003f756eec569013ac86edd30b2235fd01cd04a37366cf",
+      "bytes": 6768,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          42,
+          54,
+          86,
+          99,
+          141
+        ],
+        "relative_location": [
+          14,
+          50,
+          97
+        ],
+        "native_constant": [
+          60,
+          61,
+          62,
+          63,
+          64,
+          72,
+          73,
+          104,
+          105,
+          106,
+          107,
+          108,
+          109,
+          110,
+          111,
+          112,
+          115
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_stage_geometry.py",
+      "sha256": "965b99065a0c630284aa9a7e3df6aa53e8801a261dc5f0db62905232a5f2d9de",
+      "bytes": 6160,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          37
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_stage_port.py",
+      "sha256": "eddf885fba2792e87988f46caddda7645645ed8cf6a1bd05bf1eecbfc0d2982e",
+      "bytes": 9365,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          36,
+          37,
+          78,
+          126,
+          159,
+          160,
+          162,
+          163,
+          172,
+          173,
+          175,
+          177
+        ],
+        "native_constant": [
+          56,
+          58,
+          61,
+          174,
+          179,
+          180
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_stage_visibility_fixture.py",
+      "sha256": "8812ffb2c839e086c30a7f2495be4d7197aaf600d18e5d512b9085694c16565a",
+      "bytes": 2590,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          54
+        ],
+        "relative_location": [
+          51
+        ],
+        "native_constant": [
+          27,
+          28,
+          29,
+          30,
+          35,
+          36,
+          37,
+          40,
+          42,
+          43,
+          44,
+          46,
+          47
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_strike_acceptance_batch.py",
+      "sha256": "1da130fdad6a2d8e9b9daa81ecdd38c6280dc3a978d07a8d49534f43697cd76e",
+      "bytes": 1598,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_strike_bag1_fx.py",
+      "sha256": "1a5be35e55c832b45117a37371b19359f1e71eb9a98ce59f7dc5233ce024c63d",
+      "bytes": 9436,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          14
+        ],
+        "relative_location": [
+          47,
+          139
+        ],
+        "native_constant": [
+          32,
+          72,
+          79,
+          107,
+          108,
+          109,
+          110,
+          113
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_strike_costume_assets.py",
+      "sha256": "b52f2e8c8bb7b6cb9040986f169eb407f58d88ed323d76ef424cab1c8f0468b2",
+      "bytes": 4726,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          22,
+          23,
+          24
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_strike_import_safety.py",
+      "sha256": "abb18597138682e891647074d79df6fc10d424b9867c804b4181154f0a7e68d2",
+      "bytes": 3208,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          23,
+          34,
+          37
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_strike_lighting.py",
+      "sha256": "6d62b91645ecd150ad05f40c036880f530958972cf8efd37bdcbdd0faec820d7",
+      "bytes": 4016,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          72,
+          75
+        ],
+        "relative_location": [
+          23
+        ],
+        "native_constant": [
+          15,
+          37,
+          38,
+          39,
+          40,
+          41,
+          42,
+          48,
+          50,
+          58,
+          60,
+          65,
+          66,
+          68,
+          69
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_strike_shot_effect.py",
+      "sha256": "aaba44bb62c003e61488a386cff4bb18ffa3070feb2ee5b7c0a3ca4871009ad9",
+      "bytes": 5943,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          15,
+          133
+        ],
+        "relative_location": [
+          13
+        ],
+        "native_constant": [
+          49,
+          50,
+          51,
+          52,
+          53,
+          56,
+          57,
+          60,
+          61,
+          62,
+          63,
+          66,
+          67,
+          68,
+          69,
+          72,
+          73,
+          75,
+          78,
+          112,
+          114,
+          120
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_strike_shot_math.py",
+      "sha256": "6f4d753dfc2cd17d35e8968bb2e4dfabaaf4e47a46dde859371d2c162fa6a4f8",
+      "bytes": 3946,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "cli_default": [
+          6
+        ],
+        "native_constant": [
+          9,
+          26
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_strike_texture_contract.py",
+      "sha256": "b4676bf66362dc9a5daa225f11081bd5a1af21c040f1ec6c43b7a292ec4b9cf8",
+      "bytes": 4376,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          37,
+          45,
+          53,
+          63
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_system_error_probe.py",
+      "sha256": "1c93fe3cf78db83396af403be28e3a0cf69e04fe3b22ae3e9ba01815399bd2d5",
+      "bytes": 2629,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_tim_label.py",
+      "sha256": "dfad4abeed0451e382b938dc91837b043d0a320102aa8ede913595fe438557ca",
+      "bytes": 5049,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_vab_budget.py",
+      "sha256": "ce5491c17b223c5bb539d27def74009cadd7e031f98b9c31256d010a82028a99",
+      "bytes": 4423,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          27
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_versus_navigation.py",
+      "sha256": "34c1bfc2c2bd5b57c7588f4dfba63994fe6d4f4a756723facee50ffd5eab2ca0",
+      "bytes": 21513,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          215
+        ],
+        "relative_location": [
+          235,
+          393
+        ],
+        "native_constant": [
+          65,
+          78,
+          96
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_versus_session_env.py",
+      "sha256": "1243e12f0a865223f89a0fd9a285bb2b1eba3ca3680066628b67a8d03f4a6d60",
+      "bytes": 3484,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {}
+    },
+    {
+      "file": "tools/test/test_viewer_debug_guard.py",
+      "sha256": "8cebe6cf50cce8522aa1e9c81914d66e8a151f23b7f385edb80bb22b692264e2",
+      "bytes": 1723,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          3,
+          19,
+          20
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_vram_dump.py",
+      "sha256": "6077e4b3a5bfaeac5c0f73bb68b579a7b5955ab0734fa8ab77b26f263488d11a",
+      "bytes": 2152,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          15,
+          46
+        ],
+        "relative_location": [
+          13
+        ]
+      }
+    },
+    {
+      "file": "tools/test/versus_navigation.py",
+      "sha256": "8ece69f9b46edc9fc3a967566697f5aa88dc4ccd9ee30903b738a69cf7f6ab7e",
+      "bytes": 16275,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          313
+        ],
+        "cli_default": [
+          269
+        ],
+        "native_constant": [
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27
+        ]
+      }
+    },
+    {
+      "file": "tools/test/versus_session.py",
+      "sha256": "db0e654cc87bf8418f63d925bc5ac2b68dbe929551042f77bfa1966fa3b4254d",
+      "bytes": 29995,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          19,
+          20
+        ],
+        "relative_location": [
+          21,
+          494
+        ],
+        "environment_input": [
+          35
+        ],
+        "cli_default": [
+          363,
+          440,
+          442,
+          445,
+          449,
+          453,
+          457,
+          458,
+          459,
+          460,
+          465
+        ],
+        "native_constant": [
+          25,
+          26,
+          54,
+          452
+        ]
+      }
+    },
+    {
+      "file": "tools/test/vram_view.py",
+      "sha256": "78b27cab4bd059ef59e538763b321dfb8aa6e49b8122812539b2fade83ab70dd",
+      "bytes": 2873,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/workflow/audit_docs.py",
+      "sha256": "59f10909119645f23374b491c7287d573c96ee4872da5092ee8edca2cada3e08",
+      "bytes": 10787,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          23,
+          24,
+          140
+        ],
+        "cli_default": [
+          199
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/bag2_workflow.py",
+      "sha256": "a13454b1220118905a6f2e9a3158b48e35f56a98018cb568dc7aa344a758ea97",
+      "bytes": 9546,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          94,
+          95,
+          99,
+          108,
+          113,
+          170
+        ],
+        "cli_default": [
+          158,
+          160,
+          161
+        ],
+        "config_consumer": [
+          18,
+          22,
+          23,
+          42,
+          59,
+          165,
+          166
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/generate_digests.py",
+      "sha256": "db4591337594a68917dbb35c20842b0232b32ab7c878b9ac208745fe935456bf",
+      "bytes": 6906,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "machine_path": [
+          35,
+          36,
+          37
+        ],
+        "relative_location": [
+          40,
+          41
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/maintenance_check.py",
+      "sha256": "48623369d546b41e3c5904afe29d8d28cffa440431e0a9f7f8875bf0a0599a61",
+      "bytes": 1807,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/workflow/measure_context.py",
+      "sha256": "de89f6d2adc48117bc3f0db03c377d7242d6137216f2ff0b3f5e9d98fea63e37",
+      "bytes": 2915,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          20
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/project_config.py",
+      "sha256": "5dc237f60880a36eccbe533299a668c6f77937e19cccd299a48c7ed4be2f1eae",
+      "bytes": 13521,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          294,
+          296
+        ],
+        "config_consumer": [
+          132,
+          164,
+          223,
+          299
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/test_audit_docs.py",
+      "sha256": "44a29a981e6fbee4897a036630b65f857646759b29b9d3264c1322f15415b442",
+      "bytes": 8940,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          90,
+          115
+        ],
+        "relative_location": [
+          28,
+          46,
+          136
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/test_bag2_workflow.py",
+      "sha256": "34d13ff5861d93a1d6ebeafd74ef5ef922ff5acc2cf7f5562e27f6ebfac3aaaf",
+      "bytes": 8959,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "relative_location": [
+          22
+        ],
+        "config_consumer": [
+          16,
+          87,
+          123
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/test_data_dictionary.py",
+      "sha256": "97b8f96c1280a27da38a2bec28e42e84ad285566630585a5cecc32fee020925f",
+      "bytes": 6616,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          18
+        ],
+        "config_consumer": [
+          8,
+          16,
+          105
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/test_project_config.py",
+      "sha256": "d57f00274408d3b9f5649f776b7eba231cbf640a75c1ba7c0e3b74eabd4af75a",
+      "bytes": 23376,
+      "classification": "test_review_real_dependencies_keep_synthetic_values",
+      "candidates": {
+        "machine_path": [
+          274,
+          275,
+          276,
+          305,
+          306,
+          307,
+          308,
+          309,
+          312,
+          313
+        ],
+        "relative_location": [
+          266,
+          313
+        ],
+        "config_consumer": [
+          17,
+          63,
+          118,
+          394,
+          473,
+          476,
+          478,
+          480,
+          481
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/token-report.py",
+      "sha256": "4fc3c91141143138c4d579074cab9c7c6578bdb1d38d4d8fbba36242cd9d6c5d",
+      "bytes": 8159,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "relative_location": [
+          33
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/validate_frontmatter.py",
+      "sha256": "e8e348ca4325824d1874b48c346cc4478cc5570f7ee049acca1a9615e6c1a9c8",
+      "bytes": 3935,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {}
+    },
+    {
+      "file": "tools/workflow/validate_toml_config.py",
+      "sha256": "d474269763a66b0cad139842991b2499da24556101a23908d5ee4466390b6524",
+      "bytes": 3697,
+      "classification": "host_tool_review_configuration_candidates",
+      "candidates": {
+        "cli_default": [
+          30
+        ]
+      }
+    }
+  ],
+  "untracked_development_roots": [
+    ".agents/",
+    "tools/ffmpeg-skill/"
+  ]
+}

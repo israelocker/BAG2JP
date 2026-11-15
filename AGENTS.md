@@ -116,6 +116,12 @@ Use a persisted plan and approval for broad changes, migrations or uncertain des
 
 See `docs/coding-standards.md` for the complete standards (C, Python, TOML, documentation, testing).
 
+Host configuration is mandatory for new/modified development code: follow its
+"Configuración central obligatoria para desarrollo" section and `docs/data-dictionary.md`.
+Reuse registered keys; keep configurable environment values out of consumers.
+Native game constants and acceptance guards remain under their verified authorities,
+not freely editable host settings. `system_config.md` records migration coverage.
+
 Apply that canonical standard rather than copying it into more guides. Documentation updates change an existing source/index/digest, not a new parallel version. Evidence, requirements, hypotheses and historical results must remain distinguishable.
 
 ### Model Routing (Token Usage)

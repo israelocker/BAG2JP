@@ -2394,3 +2394,24 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Útil para identidad/bytes originales y cumplimiento de sesión; no nueva
   evidencia sobre audio Windows. Esa API se contrastó por SDK/docs oficiales
   y prueba host aislada, no se atribuye a Ghidra. Tiempo/ahorro no medidos.
+
+## 20261115-ghidra-config-standard — límite entre config host y dato nativo
+
+- Tipo: uso real acotado, solo lectura; Ghidra 12.1.4 / MCP, instancia existente.
+- Consultas exactas: `get_program_info()` primero y
+  `read_memory(address="0x80051897", length=1)` después.
+- Entrada: SLPM_862.19, Japón, ejecutable principal (no overlay), PSX LE32,
+  image_base 0x80000000, SHA-256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Resultado: identidad correcta, 1324 funciones; byte `4e`, sin gaps. Es el dato
+  nativo citado en la investigación previa de configuración, no una ruta ni un
+  ajuste libre que deba trasladarse al TOML host. Proyecto/análisis intactos.
+- Contraste independiente: coincide con el byte y hash de la investigación
+  anterior resumida en la entrega base. No se infiere significado adicional del
+  byte ni equivalencia de funciones a partir de esta lectura.
+- Dictamen: útil solo para verificar identidad/lectura y el límite de autoridad;
+  irrelevante para demostrar ausencia de hardcodes host (eso exige revisar fuentes).
+- Medición: ejecución, preparación/revisión/retrabajo y referencia no medidos;
+  ahorro no medido. No se abrió otra instancia ni se instaló/configuró nada.
+- Siguiente: conservar el dato bajo autoridad nativa; auditar consumidores host
+  por separado conforme al plan de migración.

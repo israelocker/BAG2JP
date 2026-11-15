@@ -5,8 +5,8 @@ tags: ["index", "workflow", "project"]
 summary: "Índice temático único. Leer solo el tema actual; histórico no operativo en archive y estado/evidencia del task en su nota."
 related: ["AGENTS.md", "CHARACTER_IMPORT.md", "notes/character-pipeline.md", "_work/current-state.json"]
 created: "2026-10-31"
-updated: "2026-11-12"
-edited: "2026-11-12"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: index
 ---
 
@@ -20,7 +20,7 @@ de contexto en AGENTS no son medición actual; medir con el checker documental.
 |---|---|
 | **Retomar desde cero (handoff vigente)** | **[HANDOFF.md](HANDOFF.md)** |
 | Build, staging y snapshot | [Proyecto](notes/project.md) |
-| Rutas/configuración | [Rutas](docs/paths.md), [config](system_config.md) |
+| Rutas/configuración | [Rutas](docs/paths.md), [config](system_config.md), [diccionario](docs/data-dictionary.md) |
 | Desarrollo/documentación | [Estándar](docs/coding-standards.md), [mantenimiento](MAINTENANCE_GUIDE.md) |
 | Importar personaje | [Inicio mínimo](IMPORT_STANDARD.md) |
 | DFS/payload | [Integración](notes/character-alternate-entries.md) |

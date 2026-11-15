@@ -81,9 +81,53 @@ def validate_file(path: Path, fix: bool = False) -> list[str]:
 |----------|-------------|
 | Validate on load | Los valores numéricos deben estar dentro de rangos documentados (ej. `buffer_ms` 30-500). |
 | Document defaults | Comentar qué hace cada opción y su valor por defecto. |
-| No secrets or personal paths | Los archivos de configuración no deben contener rutas de usuario ni credenciales. |
+| No secrets or personal paths | El TOML común y la plantilla no llevan rutas personales ni credenciales. Las ubicaciones verificadas de máquina van solo en el TOML local ignorado; las credenciales no van en ninguno. |
 
-### Reglas de validación TOML
+### Configuración central obligatoria para desarrollo
+
+Desde el 2026-11-15, todo código de desarrollo **host** nuevo o modificado
+(herramientas y generadores) debe obtener sus **rutas de entorno y valores
+operativos configurables** del resolutor
+`tools/workflow/project_config.py`. Los defaults portables viven en
+`config/project.toml`; las ubicaciones de máquina, en el local ignorado
+`config/project.local.toml`. No duplicar valores en consumidores, parsers TOML ni
+fallbacks a rutas antiguas. PowerShell y otros adaptadores consumen el JSON del
+resolutor. La raíz del repo se deriva, no se escribe como ruta de máquina. Esto
+no añade Python/TOML host al runtime C ni al juego distribuido: sus valores
+operativos conservan el contrato del título/runtime y su parser correspondiente.
+
+- Antes de añadir una clave, buscar si ya existe en
+  [el diccionario](data-dictionary.md) y reutilizarla si tiene el mismo significado.
+  Cada clave debe documentar significado, tipo/unidad, origen/default, validación,
+  permisos de override, operaciones y consumidores reales. Una clave nueva requiere
+  actualizar registro, config/plantilla según corresponda, diccionario y tests.
+- Validar la configuración y los argumentos efectivos antes de actuar; exigir solo
+  las claves usadas por la operación. Conservar la precedencia documentada de CLI
+  y overrides existentes, sin introducir selección silenciosa por entorno. Las
+  escrituras usan las guardas de destino y protegen la instalación estable.
+- Distinguir configuración de **hechos del dominio**: direcciones/opcodes PSX,
+  IDs, formatos, hashes, guards de aceptación y datos nativos de perfiles/contratos
+  no se vuelven ajustes libres de TOML. Nombrar/documentar esas constantes y su
+  autoridad. Tampoco trasladar valores sintéticos de fixtures, nombres de archivos
+  del protocolo o estructura relativa derivada solo por ser literales.
+- Revisar también dependencias reales de tests, scripts Bash/PowerShell, herramientas
+  de paquetes y generadores. Cambiar el origen/generador, no reescribir evidencia,
+  caches históricos, releases publicados ni settings/saves del usuario. Cualquier
+  dependencia instalada externa necesita su lote y verificación propios.
+- Probar equivalencia, raíz reubicada/CWD distinto, override, claves ausentes y
+  fallo antes de efectos. Registrar excepciones con motivo y fuente; no declarar
+  migrado un consumidor por haber creado la clave ni por pasar una búsqueda textual.
+
+Esta regla es un requisito para el futuro, **no certifica cumplimiento global**.
+El estado y los lotes pendientes se registran en [system_config.md](../system_config.md).
+
+### Ejemplos de validación del título/runtime (no del esquema host)
+
+La siguiente tabla es ilustrativa, no evidencia de los rangos aceptados hoy por
+el parser del framework fijado. No define claves de `config/project.toml`: su
+esquema lo define `FIELDS` y lo documenta `docs/data-dictionary.md`. Antes de cambiar
+settings del juego, contrastar nombres/tipos/rangos con el parser de la revisión
+fijada, como exige `system_config.md`; no copiar estos ejemplos como contrato vigente.
 
 | Sección | Clave | Tipo | Mín | Máx | Requerido |
 |---------|-------|------|-----|-----|-----------|
