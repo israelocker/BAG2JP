@@ -2,16 +2,27 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: trace completo, captura rejected24.67ms. Plan de grabador aprobado; fase1 offline fits6.63/6.82ms pero5sync sin limite y contenido audible de pausa desconocido. No integración/partida/gates cambiados. Siguiente: timing y procedencia de audio preciso en runtime intacto;T3 PCM/WAV no disponible con DEBUG_TOOLS OFF."
+summary: "Bloque4: WASAPI por proceso disponible Windows26200; prueba propia5paquetes float32silencio/QPC10ms, sin juego/WAV. PCM16dio1LSB ydevicePosition0(no contador). Falta señal/exclusion/integración; propuesta de backend opcional pendiente confirmación. Video recovery-ready sigue rejected24.67ms, runtime/gates/guardado intactos."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "b6e43178ad9dc094d84b7b101f900d296401c62a839931e210280b520023bea9"
+source_sha256: "e15e1bcfa6c1873736bf6db65d480d54252b34c78475c7ff910bfcb1c22303b4"
 ---
 
 # Gas-O: lectura vigente
+
+Último resultado: «Fase1: captura nativa por proceso, viabilidad parcial» en nota.
+Prototipo propioPID con APIWindows activó/init S_OK,5paquetes float32/44100Hz de
+441frames y cero exacto, QPCcada10ms,624ms; sin juego, sin WAV ni audio de otrasapps.
+PCM16 previo falló exactitud(pico1LSB), retenido. DevicePosition devuelve0siempre:
+no usarcontador. capability-summary.json tiene fuentes/resultados. OS26200 supera
+mínimos20348/20438(documentación oficial discrepa). No prueba señal/exclusión.
+Refinamiento native-backend opcional en plan existente pendiente de confirmación:
+dos procesos propios/tonos breves suaves y pausa, helper+integración/Goldfish/toma.
+No otro guardado/runtime ni instalación/capturaajena/umbrales mayores. Estado
+anterior se conserva abajo; no repetir las pruebas propias sin inputs nuevos.
 
 Estado más reciente: sección «Bloque 4: guard1 desplegado; toma de recuperación».
 Actualización vigente «Continuación: handshake de readiness F7»: owner aclaró

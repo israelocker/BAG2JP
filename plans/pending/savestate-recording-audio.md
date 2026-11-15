@@ -2,6 +2,7 @@
 
 Status: approved — owner selected «Corregir grabador (Recomendado)» on 2026-11-15.
 Execution gate: offline feasibility first; no new game trial before that proof.
+Scope refinement below: native process-audio backend is proposed, not yet approved.
 Topic: notes/gaso-import.md, Block 4. No external tracker/remote.
 
 ## Evidence and objective
@@ -96,6 +97,63 @@ game's existing save system. Original rejected recordings/manifests remain intac
   or launching another game. A larger helper/new capture backend is a scope
   decision, not silently authorized implementation.
 
+## Native process-audio capability trial (2026-11-15)
+
+- Machine: Windows11Pro10.0.26200, SDK headers22621/26100; existing pwsh7.6.9
+  and .NET10.0.14. No install or runtime change. Microsoft ApplicationLoopback
+  sample restricts capture to the target process tree and supports silence when
+  that tree has no rendering streams. Docs mention min20348(sample)/20438(API);
+  local26200 exceeds both, and actual activation/initialization returned S_OK.
+- Context7 returned unrelated WindowsAppSDK/WinRT libraries; used official
+  learn.microsoft.com sample/API docs and installed SDK ABI, not guessed wrappers.
+- Scratch prototype ProcessAudioActivationProbe.cs + probe_process_audio_activation.ps1
+  always targets its OWN PID, INCLUDE_TARGET_PROCESS_TREE; no arbitrary PID option,
+  no game, no microphone/system loopback, no audio files. Temp uses approved folder.
+- self-activation-a:721ms, successful activation/init, no Start or packets.
+  self-packets-a/b:699/606ms, exact-zero test failed under PCM16; b recorded
+  peak1LSB/199nonzero samples in441frames, Stop succeeded. Retained failures.
+  Changing only sample representation to float32 at the SAME44100Hz returned
+  5exact-zero441-frame packets, each10ms apart by native QPC(100ns units),624ms
+  including compilation. Consistent with conversion dither, not proof of its cause.
+- DevicePosition remained0 for all5packets; never assume it is a usable sample
+  counter. QPC advances and locally accumulated frame counts are the candidate.
+  Capability JSON and versioned source/report backups under _work/gaso/block2/process-audio/.
+- Proven: API availability and native silent packet timing on own process.
+  NOT proven: non-silent signal fidelity, two-process exclusion, target exit,
+  stream faults, full recording alignment, game behavior or accepted video.
+
+## Proposed scope refinement: process-audio backend in existing recorder
+
+This is a different source, not a piecewise repair of pre-host mixer PCM.
+It adds a native helper/backend and therefore needs owner confirmation before
+implementation beyond the scratch capability probe.
+
+1. Host proof with two OWNED processes and two brief quiet synthetic tones:
+   capture target only, verify wanted signal and excluded sibling signal, then
+   pause/stop/resume rendering and require genuine native silence/continuous QPC.
+   No unrelated-app capture, master-volume change or device installation.
+2. Opt-in adapter within existing tools/test/bag2_record.py; likely files
+   process_audio_capture.cs/.ps1 or a smaller demonstrated equivalent,
+   process_audio_capture.py, test_process_audio_capture.py and test_bag2_record.py.
+   Native helper verifies game PID/path/start-time and lifetime; NEVER default
+   endpoint/system capture, EXCLUDE mode, PID0 or silent fallback to another source.
+3. Preserve original float32PCM and packet flags/QPC metadata. The review artifact
+   must use a truly lossless float-capable audio codec, not silently quantize to
+   FLAC16. Owner delivery remains AAC. DevicePosition0 is diagnostic, not trusted.
+4. Declare audio_source in manifest; use clock anchors/packet timestamps to prove
+   the existing one-frame window bound, rate/data/identity checks and complete
+   coverage. Reject lost packets, TIMESTAMP_ERROR, unmarked discontinuity, bad
+   anchors, unknown gaps and target exit. No estimated silence or discarded PCM.
+5. Existing mixer dump remains default/historical diagnostic; unchanged captures
+   keep their behavior. Do not change/re-finalize historical rejected evidence.
+6. Run new seam tests, existing recorder/window/audio tests and relevant regression
+   suite; Goldfish review per repo before closing tools changes; then ONE fresh
+   authorized experimental recovery trial and frame/audio review before conformity.
+
+Only the host proof and recorder's audio capture path change. No game save system,
+runtime/EXE/framework/MODMEM, stable install, device drivers or other applications.
+If the native source cannot pass these tests, leave the capture rejected.
+
 ## Always / Never
 - Always: evidence before acceptance; local sequential Git; same experimental target;
   protect saves/settings; one GPU workload; precise scope and measured limitations.
@@ -109,6 +167,6 @@ game's existing save system. Original rejected recordings/manifests remain intac
 | Phase | State |
 |---|---|
 | Diagnosis | Done: replay and native load log correlate the persistent timing step |
-| 1 | Approved; replay performed, blocked on precise gap/audio provenance |
-| 2 | Blocked by1 |
+| 1 | Replay insufficient; native own-process activation and silent QPC packets proved, real signal/isolation unverified |
+| 2 | Blocked by host proof + owner confirmation of native-backend refinement |
 | 3 | Blocked by2 + Goldfish |

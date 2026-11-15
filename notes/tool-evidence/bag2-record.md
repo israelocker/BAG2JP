@@ -798,3 +798,30 @@ Skill: `bag2-game-recording` (`D:/Dev/Tools/agent-data/shared/agents/skills/bag2
 - Viabilidad pendiente de procedencia/timing más preciso; no fases2/3 ni
   silencio inventado. Fuente y comandos en plan/ledger, JSON completo en
   _work/gaso/block2/explicit-pause-model-feasibility.json. Ahorro no medido.
+
+## 20261115-bag2-record-process-audio-capability — host propio, no juego
+
+- Objetivo: fuente nativa que capture pausas reales sin inventar PCM. OS verificado
+  Win11Pro26200, SDK22621/26100, pwsh7.6.9/.NET10.0.14 existentes. Microsoft Learn:
+  applicationloopbackaudio-sample, ActivateAudioInterfaceAsync y GetBuffer;
+  muestra min20348/API20438, máquina supera ambos. Context7 sin Win32 pertinente;
+  fallback a docs oficiales y ABI SDK. No instalación ni modificación de runtime.
+- Prototipo scratch C#/PowerShell siempre SELF PID/INCLUDE_TARGET_PROCESS_TREE,
+  sin argumentoPID ni selección de endpoint global, sin juego ni WAV. Comando
+  pwsh -NoProfile -MTA -File _work/gaso/block2/probe_process_audio_activation.ps1
+  -Tag <fresh> [-Packets|-FloatPackets]. Salidas separadas/source hashes por tag.
+- self-activation-a721ms: layouts12/24/18B y activación/init S_OK;0paquetes.
+  self-packets-a699ms: falla no cero, versión inicial no retenía metadata parcial;
+  b606ms añade diagnóstico,441frames/flags0/pico1LSB/199samples no cero, Stop S_OK.
+  Reportes y fuentes fallidos conservados; no ocultarlos ni declarar fuga ajena.
+- self-float-packets-c624ms: mismo44100Hz, solo representaciónfloat32 cambia;
+  5paquetes441frames/ceroexacto, QPC100ns avanza100000(10ms) cada paquete,
+  sin TIMESTAMP_ERROR y Stop S_OK. DevicePosition0 siempre: no contador usable.
+  Resultado compatible con dither de conversión PCM16; causa interna no probada.
+  Fuente SHA611a2071eb1d, capability-summary.json y fuentes/versiones en process-audio/.
+- Dictamen útil para disponibilidad/API/reloj/silencio propios. NO prueba señal
+  no nula, exclusión real entre procesos, errores prolongados, captura de juego
+  ni accepted=true. Aún sin backend integrado ni nueva partida. Refinamiento de
+  alcance en plan: opt-in audio porPID, preservarfloat/QPC, host señales/pausas,
+  Goldfish y una toma si todo pasa; no otro sistema de guardado.
+- Tiempos incluyen compilación de cada probe; preparación/revisión/ahorro no medidos.

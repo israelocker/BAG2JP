@@ -2310,3 +2310,16 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Resultado: útil para verificar identidad/contexto; no nueva demostración de
   recuperación ni aceptación en partida. Tiempo de consultas no medido;
   ahorro no medido. Siguiente: toma con runtime94922aba y gates del grabador.
+
+## 20261115-ghidra-process-audio-feasibility — verificación obligatoria acotada
+
+- MCP get_program_info: SLPM_862.19 JP, SHA256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe,
+  1324funciones. disassemble_function(0x8002d06c,offset0,limit8) devuelve
+  FUNCTION_NOT_FOUND: no crear/renombrar función para remediarlo.
+- read_memory(0x8002d06c,length32) sí responde sin gaps; prólogo
+  c0ffbd272400b3af219880003400b7af3c00bfaf3800beaf3000b6af2c00b5af.
+  Corresponde al seam nativo observado para CAUGHT; proyecto/análisis intactos.
+- Útil para identidad/bytes originales y cumplimiento de sesión; no nueva
+  evidencia sobre audio Windows. Esa API se contrastó por SDK/docs oficiales
+  y prueba host aislada, no se atribuye a Ghidra. Tiempo/ahorro no medidos.

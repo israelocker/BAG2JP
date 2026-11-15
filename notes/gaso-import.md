@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4 abierto: trace completa save/load/recovered/retirada/fin/selector; captura REJECTED audio24.67ms. Plan de grabador aprobado; replay offline separa ajuste pero deja5sync sin límite y contenido de pausa no demostrado. Sin cambios de grabador/runtime/gates ni otra partida. Siguiente: procedencia/timing preciso de audio."
+summary: "Bloque4 abierto: trace completo,video rejected24.67ms. Investigación aprobada: WASAPI por proceso disponible en Windows26200; prueba propia5paquetes float32silencio/QPC10ms, sin juego/WAV. PCM16 dio1LSB,devicePosition siempre0. Falta señal real/aislamiento e integrar backend; propuesta de alcance pendiente. Sin cambios de grabador/runtime/gates."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-15"
@@ -162,6 +162,34 @@ doc_kind: evidence
   muestras. Próximo interno: investigar marcadores precisos por bloque de audio
   del runtime intacto o fuente solo del proceso del juego sin instalar dispositivos;
   demostrar host antes de integrar. Un backend/helper grande exige revisar alcance.
+
+### Fase1: captura nativa por proceso, viabilidad parcial (2026-11-15)
+
+- Windows11Pro10.0.26200, SDK22621/26100 y pwsh7.6.9/.NET10.0.14 ya instalados.
+  Docs oficiales ApplicationLoopback/ActivateAudioInterfaceAsync/GetBuffer permiten
+  INCLUDE_TARGET_PROCESS_TREE y marcas QPC de100ns; min20348/20438 según página,
+  equipo supera ambos. Context7 no devolvió librería Win32 pertinente; fallback
+  a Microsoft Learn/SDK. No instalar, capturar escritorio ni activar debug tools.
+- Prototipo _work/gaso/block2/ProcessAudioActivationProbe.cs y
+  probe_process_audio_activation.ps1: target fijo al
+  propio PID, sin opción para otro PID, ningún juego ni WAV. Params12B,PROPVARIANT24B,
+  WAVEFORMAT18B contrastados con SDK; activación/init S_OK en721ms.
+- Primeras lecturas PCM16 fallaron silencio exacto: self-packets-a699ms,
+  b606ms registró pico1LSB/199samples no cero, Stop S_OK. Fuentes/reportes
+  preservados por versión; no ocultar fallo ni atribuir fuga a otro proceso.
+  Cambiar solo a float32/44100Hz produjo5paquetes441frames de cero exacto,
+  QPC espaciado10ms,624ms incluyendo compilación. Compatible con dither de
+  conversión; causa no demostrada por dentro del motor. DevicePosition siempre0,
+  no usarlo como contador fiable. Fuente actual SHA611a2071eb1d.
+- Evidencia process-audio/capability-summary.json y directorios self-activation-a,
+  self-packets-a/b,self-float-packets-c. Útil para API/silencio/reloj propios;
+  **sin prueba de señal real, exclusión entre procesos, fallos o captura de juego**.
+- Refinamiento propuesto en el plan existente: backend opcional por PID del
+  juego dentro del grabador, helper nativo, floatPCM+QPC/flags preservados y
+  guardas actuales. Primero dos procesos propios/tonos sintéticos breves de bajo
+  nivel y prueba de pausa, luego integración/Goldfish/una toma. Es nueva fuente,
+  no parche afín al dump viejo; pendiente confirmación del owner del alcance.
+  Nunca otro guardado, runtime distinto, audio de otras apps ni umbrales mayores.
 
 ## Bloque 4: recuperación de ownership slot1 tras load (2026-11-15, candidato host guard0)
 
