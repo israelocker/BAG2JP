@@ -684,3 +684,65 @@ Skill: `bag2-game-recording` (`D:/Dev/Tools/agent-data/shared/agents/skills/bag2
   no valida matriz de rivales ni lifecycle CAUGHT.
 - Versiones de grabador/backend conservadas de la instalación verificada. Tiempo
   de pared de cada run en result.json; ahorro y retrabajo manual no medidos.
+
+## 20261115-bag2-record-recovery — calibración guard1 y toma save/load
+
+- Runtime94922aba, PSXRecomp experimental JP; guard1 solo en build, canónico0.
+  Grabador/backend WGC y gates sin cambios. Wrapper block2 probe con
+  `--temporary-controls --audio-dump --tag block4-recovery-cal{,2}`.
+- Primera calibración REJECTED:551latidos,8tardíos,jitter28.3ms>1frame,
+  sin stalls, audio3301pares/0descartes/ventana1.53ms. Conservada íntegra;
+  recovery-cal-clock-diagnosis.json muestra jitter también en productor.
+  No atribuir causa únicamente al observador ni declarar corrección.
+- Segunda calibración accepted=true:545latidos,7tardíos,jitter12.9ms,
+  sin stalls,3259pares audio/0descartes/ventana1.69ms. Catálogo revisado con
+  imágenes reducidas recovery-cal2-{sheet,probes}.png y helper canónico
+  accept_versus_calibration.py; movimientos correctos en los ocho arcos.
+  Restauración verificada en ambas:150saves y tres archivos de configuración.
+- Partida block4-recovery-load iniciada con run_recorded_savestate.py
+  (Gas-O/Heat BAG1 A,GasOBAG1,fixture GASO_ATTACK,fin420s). Vigila log y
+  encola F7/Up/S para slot11, F7/L tras retiro; exige SAVED+fichero aislado,
+  recuperación y nuevo retiro. PostMessage no es confirmación. Pendiente
+  resultado/finalize/revisión; no aceptación del comportamiento todavía.
+- Tiempo cal1 108.690s,cal2 103.559s según result.json; preparación/revisión
+  y ahorro no medidos. Ver ledger Gas-O para resultado vivo actualizado.
+
+### Resultado load1 y repetición load2
+
+- load1 falló144.485s con heartbeat obsoleto: F7 pausado, trial saving, sin
+  SAVED/.pst. Finalize REJECTED por shutdown inseguro/identidad de ventana al
+  cerrar proceso antes del grabador; no es evidencia aceptada de recuperación.
+  Reloj330latidos/0tardíos/jitter9ms/sin stalls;audio1975pares/0descartes,
+  ventana4.67ms. Settings y150saves restaurados verificados por harness.
+- Diagnóstico de fuente+imagen t38s: Up/S en lote inicial se descartan en
+  drain_host_events, menú sigue slot01. Wrapper separa lotes con25ms y exige
+  las mismas confirmaciones;3regresiones RED→GREEN(total7tests). load2 en curso,
+  sin cambio EXE ni umbrales. Esperar resultado antes de aceptar comportamiento.
+
+### load2: guardado sí realizado, acuse buffered; load3 en curso
+
+- load2 falló146.364s por guardado no reconocido antes del retiro. Sí existe
+  cards/openbios/state_80035D98_slot11.pst1958997B y .thumb49164B; stderr al
+  cerrar confirma SAVED11@8008E8B4. No hubo petición load. Captura REJECTED
+  por cierre/identidad de ventana; reloj456latidos/1tardío/jitter13.2ms,
+  audio2731pares/0descartes/ventana5.54ms.150saves/configs restaurados.
+- Fuente nativa: thumbnail PSTH128x96 se escribe solo tras boot_state_save
+  exitoso. Wrapper reconoce .pst no vacío+.thumb completa con cabecera válida
+  en cards inicialmente vacías, en vez de esperar stderr;10host tests OK
+  después de1RED. Recorder se para antes del juego también en error.
+- load3 iniciada, mismos runtime/gates/pareja/fixture. Pendiente resultado;
+  no aceptación ni nueva repetición sin diagnóstico.
+
+### load3: captura aceptada, protocolo de menú no fiable (bloqueo)
+
+- Run147.625s falla con heartbeat obsoleto, sin SAVED/.pst. t38s muestra menú
+  F7/slot01;25ms no garantiza cambio de event-drain a pause-loop. Sin load,
+  recovered, nueva retirada ni fin/selector: NO aceptación del comportamiento.
+- Finalize accepted=true:337latidos/1tardío,jitter11.3ms,sin stalls,
+  1993pares audio/0descartes,ventana5.54ms; shutdown seguro al parar recorder
+  primero. Es una captura diagnóstica aceptada, no recuperación aceptada.
+-150saves/configs restaurados. Chequeo independiente final: cinco configs
+  de deployment-backup iguales, sin .pst en saves originales, canónico guard0
+  y EXE94922aba experimental sin cambios; no instancia activa.
+- No más repetición ciega. Siguiente interno: señal verificable de menú listo,
+  host regression y evaluación de alcance si exige framework. Sin ahorro medido.

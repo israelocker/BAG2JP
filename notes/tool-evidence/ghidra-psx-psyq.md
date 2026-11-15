@@ -2296,3 +2296,17 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   journal (sin cambio de MODMEM/cookie). No demuestra comportamiento en partida.
   Tiempo ~10 min de consultas; ahorro no medido. Respuestas MCP crudas no
   guardadas: se transcribieron las líneas relevantes.
+
+## 20261115-ghidra-recovery-recording — preparación de toma guard1
+
+- Pregunta: verificar sesión/programa relevantes antes del save/load grabado.
+  MCP get_program_info: SLPM_862.19 JP, SHA256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  disassemble_function(address=0x80031d3c,offset=0,limit=24): constructor de
+  actor existente; 24 instrucciones, sin modificación de proyecto/funciones.
+- Contraste: evidencia de derivación DFS del ensayo anterior y host38/91 ya
+  verificados, reutilizados sin repetir. Lectura de main.cpp del framework
+  determina la vía F7 del host; no atribuir esa UI a la función PSX.
+- Resultado: útil para verificar identidad/contexto; no nueva demostración de
+  recuperación ni aceptación en partida. Tiempo de consultas no medido;
+  ahorro no medido. Siguiente: toma con runtime94922aba y gates del grabador.

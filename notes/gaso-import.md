@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4: recuperación de ownership slot1 tras load por derivación nativa del vacío (DFS actor+0x10), solo lectura y solo guard1; 38 tests runtime, 25/25 mutantes, 2 Goldfish favorables. Suite 482 tests con los mismos 29 FAIL/ERROR; guard0 sin despliegue ni partida."
+summary: "Bloque4 abierto: guard1 autorizado/desplegado experimental94922aba,canónico0. Cal2 aceptada; tres tomas no alcanzan load por sincronización F7/acuse buffered. load3 accepted solo diagnóstico.150saves/5configs protegidos. Próximo interno: señal de menú listo, no más tomas ciegas. Host38/91,25mutantes,2Goldfish; suite482 conserva29FAIL/ERROR."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-15"
@@ -10,6 +10,92 @@ doc_kind: evidence
 ---
 
 # Gas-O — ledger canónico
+
+### Bloque 4: guard1 desplegado; toma de recuperación en preparación (2026-11-15)
+
+- Autorización explícita del owner: «Opción 1: build guard1 + prueba
+  (Recomendado)», reiterada con «continua». Incluye staging/build/deploy solo
+  en experimental y prueba grabada de save/load con copia previa de ajustes/saves.
+- Checkpoint WIP `13d52f9`. Staging en `build/src/` de caught_bank.c/.h y
+  gaso_caught.c; backup `_work/gaso/block2/stage-guard1-recovery-backup/`.
+  Única diferencia de la fuente compilada frente a la canónica: guard a 1;
+  canónico conserva 0. El build anterior carecía además de driftguard/native-init.
+- Build `20261115T040628284084Z-gaso-guard1-recovery` PASS39.198s; EXE
+  `94922ababe6bdfec68665baa14ad5a12cb891530c6e48a936f9c706e1dec78ca`.
+  Desplegado con `deploy_verified_exe.py` solo en exp-8mb, backup del anterior
+  e709c2f8 en `_work/gaso/deployment-backup-guard1-recovery/`, cinco configs
+  protegidas y paquetes sin cambios. Instalación estable intacta.
+- Preflight de continuación `20261115T041243969344Z-gaso-savestate-recording`
+  PASS0.352s:48 fuentes iguales, solo deriva intencional guard1; recursos
+  iguales y EXE build/deploy coincidente. Ghidra MCP JP original sin cambios;
+  consulta acotada documentada en `20261115-ghidra-recovery-recording`.
+- Vía de savestate: build tiene PSX_DEBUG_TOOLS=OFF; no se activa servidor ni
+  se recompila. main.cpp:8278..8316 admite F7, '=' (índice11/slot visible12),
+  S guardar y L cargar. El wrapper usa Up desde slot0 para llegar a11 sin
+  depender del layout del teclado; cargar conserva ese slot. El menú pausa el guest; wrapper experimental
+  `_work/gaso/block2/run_recorded_savestate.py` encola la secuencia a su HWND/PID
+  verificado. Exige fichero aislado + log SAVED antes de cargar, luego
+  recovered side2 y restored side2. Los PostMessage no prueban ejecución.
+  Tests de secuencia: RED4fallos→GREEN4OK, logs savestate-wrapper-{red,green}.log.
+  Solo script de toma en _work; no cambio del runtime/recorder ni sus gates.
+- Calibración `block4-recovery-cal`: restauración verificada de configs y150
+  saves; **REJECTED** por jitter28.3ms>1frame, audio pasa (window1.53ms,
+  dropped0). Diagnóstico `recovery-cal-clock-diagnosis.json`: variación también
+  en productor, no atribuible únicamente al observador; causa exacta no probada.
+  Repetición acotada `block4-recovery-cal2` **accepted=true**:545latidos,
+  7tardíos, jitter12.9ms, sin stalls;3259pares audio,0descartes,ventana1.69ms.
+  Navegación revisada visualmente (Heat/Comet/Strike/Shorty/Bi-O); catálogo
+  aceptado con helper canónico, hashes ligados a capturas y runtime.
+  `probe.py` confirma owner.mp4 de54.384s,1920x1080/H.264.
+- Partida `block4-recovery-load`: **falló**144.485s, error «Stale or
+  foreign-session heartbeat», sin fichero .pst ni log SAVED. Trial quedó
+  en saving tras published/entered side2 (gf7902). Video diagnóstico t38s
+  muestra menú F7 abierto en slot01: Up/S del mismo lote se perdieron.
+  Causa contrastada: drain_host_events consume el lote de apertura sin llamar
+  savestate_menu_handle_key; solo lo hace savestate_menu_host_pause_loop.
+  Recorder **REJECTED** por cierre inseguro/identidad de ventana al cerrar el
+  harness antes del recorder. Sus gates de reloj/audio aislados sí pasaban;
+  no se presenta como validación de juego.150saves/configs restaurados.
+- Wrapper corregido: F7 separado de Up/S o L por25ms (present16.7ms+poll8ms
+  como margen experimental, no garantía de sincronización). Regresión3fallos
+  antes/7testsOK después, savestate-menu-batch-{red,green}.log. Sin cambios
+  EXE/runtime/gates. `block4-recovery-load2` falló146.364s por «CAUGHT retired
+  before save acknowledgement», pero sí generó slot11.pst1958997B y .thumb49164B;
+  el log SAVED apareció al cerrar. El menú corregido sí guardó; la condición
+  de confirmación dependía indebidamente de stderr visible durante la partida.
+  Capture REJECTED por el mismo cierre de ventana prematuro;150saves/configs
+  restaurados. No se llegó a enviar load ni a probar recuperación.
+- Nueva confirmación independiente: savestate.c:1000..1014 solo captura .thumb
+  tras boot_state_save exitoso;616..652 escribe PSTH,width128,height96 y49152B
+  de píxeles. Wrapper exige .pst no vacío + .thumb completa49164B con cabecera
+  válida en cards aisladas previamente vacías. No depende de stderr buffered;
+  al cerrar también se contrasta SAVED. Regresión1RED→10testsOK en
+  savestate-ack-{red,green}.log. Cierra el recorder ANTES del juego incluso en
+  error para preservar sus guardas. Gates/runtime intactos.
+- `block4-recovery-load3`: **falló147.625s** con heartbeat obsoleto, sin SAVED
+  ni .pst. Video t38s confirma otra vez menú F7 en slot01: los25ms no garantizan
+  haber entrado al pause-loop. Captura esta vez **accepted=true** (337latidos,
+  1tardío,jitter11.3ms,sin stalls;1993pares audio/0descartes/ventana5.54ms),
+  gracias a parar recorder antes del juego. **Aceptación del archivo, NO del
+  comportamiento**: no se envió load, no hubo recovered y no se llegó a fin/selector.
+  Video diagnóstico `_work/recordings/block4-recovery-load3/owner.mp4` y
+  still `_work/gaso/block2/recovery-load3-menu.png`.
+- **Bloqueo vigente:** sincronización de entrada al menú F7. No más partidas
+  a ciegas ni aumento arbitrario del sleep. Próximo trabajo interno: identificar
+  una señal verificable de pause-loop listo y probar ese protocolo en host;
+  si exige modificar/recompilar framework, evaluar alcance antes de hacerlo.
+  Candidato interno por verificar: main.cpp8787 llama freeze_heartbeat_set_paused(1)
+  justo antes del bucle; freeze_heartbeat.c176..180 guarda un flag host estático
+  s_wedge_classification_paused. Verificar disponibilidad/símbolo y exclusión de
+  otras pausas antes de considerarlo señal; aún no implementado ni probado.
+  Después completar published→save→restored→load→recovered→restored, fin/selector.
+  **Sin validación de recuperación ni conformidad del propietario; Bloque4 abierto.**
+- Protección final `recovery-final-protection-check.json`: cinco configs iguales
+  al backup, sin .pst en saves originales, EXE94922aba intacto y canónico guard0.
+  Cada toma restauró150saves; ninguna instancia BAG2JP quedó activa. El EXE
+  experimental sigue siendo el candidato autorizado; estable no tocado.
+  No se repiten tests host del runtime ni Goldfish ya verificados sin cambios;
+  no se requieren herramientas de extracción/disco ni funcmatch en esta fase.
 
 ## Bloque 4: recuperación de ownership slot1 tras load (2026-11-15, candidato host guard0)
 

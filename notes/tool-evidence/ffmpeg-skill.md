@@ -347,3 +347,32 @@ doc_kind: evidence
 - Dictamen: útil, permite aceptar técnicamente la corrección para esta pareja;
   conformidad del propietario/matriz de lados siguen aparte. Precisión±2frames
   estimada, audio subjetivo no juzgado; ahorro no medido.
+
+## 20261115-ffmpeg-recovery-calibration — inspección del guard1
+
+- Herramienta existente v3.6.0: `scripts/probe.py
+  _work/recordings/block4-recovery-cal2/owner.mp4 --json-brief`;
+  salida `_work/gaso/block2/recovery-cal2-probe.json`.
+- Video54.384s,1920x1080,H.264; grabador aceptó reloj/audio sin alterar
+  gates. Imágenes de navegación contrastadas aparte en hoja PIL reducida.
+  Útil para verificar formato, no demuestra recuperación ni audio subjetivo.
+  Tiempo/ahorro no medidos; siguiente: inspección de la toma save/load.
+
+### Diagnóstico de la primera toma save/load (rechazada)
+
+- probe.py owner.mp4:43.05s. look.py raw.mkv --at38 --width960, dry-run
+  y ejecución, salida recovery-load-menu.png. Inspección: menú SAVE STATES
+  abierto en slot01 vacío, no CAUGHT avanzando. Coincide con ausencia SAVED/.pst
+  y heartbeat congelado. Fuente framework distingue event-drain y pause-loop;
+  corrección limitada al wrapper. Útil para diagnóstico de entrada, **no**
+  validación de juego porque manifest accepted=false. Tiempo/ahorro no medidos.
+
+### Tercera toma: evidencia diagnóstica aceptada, no recuperación
+
+- probe.py owner.mp4 y look.py raw.mkv --at38 --width960 (dry-run+ejecución)
+  en block4-recovery-load3. Still recovery-load3-menu.png inspeccionado: F7,
+  slot01 vacío, no se guardó. Coincide con log sin SAVED/.pst y trial saving.
+  Manifest accepted=true pero flujo pedido no realizado; no confundir ambos.
+- Útil para refutar la fiabilidad del margen25ms y detener repeticiones sin
+  señal de disponibilidad. Sin juicio de audio subjetivo ni aceptación CAUGHT.
+  Tiempo/ahorro no medidos. Próximo paso interno de sincronización del menú.

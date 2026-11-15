@@ -2,19 +2,41 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: recuperación slot1 tras load por vacío nativo derivado (DFS actor+0x10), solo lectura/guard1; 38 tests runtime, 25/25 mutantes, 2 Goldfish favorables. Suite 482 con mismos 29 FAIL/ERROR; sin despliegue ni partida."
+summary: "Bloque4 bloqueado por readiness F7: load3 falló menú slot01 pese25ms;captura accepted solo diagnóstico,sin load/recuperación. EXE94922aba experimental/canónico0,cal2 aceptada,150saves/5configs protegidos. Próximo: señal de menú listo en host;no más tomas ciegas."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "535ac39ce2b0196fb89192764c31280b720037921a58f409b27ec0871cfd6681"
+source_sha256: "d2650319d9c116808c84ed676bad9d355380000defee4def260d70cb514848b4"
 ---
 
 # Gas-O: lectura vigente
 
-Estado más reciente: sección «Bloque 4: recuperación de ownership slot1 tras load».
-Candidato host guard0 sobre 2ebb765. Ghidra: los constructores dejan actor+0x10 =
+Estado más reciente: sección «Bloque 4: guard1 desplegado; toma de recuperación».
+Owner autorizó opción1 build/prueba. WIP13d52f9; fuentes canónicas guard0,
+build guard1 con staging respaldado; EXE94922aba desplegado solo en experimental
+(backup anterior e709c2f8, configs/paquetes conservados). Build39.198s PASS.
+Cal1 rechazada jitter28.3ms; cal2 accepted=true,jitter12.9ms,audio0descartes,
+catálogo revisado. Partida block4-recovery-load falló: F7 queda abierto, las teclas
+del mismo lote no llegan al pause-loop; sin SAVED/.pst,150saves/configs restaurados.
+Captura rechazada por shutdown inseguro, no validación de juego. Regresión3RED→7OK;
+wrapper separa F7 y acción25ms (margen experimental). load2 sí guardó pero no llegó
+a load por esperar stderr buffered. Ahora exige .pst no vacío+.thumb PSTH128x96
+completa (nativa solo tras save exitoso),10hostOK; recorder para antes del juego.
+load3 falló por menú slot01 sin guardar:25ms NO fiable. Captura accepted=true
+solo diagnóstica (recorder cerró seguro), no load/recovered/fin/selector. No juego
+activo;150saves/cinco configs protegidos,ningún .pst en saves originales. Próximo
+interno: señal verificable de pause-loop listo y host tests; no más partidas
+ciegas ni cambios framework/debug-tools sin evaluar alcance.
+Señal candidata aún sin verificar: flag host estático s_wedge_classification_paused
+(freeze_heartbeat.c176..180), activado justo antes del pause-loop(main.cpp8787).
+Wrapper _work/gaso/block2/run_recorded_savestate.py
+usa F7/Up/S (slot11 aislado), luego F7/L tras retirada; exige confirmación post-save,
+recovered y restored. Sin debug server (OFF), sin cambios de gates/runtime.
+No aceptación de recuperación todavía; no pedir conformidad sin evidencia.
+
+Candidato host sobre 2ebb765. Ghidra: los constructores dejan actor+0x10 =
 DFS de motions M y raw[i]=&payload_i (FUN_800125fc), luego raw[0]=M+4 y vacío
 raw[1]=M+8+size0. `gaso_caught_native_empty` lo deriva con alineación/rangos y lo
 usan publicación y recuperación (un word cero cualquiera ya no vale). En savestate,
@@ -22,9 +44,9 @@ solo con guard1, se reclama un lado si raw[1]==clip exacto del bank y VERIFY pas
 si no, log «recovery refused». Solo lectura: restaura la retirada existente. Reset
 no recupera. Sin journal ni cambio MODMEM. Runtime 38 OK, grupo 91 OK 46.1 s,
 mutación 25/25 kills por aserción, Goldfish 2× SIN HALLAZGOS BLOQUEANTES. Suite 482
-tests, mismos 29 FAIL/ERROR (no verde global). Límites: sin partida, bank no listo/
-otra base sin log, lecturas previas sin alinear. Siguiente: candidato guard1 con
-build/deploy/prueba grabada (autorización del owner) o Bloque 5 interno.
+tests, mismos 29 FAIL/ERROR (no verde global). Límites: bank no listo/
+otra base sin log, lecturas previas sin alinear. La sección superior actualiza
+la autorización/build/toma; Bloque5 y conformidad selector aún pendientes.
 
 Checkpoint anterior 2ebb765 (observador de reinicialización nativa), fuente44a91bf8: observa8002BA18/word0c00b617 con ABI
 principal/actor/stack autenticado; invalida ambas capturas aunque direcciones y
