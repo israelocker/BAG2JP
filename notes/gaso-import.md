@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4 abierto: backend WASAPI por proceso integrado opt-in;58tests y8mutantes OK, señal/aislamiento/pausa propios probados. Dos Goldfish detectaron cobertura/cancelación, corregidas RED→GREEN. Falta una nueva toma experimental aceptada y revisión audiovisual. Runtime94922aba/guard0 intactos; video anterior rejected24.67ms."
+summary: "Bloque4: nueva toma block4-recovery-process-a accepted=true; save/load/recovered/retirada/fin/fever/selector revisados. Audio por proceso20970paquetes sin pérdidas/QPC0us,cota0.09915ms.150saves/5configs/runtime94922aba/guard0 intactos. Falta conformidad del owner y escucha subjetiva; Bloque5 pendiente."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-15"
@@ -202,6 +202,47 @@ doc_kind: evidence
   helper aislado por identidad/handle, floatPCM/diario, anclas nativas QPC–UTC,
   READY/STOP/terminal verificables; fallos cierran sin fallback. Siguiente:
   validador/helper con TDD, adaptador opt-in y finalize lossless, regresión/Goldfish.
+
+#### Toma por proceso aceptada y revisada: conformidad pendiente (2026-11-15)
+
+- Única nueva toma autorizada: `block4-recovery-process-a`, run
+  `_work/versus-runs/20261115T084937699074Z-block4-recovery-process-a`,314.223s.
+  Wrapper existente opt-in `process` (dump sigue predeterminado para otros usos),
+ 12tests PASS0.036s tras RED de la transmisión del argumento; sin cambiar runtime,
+  guardado ni gates. Preflight084549840841Z PASS0.350s, EXE94922aba/canonical0.
+- `manifest.json accepted=true`, sin rejections:2090heartbeats,4late dropped,
+  jitter p9911.0ms/59.941fps,1stall79ms(gf11952); audio nativo20970paquetes,
+ 9247770frames,0descartes/QPC0us,44100Hz,cota QPC–UTC/placement0.09915ms.
+  Source floatPCM05820741b6d3 preservado; helper0/FFmpeg0, CLOSED y window_guardpass.
+  Grabación208.867s,1920x1080; review pcm_f32le, owner AAC. `owner.mp4` SHA256
+  cc4645a6f6653e88252cc63aa86f84f1125334cefe6fd98ee71353ceb6aa3ac3.
+- Revisados114slots de fotogramas(75save/load/retirada +39fin/fever/transición),
+  más overview y muestras finales. Save/menu~35.00s(gf7938), .pst+thumb completo;
+  load/recovered42.059s(gf8361), P2Heat anim1 y modelo/pose/tanque observados antes
+  y después sin corrupción visible en esas muestras; retiro49.049s(gf8779), salida
+  del hold y retirada del tanque. Fin/FREEZE175.818s(gf16378),2PlayerWin178s;
+  fever1/5/6~180.096s(gf16635) y final Heat; selector confirmado205/207.5/208.5s,
+  con nombre/retrato Gas-O y Heat correctos. No valida todos los duetos/rivales.
+- Audio: nivel capturado -28.6LUFS, true peak-13.9dBTP, sin normalizar ni modificar
+  volumen. Ventanas del float original alrededor del load sin clipping y con
+  continuidad de paquetes demostrada; **no se hizo escucha subjetiva por el agente**.
+  ±2frames sigue siendo estimación: latencia de pantalla no calibrada. Algunas
+  extracciones buscan el siguiente frame capturado; no se fija aquí el primer
+  frame exacto del selector ni se promete precisión ±2en toda transición.
+- Protección independiente before/after:150saves y5configs idénticos, sin .pst en
+  saves originales,94922aba sin cambios,canonical guard0, stable intacto. Evidencia
+  `_work/gaso/block2/process-audio/game-trial-a/`: protection-and-run-check.json,
+  event-review-index.json, visual-audio-review.json, audio-load-check.json, probes,
+ 6hojas frame-by-frame y owner-evidence-sheet.jpg. Vídeo en
+  `_work/recordings/block4-recovery-process-a/owner.mp4`, logs/manifest/stills junto a él.
+- Goldfish nuevo omitido: este paso solo modifica wrappers en `_work/` y docs;
+  recorder/helper canónicos no cambian respecto al checkpoint revisado5e206c4.
+  Se reutilizan58tests/8mutantes y los2Goldfish corregidos; no se repiten sin input
+  nuevo. No build/deploy/release/snapshot. Toma anterior recovery-ready permanece
+  rechazada24.67ms, sin alterarla ni re-finalizarla.
+- Estado: prueba técnica del Bloque4 satisfecha, **conformidad del owner pendiente**
+  (incluye escucha/calidad/volumen subjetivos). Siguiente: entregar vídeo, hoja y
+  logs; preguntar únicamente si está conforme. Sin nueva partida ni Bloque5 ahora.
 
 #### Backend opt-in integrado y verificado en host (2026-11-15)
 

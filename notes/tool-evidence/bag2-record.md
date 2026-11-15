@@ -11,6 +11,39 @@ doc_kind: evidence
 
 # bag2_record.py - historial
 
+## 20261115-block4-process-game — primera toma nativa de proceso aceptada
+
+- Objetivo: misma recuperación F7/CAUGHT con fuente host real, sin salvar formato
+  nuevo ni cambiar runtime94922aba/guard0. Wrapper savestate fija process; shared
+  scratch run_recorded_retire mantiene dump por defecto y transmite flag explícito.
+  RED2assertions de comando, GREEN12tests0.036s. Lookup inicial de wrapper en
+  block2 falló; ubicación correcta drift/end-center heredada del runner. No clones.
+- Comando: py -3.13 _work/gaso/block2/run_recorded_savestate.py --action run
+  --tag block4-recovery-process-a --audio-dump --temporary-controls --p1-character
+  Gas-O --p1-version BAG1 --p1-costume A --p2-character Heat --p2-version BAG1
+  --p2-costume A --stage GasOBAG1 --finish --finish-timeout 420, envSHA94922aba exacto.
+  Preflight084549840841Z PASS0.350s; run084937699074Z complete314.223s, trialcomplete.
+- finalize una sola vez: accepted=true,2090heartbeats/4late,p9911.0ms/59.941fps,
+ 1stall79ms(gf11952), audio20970paquetes/9247770frames/44100Hz/0drops/QPC0us,
+  cota0.09915ms. CLOSED/helper0/FFmpeg0/guardpass. Vídeo208.867s,1920x1080;
+  ownerSHA cc4645a6f6653e88252cc63aa86f84f1125334cefe6fd98ee71353ceb6aa3ac3.
+- Evidencia independiente antes/después:150saves/5configs idénticos,94922aba,
+  canonical0 y stable intactos. `.pst` y thumbnail solo cards aisladas. Archivo
+  capture-boundary.json no existe en este wrapper; se usaron trial/events/trace,
+  timestamps y media real, no un boundary supuesto ni otra partida.
+- Revisión114slots críticos,6hojas +overview/end: save35s, recovered42.059s/gf8361,
+  retiro49.049s/gf8779,fin175.818s,fever180.096s y selector205..208.5s correctos en
+  muestras. Audio medido-28.6LUFS/TP-13.9dBTP,sin clipping local en load ni normalizar.
+  No escucha subjetiva del agente; pantalla±2frames estimado y primer selector
+  frame no fijado. No valida toda matriz de rivales/duetos ni Bloque5.
+- Goldfish omitido para este paso_work/docs, recorder/helper5e206c4 sin cambios;
+ 58tests/8mutantes y2review previos reutilizados. Útil en juego, no conformidad humana.
+  No otro run/finalize/build/deploy/snapshot. Ahorro/trabajo manual no medidos.
+  Artefactos: _work/gaso/block2/process-audio/game-trial-a/visual-audio-review.json,
+  protection-and-run-check.json, probes/hojas; _work/recordings/tag/owner.mp4 y logs.
+  browser.preview(_work/recordings/block4-recovery-process-a/owner.mp4) devolvió
+  la ruta y abrió el vídeo en Review; no se atribuye escucha al agente.
+
 ## 20261115-process-audio-backend — integración opt-in, host solamente
 
 - Propósito: registrar pausas nativas sin reconstruir silencio del mixer dump.

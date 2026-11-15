@@ -11,6 +11,17 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 20261115-ghidra-process-game — identidad original para la toma
+
+- get_program_info primero: SLPM_862.19 JP/main,PSXLE32,1324funciones,
+  SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  read_memory(0x8002d06c,length16) devuelve
+  c0ffbd272400b3af219880003400b7af,sin gaps; proyecto/análisis intactos.
+- Útil como identidad/seamCAUGHT obligatorio, no nuevo matching ni parcheMIPS.
+  Toma real confirma recoveredside2/gf8361/P2anim1 en trace, luego retirada y
+  selector; audio nativo verificado por el grabador, no atribuido a Ghidra.
+  Tiempo/ahorro no medidos. Resultado de toma y conformidad en notes/gaso-import.md.
+
 ## 20261115-ghidra-process-audio-adapter — identidad y seam original
 
 - MCP get_program_info confirmó SLPM_862.19 JP/main, PSX LE32,1324funciones,

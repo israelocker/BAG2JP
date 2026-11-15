@@ -2,7 +2,7 @@
 id: savestate-recording-audio-plan
 title: "Audio alignment through native savestate loads"
 tags: ["plan", "audio", "recording", "savestate"]
-summary: "Approved process-only WASAPI recorder; host integration/review verified, one experimental audiovisual acceptance trial pending."
+summary: "Process-only WASAPI recorder verified; fresh trial accepted and technically reviewed, owner conformity/listening pending."
 related: ["notes/gaso-import.md", "tools/test/bag2_record.py"]
 created: "2026-11-15"
 updated: "2026-11-15"
@@ -200,8 +200,11 @@ If the native source cannot pass these tests, leave the capture rejected.
   Actual backend-signal-a passed(-73.9579dB sibling exclusion,4345silent frames,
   282packets/QPC0us residual); corrected validator replays retained capture PASS.
   Native fault matrix6cases PASS; actual parent death reaps helper170.79ms while
-  target lives. Next: fresh authorized full experimental recording with process
-  opt-in, audiovisual acceptance/review. Historical rejection untouched.
+  target lives. Fresh block4-recovery-process-a completed314.223s, accepted=true,
+  review208.867s,20970native packets/no drops/QPC0us/cota0.09915ms.114critical slots
+  plus overview/end inspected, save/load/recovered/retirement/end/fever/selector.
+ 150saves/5configs/runtime preserved. Owner conformity/subjective listening pending;
+  no more trials. Historical rejection untouched.
 
 ## Always / Never
 - Always: evidence before acceptance; local sequential Git; same experimental target;
@@ -218,4 +221,4 @@ If the native source cannot pass these tests, leave the capture rejected.
 | Diagnosis | Done: replay and native load log correlate the persistent timing step |
 | 1 | Persistent owned-source signal/isolation/pause passed both directions; stream recreation rejected |
 | 2 | Integrated opt-in;58tests/8mutants, real backend signal and lifecycle proof PASS |
-| 3 | Goldfish findings fixed/tested; fresh experimental recording + audiovisual review pending |
+| 3 | Fresh recording accepted, technical frame/audio review complete; owner conformity/listening pending |

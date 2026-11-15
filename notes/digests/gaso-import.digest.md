@@ -2,30 +2,35 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: backend por proceso integrado opt-in;58tests/8mutantes OK, señal/pausa/aislamiento propios y muerte real de padre verificados.2Goldfish corregidos RED→GREEN. Falta1toma experimental aceptada y review audiovisual. Runtime94922aba/canonical0 intactos; video anterior rejected24.67ms."
+summary: "Bloque4: block4-recovery-process-a accepted=true y revisada técnicamente. Save/load/recovered/retirada/fin/fever/selector verificados;20970paquetes/QPC0us/cota0.09915ms.150saves/5configs/94922aba/canonical0 intactos. Pendiente conformidad y escucha del owner; sin Bloque5 ni otra toma."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "8860fc430cbdfb48598e98fd96185bc740ac4efa284bcb80a576691b007cd8aa"
+source_sha256: "441057d44b526a36965b97c545462255a62d59845b1c9cd5bf7525b1ef0c82fe"
 ---
 
 # Gas-O: lectura vigente
 
-Último resultado: «Backend opt-in integrado y verificado en host» en nota.
-Owner aprobó integración y1toma experimental posterior a host/review. Implementados
-helper C#/pwsh y adaptador/validador: identidad/handle, INCLUDE-only, floatPCM,
-diario y anclas QPC–UTC nativas, STOP/terminal verificable. bag2_record.py opt-in
---audio-backend process, dump predeterminado intacto; review pcm_f32le exacto, AAC
-derivado.58tests PASS16.098s;8assertion-mutants muertos6.829s. Backend real propio
-backend-signal-a282paquetes/124362frames,4345silencio interno,exclusión-73.9579dB,
-QPC0us,cota reloj0.09445ms. Muerte de padre propio termina helper170.79ms y preserva
-target.2Goldfish encontraron reaping/cancelación y cobertura fraccional/deriva;
-corregidos RED→GREEN y testeados, no otro review repetido. Ensayos fallidos retenidos.
-Sin juego nuevo ni COM/disco fault injection exhaustiva. Siguiente: wrapper con
-opt-in,1toma YA autorizada save/load/recovered/retirada/fin/selector,accepted=true,
-review fotogramas/audio y restauración150saves/5configs. No runtime/save/gates edits.
+Último resultado: «Toma por proceso aceptada y revisada: conformidad pendiente».
+Única toma block4-recovery-process-a:314.223s total,208.867s vídeo1920x1080,
+manifestaccepted=true,2090heartbeats/4late/1stall79ms,20970paquetes nativos,
+9247770frames44100Hz/QPC0us/0descartes/cota0.09915ms. Sourcefloat conservado,
+review pcm_f32le, ownerAAC cc4645a6f665. Save~35s, load/recovered42.059s/gf8361,
+retiro49.049s/gf8779, fin175.818s/gf16378,feverfinal180.096s/gf16635, selector
+visible205/207.5/208.5s con nombre/retrato Gas-O/Heat correctos.114slots de frames
+inspeccionados,6hojas más overview/muestrasfinales. No corrupción observada en
+las muestras de recuperación; salida de hold/tanque observada en retiro.
+Audio medido-28.6LUFS/TP-13.9dBTP,sin normalizar. Escucha subjetiva pendiente del
+owner; latencia pantalla no calibrada(±2frames estimado); no se establece primer
+frame exacto del selector.150saves/5configs/94922aba/canonical0/stable intactos.
+Probes/frames/visual-audio-review.json/owner-evidence-sheet.jpg en
+_work/gaso/block2/process-audio/game-trial-a; vídeo/logs/manifest en
+_work/recordings/block4-recovery-process-a. Sin nueva revisión Goldfish: solo
+wrappers_work/docs cambiaron; recorder5e206c4 y58tests/8mutantes/2review reutilizados.
+Siguiente: entregar evidencia y preguntar solo conformidad del owner; no nueva
+partida ni Bloque5 automático. Toma anterior recovery-ready continúa rechazada.
 
 Contexto de la toma rechazada: sección «Bloque 4: guard1 desplegado; toma de recuperación».
 Actualización vigente «Continuación: handshake de readiness F7»: owner aclaró

@@ -5,11 +5,39 @@ tags: ["tools", "evidence", "ffmpeg", "video", "audio"]
 summary: "Historial de instalación y uso del skill FFmpeg local en BAG2JP; obligatorio cuando sea pertinente."
 related: ["notes/assets.md", "AGENTS.md", "tools/ffmpeg-skill/SKILL.md"]
 created: "2026-11-10"
-updated: "2026-11-14"
+updated: "2026-11-15"
 doc_kind: evidence
 ---
 
 # ffmpeg-skill - historial
+
+## 20261115-block4-process-review — captura nativa aceptada, inspección objetiva
+
+- Input block4-recovery-process-a:208.867s/1920x1080; ownerSHA
+  cc4645a6f6653e88252cc63aa86f84f1125334cefe6fd98ee71353ceb6aa3ac3.
+  Skill instalado .agents/skills/ffmpeg-skill, bin D:/ffmpeg/bin/ffmpeg.exe
+  version2024-09-19-git-0d5b68c27c-full_build-www.gyan.dev; captura WGC usa otro
+  bin n8.1.3-35 ya fijado. No instalar/normalizar/reemplazar medios.
+- `py -3.13 .agents/skills/ffmpeg-skill/scripts/probe.py <raw|review|owner> --json-brief`:
+  reviewpcm_f32le44100/2ch,ownerAAC,misma duración. `look.py raw --tiles 4x3
+  --width 1280 -o .../overview.png` dry-run seguido de ejecución. `bag2_record.py
+  frames --tag block4-recovery-process-a --frame <7938|8361|8779> --span 12 --step 1`
+  y16378/16635/17945 span6step1
+  usanlook para114slots; índices y fuentes individuales retenidos, hojas reducidas
+  antes de verlas. También look.py raw con --at178/196.5/205/207.5/208.5,width960
+  (argumentos separados; comandos exactos en end-selector-look.json y logs).
+- Imágenes vistas: save/menu/caught, load/recovered con P2Heat/tanque, retiro del
+  hold/tanque, FREEZE/fin, 2PlayerWin y feverfinal, selector nombre/retrato correctos.
+  No claim frameexacto del primer selector: seeking puede devolver próximo frame
+  disponible; latencia display tampoco calibrada. Conservar los límites ±2estimados.
+- `loudness.py review.mkv --measure-only`: -28.6LUFS,TP-13.9dBTP,LRA6.9LU.
+  Análisis floatoriginal16ventanas10ms alrededor de load: sin clipping local;
+ 20970paquetes nativos/0drops/QPC0us/cota0.09915ms por manifest. No se aplicó gain
+  ni pitch/resample ni se inventó silencio. Escucha subjetiva: pendiente del owner.
+- Resultado útil, técnico (sin conformidad humana). Probes, instrucciones/logs,
+ 114stills/6hojas/overview y visual-audio-review.json bajo
+  _work/gaso/block2/process-audio/game-trial-a y _work/recordings/tag/stills.
+  Toma314.223s; tiempos de extracción/inspección/ahorro no medidos. No rerun de juego.
 
 ## 2026-11-14 — wider-home: revisión grabada del candidato effb8edd
 
