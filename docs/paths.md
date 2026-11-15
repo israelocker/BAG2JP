@@ -5,8 +5,8 @@ tags: ["paths", "config"]
 summary: "Rutas del entorno autorizado y diferencia entre origen, build, instalado y datos generados."
 related: ["AGENTS.md", "notes/project.md", "system_config.md"]
 created: "2026-11-02"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: reference
 ---
 
@@ -24,6 +24,18 @@ de `tools/workflow/bag2_workflow.py` contrastadas en el preflight de la auditor�
 | Runner externo | `D:/Dev/Tools/winshot/bag2_run.ps1` |
 | Python workflow/build | `D:/Dev/Tools/ghidra-mcp-python/python.exe` |
 | Python capturas/host tests | `py -3.13` |
+
+Desde 2026-11-15, las ubicaciones de build, instalaciones, runner, intérpretes y
+herramientas viven en el archivo local ignorado `config/project.local.toml`,
+resueltas y validadas por `tools/workflow/project_config.py`. `repo_root` es
+derivado y no se configura; `py -3.13` es el intérprete elegido en la línea de
+comandos, no un campo. Esta tabla sigue siendo el registro humano y el mapa de
+equivalencia de cada valor se conserva en `_work/configuration/` (evidencia no
+versionada, comprobar antes de reutilizarla en otro clone). El checker de
+manifiestos ya deriva sus cuatro copias de esa configuración y comprobó 4/4 en
+esta máquina. `paths.tools_root`, `tools.ffmpeg_review` y `tools.ffmpeg_wgc` no
+tienen valor verificado y permanecen sin configurar. Campos, unidades y
+consumidores: [diccionario de datos](data-dictionary.md).
 
 `mods-src/` es origen canónico; build consume `src/` y
 `mods/preloaded/packages/`. Salidas: `build-win-codex/BAG2JP.exe` y
