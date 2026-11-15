@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4 abierto: trace completo,video rejected24.67ms. Investigación aprobada: WASAPI por proceso disponible en Windows26200; prueba propia5paquetes float32silencio/QPC10ms, sin juego/WAV. PCM16 dio1LSB,devicePosition siempre0. Falta señal real/aislamiento e integrar backend; propuesta de alcance pendiente. Sin cambios de grabador/runtime/gates."
+summary: "Bloque4 abierto: backend WASAPI por proceso integrado opt-in;58tests y8mutantes OK, señal/aislamiento/pausa propios probados. Dos Goldfish detectaron cobertura/cancelación, corregidas RED→GREEN. Falta una nueva toma experimental aceptada y revisión audiovisual. Runtime94922aba/guard0 intactos; video anterior rejected24.67ms."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-15"
@@ -163,7 +163,7 @@ doc_kind: evidence
   del runtime intacto o fuente solo del proceso del juego sin instalar dispositivos;
   demostrar host antes de integrar. Un backend/helper grande exige revisar alcance.
 
-### Fase1: captura nativa por proceso, viabilidad parcial (2026-11-15)
+### Fase1: captura nativa por proceso, prueba host e integración (2026-11-15)
 
 - Windows11Pro10.0.26200, SDK22621/26100 y pwsh7.6.9/.NET10.0.14 ya instalados.
   Docs oficiales ApplicationLoopback/ActivateAudioInterfaceAsync/GetBuffer permiten
@@ -183,13 +183,64 @@ doc_kind: evidence
   no usarlo como contador fiable. Fuente actual SHA611a2071eb1d.
 - Evidencia process-audio/capability-summary.json y directorios self-activation-a,
   self-packets-a/b,self-float-packets-c. Útil para API/silencio/reloj propios;
-  **sin prueba de señal real, exclusión entre procesos, fallos o captura de juego**.
+  Prueba inicial de capacidad solamente; resultados de señal posteriores abajo.
 - Refinamiento propuesto en el plan existente: backend opcional por PID del
   juego dentro del grabador, helper nativo, floatPCM+QPC/flags preservados y
   guardas actuales. Primero dos procesos propios/tonos sintéticos breves de bajo
   nivel y prueba de pausa, luego integración/Goldfish/una toma. Es nueva fuente,
-  no parche afín al dump viejo; pendiente confirmación del owner del alcance.
+  no parche afín al dump viejo; owner aprobó «Integrar audio por proceso».
   Nunca otro guardado, runtime distinto, audio de otras apps ni umbrales mayores.
+- Pruebas propias signal-proof-a/b/c rechazadas: recrear PlaySound produce saltos
+  QPC sin flags. b: buffer441frames/procesamiento máximo832us; pedir100ms en c
+  mantiene441frames y fallos. No rellenar esos huecos ni convertirlos en aceptados.
+- Fuente persistente de1s/44100frames con pausa PCM real100ms pasó ambos sentidos:
+  signal-persistent-a440Hz excluye880Hz -73.96dB(2.367s), b880Hz excluye440Hz
+  -60.32dB(2.851s). Cada una60paquetes/26460frames,9silencios internos, residuo
+  QPC0us. Validador9tests y fixture PCM RED→GREEN. Fuentes/hashes por ensayo en
+  _work/gaso/block2/process-audio/. Esto prueba host, no captura del juego.
+- Contrato mínimo persistido en plans/pending/savestate-recording-audio.md:
+  helper aislado por identidad/handle, floatPCM/diario, anclas nativas QPC–UTC,
+  READY/STOP/terminal verificables; fallos cierran sin fallback. Siguiente:
+  validador/helper con TDD, adaptador opt-in y finalize lossless, regresión/Goldfish.
+
+#### Backend opt-in integrado y verificado en host (2026-11-15)
+
+- Implementados tools/test/process_audio_capture.{py,cs,ps1} y sus regresiones;
+  bag2_record.py acepta `--audio-backend process` (predeterminado `dump` intacto).
+  Helper aislado MTA, identidad PID/ruta/creación y handles del target/padre,
+  solo INCLUDE, float32estéreo44100, diario/anclas nativas precisas QPC–UTC,
+  READY/STOP/CLOSED, sin fallback. Arranca antes del vídeo y cierra después de él,
+  antes de cerrar el juego. `review.mkv` pcm_f32le, owner AAC, originales retenidos.
+- TDD: placement y wiring RED→GREEN; finalize evita dump y su audio decodificado
+  coincide byte a byte con el subrango original.6negativos de helper real pasan:
+  ruta/creación/PID0/padre erróneos sin PCM; STOP incorrecto y timeout rechazados.
+  Tests nativos adicionales: silencio solo Python propio, EOF y muerte del target.
+  Primer ensayo backend-native-a rechazado: Console.In.ReadLineAsync bloqueaba el
+  hilo WASAPI; corregido con lectura en Task.Run, no relajando un gate.
+- Backend real, no prototipo: backend-signal-a pasó con2renderizadores hermanos
+  propios (440Hz/excluye880Hz -73.9579dB),282paquetes/124362frames,4345frames de
+  silencio interno, residuo QPC0us y cota QPC–UTC0.09445ms;4.197s.
+  Revalidado offline tras corregir cobertura, sin tocar PCM/resumen original.
+- Goldfish:2revisores en frío, spec _work/goldfish/spec-process-audio-backend.md,
+  sesiones ses_e21aeb6ddffeXDtW3MGHf5Q7wa / ses_e21ae9916ffeWyhqRWwqZIzFrW,
+  estado exacto en process-audio/pre-review-source/hashes.json. Ambos
+  **CON HALLAZGOS**: abort podía abandonar helper ante BrokenPipe/2ªcancelación;
+  cobertura nominal redondeada ocultaba fracción de muestra o deriva de3.98ms.
+  Confirmados con repros host (6fallos), corregidos y cubiertos en tests canónicos:
+  recogida resistente a cancelación y extremos nativos con incertidumbre, antes
+  de cuantizar por floor/ceil. Sin hallazgos refutados ni otra revisión repetida.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Muerte real de padre propio: backend-parent-death-a, helper terminó en170.79ms,
+  terminal ERROR/no limpio, target siguió vivo. No se atribuye esto a un mock.
+  Suite dirigida58tests/16.098s PASS;8/8mutantes del validador muertos por asserts
+  (baseline8tests,6.829s), nunca por compilación/import. Evidencia cruda en
+  _work/gaso/block2/process-audio/, veredicto en _work/goldfish/process-audio-verdict.json.
+- Límites: sin nueva partida ni evidencia audiovisual del juego; inyección de
+  fallos nativos COM/disco no exhaustiva. La unidad Python reúne adaptación y
+  validación de un único protocolo especializado, sin framework de backends.
+  No nuevo build/deploy/snapshot; runtime94922aba, fuente guard0 y stable intactos.
+  Siguiente: una toma experimental completa YA autorizada, wrapper con opt-in,
+  accepted=true, revisión fotogramas/audio y protección/restauración comprobadas.
 
 ## Bloque 4: recuperación de ownership slot1 tras load (2026-11-15, candidato host guard0)
 

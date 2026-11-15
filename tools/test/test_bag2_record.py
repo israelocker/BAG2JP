@@ -45,6 +45,35 @@ def chunked_sync(first: int, last: int, chunks: tuple[int, ...]) -> list[tuple[i
 
 
 class WindowCaptureTest(unittest.TestCase):
+    def test_process_audio_option_starts_before_video_and_stops_after_video(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / rec.GAME_EXE).write_bytes(b"owned image")
+            order = []
+            helper, child, watch, window, tail = Mock(), Mock(), Mock(), Mock(), Mock()
+            window.key = "window-token"
+            helper.target.identity = {"pid": 700, "path": str(root / rec.GAME_EXE), "creation_filetime": "123"}
+            helper.stop.side_effect = lambda: order.append("audio-stop") or {"helper_exit": 0}
+            child.returncode = 0
+            tail.lines.return_value = []
+            with patch.object(rec, "RECORDINGS", root), \
+                    patch.object(rec, "Tail", return_value=tail), \
+                    patch.object(rec, "ProcessAudio", create=True) as backend, \
+                    patch.object(rec.subprocess, "Popen", side_effect=lambda *a, **k: order.append("video-start") or child), \
+                    patch.object(rec, "stop_ffmpeg", side_effect=lambda *a: order.append("video-stop") or ""), \
+                    patch.object(rec, "copy_audio", return_value=[]), \
+                    patch.object(rec.time, "time", side_effect=itertools.count(1000, 0.6).__next__):
+                backend.start.side_effect = lambda *a, **k: order.append("audio-start") or helper
+                try:
+                    rec._record_capture("native", 60, 0.1, root, 700, (0, 0, 640, 480),
+                                        window, watch, audio_backend="process")
+                except TypeError as error:
+                    self.fail(f"process audio opt-in is not wired: {error}")
+            self.assertEqual(order, ["audio-start", "video-start", "video-stop", "audio-stop"])
+            session = json.loads((root / "native/session.json").read_text())
+            self.assertEqual(session["audio_source"], "process")
+            self.assertEqual(session["process_audio"]["identity"]["pid"], 700)
+
     def test_real_capture_loop_marks_exit_cancellation_and_shutdown_failure_invalid(self) -> None:
         for failure in ("exit", "interrupt", "shutdown-interrupt"):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
@@ -504,6 +533,39 @@ class ClockTest(unittest.TestCase):
 class FinalizeTest(unittest.TestCase):
     """Synthetic recordings whose video starts at game frame 1000, with beeps written
     into the game audio at known game frames."""
+
+    def test_process_audio_finalize_preserves_float_samples_and_never_uses_dump(self) -> None:
+        from tools.test.test_process_audio_capture import fixture, write_journal, IDENTITY, TOKEN, FILETIME
+        out = self.make_recording("native-float", 1, linear_sync(940, 1240), (1060,))
+        rows = fixture(out)
+        desired_filetime = round((START - 0.25) * 10000000) + 116444736000000000
+        for row in rows:
+            if row["kind"] == "anchor":
+                row["utc_filetime"] = str(int(row["utc_filetime"]) - FILETIME + desired_filetime)
+        write_journal(out, rows)
+        session = {"rect": [0, 0, 320, 240], "audio_source": "process",
+                   "pid": IDENTITY["pid"], "recording_state": "closed", "ffmpeg_exit": 0,
+                   "window_guard": {"passed": True},
+                   "process_audio": {"identity": IDENTITY, "token": TOKEN, "helper_exit": 0}}
+        (out / "session.json").write_text(json.dumps(session))
+        with patch.object(rec, "audio_placement", side_effect=AssertionError("must not use mixer dump")):
+            self.assertEqual(rec.finalize(out.name), 0)
+        manifest = json.loads((out / "manifest.json").read_text())
+        self.assertEqual(manifest["audio_source"], "process")
+        probe = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a:0", "-show_entries",
+                                "stream=codec_name", "-of", "csv=p=0", str(out / "review.mkv")],
+                               capture_output=True, text=True, check=True)
+        self.assertEqual(probe.stdout.strip(), "pcm_f32le")
+        decoded = subprocess.run(["ffmpeg", "-v", "error", "-i", str(out / "review.mkv"),
+                                  "-map", "0:a:0", "-f", "f32le", "-"], capture_output=True, check=True).stdout
+        expected = (out / "process_audio.f32").read_bytes()[11025*8:55125*8]
+        self.assertEqual(decoded, expected)
+        # Even a valid diagnostic dump must not rescue a failed native journal.
+        rows[-1]["clean"] = False
+        write_journal(out, rows)
+        self.assertEqual(rec.finalize(out.name), rec.EXIT_REJECTED)
+        manifest = json.loads((out / "manifest.json").read_text())
+        self.assertFalse(manifest["accepted"])
 
     def make_recording(self, name: str, seconds: int, sync: list[tuple[int, int]],
                        beep_frames: tuple[int, ...]) -> Path:

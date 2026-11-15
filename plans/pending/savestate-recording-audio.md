@@ -1,8 +1,21 @@
+---
+id: savestate-recording-audio-plan
+title: "Audio alignment through native savestate loads"
+tags: ["plan", "audio", "recording", "savestate"]
+summary: "Approved process-only WASAPI recorder; host integration/review verified, one experimental audiovisual acceptance trial pending."
+related: ["notes/gaso-import.md", "tools/test/bag2_record.py"]
+created: "2026-11-15"
+updated: "2026-11-15"
+doc_kind: plan
+---
+
 # Audio alignment through native savestate loads
 
 Status: approved — owner selected «Corregir grabador (Recomendado)» on 2026-11-15.
 Execution gate: offline feasibility first; no new game trial before that proof.
-Scope refinement below: native process-audio backend is proposed, not yet approved.
+Native process-audio refinement approved: owner selected «Integrar audio por proceso
+(Recomendado)» on2026-11-15, including brief quiet owned-process tone tests and
+one experimental game recording only after host tests/review pass.
 Topic: notes/gaso-import.md, Block 4. No external tracker/remote.
 
 ## Evidence and objective
@@ -122,11 +135,10 @@ game's existing save system. Original rejected recordings/manifests remain intac
   NOT proven: non-silent signal fidelity, two-process exclusion, target exit,
   stream faults, full recording alignment, game behavior or accepted video.
 
-## Proposed scope refinement: process-audio backend in existing recorder
+## Approved scope refinement: process-audio backend in existing recorder
 
 This is a different source, not a piecewise repair of pre-host mixer PCM.
-It adds a native helper/backend and therefore needs owner confirmation before
-implementation beyond the scratch capability probe.
+It adds a native helper/backend; owner confirmation is now recorded above.
 
 1. Host proof with two OWNED processes and two brief quiet synthetic tones:
    capture target only, verify wanted signal and excluded sibling signal, then
@@ -154,6 +166,43 @@ Only the host proof and recorder's audio capture path change. No game save syste
 runtime/EXE/framework/MODMEM, stable install, device drivers or other applications.
 If the native source cannot pass these tests, leave the capture rejected.
 
+### Host proof and implementation contract (2026-11-15)
+
+- Owner approval is definitive; no further scope gate is open. signal-proof-a/b/c
+  rejected QPC jumps when PlaySound closes/recreates streams. b: buffer441frames,
+  max processing832us; c requested100ms but actual441frames, still rejected.
+  Keep failures: no missing packets may be replaced with estimated silence.
+- Persistent one-second owned PCM reference (88244B,44100frames; tone120ms,
+  zero pause100ms, tone120ms; fixed peak98/32768,5ms fades) passed both directions:
+  signal-persistent-a:440Hz/exclude880Hz -73.96dB,2.367s;
+  signal-persistent-b:880Hz/exclude440Hz -60.32dB,2.851s.
+  Each60packets/26460frames,9internal zero packets,QPC residual0us;9validator
+  tests pass. Sources and hashes retained in each trial directory. No game run.
+- Ruling: model a pause within a persistent source, as the unchanged runtime
+  keeps its SDL stream during load; stream recreation remains fatal. This proof
+  does not establish timing on the real game or full-length capture.
+- Minimal contract: isolated C# helper hosted by installed pwsh/MTA, Python
+  adapter/validator, existing recorder opt-in. Only INCLUDE tree of verified
+  PID/path/creation-time on held handles. Parent stdin STOP with session token;
+  EOF/target death/timeout/helper crash never counts as clean completion.
+- Version1 JSONL: READY(identity,token,format,mode); ANCHOR(native QPC-before,
+  precise UTC FILETIME,QPC-after,frequency); PACKET(seq,byte offset,frames,flags,
+  QPC100ns,device position diagnostic); TERMINAL(clean STOP token,totals,PCM SHA).
+  Anchors at start/periodically/end; all integer clock values decimal strings.
+  Preserve source float32 bytes; SILENT flag authorizes only its declared frames.
+- Validator checks complete journal/PCM, identity/token, clock conversion and
+  sample-level continuity (1sample+200ns), finite float data and exact silence.
+  Require full video coverage and existing one-frame clock/rate bounds; no padding,
+  resampling, sample removal or reuse of the dump's outlier-dropping model.
+- Execution ledger: host proof, helper, strict validator and recorder opt-in done.
+  Goldfish2 found cancellation/reaping and native/fractional coverage defects;
+  reproduced, fixed,58targeted tests PASS16.098s,8assertion mutants killed6.829s.
+  Actual backend-signal-a passed(-73.9579dB sibling exclusion,4345silent frames,
+  282packets/QPC0us residual); corrected validator replays retained capture PASS.
+  Native fault matrix6cases PASS; actual parent death reaps helper170.79ms while
+  target lives. Next: fresh authorized full experimental recording with process
+  opt-in, audiovisual acceptance/review. Historical rejection untouched.
+
 ## Always / Never
 - Always: evidence before acceptance; local sequential Git; same experimental target;
   protect saves/settings; one GPU workload; precise scope and measured limitations.
@@ -167,6 +216,6 @@ If the native source cannot pass these tests, leave the capture rejected.
 | Phase | State |
 |---|---|
 | Diagnosis | Done: replay and native load log correlate the persistent timing step |
-| 1 | Replay insufficient; native own-process activation and silent QPC packets proved, real signal/isolation unverified |
-| 2 | Blocked by host proof + owner confirmation of native-backend refinement |
-| 3 | Blocked by2 + Goldfish |
+| 1 | Persistent owned-source signal/isolation/pause passed both directions; stream recreation rejected |
+| 2 | Integrated opt-in;58tests/8mutants, real backend signal and lifecycle proof PASS |
+| 3 | Goldfish findings fixed/tested; fresh experimental recording + audiovisual review pending |

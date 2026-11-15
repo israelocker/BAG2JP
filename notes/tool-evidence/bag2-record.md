@@ -5,11 +5,51 @@ tags: ["tools", "evidence", "ffmpeg", "video", "audio", "testing"]
 summary: "Historial del grabador de video + audio exacto del juego alineado a fotogramas; obligatorio en toda validación en juego."
 related: ["AGENTS.md", "notes/assets.md", "tools/test/bag2_record.py", "notes/tool-evidence/ffmpeg-skill.md"]
 created: "2026-11-12"
-updated: "2026-11-14"
+updated: "2026-11-15"
 doc_kind: evidence
 ---
 
 # bag2_record.py - historial
+
+## 20261115-process-audio-backend — integración opt-in, host solamente
+
+- Propósito: registrar pausas nativas sin reconstruir silencio del mixer dump.
+  tools/test/process_audio_capture.py/.cs/.ps1, pwsh7.6.9/.NET10.0.14 ya instalados,
+  Windows26200/SDK26100, INCLUDE del PID/ruta/creación sobre handles verificados.
+  Docs Win32/ABI ya contrastadas reutilizadas; no repetir búsquedas sin cambios.
+- Preflight20261115T081251086247Z-gaso-process-audio-adapter PASS0.367s; deriva
+  guard1 experimental prevista, recursos iguales y EXE94922aba coincide instalado.
+  Prueba inicial baseline mal nombrada AudioPlacementTest falló por clase ausente;
+  ClockTest.test_audio_placement_uses_only_recorded_frames PASS. No confundir con RED.
+- Señal previa persistente-a/b:60paquetes/26460frames,9silencios,QPC0us,
+  exclusión -73.96/-60.32dB;signal-proof-a/b/c fallidos retenidos por saltos al
+  recrear PlaySound. No compensar dichos huecos ni afirmar aceptación de juego.
+- backend-native-a rechazado: Console.In.ReadLineAsync bloqueaba hilo nativo;
+  evidencia diario0PCM/terminal ERROR. Task.Run elimina bloqueo; tests nativos
+  actuales prueban READY/STOP, EOF, muerte del target y ruta incorrecta.
+- Backend real backend-signal-a:2renderizadores propios hermanos,440/880Hz suaves,
+  282paquetes/124362frames,4345frames de silencio real, exclusión -73.9579dB,
+  QPC0us, cota QPC–UTC0.09445ms,4.197s. PCM f797eb22d51f; fuentes/hashes retenidos.
+  Validator revisado reanaliza ese PCM PASS; resumen anterior no reescrito.
+-6faults nativos(identity path/creation/PID0/parent,STOPwrong,deadline) rechazados
+  correctamente; tiempos0.827..1.036s. Padre real terminado: helper sale170.79ms,
+  terminal ERROR y target vivo. Solo PIDs propios; ningún juego/micro/systemmix.
+- Goldfish2 detectó limpieza ante2ªcancelación/BrokenPipe y cobertura fraccional/
+  deriva dentro del frame. Repros4tests/6fallos RED; corregidos y regresiones
+  canónicas58PASS16.098s.8mutantes de copias del validador muertos por assertions,
+  baseline8tests,6.829s. No inyección exhaustiva de fallos COM/disco.
+- Resultado útil, host-only: --audio-backend process, dump predeterminado intacto;
+  finalize compara float original/decodificado byte a byte, sin apad/resampling.
+  Fuente guard0/runtime/instalación estable intactos. No se utilizó grabación de
+  juego/FFmpeg frame review/bag2_run: todavía no hubo toma; solo FFmpeg sintético
+  de regresión, evitada duplicación de media histórica. Próximo:1toma autorizada.
+  Ahorro y trabajo manual no medidos. Ver notes/gaso-import.md para estado canónico.
+- Chequeo documental global no verde:167errores/9warnings; plan carecía de
+  frontmatter y se corrigió. Notas/digest/logs tocados sin issues propios. Primer
+  resumen scratch falló por codificacióncp1252; usar read_text(encoding='utf-8')
+  y JSONensure_ascii para consola, no atribuirlo al audio ni ocultar el check global.
+  Tras frontmatter:166errores/9warnings globales fuera del cambio;5documentos
+  tocados sin issues y digest/hash verificado (documentation-touched-reviewed.json).
 
 ## 2026-11-14 - Bloque 3: toma natural block3-stage-c
 

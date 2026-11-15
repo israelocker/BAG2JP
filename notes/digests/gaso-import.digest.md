@@ -2,29 +2,32 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: WASAPI por proceso disponible Windows26200; prueba propia5paquetes float32silencio/QPC10ms, sin juego/WAV. PCM16dio1LSB ydevicePosition0(no contador). Falta señal/exclusion/integración; propuesta de backend opcional pendiente confirmación. Video recovery-ready sigue rejected24.67ms, runtime/gates/guardado intactos."
+summary: "Bloque4: backend por proceso integrado opt-in;58tests/8mutantes OK, señal/pausa/aislamiento propios y muerte real de padre verificados.2Goldfish corregidos RED→GREEN. Falta1toma experimental aceptada y review audiovisual. Runtime94922aba/canonical0 intactos; video anterior rejected24.67ms."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "e15e1bcfa6c1873736bf6db65d480d54252b34c78475c7ff910bfcb1c22303b4"
+source_sha256: "8860fc430cbdfb48598e98fd96185bc740ac4efa284bcb80a576691b007cd8aa"
 ---
 
 # Gas-O: lectura vigente
 
-Último resultado: «Fase1: captura nativa por proceso, viabilidad parcial» en nota.
-Prototipo propioPID con APIWindows activó/init S_OK,5paquetes float32/44100Hz de
-441frames y cero exacto, QPCcada10ms,624ms; sin juego, sin WAV ni audio de otrasapps.
-PCM16 previo falló exactitud(pico1LSB), retenido. DevicePosition devuelve0siempre:
-no usarcontador. capability-summary.json tiene fuentes/resultados. OS26200 supera
-mínimos20348/20438(documentación oficial discrepa). No prueba señal/exclusión.
-Refinamiento native-backend opcional en plan existente pendiente de confirmación:
-dos procesos propios/tonos breves suaves y pausa, helper+integración/Goldfish/toma.
-No otro guardado/runtime ni instalación/capturaajena/umbrales mayores. Estado
-anterior se conserva abajo; no repetir las pruebas propias sin inputs nuevos.
+Último resultado: «Backend opt-in integrado y verificado en host» en nota.
+Owner aprobó integración y1toma experimental posterior a host/review. Implementados
+helper C#/pwsh y adaptador/validador: identidad/handle, INCLUDE-only, floatPCM,
+diario y anclas QPC–UTC nativas, STOP/terminal verificable. bag2_record.py opt-in
+--audio-backend process, dump predeterminado intacto; review pcm_f32le exacto, AAC
+derivado.58tests PASS16.098s;8assertion-mutants muertos6.829s. Backend real propio
+backend-signal-a282paquetes/124362frames,4345silencio interno,exclusión-73.9579dB,
+QPC0us,cota reloj0.09445ms. Muerte de padre propio termina helper170.79ms y preserva
+target.2Goldfish encontraron reaping/cancelación y cobertura fraccional/deriva;
+corregidos RED→GREEN y testeados, no otro review repetido. Ensayos fallidos retenidos.
+Sin juego nuevo ni COM/disco fault injection exhaustiva. Siguiente: wrapper con
+opt-in,1toma YA autorizada save/load/recovered/retirada/fin/selector,accepted=true,
+review fotogramas/audio y restauración150saves/5configs. No runtime/save/gates edits.
 
-Estado más reciente: sección «Bloque 4: guard1 desplegado; toma de recuperación».
+Contexto de la toma rechazada: sección «Bloque 4: guard1 desplegado; toma de recuperación».
 Actualización vigente «Continuación: handshake de readiness F7»: owner aclaró
 que no se crea otro sistema de guardado y confirmó continuar. Símbolos host
 open/slot/paused coinciden en COFF y llvm-nm del EXE94922aba; lector usa base ASLR

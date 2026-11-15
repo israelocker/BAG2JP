@@ -5,11 +5,22 @@ tags: ["tools", "evidence"]
 summary: "Historial de Ghidra MCP y soporte PSX/PsyQ; no certifica identificación automática."
 related: ["notes/assets.md", "AGENTS.md"]
 created: "2026-11-06"
-updated: "2026-11-14"
+updated: "2026-11-15"
 doc_kind: evidence
 ---
 
 # Ghidra / PSX / PsyQ — historial
+
+## 20261115-ghidra-process-audio-adapter — identidad y seam original
+
+- MCP get_program_info confirmó SLPM_862.19 JP/main, PSX LE32,1324funciones,
+  SHA256ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+  read_memory(0x8002d06c,length16) sin gaps:
+  c0ffbd272400b3af219880003400b7af. No cambios de análisis ni funciones.
+- Útil para identidad/seam CAUGHT original obligatorio; no prueba de audio Win32.
+  API de host contrastada con docs/ABI previas y ensayos propios independientes;
+  funcmatch/PsyQ/offline disassembly no pertinentes: ningún matching/patchMIPS.
+  Tiempo/ahorro no medidos; siguiente1toma experimental tras host/review.
 
 ## 20261114-ghidra-block3-rehit-audio - origen del sonido re-hit en Heat y despachador SPU
 
