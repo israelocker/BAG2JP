@@ -8,7 +8,7 @@ created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "07cc3fc57c22886d286b5650860a546f3ed78a866da1e7b8a60b1fd897155f47"
+source_sha256: "64bb13084ad38361703baff223dad1a0158a3c0644cd66111fb920e992738a2b"
 ---
 
 # Gas-O: lectura vigente
@@ -31,6 +31,8 @@ _work/recordings/block4-recovery-process-a. Sin nueva revisión Goldfish: solo
 wrappers_work/docs cambiaron; recorder5e206c4 y58tests/8mutantes/2review reutilizados.
 Siguiente: Bloque5 interno en host, sin partida. Requisito owner2026-11-15: TODOS los
 rivales, incluidos solo-BAG2, deben tener animación CAUGHT (fail-closed ya no basta).
+Validar CAUGHT forma parte de la aceptación de cada personaje importado y de los
+nativos BAG2 (owner 2026-11-15).
 Inventario host «Bloque 5: inventario CAUGHT por rival»: request123→slot78 en BAG2
 (Ghidra); las18 librerías stock usan19 pistas como clip70 BAG1, semántica coincidente
 salvo Pander; altura raíz por personaje. Owner eligió «Pose BAG1 asignada»: propia si hay

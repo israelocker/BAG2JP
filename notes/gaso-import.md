@@ -20,6 +20,10 @@ doc_kind: evidence
   final. Esto resuelve la decisión abierta en «F2 — altura del tanque frente al rival y
   rivales solo-BAG2»: los rivales solo-BAG2 no se excluyen. Cómo obtener sus clips
   (BAG2 nativo, retarget u otro) sigue sin decidir y se investigará primero en host.
+- Requisito ampliado (owner, 2026-11-15): el objetivo es importar todos los
+  personajes BAG1, así que validar la pose CAUGHT forma parte de la aceptación de
+  cada personaje importado (versión BAG1) **y** debe validarse también en los
+  personajes nativos de BAG2. Propuesto para el estándar de importación.
 - Corrección selector/retrato/nombre: **aceptada por el owner (2026-11-15)** con
   «Si el retrato vuelve a GAS-O eso queda aprobado», sobre
   `_work/recordings/block4-consumer-return/owner.mp4` (selector desde ~193s).
