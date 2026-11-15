@@ -2,13 +2,13 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: block4-recovery-process-a accepted=true y revisada técnicamente. Save/load/recovered/retirada/fin/fever/selector verificados;20970paquetes/QPC0us/cota0.09915ms.150saves/5configs/94922aba/canonical0 intactos. Owner conforme («Todo bien», incl. audio): Bloque4 aceptado. Pendientes: Bloque5, conformidad selector, decisión guard canónico1."
+summary: "Bloque4: block4-recovery-process-a accepted=true y revisada técnicamente. Save/load/recovered/retirada/fin/fever/selector verificados;20970paquetes/QPC0us/cota0.09915ms.150saves/5configs/94922aba/canonical0 intactos. Owner conforme («Todo bien», incl. audio): Bloque4 aceptado. Pendientes: Bloque5 y decisión guard canónico1; selector aceptado."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "5cf4698d2d1fdd266fa3a32c59d4649e895bb7e0b01d9a2d516d2df20dc75846"
+source_sha256: "67527a4360d63ab4dbd9234b96ce1543f249ed9fa046e8ec5d9db1fedecd342e"
 ---
 
 # Gas-O: lectura vigente
@@ -30,8 +30,8 @@ _work/gaso/block2/process-audio/game-trial-a; vídeo/logs/manifest en
 _work/recordings/block4-recovery-process-a. Sin nueva revisión Goldfish: solo
 wrappers_work/docs cambiaron; recorder5e206c4 y58tests/8mutantes/2review reutilizados.
 Siguiente: Bloque5 interno en host, sin partida. Requisito owner2026-11-15: TODOS los
-rivales, incluidos solo-BAG2, deben tener animación CAUGHT (fail-closed ya no basta). Pendientes del owner: conformidad selector/retrato/nombre y guard canónico1
-(sigue0). Toma anterior recovery-ready continúa rechazada.
+rivales, incluidos solo-BAG2, deben tener animación CAUGHT (fail-closed ya no basta). Selector/retrato/nombre aceptado por el owner2026-11-15. Único pendiente
+del owner: guard canónico1 (sigue0), propuesto al cierre del Bloque5. Toma anterior recovery-ready continúa rechazada.
 
 Contexto de la toma rechazada: sección «Bloque 4: guard1 desplegado; toma de recuperación».
 Actualización vigente «Continuación: handshake de readiness F7»: owner aclaró

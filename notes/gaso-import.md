@@ -20,8 +20,11 @@ doc_kind: evidence
   final. Esto resuelve la decisión abierta en «F2 — altura del tanque frente al rival y
   rivales solo-BAG2»: los rivales solo-BAG2 no se excluyen. Cómo obtener sus clips
   (BAG2 nativo, retarget u otro) sigue sin decidir y se investigará primero en host.
-- Pendiente de conformidad del owner: corrección selector/retrato/nombre, vídeo
+- Corrección selector/retrato/nombre: **aceptada por el owner (2026-11-15)** con
+  «Si el retrato vuelve a GAS-O eso queda aprobado», sobre
   `_work/recordings/block4-consumer-return/owner.mp4` (selector desde ~193s).
+- Único pendiente del owner: decidir `GASO_CAUGHT_CLIP_PUBLISHED=1` en la fuente
+  canónica (sigue0); propuesto al cierre del Bloque5, con todos los rivales cubiertos.
   `wider_initial_home_review` (homes ±700, 2026-11-14) es histórico: el Bloque 1 se
   aceptó después sobre la base ±870; no se pide revisarlo.
 
