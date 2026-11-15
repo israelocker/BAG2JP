@@ -8,7 +8,7 @@ created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "67527a4360d63ab4dbd9234b96ce1543f249ed9fa046e8ec5d9db1fedecd342e"
+source_sha256: "d81149e471d488eb3e6d7de5212afb058b28056dae6e93873985796624d0586e"
 ---
 
 # Gas-O: lectura vigente
@@ -31,7 +31,7 @@ _work/recordings/block4-recovery-process-a. Sin nueva revisión Goldfish: solo
 wrappers_work/docs cambiaron; recorder5e206c4 y58tests/8mutantes/2review reutilizados.
 Siguiente: Bloque5 interno en host, sin partida. Requisito owner2026-11-15: TODOS los
 rivales, incluidos solo-BAG2, deben tener animación CAUGHT (fail-closed ya no basta). Selector/retrato/nombre aceptado por el owner2026-11-15. Único pendiente
-del owner: guard canónico1 (sigue0), propuesto al cierre del Bloque5. Toma anterior recovery-ready continúa rechazada.
+del owner: guard canónico1 (sigue0); owner acordó validarlo al cierre del Bloque5. Toma anterior recovery-ready continúa rechazada.
 
 Contexto de la toma rechazada: sección «Bloque 4: guard1 desplegado; toma de recuperación».
 Actualización vigente «Continuación: handshake de readiness F7»: owner aclaró
