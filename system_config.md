@@ -5,12 +5,26 @@ tags: ["config", "reference"]
 summary: "Distingue configuración del título, plantilla y ajustes efectivos sin copiar defaults personales."
 related: ["docs/paths.md", "notes/project.md", "notes/game-controls.md"]
 created: "2026-11-02"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: reference
 ---
 
 # Configuración
+
+## Propuesta host: diseño escrito, todavía no implementado
+
+El owner eligió «Host primero» y aprobó diseñar configuración común/local,
+cargador y diccionario de datos. [Especificación pendiente de revisión](docs/superpowers/specs/2026-11-15-host-configuration-design.md).
+Los archivos operativos `config/project.toml`/`project.local.toml` y el cargador
+**aún no existen**; las rutas actuales siguen en sus consumidores/documentación.
+No confundir esta propuesta con settings vivos ni con datos nativos de perfiles.
+Siguiente: aprobación de la especificación y después plan por lotes, sin runtime.
+Omisión Goldfish de esta unidad documental: solo spec/sistema de referencia, fuera
+de la lista cerrada; auto-revisión de alcance, tipos/unidades, precedencia,
+bootstrap, permisos y preservación de perfiles/CLI, no prueba de implementación.
+
+## Fuentes vigentes
 
 - `patches/BAG2JP-game.toml`: configuración reproducible del título, no todos los
   ajustes del usuario. Comparar con `game.toml` del árbol de build efectivo.
