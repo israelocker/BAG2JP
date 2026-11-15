@@ -2,7 +2,7 @@
 id: host-configuration-design
 title: "Configuración host y diccionario de datos: diseño"
 tags: ["design", "config", "dictionary", "workflow"]
-summary: "Diseño pendiente de revisión: configuración común/local y resolución compartida para herramientas host, sin cambiar runtime ni datos nativos."
+summary: "Especificación aprobada: configuración común/local y resolución compartida host; implementación pendiente de plan aprobado, sin cambiar runtime ni datos nativos."
 related: ["system_config.md", "docs/paths.md", "CHARACTER_IMPORT.md", "AGENTS.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
@@ -11,10 +11,11 @@ doc_kind: requirements
 
 # Configuración host y diccionario de datos
 
-**Estado:** propuesta escrita pendiente de aprobación; no implementada.
+**Estado:** especificación aprobada por el owner el15-11 («si»); no implementada.
 **Decisor:** owner. Alcance elegido: «Host primero (Recomendado)»; diseño común +
 local + cargador + diccionario aprobado en chat con «si». Esa aprobación permite
-esta especificación, no saltar su revisión ni el plan de implementación.
+esta especificación. La aprobación posterior del documento permite redactar el
+plan; no autoriza saltar la revisión del plan ni elegir su método de ejecución.
 
 ## 1. Objetivo y evidencia
 
@@ -180,6 +181,6 @@ resultados de esas pruebas futuras.
 
 ## 9. Gate siguiente
 
-Revisión de esta especificación por el owner. Tras aprobarla se redactará el plan
-de implementación con lotes, tests/RED→GREEN y forma de ejecución. Hasta entonces,
-solo diseño y lectura; Bloque5/Robo-Z y las demás tareas permanecen conservadas.
+Especificación aprobada. Revisar ahora el plan de base/piloto y elegir ejecución
+antes de implementar; la adopción de otros consumidores seguirá sus propios lotes.
+Hasta entonces, solo planificación/lectura; Bloque5/Robo-Z y demás tareas conservadas.

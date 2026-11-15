@@ -12,15 +12,20 @@ doc_kind: reference
 
 # Configuración
 
-## Propuesta host: diseño escrito, todavía no implementado
+## Configuración host: especificación aprobada, implementación pendiente
 
 El owner eligió «Host primero» y aprobó diseñar configuración común/local,
-cargador y diccionario de datos. [Especificación pendiente de revisión](docs/superpowers/specs/2026-11-15-host-configuration-design.md).
+cargador y diccionario de datos, y después aprobó la
+[especificación escrita](docs/superpowers/specs/2026-11-15-host-configuration-design.md).
 Los archivos operativos `config/project.toml`/`project.local.toml` y el cargador
 **aún no existen**; las rutas actuales siguen en sus consumidores/documentación.
 No confundir esta propuesta con settings vivos ni con datos nativos de perfiles.
-Siguiente: aprobación de la especificación y después plan por lotes, sin runtime.
-Omisión Goldfish de esta unidad documental: solo spec/sistema de referencia, fuera
+Siguiente: revisión del [plan de base/piloto](plans/pending/host-configuration-foundation.md)
+y elección de método antes de código. Primer lote: resolver/diccionario y checker
+de manifiestos de lectura; workflow/harness/captura/perfiles siguen en roadmap, no
+migrados por crear TOML. El script Bash instalado tiene root fijo y requiere su
+lote explícito; no se da por configurable cambiando solo Python.
+Omisión Goldfish de esta unidad documental: solo spec/plan y sistema de referencia, fuera
 de la lista cerrada; auto-revisión de alcance, tipos/unidades, precedencia,
 bootstrap, permisos y preservación de perfiles/CLI, no prueba de implementación.
 

@@ -1,20 +1,20 @@
 ---
 id: host-configuration-design-digest
-title: "Diseño de configuración host: pendiente de aprobación"
+title: "Diseño de configuración host: aprobado, sin implementar"
 tags: ["digest", "design", "config"]
-summary: "Alcance host y diseño conceptual aprobados; especificación escrita pendiente de revisión, sin loader/config/diccionario implementados."
+summary: "Especificación host aprobada; plan de base/piloto pendiente de revisión y método, sin loader/config/diccionario implementados."
 related: ["system_config.md", "docs/superpowers/specs/2026-11-15-host-configuration-design.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "docs/superpowers/specs/2026-11-15-host-configuration-design.md"
-source_sha256: "8ee9f52ea90e8fa10979e0ee811101b40916b77ac14b100894f028248a89923c"
+source_sha256: "460dc5bf90e68fd7d5096a0be3f97529b6838b4dcc6f5c54f0a0e34b103277a3"
 ---
 
 # Configuración host: diseño para revisar
 
-- Owner eligió host primero y aprobó en chat el diseño común/local + resolver +
-  diccionario. Debe revisar la especificación escrita antes del plan/código.
+- Owner eligió host primero y aprobó diseño y especificación escrita común/local +
+  resolver + diccionario. Siguiente gate: plan base/piloto y método de ejecución.
 - Proyecto común portable, archivo local no versionado para rutas de máquina y
   cargador único para Python/JSON-PowerShell; Windows convierte rutas al pasar a
   WSL. Bootstrap Python3.13 ya disponible, no instalación ni parser duplicado.
