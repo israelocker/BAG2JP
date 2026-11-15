@@ -35,15 +35,15 @@ migrados se marcan explícitamente como pendientes.
 | Clave | Significado | Tipo | Unidad | Origen | Fuente local | Validación | Operaciones | Consumidor | Estado |
 |---|---|---|---|---|---|---|---|---|
 | `schema_version` | Versión del esquema TOML que acepta el cargador | entero | schema version | común/local | sí | Entero exactamente 1; el valor local no adelanta un esquema futuro | — | `project_config.py` | base |
-| `repo_root` | Raíz del repo usada para anclar rutas y configuración | ruta | native path | derivado | no | Derivada del propio módulo; configurarla es un error | workflow, workflow-report, report, report-audio, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance, dance-capture | `project_config.py`; `check_payload_manifest.py`; `bag2_workflow.py`; `versus_session.py`; `view_config.py` | base |
+| `repo_root` | Raíz del repo usada para anclar rutas y configuración | ruta | native path | derivado | no | Derivada del propio módulo; configurarla es un error | workflow, workflow-report, report, report-audio, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance, dance-capture, recording-record, recording-finalize, recording-frames | `project_config.py`; `check_payload_manifest.py`; `bag2_workflow.py`; `versus_session.py`; `view_config.py`; `recording_config.py` | base |
 | `build.jobs` | Paralelismo de compilación fijado por el owner | entero | compile jobs | común | no | Entero exactamente 2; override local prohibido | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `pins.psxrecomp` | Revisión fijada de PSXRecomp | revisión | Git hex prefix | común | no | 7–40 caracteres hexadecimales; override local prohibido | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `pins.recomp_ui` | Revisión fijada de Recomp UI | revisión | Git hex prefix | común | no | 7–40 caracteres hexadecimales; override local prohibido | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `wsl.distribution` | Distribución WSL para comandos envueltos | cadena | distribution name | común/local | sí | Cadena no vacía sin NUL; sin charset porque los nombres registrados varían | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
-| `paths.work_root` | Raíz de evidencias, logs y fixtures locales | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo | workflow, workflow-report, report, report-audio, report-sheet, versus-session, endings-view, endings-acceptance, dance-capture | `project_config.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py` | base |
+| `paths.work_root` | Raíz de evidencias, logs y fixtures locales | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo | workflow, workflow-report, report, report-audio, report-sheet, versus-session, endings-view, endings-acceptance, dance-capture, recording-record, recording-finalize, recording-frames | `project_config.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py`; `recording_config.py` | base |
 | `paths.build_root` | Árbol de build del proyecto | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo | payload-manifest, workflow, workflow-report | `project_config.py`; `check_payload_manifest.py`; `bag2_workflow.py` | base |
-| `paths.experimental_install` | Instalación experimental usada en pruebas | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no puede solaparse con la estable al escribir | payload-manifest, workflow, workflow-report, report, report-audio, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance | `project_config.py`; `check_payload_manifest.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py` | base |
-| `paths.stable_install` | Instalación estable protegida | ruta | native path | común/local | sí | Ruta no vacía sin NUL; cualquier destino de escritura que la solape se rechaza | workflow, workflow-report, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance, dance-capture | `project_config.py`; `bag2_workflow.py`; `bag2_report.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py` | base |
+| `paths.experimental_install` | Instalación experimental usada en pruebas | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no puede solaparse con la estable al escribir | payload-manifest, workflow, workflow-report, report, report-audio, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance | `project_config.py`; `check_payload_manifest.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py`; `recording_config.py` | base |
+| `paths.stable_install` | Instalación estable protegida | ruta | native path | común/local | sí | Ruta no vacía sin NUL; cualquier destino de escritura que la solape se rechaza | workflow, workflow-report, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance, dance-capture, recording-record, recording-finalize, recording-frames | `project_config.py`; `bag2_workflow.py`; `bag2_report.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py`; `recording_config.py` | base |
 | `paths.tools_root` | Raíz común de herramientas locales | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; herramientas host (pendiente) | base |
 | `inputs.bag1_usa_disc` | Imagen del disco BAG1 USA | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | — | `project_config.py`; importadores (pendiente) | base |
 | `inputs.bag1_usa_extraction` | Extracción completa del disco BAG1 USA | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | — | `project_config.py`; importadores (pendiente) | base |
@@ -54,11 +54,11 @@ migrados se marcan explícitamente como pendientes.
 | `tools.python_report` | Intérprete usado por el reporte del workflow | ruta | native path | común/local | sí | Ruta no vacía sin NUL; opcional en preflight, requerida para workflow-report; presencia no prueba PIL ni ejecución | workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `tools.winshot_root` | Directorio del runner de capturas | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no demuestra que el runner esté activo | versus-session, endings-view, endings-acceptance | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py` | base |
 | `tools.build_script` | Script de build instalado | ruta | native path | común/local | sí | Ruta no vacía sin NUL; el script instalado fija su propio árbol y toolchain | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
-| `tools.ffmpeg_review` | FFmpeg usado en revisión de video | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; revisión (pendiente) | base |
-| `tools.ffmpeg_wgc` | FFmpeg usado en captura WGC | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; captura (pendiente) | base |
-| `tools.ffprobe_review` | FFprobe del grabador; sin ubicación común | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no exige existencia al cargar | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `tools.ffmpeg_look` | Script look.py para inspección del grabador | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo; no exige existencia | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `tools.recording_font` | Fuente de etiquetas del video de revisión | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no prueba disponibilidad ni altera texto/estilo | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `tools.ffmpeg_review` | FFmpeg usado en revisión de video | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | recording-finalize | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `tools.ffmpeg_wgc` | FFmpeg usado en captura WGC | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `tools.ffprobe_review` | FFprobe del grabador; sin ubicación común | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no exige existencia al cargar | recording-finalize | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `tools.ffmpeg_look` | Script look.py para inspección del grabador | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo; no exige existencia | recording-frames | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `tools.recording_font` | Fuente de etiquetas del video de revisión | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no prueba disponibilidad ni altera texto/estilo | recording-finalize | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
 | `tools.ghidra_launcher` | Lanzador de Ghidra instalado | ruta | native path | común/local | sí | Ruta no vacía sin NUL; su presencia no prueba que MCP responda | — | `project_config.py`; análisis (pendiente) | base |
 | `tools.ghidra_project` | Proyecto Ghidra del binario principal | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no sustituye verificar el programa cargado | — | `project_config.py`; análisis (pendiente) | base |
 | `harness.state_timeout_seconds` | Presupuesto de espera de estado o popup; default actual 25.0 s | número | seconds | común/local | sí | Número finito mayor que cero y ≤ 86400; bool, texto y no finitos prohibidos | versus-session | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; discover_strike_id*.py legado (pendiente) | base |
@@ -68,16 +68,16 @@ migrados se marcan explícitamente como pendientes.
 | `harness.key_hold_ms` | Duración de pulsación del contrato de input observado; default 100 ms | entero | milliseconds | común | no | Entero exactamente 100; política bloqueada, override local prohibido | versus-session | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; discover_strike_id*.py legado (pendiente) | base |
 | `harness.key_gap_ms` | Separación entre inputs del contrato observado; default 350 ms | entero | milliseconds | común | no | Entero exactamente 350; política bloqueada, override local prohibido | versus-session | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; discover_strike_id*.py legado (pendiente) | base |
 | `harness.menu_fade_seconds` | Margen tras observar el menú (comentario de fade en la fuente); default 1.3 s | número | seconds | común | no | Número finito positivo exactamente 1.3; política bloqueada, override local prohibido | versus-session | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; discover_strike_id*.py legado (pendiente) | base |
-| `recording.fps` | FPS solicitado al capturador; default 60 | entero | capture frames/second | común/local | sí | Entero positivo ≤ 240; bool y float prohibidos; techo de cordura host, no gate | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `recording.max_seconds` | Duración máxima de captura; default 900.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; bool, texto y no finitos prohibidos | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `recording.poll_seconds` | Intervalo de muestreo host; default 0.004 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no modifica gates de sincronía | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `recording.alive_check_seconds` | Intervalo para comprobar proceso/ventana; default 1.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no cambia identidad ni aceptación | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `recording.window_wait_seconds` | Presupuesto para encontrar la ventana; default 60.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; timeout no acepta una ventana inválida | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `recording.window_poll_seconds` | Intervalo de búsqueda de ventana; default 0.5 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400 | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `recording.ffmpeg_quit_seconds` | Presupuesto para cerrar FFmpeg; default 30.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no cambia propiedad ni orden de cierre | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `recording.ffmpeg_extra_seconds` | Margen entero de duración del capturador; default 5 s | entero | seconds | común/local | sí | Entero positivo ≤ 86400; bool y float prohibidos | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `recording.ffmpeg_stop_poll_seconds` | Intervalo de espera de cierre FFmpeg; default 0.1 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400 | — | `project_config.py`; bag2_record.py (pendiente) | base |
-| `recording.process_audio_extra_seconds` | Margen del backend process audio; default 60.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no cambia reloj/productor/gates | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.fps` | FPS solicitado al capturador; default 60 | entero | capture frames/second | común/local | sí | Entero positivo ≤ 240; bool y float prohibidos; techo de cordura host, no gate | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `recording.max_seconds` | Duración máxima de captura; default 900.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; bool, texto y no finitos prohibidos | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `recording.poll_seconds` | Intervalo de muestreo host; default 0.004 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no modifica gates de sincronía | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `recording.alive_check_seconds` | Intervalo para comprobar proceso/ventana; default 1.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no cambia identidad ni aceptación | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `recording.window_wait_seconds` | Presupuesto para encontrar la ventana; default 60.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; timeout no acepta una ventana inválida | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `recording.window_poll_seconds` | Intervalo de búsqueda de ventana; default 0.5 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400 | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `recording.ffmpeg_quit_seconds` | Presupuesto para cerrar FFmpeg; default 30.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no cambia propiedad ni orden de cierre | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `recording.ffmpeg_extra_seconds` | Margen entero de duración del capturador; default 5 s | entero | seconds | común/local | sí | Entero positivo ≤ 86400; bool y float prohibidos | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `recording.ffmpeg_stop_poll_seconds` | Intervalo de espera de cierre FFmpeg; default 0.1 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400 | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
+| `recording.process_audio_extra_seconds` | Margen del backend process audio; default 60.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no cambia reloj/productor/gates | recording-record | `project_config.py`; `bag2_record.py`; `recording_config.py` | base |
 
 Los campos de política (`build.jobs`, `pins.*`) y el derivado `repo_root` no se
 pueden sobrescribir desde el archivo local. Ningún campo demuestra por sí mismo que
@@ -91,12 +91,30 @@ se solicita búsqueda y existe el WAV; `report-sheet` exige la instalación
 estable para proteger el destino antes de escribir una hoja de capturas.
 El runtime C y los scripts instalados no pasan a consumir TOML por esta tabla.
 
-S4a-prep registra diez defaults host `recording.*` y tres rutas de herramienta,
-todavía **sin operación activa ni consumidor en el grabador**. `bag2_record.py`
-conserva sus literales mientras se prepara la migración de consumo. Los límites
+S4a consume los diez defaults host `recording.*` preparados en `1058670`.
+`recording-record` exige esos presupuestos y las raíces de evidencia/protección;
+la instalación por defecto y FFmpeg gdigrab se exigen condicionalmente si no hay
+argumento explícito o backend WGC. `recording-finalize` exige FFmpeg, FFprobe y
+fuente; `recording-frames` exige `look.py`. El adaptador `recording_config.py`
+usa el único resolver y settings congelados, sin releer el overlay durante una toma.
+CLI fps/duración/game-dir prevalece sobre TOML y se registra; el origen de
+`BAG2JP_FFMPEG_WGC` también. Esa variable explícita vacía o inexistente desactiva
+el WGC configurado: `auto` solo puede pasar al FFmpeg gdigrab configurado;
+`wgc` explícito se rechaza. No hay rutas heredadas ni selección de binarios por PATH
+en el grabador; el helper instalado `look.py` aún posee sus dependencias externas
+(S7), no se modifica. Cada herramienta usada debe existir como archivo.
+
+Las salidas viven bajo work/recordings y se guardan antes de escribir, incluyendo
+artefactos de takes existentes; las guardas no son race-safe. `--game-dir` conserva
+una fuente explícita de solo lectura, sin permiso para escribir en esa instalación.
+Sesión y manifest incluyen procedencia y hashes del TOML; finalize copia la fuente
+configurada a `clock-font.ttf` para no interpolar rutas host en el filtergraph.
+Los límites
 240 FPS y un día son techos de cordura del esquema, no calibración ni condiciones
 de aceptación. Audio, clocks, PID/HWND, máscaras, formatos y gates quedan fuera
-de estos knobs. Las rutas no tienen default de máquina ni fallback implícito.
+de estos knobs. Los defaults de selección de frames (span/step), estilo de etiquetas
+y truncamiento diagnóstico permanecen identificados en el inventario; no se declara
+migración global de parámetros de presentación. Las rutas no tienen default de máquina.
 
 Cobertura S1: rutas, pins, distribución WSL y comprobación de jobs del script
 legacy. Defaults numéricos de espera/layout del reporte y otras herramientas

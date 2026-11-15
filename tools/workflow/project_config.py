@@ -64,7 +64,7 @@ def _field_registry() -> Mapping[str, FieldSpec]:
                   "ffmpeg_review", "ffmpeg_wgc", "ghidra_launcher", "ghidra_project",
                   "ffprobe_review", "ffmpeg_look", "recording_font"):
         fields[f"tools.{name}"] = FieldSpec("path", "native path", True, "tool")
-    # Prepared only: no recording operation requires these until its consumer migrates.
+    # Host capture budgets; native acceptance thresholds never enter this registry.
     for name in ("max_seconds", "poll_seconds", "alive_check_seconds", "window_wait_seconds",
                  "window_poll_seconds", "ffmpeg_quit_seconds", "ffmpeg_stop_poll_seconds",
                  "process_audio_extra_seconds"):
@@ -102,6 +102,11 @@ def _field_registry() -> Mapping[str, FieldSpec]:
                                "paths.stable_install", "tools.winshot_root"),
         # Explicit dance helper arguments may satisfy the tool dependency instead.
         "dance-capture": ("repo_root", "paths.work_root", "paths.stable_install"),
+        "recording-record": ("repo_root", "paths.work_root", "paths.stable_install") + tuple(
+            key for key in fields if key.startswith("recording.")),
+        "recording-finalize": ("repo_root", "paths.work_root", "paths.stable_install",
+                               "tools.ffmpeg_review", "tools.ffprobe_review", "tools.recording_font"),
+        "recording-frames": ("repo_root", "paths.work_root", "paths.stable_install", "tools.ffmpeg_look"),
     }
     for operation, keys in requirements.items():
         for key in keys:
@@ -223,6 +228,36 @@ def load_config(*, repo_root: Path | None = None,
                          MappingProxyType(hashes), MappingProxyType(files))
 
 
+def recording_overrides(config: ProjectConfig, *, environ: Mapping[str, str] | None = None,
+                        fps: int | None = None, max_seconds: float | None = None,
+                        game_dir: Path | None = None) -> ProjectConfig:
+    """Snapshot the recorder's documented CLI/environment interfaces, without fallbacks.
+
+    Explicit empty WGC disables the configured candidate, as in the legacy interface.
+    Explicit relative CLI/env paths retain their CWD meaning; TOML paths remain repo-based.
+    """
+    values, origins = dict(config.values), dict(config.origins)
+    environment = dict(os.environ if environ is None else environ)
+    name = "BAG2JP_FFMPEG_WGC"
+    if name in environment:
+        key = "tools.ffmpeg_wgc"
+        raw = environment[name]
+        values.pop(key, None)
+        if raw:
+            values[key] = _resolve_path(raw, Path.cwd(), key)
+        origins[key] = f"environment:{name}" if raw else f"environment:{name}:disabled"
+    arguments = {key: value for key, value in (("fps", fps), ("max_seconds", max_seconds))
+                 if value is not None}
+    if arguments:
+        overridden = _validate_layer({"recording": arguments}, config.repo_root, local=True)
+        values.update(overridden)
+        origins.update(dict.fromkeys(overridden, "cli"))
+    if game_dir is not None:
+        values["paths.experimental_install"] = _resolve_path(str(game_dir), Path.cwd(), "--game-dir")
+        origins["paths.experimental_install"] = "cli"
+    return replace(config, values=MappingProxyType(values), origins=MappingProxyType(origins))
+
+
 def require_paths(config: ProjectConfig, keys: Sequence[str]) -> tuple[Path, ...]:
     """Return configured paths in request order; do not require existence or invent values."""
     result = []
@@ -307,6 +342,11 @@ def assert_write_target(config: ProjectConfig, target: Path, *, role: str) -> Pa
     if (_is_within(physical_stable, candidate) or _is_within(candidate, physical_stable)
             or _is_within(stable, lexical) or _is_within(lexical, stable)):
         raise ConfigError(f"{raw}: overlaps the protected stable installation {stable}")
+    try:
+        if candidate.is_file() and candidate.stat().st_nlink > 1:
+            raise ConfigError(f"{raw}: write target has multiple hard links")
+    except OSError as exc:
+        raise ConfigError(f"Cannot inspect write target: {raw}") from exc
     return candidate
 
 

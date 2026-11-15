@@ -70,28 +70,21 @@ else:
     from recording_window import RecordingWindow, find_window
     from process_audio_capture import ProcessAudio, validate_capture as validate_process_audio
 
+# The script entrypoint and package import share exactly one host resolver.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.test.recording_config import RecordingSettings, resolve_settings
+from tools.workflow.project_config import ConfigError, load_config
+
 logger = logging.getLogger("bag2_record")
 
-REPO = Path(__file__).resolve().parents[2]
-GAME_DIR = Path(r"D:\Games\Bust A Groove 2 (Japan)\BAG2JP-exp-8mb")
-RECORDINGS = REPO / "_work" / "recordings"
-LOOK = REPO / ".agents" / "skills" / "ffmpeg-skill" / "scripts" / "look.py"
 GAME_EXE = "BAG2JP.exe"
 HEARTBEAT = "bag2jp_frame.txt"
-DEFAULT_FFMPEG_WGC = Path(r"D:\Dev\Tools\ffmpeg-wgc\ffmpeg-n8.1-latest-win64-gpl-8.1\bin\ffmpeg.exe")
-FFMPEG_WGC_ENV = "BAG2JP_FFMPEG_WGC"
 HEARTBEAT_STRIDE = 6            # the debug plugin rewrites the heartbeat every 6 frames
 VERSIONS_LOG = "bag2jp_bag1_versions.log"
 AUDIO_WAV = "bag2jp_audio.wav"
 AUDIO_SYNC = "bag2jp_audio_sync.log"
 LABELS = "labels.ass"
 AUDIO_RATE = 44100
-POLL_SECONDS = 0.004
-ALIVE_CHECK_SECONDS = 1.0
-WINDOW_WAIT_SECONDS = 60.0
-FFMPEG_QUIT_SECONDS = 30.0
-FFMPEG_EXTRA_SECONDS = 5        # hard -t margin so an orphaned capture still ends
-FFMPEG_STOP_POLL_SECONDS = 0.1
 MIN_HEARTBEATS = 10
 MIN_SYNC_PAIRS = 10
 MAX_DROPPED_FRACTION = 0.02
@@ -298,9 +291,10 @@ def audio_filter(offset: float, duration: float, rate_hz: int = AUDIO_RATE) -> s
     return f"{rate}atrim=start={-offset:.6f},asetpts=PTS-STARTPTS,{fit}"
 
 
-def media_duration(path: Path) -> float:
+def media_duration(path: Path, *, settings: RecordingSettings | None = None) -> float:
     """Container duration in seconds (ffprobe)."""
-    result = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration",
+    settings = settings or resolve_settings(operation="finalize")
+    result = subprocess.run([str(settings.tool("ffprobe_review")), "-v", "error", "-show_entries", "format=duration",
                              "-of", "csv=p=0", str(path)], capture_output=True, text=True, check=True)
     return float(result.stdout.strip())
 
@@ -582,21 +576,33 @@ class ClockObservations:
         self.close()
 
 
-def _kill_ffmpeg(ffmpeg: subprocess.Popen) -> None:
+def _kill_ffmpeg(ffmpeg: subprocess.Popen, settings: RecordingSettings) -> None:
     """Reap our child even if a second Ctrl+C arrives during cleanup."""
     while True:
         try:
             if ffmpeg.poll() is not None:
                 return
             ffmpeg.kill()
-            ffmpeg.wait(timeout=FFMPEG_EXTRA_SECONDS)
+            ffmpeg.wait(timeout=settings.value("ffmpeg_extra_seconds"))
             return
         except (KeyboardInterrupt, subprocess.TimeoutExpired):
             continue
 
 
-def stop_ffmpeg(ffmpeg: subprocess.Popen, validate: Callable[[], None] | None = None) -> str:
+def stop_ffmpeg(ffmpeg: subprocess.Popen, validate: Callable[[], None] | None = None,
+                *, settings: RecordingSettings | None = None) -> str:
     """Keep checking the window until FFmpeg stops; never release an orphan."""
+    try:
+        settings = settings or resolve_settings()
+        for name in ("ffmpeg_quit_seconds", "ffmpeg_stop_poll_seconds", "ffmpeg_extra_seconds"):
+            settings.value(name)
+    except ConfigError:
+        # An owned child must still be reaped; do not guess fallback budgets.
+        try:
+            ffmpeg.kill()
+        finally:
+            ffmpeg.wait()
+        raise
     try:
         if validate:
             validate()
@@ -607,21 +613,21 @@ def stop_ffmpeg(ffmpeg: subprocess.Popen, validate: Callable[[], None] | None = 
             ffmpeg.stdin.flush()
         except (BrokenPipeError, OSError):
             pass
-        deadline = time.monotonic() + FFMPEG_QUIT_SECONDS
+        deadline = time.monotonic() + settings.value("ffmpeg_quit_seconds")
         while ffmpeg.poll() is None:
             if validate:
                 validate()
             try:
-                ffmpeg.wait(timeout=FFMPEG_STOP_POLL_SECONDS)
+                ffmpeg.wait(timeout=settings.value("ffmpeg_stop_poll_seconds"))
             except subprocess.TimeoutExpired:
                 if time.monotonic() >= deadline:
-                    _kill_ffmpeg(ffmpeg)
+                    _kill_ffmpeg(ffmpeg, settings)
                     return "; ffmpeg killed"
         if validate:
             validate()
         return ""
     except (OSError, RuntimeError, KeyboardInterrupt, SystemExit):
-        _kill_ffmpeg(ffmpeg)
+        _kill_ffmpeg(ffmpeg, settings)
         raise
 
 
@@ -632,40 +638,45 @@ def _write_session(path: Path, session: dict) -> None:
     os.replace(temporary, path)
 
 
-def resolve_wgc_ffmpeg() -> Path | None:
+def resolve_wgc_ffmpeg(*, settings: RecordingSettings | None = None) -> Path | None:
     """Locate FFmpeg >= 8.0 with Windows.Graphics.Capture (gfxcapture) support."""
-    configured = os.environ.get(FFMPEG_WGC_ENV)
-    if configured is not None:
-        candidate = Path(configured) if configured else None
-        return candidate if candidate and candidate.is_file() else None
-    return DEFAULT_FFMPEG_WGC if DEFAULT_FFMPEG_WGC.is_file() else None
+    settings = settings or resolve_settings()
+    candidate = settings.config.values.get("tools.ffmpeg_wgc")
+    return candidate if isinstance(candidate, Path) and candidate.is_file() else None
 
 
-def resolve_capture_backend(backend: str = "auto") -> tuple[str, str]:
+def resolve_capture_backend(backend: str = "auto", *, settings: RecordingSettings | None = None) -> tuple[str, str]:
     """Select video capture backend ('wgc' or 'gdigrab') and FFmpeg executable."""
+    settings = settings or resolve_settings()
     if backend == "gdigrab":
-        return "gdigrab", "ffmpeg"
+        return "gdigrab", str(settings.tool("ffmpeg_review"))
     if backend in ("auto", "wgc"):
-        wgc = resolve_wgc_ffmpeg()
+        wgc = resolve_wgc_ffmpeg(settings=settings)
         if wgc is not None:
             return "wgc", str(wgc)
         if backend == "wgc":
             raise RuntimeError("WGC capture requested, but FFmpeg with gfxcapture was not found")
-        return "gdigrab", "ffmpeg"
+        return "gdigrab", str(settings.tool("ffmpeg_review"))
     raise ValueError(f"unsupported capture backend: {backend}")
 
 
 def record(tag: str, fps: int, max_seconds: float, game_dir: Path,
-           capture_backend: str = "auto", audio_backend: str = "dump") -> int:
+            capture_backend: str = "auto", audio_backend: str = "dump",
+            *, settings: RecordingSettings | None = None) -> int:
     """Capture until STOP file, game exit or timeout. Returns a process exit code."""
-    out = RECORDINGS / tag
+    settings = settings or resolve_settings(fps=fps, max_seconds=max_seconds, game_dir=game_dir)
+    settings = settings.for_capture(fps, max_seconds, game_dir)
+    fps, max_seconds, game_dir = settings.fps, settings.max_seconds, settings.game_dir
+    out = settings.output(tag)
     if out.exists():
         logger.error("%s exists; choose a new tag", out)
         return 2
     try:
         if audio_backend not in ("dump", "process"):
             raise ValueError(f"unsupported audio backend: {audio_backend}")
-        backend, ffmpeg_bin = resolve_capture_backend(capture_backend)
+        backend, ffmpeg_bin = resolve_capture_backend(capture_backend, settings=settings)
+    except ConfigError:
+        raise
     except (RuntimeError, ValueError) as error:
         logger.error("recording refused: %s", error)
         return EXIT_REJECTED
@@ -673,15 +684,15 @@ def record(tag: str, fps: int, max_seconds: float, game_dir: Path,
     if not user32.SetProcessDpiAwarenessContext(ctypes.c_void_p(DPI_PER_MONITOR_AWARE_V2)):
         logger.warning("DPI awareness not set (error %d); coordinates may be scaled",
                        ctypes.get_last_error())
-    deadline = time.time() + WINDOW_WAIT_SECONDS
+    deadline = time.time() + settings.value("window_wait_seconds")
     pid = rect = None
     while time.time() < deadline and not rect:
         pid = game_pid(game_dir)
         rect = client_rect(pid) if pid else None
         if not rect:
-            time.sleep(0.5)
+            time.sleep(settings.value("window_poll_seconds"))
     if not pid or not rect:
-        logger.error("no visible %s window from %s within %.0f s", GAME_EXE, game_dir, WINDOW_WAIT_SECONDS)
+        logger.error("no visible %s window from %s within %.0f s", GAME_EXE, game_dir, settings.value("window_wait_seconds"))
         return 3
     if backend == "gdigrab" and not on_primary(rect):
         logger.error("game client area %s is not fully on the primary monitor; move it there", rect)
@@ -699,10 +710,8 @@ def record(tag: str, fps: int, max_seconds: float, game_dir: Path,
                 raise RuntimeError("capture window is not fully on the primary monitor")
             watch = ProcessWatch(pid)
             audio_options = {"audio_backend": audio_backend} if audio_backend == "process" else {}
-            if backend == "gdigrab":
-                return _record_capture(tag, fps, max_seconds, game_dir, pid, rect, window, watch, **audio_options)
             return _record_capture(tag, fps, max_seconds, game_dir, pid, rect, window, watch,
-                                   capture_backend=backend, ffmpeg_bin=ffmpeg_bin, **audio_options)
+                                   capture_backend=backend, ffmpeg_bin=ffmpeg_bin, settings=settings, **audio_options)
     except (OSError, RuntimeError, ValueError) as error:
         logger.error("recording refused: %s", error)
         return EXIT_REJECTED
@@ -719,10 +728,16 @@ def record(tag: str, fps: int, max_seconds: float, game_dir: Path,
 
 def _record_capture(tag: str, fps: int, max_seconds: float, game_dir: Path, pid: int,
                     rect: tuple[int, int, int, int], window: RecordingWindow,
-                     watch: ProcessWatch, capture_backend: str = "gdigrab",
-                     ffmpeg_bin: str | Path = "ffmpeg", audio_backend: str = "dump") -> int:
+                      watch: ProcessWatch, capture_backend: str = "gdigrab",
+                      ffmpeg_bin: str | Path | None = None, audio_backend: str = "dump",
+                      *, settings: RecordingSettings | None = None) -> int:
     """Record only inside the capture window guard's lifetime."""
-    out = RECORDINGS / tag
+    settings = settings or resolve_settings(fps=fps, max_seconds=max_seconds, game_dir=game_dir)
+    settings = settings.for_capture(fps, max_seconds, game_dir)
+    fps, max_seconds, game_dir = settings.fps, settings.max_seconds, settings.game_dir
+    if ffmpeg_bin is None:
+        capture_backend, ffmpeg_bin = resolve_capture_backend(capture_backend, settings=settings)
+    out = settings.output(tag)
     out.mkdir(parents=True)
     x, y, width, height = rect
     if capture_backend == "wgc":
@@ -730,20 +745,21 @@ def _record_capture(tag: str, fps: int, max_seconds: float, game_dir: Path, pid:
                    "-f", "lavfi", "-i",
                    f"gfxcapture=hwnd={window.hwnd}:max_framerate={fps}:capture_cursor=0",
                    "-vf", "hwdownload,format=bgra,crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0",
-                   "-t", str(int(max_seconds) + FFMPEG_EXTRA_SECONDS), "-fps_mode", "passthrough",
+                    "-t", str(int(max_seconds) + settings.value("ffmpeg_extra_seconds")), "-fps_mode", "passthrough",
                    "-c:v", "libx264", "-qp", "0", "-preset", "ultrafast", str(out / "raw.mkv")]
     else:
         command = [str(ffmpeg_bin), "-hide_banner", "-nostats", "-f", "gdigrab", "-framerate", str(fps),
                    "-draw_mouse", "0", "-offset_x", str(x), "-offset_y", str(y),
                    "-video_size", f"{width}x{height}", "-i", "desktop",
-                   "-t", str(int(max_seconds) + FFMPEG_EXTRA_SECONDS), "-fps_mode", "passthrough",
+                    "-t", str(int(max_seconds) + settings.value("ffmpeg_extra_seconds")), "-fps_mode", "passthrough",
                    "-c:v", "libx264", "-qp", "0", "-preset", "ultrafast", str(out / "raw.mkv")]
     producer_probe_before = clock_probe_identity(game_dir)
     started = time.time()
     session = {"tag": tag, "pid": pid, "rect": rect, "fps": fps, "game_dir": str(game_dir),
                 "game_exe_sha256": sha256(game_dir / GAME_EXE), "capture_backend": capture_backend,
                 "command": command, "record_started": started, "recording_state": "recording",
-                 "window_guard": {"passed": False, "pending": True}, "audio_source": audio_backend}
+                  "window_guard": {"passed": False, "pending": True}, "audio_source": audio_backend}
+    session["configuration"] = settings.provenance()
     _write_session(out / "session.json", session)
     heartbeat = game_dir / HEARTBEAT
     versions = Tail(game_dir / VERSIONS_LOG)
@@ -758,7 +774,7 @@ def _record_capture(tag: str, fps: int, max_seconds: float, game_dir: Path, pid:
             window.check()
             if audio_backend == "process":
                 process_audio = ProcessAudio.start(pid, game_dir / GAME_EXE, out,
-                                                   max_seconds + 60, window.key)
+                                                    max_seconds + settings.value("process_audio_extra_seconds"), window.key)
                 session["process_audio"] = {"identity": process_audio.target.identity, "token": window.key}
                 _write_session(out / "session.json", session)
             ffmpeg = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
@@ -766,7 +782,7 @@ def _record_capture(tag: str, fps: int, max_seconds: float, game_dir: Path, pid:
             beats, events = csv.writer(beats_file), csv.writer(events_file)
             last_frame = None
             stop_at = started + max_seconds
-            next_alive_check = started + ALIVE_CHECK_SECONDS
+            next_alive_check = started + settings.value("alive_check_seconds")
             while time.time() < stop_at:
                 if (out / "STOP").exists():
                     reason = "stop file"
@@ -787,7 +803,7 @@ def _record_capture(tag: str, fps: int, max_seconds: float, game_dir: Path, pid:
                 for line in versions.lines():
                     events.writerow([f"{now:.6f}", line])
                 if now >= next_alive_check:
-                    next_alive_check = now + ALIVE_CHECK_SECONDS
+                    next_alive_check = now + settings.value("alive_check_seconds")
                     if not watch.alive():
                         reason = "game exited"
                         session["capture_error"] = "capture process exited before recorder stopped"
@@ -795,7 +811,7 @@ def _record_capture(tag: str, fps: int, max_seconds: float, game_dir: Path, pid:
                     window.check()
                     if process_audio:
                         process_audio.check()
-                time.sleep(POLL_SECONDS)
+                time.sleep(settings.value("poll_seconds"))
             window.check()
         except KeyboardInterrupt:
             reason = "interrupted"
@@ -806,7 +822,7 @@ def _record_capture(tag: str, fps: int, max_seconds: float, game_dir: Path, pid:
         finally:
             try:
                 if ffmpeg:
-                    reason += stop_ffmpeg(ffmpeg, window.check)
+                    reason += stop_ffmpeg(ffmpeg, window.check, settings=settings)
             except (OSError, RuntimeError, KeyboardInterrupt, SystemExit) as error:
                 session["capture_error"] = f"capture shutdown interrupted or unsafe: {error}"
             if process_audio:
@@ -873,18 +889,24 @@ def gates(clock: HeartbeatClock, audio: dict) -> list[str]:
     return reasons
 
 
-def run_ffmpeg(arguments: list[str], cwd: Path) -> None:
+def run_ffmpeg(arguments: list[str], cwd: Path, *, settings: RecordingSettings | None = None) -> None:
     """Run FFmpeg in cwd, raising with its last lines on failure."""
-    result = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", *arguments],
+    settings = settings or resolve_settings(operation="finalize")
+    result = subprocess.run([str(settings.tool("ffmpeg_review")), "-hide_banner", "-loglevel", "error", "-y", *arguments],
                             capture_output=True, text=True, encoding="utf-8", errors="replace",
                             check=False, cwd=cwd)
     if result.returncode:
         raise RuntimeError(result.stderr[-2000:])
 
 
-def finalize(tag: str) -> int:
+def finalize(tag: str, *, settings: RecordingSettings | None = None) -> int:
     """Build videos, events.json and manifest.json; exit 0 only if every gate passed."""
-    out = RECORDINGS / tag
+    settings = settings or resolve_settings(operation="finalize")
+    settings = settings.for_operation("finalize")
+    out = settings.output(tag)
+    # Existing takes may contain aliases: check every artifact before the first write.
+    for name in (LABELS, "clock-font.ttf", "review.mkv", "owner.mp4", "events.json", "manifest.json"):
+        settings.file_target(out / name)
     session = json.loads((out / "session.json").read_text(encoding="utf-8"))
     if "recording_state" in session and session["recording_state"] != "closed":
         logger.error("recording or window restoration is still pending; finalize refused")
@@ -899,7 +921,7 @@ def finalize(tag: str) -> int:
                     process["identity"]["pid"] != session["pid"]):
                 raise ValueError("process-audio session lacks clean matching lifecycle/identity")
             audio = validate_process_audio(out, process["identity"], process["token"], video_start,
-                                            media_duration(out / "raw.mkv"), clock.period)
+                                            media_duration(out / "raw.mkv", settings=settings), clock.period)
         except (ValueError, KeyError, TypeError) as error:
             audio = {"error": str(error)}
     elif audio_source != "dump":
@@ -915,7 +937,9 @@ def finalize(tag: str) -> int:
         audio = {"error": "no audio dump copied (start the game with BAG2JP_AUDIO_DUMP=1)"}
     height = int(session["rect"][3])
     write_labels(out / LABELS, clock, video_start, height)
-    clock_text = (f"drawtext=fontfile='C\\:/Windows/Fonts/consola.ttf':fontsize={max(12, height // 22)}:"
+    # A fixed local basename avoids filtergraph interpolation of an arbitrary host path.
+    shutil.copy2(settings.tool("recording_font"), out / "clock-font.ttf")
+    clock_text = (f"drawtext=fontfile='clock-font.ttf':fontsize={max(12, height // 22)}:"
                   f"fontcolor=white:box=1:boxcolor=black@0.6:x=6:y={max(12, height // 22) * 2}:"
                   f"text='t %{{pts\\:hms}}'")
     has_audio = "offset_s" in audio
@@ -928,15 +952,15 @@ def finalize(tag: str) -> int:
             graph += (f";[1:a]atrim=start_sample={audio['trim_start_sample']}:"
                       f"end_sample={audio['trim_end_sample']},asetpts=PTS-STARTPTS[a]")
         else:
-            graph += f";[1:a]{audio_filter(audio['offset_s'], media_duration(out / 'raw.mkv'), audio['rate_hz'])}[a]"
+            graph += f";[1:a]{audio_filter(audio['offset_s'], media_duration(out / 'raw.mkv', settings=settings), audio['rate_hz'])}[a]"
     maps = ["-map", "[v]"] + (["-map", "[a]"] if has_audio else [])
     run_ffmpeg([*inputs, "-filter_complex", graph, *maps, "-fps_mode", "passthrough",
                 "-c:v", "libx264", "-qp", "0", "-preset", "ultrafast", "-c:a",
                 "pcm_f32le" if audio_source == "process" else "flac",
-                "review.mkv"], out)
+                "review.mkv"], out, settings=settings)
     run_ffmpeg([*inputs, "-filter_complex", graph, *maps, "-fps_mode", "passthrough",
                 "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p",
-                "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "owner.mp4"], out)
+                "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "owner.mp4"], out, settings=settings)
     events = [{"video_time": round(float(w) - video_start, 3),
                "game_frame": math.floor(clock.frame_of(float(w))), "line": line}
               for w, line in read_rows(out / "events.csv")]
@@ -955,6 +979,7 @@ def finalize(tag: str) -> int:
     else:
         limits.append("tested on the primary monitor at 125 % scaling only")
     manifest = {"accepted": not reasons, "rejections": reasons, "capture_backend": capture_backend,
+                 "finalize_configuration": settings.provenance(),
                  "audio_source": audio_source,
                 "session": session, "video_start": video_start, "clock": clock.summary(),
                 "audio": audio, "events": len(events), "limits": limits,
@@ -971,13 +996,18 @@ def finalize(tag: str) -> int:
     return 0 if not reasons else EXIT_REJECTED
 
 
-def frames(tag: str, frame: int, span: int, step: int) -> int:
+def frames(tag: str, frame: int, span: int, step: int, *, settings: RecordingSettings | None = None) -> int:
     """Extract review stills around a game frame through ffmpeg-skill look.py."""
-    out = RECORDINGS / tag
+    settings = settings or resolve_settings(operation="frames")
+    settings = settings.for_operation("frames")
+    out = settings.output(tag)
     clock, video_start = load_clock(out)
-    stills = out / "stills"
+    stills = settings.target(out / "stills")
+    if stills.exists():
+        for child in stills.iterdir():
+            settings.target(child)
     stills.mkdir(exist_ok=True)
-    command = [sys.executable, str(LOOK), str(out / "review.mkv"), "-o",
+    command = [sys.executable, str(settings.tool("ffmpeg_look")), str(out / "review.mkv"), "-o",
                str(stills / f"gf{frame:07d}"), "--overwrite"]
     times = []
     for target in range(frame - span, frame + span + 1, step):
@@ -996,16 +1026,17 @@ def frames(tag: str, frame: int, span: int, step: int) -> int:
     return result.returncode
 
 
-def main() -> int:
+def main(argv=None) -> int:
     """Command-line entry point."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--local-config", type=Path)
     sub = parser.add_subparsers(dest="command", required=True)
     rec = sub.add_parser("record")
     rec.add_argument("--tag", required=True)
-    rec.add_argument("--fps", type=int, default=60)
-    rec.add_argument("--max-seconds", type=float, default=900.0)
-    rec.add_argument("--game-dir", type=Path, default=GAME_DIR)
+    rec.add_argument("--fps", type=int)
+    rec.add_argument("--max-seconds", type=float)
+    rec.add_argument("--game-dir", type=Path)
     rec.add_argument("--capture-backend", choices=("auto", "wgc", "gdigrab"), default="auto")
     rec.add_argument("--audio-backend", choices=("dump", "process"), default="dump",
                      help="opt-in process-only WASAPI; never falls back to desktop audio")
@@ -1016,15 +1047,22 @@ def main() -> int:
     fr.add_argument("--frame", type=int, required=True)
     fr.add_argument("--span", type=int, default=6)
     fr.add_argument("--step", type=int, default=1)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", args.tag):
         parser.error("tag: use 1-64 ASCII letters, digits, _ or -")
-    if args.command == "record":
-        return record(args.tag, args.fps, args.max_seconds, args.game_dir,
-                      capture_backend=args.capture_backend, audio_backend=args.audio_backend)
-    if args.command == "finalize":
-        return finalize(args.tag)
-    return frames(args.tag, args.frame, args.span, max(1, args.step))
+    try:
+        config = load_config(local_config=args.local_config)
+        settings = resolve_settings(config, operation=args.command,
+                                    fps=getattr(args, "fps", None), max_seconds=getattr(args, "max_seconds", None),
+                                    game_dir=getattr(args, "game_dir", None))
+        if args.command == "record":
+            return record(args.tag, settings.fps, settings.max_seconds, settings.game_dir,
+                          capture_backend=args.capture_backend, audio_backend=args.audio_backend, settings=settings)
+        if args.command == "finalize":
+            return finalize(args.tag, settings=settings)
+        return frames(args.tag, args.frame, args.span, max(1, args.step), settings=settings)
+    except ConfigError as error:
+        parser.error(str(error))
 
 
 if __name__ == "__main__":

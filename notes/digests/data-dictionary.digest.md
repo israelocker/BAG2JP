@@ -2,13 +2,13 @@
 id: data-dictionary-digest
 title: "Diccionario de configuración: uso y límites"
 tags: ["digest", "config", "dictionary"]
-summary: "44 campos: S1/S3a/S3b y 13 campos S4a-prep sin operación ni consumidor. Consultar tabla canónica antes de reutilizar claves; grabador todavía pendiente."
+summary: "44 campos: S1/S3a/S3b y grabador S4a con operaciones condicionales. Consultar tabla canónica; CLI/entorno con provenance, sin fallback de máquina ni nuevos gates."
 related: ["docs/data-dictionary.md", "system_config.md", "tools/workflow/project_config.py"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "docs/data-dictionary.md"
-source_sha256: "29733a94a55880da5920f3509bcd345451019d36e922c4e5f18b1bf79f89a508"
+source_sha256: "b1b732d1e5d50649860078e3ee2254e855556708f46caa299b97471a8059dd51"
 ---
 
 # Diccionario: antes de consumir claves
@@ -44,4 +44,7 @@ source_sha256: "29733a94a55880da5920f3509bcd345451019d36e922c4e5f18b1bf79f89a508
     no consumen la política versus. Configuración nunca es permiso de partida.
 - S4a-prep: diez recording.* (host, positivos, segundos≤86400; fps entero≤240 y
   extra_seconds entero≤86400) y tres rutas opcionales de FFprobe/look/fuente.
-  Sin operación activa ni consumo en bag2_record.py; no calibración/gates nativos.
+  Consumidos por bag2_record.py/recording_config.py: recording-record, finalize y
+  frames exigen solo su contrato. CLI y override WGC registrados por ejecución.
+  Herramientas con archivo existente, salidas guardadas, fuente copiada con nombre
+  fijo; no calibración/gates nativos. PATH del look.py externo sigue pendiente S7.

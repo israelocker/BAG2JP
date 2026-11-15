@@ -208,4 +208,5 @@ contrato o permisos vuelve al owner; no se resuelve con otro fallback.
 | S3b vistas PowerShell | Entregado host: endings/view/acceptance y Dance View consumen JSON; 19 tests PS7/5.1 + 113 workflow + 108 harness OK, 24 mutantes; Goldfish A/B CON HALLAZGOS corregidos por RED→GREEN (sin segunda revisión); sin juego/build/deploy |
 | S3 preparación de esquema | 7 campos preparados (presupuestos ≤ 86400 s), consumidos por S3a; Goldfish 0 BLOCKER, 6 SHOULD-FIX corregidos/registrados |
 | S4a preparación de esquema | Contrato preparado: 10 defaults host + 3 rutas sin operación activa; grabador intacto, S4a consumidor pendiente. 119 workflow + 55 recording OK; 37 mutantes; Goldfish A/B CON HALLAZGOS corregidos y probados, sin segunda revisión; sin partida/build/deploy de runtime |
+| S4a consumidor | En verificación host: settings inmutables, CLI/entorno con provenance, operaciones condicionales y guardas; 28 mutantes en copias; Goldfish pendiente. Sin grabación/partida ni build/deploy de runtime |
 | S2b y S3–S7 | Aprobados; pendientes de sus dependencias y ejecución |

@@ -261,6 +261,21 @@ class AdapterTests(ConfigFixture):
         with self.assertRaises(config.ConfigError):
             config.assert_write_target(inside, inner / "BAG2JP.exe", role="work")
 
+    def test_multiply_linked_files_are_not_writable_even_inside_the_role_root(self):
+        cfg = self.load()
+        source = self.root / "stable/settings.toml"
+        source.write_bytes(b"protected fixture")
+        target = self.root / "work/result.json"
+        os.link(source, target)
+        self.assertGreater(target.stat().st_nlink, 1)
+        with self.assertRaisesRegex(config.ConfigError, "multiple hard links"):
+            config.assert_write_target(cfg, target, role="work")
+        self.assertEqual(source.read_bytes(), b"protected fixture")
+        self.assertEqual(target.read_bytes(), b"protected fixture")
+        unique = self.root / "work/unique.json"
+        unique.write_bytes(b"owned")
+        self.assertEqual(config.assert_write_target(cfg, unique, role="work"), unique)
+
     def test_target_outside_role_root_is_rejected(self):
         cfg = self.load()
         with self.assertRaises(config.ConfigError):

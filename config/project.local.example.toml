@@ -13,7 +13,7 @@ schema_version = 1
 [tools]
 # audio_probe, python_report, winshot_root, build_script, ffmpeg_review, ffmpeg_wgc
 # ghidra_launcher, ghidra_project
-# ffprobe_review, ffmpeg_look, recording_font (recording consumer pending)
+# ffprobe_review, ffmpeg_look, recording_font (recorder requires files when used)
 
 [harness]
 # Optional wait-budget overrides after a consumer adopts this section:
@@ -22,7 +22,7 @@ schema_version = 1
 # Never override build.jobs, pins or locked harness input policy here.
 
 [recording]
-# Prepared host overrides; bag2_record.py does not consume them yet.
+# Optional bag2_record.py host overrides; no audio/frame acceptance gates.
 # fps, max_seconds, poll_seconds, alive_check_seconds, window_wait_seconds
 # window_poll_seconds, ffmpeg_quit_seconds, ffmpeg_extra_seconds
 # ffmpeg_stop_poll_seconds, process_audio_extra_seconds

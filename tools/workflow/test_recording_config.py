@@ -30,7 +30,7 @@ class RecordingConfigurationTests(ConfigFixture):
         expected = {f"recording.{name}" for name in DEFAULTS} | {f"tools.{name}" for name in PATHS}
         self.assertFalse(expected - set(config.FIELDS), "recording settings must be registered first")
 
-    def test_common_defaults_match_current_recorder_without_activating_operations(self):
+    def test_common_defaults_match_current_recorder_and_operations(self):
         self.assert_registered()
         self.common.write_bytes((REPO / "config/project.toml").read_bytes())
         resolved = self.load()
@@ -40,7 +40,7 @@ class RecordingConfigurationTests(ConfigFixture):
                 self.assertEqual(resolved.values[key], expected)
                 self.assertEqual(type(resolved.values[key]), type(expected))
                 self.assertEqual(resolved.origins[key], "common")
-                self.assertEqual(config.FIELDS[key].operations, ())
+                self.assertEqual(config.FIELDS[key].operations, ("recording-record",))
                 self.assertEqual(config.FIELDS[key].kind, "integer" if name in INTEGER_FIELDS else "number")
         for name in PATHS:
             self.assertNotIn(f"tools.{name}", resolved.values, "distributed TOML must not supply machine paths")
@@ -104,7 +104,8 @@ class RecordingConfigurationTests(ConfigFixture):
             key = f"tools.{name}"
             with self.subTest(key=key):
                 self.assertNotIn(key, empty.values)
-                self.assertEqual(config.FIELDS[key].operations, ())
+                self.assertEqual(config.FIELDS[key].operations,
+                                 ("recording-frames",) if name == "ffmpeg_look" else ("recording-finalize",))
                 with self.assertRaisesRegex(config.ConfigError, "unresolved"):
                     config.require_paths(empty, (key,))
         self.write_local('[tools]\n' + ''.join(f'{name} = "helpers ñ ; &/{name}"\n' for name in PATHS))
@@ -124,6 +125,8 @@ class RecordingConfigurationTests(ConfigFixture):
         self.assert_registered()
         resolved = self.load()
         for operation in config.OPERATIONS:
+            if operation.startswith("recording-"):
+                continue
             exported = config.export_config(resolved, operation=operation)
             with self.subTest(operation=operation):
                 self.assertFalse(set(exported["missing"]) & {f"recording.{name}" for name in DEFAULTS})

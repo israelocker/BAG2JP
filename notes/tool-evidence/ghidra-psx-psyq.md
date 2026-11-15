@@ -2486,3 +2486,18 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   ahorro y retrabajo manual desconocidos; no se afirman mejoras cuantificadas.
 - Siguiente: continuar consumo host S4a; no hacen falta equivalencias MIPS/funcmatch
   para este contrato. Grabación, runner y pruebas en partida fuera de autorización.
+
+## 20261115-ghidra-s4a-consumer - identidad durante migración host
+
+- Propósito: comprobar Ghidra MCP antes de conectar el grabador al resolver.
+  `get_program_info()` primero confirmó la instancia existente: SLPM_862.19,
+  Japón, main executable PSX:LE:32, base 80000000, entrada 80035D98,
+  1324 funciones; SHA-256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- `read_memory(address="0x80035d98", length=8)` devolvió `0680023c00cf4224`
+  sin gaps. No se leyó un overlay ni memoria viva del juego.
+- Contraste: coincide con el ensayo S4a-prep anterior; la migración host se
+  valida separadamente con fixtures, FFmpeg sintético y mutantes. No cambia MIPS.
+- Resultado: identidad confirmada, utilidad limitada a esa comprobación; no prueba
+  captura, sincronía ni aceptación de partida. Se preservaron instancia/análisis.
+  Tiempo, ahorro y retrabajo desconocidos. No se usa funcmatch sin búsqueda de
+  equivalencias; runner/grabación real fuera de autorización.

@@ -14,6 +14,7 @@ from unittest.mock import Mock, patch
 from tools.test import bag2_record as rec
 from tools.test.recording_window import RecordingWindow
 from tools.test.test_recording_window import FakeWindows
+from tools.test.recording_settings_fixture import recorder_settings
 
 START = 1794469436.698643     # a real gdigrab wall-clock stamp
 PERIOD = 1.0 / 59.94
@@ -45,6 +46,11 @@ def chunked_sync(first: int, last: int, chunks: tuple[int, ...]) -> list[tuple[i
 
 
 class WindowCaptureTest(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.settings = recorder_settings(Path(temporary.name))
+
     def test_process_audio_option_starts_before_video_and_stops_after_video(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -56,21 +62,21 @@ class WindowCaptureTest(unittest.TestCase):
             helper.stop.side_effect = lambda: order.append("audio-stop") or {"helper_exit": 0}
             child.returncode = 0
             tail.lines.return_value = []
-            with patch.object(rec, "RECORDINGS", root), \
-                    patch.object(rec, "Tail", return_value=tail), \
+            settings = recorder_settings(root)
+            with patch.object(rec, "Tail", return_value=tail), \
                     patch.object(rec, "ProcessAudio", create=True) as backend, \
                     patch.object(rec.subprocess, "Popen", side_effect=lambda *a, **k: order.append("video-start") or child), \
-                    patch.object(rec, "stop_ffmpeg", side_effect=lambda *a: order.append("video-stop") or ""), \
+                    patch.object(rec, "stop_ffmpeg", side_effect=lambda *a, **k: order.append("video-stop") or ""), \
                     patch.object(rec, "copy_audio", return_value=[]), \
                     patch.object(rec.time, "time", side_effect=itertools.count(1000, 0.6).__next__):
                 backend.start.side_effect = lambda *a, **k: order.append("audio-start") or helper
                 try:
                     rec._record_capture("native", 60, 0.1, root, 700, (0, 0, 640, 480),
-                                        window, watch, audio_backend="process")
+                                        window, watch, audio_backend="process", settings=settings)
                 except TypeError as error:
                     self.fail(f"process audio opt-in is not wired: {error}")
             self.assertEqual(order, ["audio-start", "video-start", "video-stop", "audio-stop"])
-            session = json.loads((root / "native/session.json").read_text())
+            session = json.loads((settings.recordings / "native/session.json").read_text())
             self.assertEqual(session["audio_source"], "process")
             self.assertEqual(session["process_audio"]["identity"]["pid"], 700)
 
@@ -96,16 +102,16 @@ class WindowCaptureTest(unittest.TestCase):
                 watch.alive.return_value = failure != "exit"
                 tail = Mock()
                 tail.lines.return_value = []
-                with patch.object(rec, "RECORDINGS", root), \
-                        patch.object(rec.subprocess, "Popen", return_value=process), \
+                settings = recorder_settings(root)
+                with patch.object(rec.subprocess, "Popen", return_value=process), \
                         patch.object(rec, "Tail", return_value=tail), \
                         patch.object(rec, "read_heartbeat", return_value=100), \
                         patch.object(rec.time, "time", side_effect=itertools.count(1000, 0.6).__next__), \
                         patch.object(rec.time, "sleep", side_effect=KeyboardInterrupt()):
                     code = rec._record_capture("capture", 60, 2, root, 700,
-                                               (0, 0, 640, 480), window, watch)
+                                               (0, 0, 640, 480), window, watch, settings=settings)
                 self.assertEqual(code, rec.EXIT_REJECTED)
-                session = json.loads((root / "capture/session.json").read_text())
+                session = json.loads((settings.recordings / "capture/session.json").read_text())
                 self.assertTrue(session.get("capture_error"))
                 self.assertEqual(session["recording_state"], "restoring")
                 self.assertFalse(session["window_guard"]["passed"])
@@ -120,7 +126,7 @@ class WindowCaptureTest(unittest.TestCase):
             process.returncode = -9
         process.kill.side_effect = killed
         with self.assertRaises(KeyboardInterrupt):
-            rec.stop_ffmpeg(process, Mock())
+            rec.stop_ffmpeg(process, Mock(), settings=self.settings)
         process.kill.assert_called_once()
         self.assertEqual(process.poll(), -9)
 
@@ -139,7 +145,7 @@ class WindowCaptureTest(unittest.TestCase):
         process.wait.side_effect = finish
         check = Mock(side_effect=[None, None, RuntimeError("covered during shutdown")])
         with self.assertRaisesRegex(RuntimeError, "covered during shutdown"):
-            rec.stop_ffmpeg(process, check)
+            rec.stop_ffmpeg(process, check, settings=self.settings)
         process.kill.assert_called_once()
 
     def test_recorder_pins_capture_only_and_restores_after_success_or_failure(self) -> None:
@@ -148,18 +154,18 @@ class WindowCaptureTest(unittest.TestCase):
                 api, watch, user = FakeWindows(), Mock(), Mock()
                 root = Path(temporary)
 
-                def capture(*args):
+                def capture(*args, **kwargs):
                     self.assertTrue(api.pinned)
                     self.assertEqual(api.front, 100)
                     if fail:
                         raise RuntimeError("capture startup failed")
-                    folder = root / "capture"
+                    folder = settings.recordings / "capture"
                     folder.mkdir()
                     (folder / "session.json").write_text("{}", encoding="utf-8")
                     return 0
 
-                with patch.object(rec, "RECORDINGS", root), \
-                        patch.object(rec, "_win32", return_value=(user, Mock())), \
+                settings = recorder_settings(root)
+                with patch.object(rec, "_win32", return_value=(user, Mock())), \
                         patch.object(rec, "game_pid", return_value=700), \
                         patch.object(rec, "client_rect", return_value=api.bounds), \
                         patch.object(rec, "find_window", return_value=100), \
@@ -168,30 +174,30 @@ class WindowCaptureTest(unittest.TestCase):
                         patch.object(rec, "_record_capture", side_effect=capture), \
                         patch.object(rec, "RecordingWindow", side_effect=lambda hwnd, pid:
                                      RecordingWindow(hwnd, pid, api=api)):
-                    self.assertEqual(rec.record("capture", 60, 2, root, capture_backend="gdigrab"),
+                    self.assertEqual(rec.record("capture", 60, 2, root, capture_backend="gdigrab", settings=settings),
                                      rec.EXIT_REJECTED if fail else 0)
                 self.assertFalse(api.pinned)
                 self.assertEqual(api.front, 200)
                 watch.close.assert_called_once()
                 if not fail:
-                    session = json.loads((root / "capture/session.json").read_text())
+                    session = json.loads((settings.recordings / "capture/session.json").read_text())
                     self.assertTrue(session["window_guard"]["passed"])
 
     def test_resolve_capture_backend_prefers_wgc_in_auto_and_falls_back(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             wgc_exe = Path(directory) / "ffmpeg.exe"
             wgc_exe.write_bytes(b"stub")
-            with patch.dict(rec.os.environ, {"BAG2JP_FFMPEG_WGC": str(wgc_exe)}), \
-                    patch.object(rec, "DEFAULT_FFMPEG_WGC", Path(directory) / "missing.exe"):
-                self.assertEqual(rec.resolve_capture_backend("auto"), ("wgc", str(wgc_exe)))
-                self.assertEqual(rec.resolve_capture_backend("wgc"), ("wgc", str(wgc_exe)))
-                self.assertEqual(rec.resolve_capture_backend("gdigrab"), ("gdigrab", "ffmpeg"))
+            settings = recorder_settings(Path(directory), environ={"BAG2JP_FFMPEG_WGC": str(wgc_exe)})
+            self.assertEqual(rec.resolve_capture_backend("auto", settings=settings), ("wgc", str(wgc_exe)))
+            self.assertEqual(rec.resolve_capture_backend("wgc", settings=settings), ("wgc", str(wgc_exe)))
+            self.assertEqual(rec.resolve_capture_backend("gdigrab", settings=settings),
+                             ("gdigrab", str(settings.tool("ffmpeg_review"))))
             missing = Path(directory) / "absent.exe"
-            with patch.dict(rec.os.environ, {"BAG2JP_FFMPEG_WGC": str(missing)}), \
-                    patch.object(rec, "DEFAULT_FFMPEG_WGC", missing):
-                self.assertEqual(rec.resolve_capture_backend("auto"), ("gdigrab", "ffmpeg"))
-                with self.assertRaises(RuntimeError):
-                    rec.resolve_capture_backend("wgc")
+            settings = recorder_settings(Path(directory), environ={"BAG2JP_FFMPEG_WGC": str(missing)})
+            self.assertEqual(rec.resolve_capture_backend("auto", settings=settings),
+                             ("gdigrab", str(settings.tool("ffmpeg_review"))))
+            with self.assertRaises(RuntimeError):
+                rec.resolve_capture_backend("wgc", settings=settings)
 
     def test_record_wgc_allows_covered_window_and_uses_gfxcapture_command(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -213,9 +219,8 @@ class WindowCaptureTest(unittest.TestCase):
                 seen_commands.append(cmd)
                 return process
 
-            with patch.dict(rec.os.environ, {"BAG2JP_FFMPEG_WGC": str(wgc_exe)}), \
-                    patch.object(rec, "RECORDINGS", root), \
-                    patch.object(rec, "logger"), \
+            settings = recorder_settings(root, environ={"BAG2JP_FFMPEG_WGC": str(wgc_exe)})
+            with patch.object(rec, "logger"), \
                     patch.object(rec, "_win32", return_value=(user, Mock())), \
                     patch.object(rec, "game_pid", return_value=700), \
                     patch.object(rec, "client_rect", return_value=api.bounds), \
@@ -231,7 +236,7 @@ class WindowCaptureTest(unittest.TestCase):
                     patch.object(rec.time, "time", side_effect=[1000.0 + i * 0.05 for i in range(120)]), \
                     patch.object(rec, "RecordingWindow", side_effect=lambda hwnd, pid, require_uncovered=True:
                                  RecordingWindow(hwnd, pid, api=api, require_uncovered=require_uncovered)):
-                result = rec.record("wgc_capture", 60, 2.0, root)
+                result = rec.record("wgc_capture", 60, 2.0, root, settings=settings)
             self.assertEqual(result, 0)
             self.assertFalse(api.pinned)
             self.assertEqual(api.front, 200)
@@ -244,7 +249,7 @@ class WindowCaptureTest(unittest.TestCase):
             self.assertIn("gfxcapture=hwnd=100:max_framerate=60:capture_cursor=0", cmd)
             self.assertIn("hwdownload,format=bgra,crop=trunc(iw/2)*2:trunc(ih/2)*2:0:0", cmd)
             self.assertIn("-use_wallclock_as_timestamps", cmd)
-            session = json.loads((root / "wgc_capture/session.json").read_text(encoding="utf-8"))
+            session = json.loads((settings.recordings / "wgc_capture/session.json").read_text(encoding="utf-8"))
             self.assertEqual(session["capture_backend"], "wgc")
             self.assertEqual(session["recording_state"], "closed")
             self.assertTrue(session["window_guard"]["passed"])
@@ -254,11 +259,9 @@ class WindowCaptureTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             missing = root / "missing-wgc.exe"
-            with patch.object(rec, "RECORDINGS", root), \
-                    patch.dict(rec.os.environ, {"BAG2JP_FFMPEG_WGC": str(missing)}), \
-                    patch.object(rec, "DEFAULT_FFMPEG_WGC", missing), \
-                    patch.object(rec, "logger"):
-                self.assertEqual(rec.record("wgc_missing", 60, 1.0, root, capture_backend="wgc"),
+            settings = recorder_settings(root, environ={"BAG2JP_FFMPEG_WGC": str(missing)})
+            with patch.object(rec, "logger"):
+                self.assertEqual(rec.record("wgc_missing", 60, 1.0, root, capture_backend="wgc", settings=settings),
                                  rec.EXIT_REJECTED)
             (root / rec.GAME_EXE).write_bytes(b"wgc resize fixture")
             wgc_exe = root / "ffmpeg-wgc.exe"
@@ -277,9 +280,8 @@ class WindowCaptureTest(unittest.TestCase):
                     api.bounds = (0, 0, 800, 600)
                 return 100 + calls * 6
 
-            with patch.dict(rec.os.environ, {"BAG2JP_FFMPEG_WGC": str(wgc_exe)}), \
-                    patch.object(rec, "RECORDINGS", root), \
-                    patch.object(rec, "logger"), \
+            settings = recorder_settings(root, environ={"BAG2JP_FFMPEG_WGC": str(wgc_exe)})
+            with patch.object(rec, "logger"), \
                     patch.object(rec, "_win32", return_value=(user, Mock())), \
                     patch.object(rec, "game_pid", return_value=700), \
                     patch.object(rec, "client_rect", return_value=api.bounds), \
@@ -294,9 +296,9 @@ class WindowCaptureTest(unittest.TestCase):
                     patch.object(rec.time, "time", side_effect=[1000.0 + i * 0.25 for i in range(40)]), \
                     patch.object(rec, "RecordingWindow", side_effect=lambda hwnd, pid, require_uncovered=True:
                                  RecordingWindow(hwnd, pid, api=api, require_uncovered=require_uncovered)):
-                result = rec.record("wgc_resize", 60, 2.0, root, capture_backend="wgc")
+                result = rec.record("wgc_resize", 60, 2.0, root, capture_backend="wgc", settings=settings)
             self.assertEqual(result, rec.EXIT_REJECTED)
-            session = json.loads((root / "wgc_resize/session.json").read_text(encoding="utf-8"))
+            session = json.loads((settings.recordings / "wgc_resize/session.json").read_text(encoding="utf-8"))
             self.assertEqual(session["capture_error"], "capture window resized")
             self.assertFalse(session["window_guard"]["passed"])
 
@@ -342,7 +344,8 @@ class ClockTest(unittest.TestCase):
             process.poll.return_value = None
             process.returncode = 0
             tail = Mock(); tail.lines.return_value = []
-            with patch.object(rec, 'logger'), patch.object(rec, 'RECORDINGS', root), \
+            settings = recorder_settings(root)
+            with patch.object(rec, 'logger'), \
                     patch.object(rec.subprocess, 'Popen', return_value=process), \
                     patch.object(rec, 'Tail', return_value=tail), \
                     patch.object(rec, 'stop_ffmpeg', return_value=''), \
@@ -352,10 +355,10 @@ class ClockTest(unittest.TestCase):
                     patch.object(rec.time, 'time', side_effect=[1000,1000,1000,1000.1,1000.1,1000.6,1000.6,1002,1002]), \
                     patch.object(rec.time, 'perf_counter_ns', side_effect=[10,20,110,120,210,220]), \
                     patch.object(rec.time, 'time_ns', side_effect=[1000,1001,1100,1101,1600,1601]):
-                rec._record_capture('probe', 60, 1, root, 700, (0,0,640,480), window, watch)
-            self.assertEqual(rec.read_rows(root / 'probe/heartbeat.csv'),
+                rec._record_capture('probe', 60, 1, root, 700, (0,0,640,480), window, watch, settings=settings)
+            self.assertEqual(rec.read_rows(settings.recordings / 'probe/heartbeat.csv'),
                              [['1000.000000','100'],['1000.600000','106']])
-            path = root / 'probe/clock_observations.csv'
+            path = settings.recordings / 'probe/clock_observations.csv'
             self.assertTrue(path.exists(), 'recorder must retain independent clocks')
             self.assertEqual(rec.read_rows(path), [
                 ['frame','mono_before_ns','mono_after_ns','wall_before_ns','wall_after_ns'],
@@ -392,8 +395,8 @@ class ClockTest(unittest.TestCase):
                         return sink
                     return original_open(path, *args, **kwargs)
 
+                settings = recorder_settings(root)
                 with patch.object(Path, 'open', opened), patch.object(rec, 'logger') as log, \
-                        patch.object(rec, 'RECORDINGS', root), \
                         patch.object(rec.subprocess, 'Popen', return_value=process), \
                         patch.object(rec, 'Tail', return_value=tail), \
                         patch.object(rec, 'stop_ffmpeg', return_value=''), \
@@ -402,16 +405,16 @@ class ClockTest(unittest.TestCase):
                         patch.object(rec.time, 'sleep'), \
                         patch.object(rec.time, 'time', side_effect=[1000,1000,1000,1000.1,1000.1,1000.6,1000.6,1002,1002]):
                     try:
-                        result = rec._record_capture('probe', 60, 1, root, 700, (0,0,640,480), window, watch)
+                        result = rec._record_capture('probe', 60, 1, root, 700, (0,0,640,480), window, watch, settings=settings)
                     except OSError as error:
                         self.fail(f'optional sidecar aborted capture: {error}')
-                session = json.loads((root / 'probe/session.json').read_text())
+                session = json.loads((settings.recordings / 'probe/session.json').read_text())
                 self.assertNotIn('capture_error', session)
                 self.assertEqual(result, rec.EXIT_REJECTED)  # Only the ordinary too-short clock gate.
-                self.assertEqual(rec.read_rows(root / 'probe/heartbeat.csv'),
+                self.assertEqual(rec.read_rows(settings.recordings / 'probe/heartbeat.csv'),
                                  [['1000.100000','100'], ['1000.600000','106']])
                 if failure == 'none':
-                    observations = rec.read_rows(root / 'probe/clock_observations.csv')
+                    observations = rec.read_rows(settings.recordings / 'probe/clock_observations.csv')
                     self.assertEqual([row[0] for row in observations[1:]], ['', '100', '106'])
                     self.assertEqual(len(observations), 4)
                 else:
@@ -549,7 +552,7 @@ class FinalizeTest(unittest.TestCase):
                    "process_audio": {"identity": IDENTITY, "token": TOKEN, "helper_exit": 0}}
         (out / "session.json").write_text(json.dumps(session))
         with patch.object(rec, "audio_placement", side_effect=AssertionError("must not use mixer dump")):
-            self.assertEqual(rec.finalize(out.name), 0)
+            self.assertEqual(rec.finalize(out.name, settings=self.settings), 0)
         manifest = json.loads((out / "manifest.json").read_text())
         self.assertEqual(manifest["audio_source"], "process")
         probe = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a:0", "-show_entries",
@@ -563,13 +566,13 @@ class FinalizeTest(unittest.TestCase):
         # Even a valid diagnostic dump must not rescue a failed native journal.
         rows[-1]["clean"] = False
         write_journal(out, rows)
-        self.assertEqual(rec.finalize(out.name), rec.EXIT_REJECTED)
+        self.assertEqual(rec.finalize(out.name, settings=self.settings), rec.EXIT_REJECTED)
         manifest = json.loads((out / "manifest.json").read_text())
         self.assertFalse(manifest["accepted"])
 
     def make_recording(self, name: str, seconds: int, sync: list[tuple[int, int]],
                        beep_frames: tuple[int, ...]) -> Path:
-        out = rec.RECORDINGS / name
+        out = self.settings.recordings / name
         out.mkdir()
         subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i",
                         f"testsrc=size=320x240:rate=60:duration={seconds}", "-c:v", "libx264",
@@ -618,17 +621,16 @@ class FinalizeTest(unittest.TestCase):
         return float(probe.stdout)
 
     def setUp(self) -> None:
-        self.tmp = tempfile.TemporaryDirectory(dir=rec.REPO / "_work")
+        self.tmp = tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[2] / "_work")
         self.addCleanup(self.tmp.cleanup)
-        self.addCleanup(setattr, rec, "RECORDINGS", rec.RECORDINGS)
-        rec.RECORDINGS = Path(self.tmp.name)
+        self.settings = recorder_settings(Path(self.tmp.name), operation="finalize")
 
     def test_finalize_aligns_beep_events_and_keeps_full_video(self) -> None:
         for audio_first in (940, 1060):            # audio started before / after the video
             with self.subTest(audio_first=audio_first):
                 out = self.make_recording(f"synthetic-{audio_first}", 4,
                                           linear_sync(audio_first, 1240), (1120,))
-                self.assertEqual(rec.finalize(out.name), 0)
+                self.assertEqual(rec.finalize(out.name, settings=self.settings), 0)
                 manifest = json.loads((out / "manifest.json").read_text())
                 self.assertTrue(manifest["accepted"], manifest["rejections"])
                 self.assertAlmostEqual(manifest["audio"]["offset_s"],
@@ -647,17 +649,17 @@ class FinalizeTest(unittest.TestCase):
         session = json.loads((out / "session.json").read_text())
         session["window_guard"] = {"passed": False, "error": "capture window is covered"}
         (out / "session.json").write_text(json.dumps(session), encoding="utf-8")
-        self.assertEqual(rec.finalize(out.name), rec.EXIT_REJECTED)
+        self.assertEqual(rec.finalize(out.name, settings=self.settings), rec.EXIT_REJECTED)
         manifest = json.loads((out / "manifest.json").read_text())
         self.assertFalse(manifest["accepted"])
         self.assertTrue(any("visibility guard" in reason for reason in manifest["rejections"]))
 
     def test_pending_restoration_is_not_treated_as_a_legacy_recording(self) -> None:
-        out = rec.RECORDINGS / "still-restoring"
+        out = self.settings.recordings / "still-restoring"
         out.mkdir()
         (out / "session.json").write_text(json.dumps({"recording_state": "restoring",
                                                      "window_guard": {"passed": False}}))
-        self.assertEqual(rec.finalize(out.name), rec.EXIT_REJECTED)
+        self.assertEqual(rec.finalize(out.name, settings=self.settings), rec.EXIT_REJECTED)
         self.assertFalse((out / "manifest.json").exists())
 
     def test_finalize_corrects_dump_rate_drift_across_a_long_take(self) -> None:
@@ -665,7 +667,7 @@ class FinalizeTest(unittest.TestCase):
         # against wall time. Beeps 1 s and 19 s into a 20 s take must both land.
         sync = chunked_sync(940, 2220, tuple(c - 4 for c in REAL_CHUNKS))
         out = self.make_recording("synthetic-drift", 20, sync, (1060, 2140))
-        self.assertEqual(rec.finalize(out.name), 0)
+        self.assertEqual(rec.finalize(out.name, settings=self.settings), 0)
         manifest = json.loads((out / "manifest.json").read_text())
         self.assertEqual(manifest["audio"]["rate_hz"], round(731 / PERIOD))
         for name in ("owner.mp4", "review.mkv"):
@@ -687,7 +689,7 @@ class FinalizeTest(unittest.TestCase):
             "ffmpeg_exit": 0,
             "window_guard": {"passed": True, "require_uncovered": False},
         }), encoding="utf-8")
-        self.assertEqual(rec.finalize(out.name), 0)
+        self.assertEqual(rec.finalize(out.name, settings=self.settings), 0)
         manifest = json.loads((out / "manifest.json").read_text(encoding="utf-8"))
         self.assertTrue(manifest["accepted"], manifest["rejections"])
         self.assertEqual(manifest["capture_backend"], "wgc")

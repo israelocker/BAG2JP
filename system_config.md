@@ -311,9 +311,9 @@ corresponde a los mutantes listados, no a alternativas sustituidas tras dar ERRO
 audio/RAM/SPU conservan sus controles legacy. Calendario VRAM registrado significa
 programado, no necesariamente observado en juego. Estos límites no son aceptación.
 
-### S4a-prep: contrato host del grabador (consumo pendiente)
+### S4a-prep: contrato host del grabador (checkpoint histórico `1058670`)
 
-Se separa un checkpoint preparatorio de S4a: el grabador combina captura, clocks,
+Estado en ese checkpoint: se separa la preparación de S4a; el grabador combina captura, clocks,
 audio y cierre; registrar primero el contrato permite revisar el esquema compartido
 sin mezclarlo con esa reescritura. No cambia autoridad ni permisos. **S4a no está
 entregado**: `bag2_record.py` conserva los bytes de `a0f3935` (SHA-256
@@ -370,6 +370,63 @@ Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue
 Siguiente: S4a consumo real del resolver por `bag2_record.py`, pruebas de
 precedencia, operaciones y guardas antes de efectos, conservando backend/audio/
 clocks/metadata/cierre; después S4b. No autoriza grabación ni partida.
+
+### S4a: consumidor del grabador (verificación host)
+
+`bag2_record.py` consume el resolver mediante `RecordingSettings` inmutable y las
+operaciones `recording-record`, `recording-finalize`, `recording-frames`. Se usan
+las diez claves host preparadas, sin campos nuevos. `--local-config` elige overlay;
+CLI explícita gana al TOML, y `BAG2JP_FFMPEG_WGC` mantiene su precedencia documentada
+con origen registrado. Su valor vacío/inexistente desactiva ese candidato: auto
+solo puede pasar al gdigrab configurado, no a una ruta de máquina ni a PATH.
+Entorno y archivos se resuelven por ejecución, no mediante global mutable.
+
+Decisiones acotadas: `--game-dir` explícito conserva su identidad de fuente de
+solo lectura fuera del experimental por defecto; no escribe allí. Una API Python
+con argumentos explícitos los valida y vincula a la provenance de esa ejecución.
+Las herramientas se requieren condicionalmente, con existencia de archivo, antes
+de efectos; WGC no necesita gdigrab y review no procesa un override WGC ajeno.
+Las escrituras quedan bajo work/recordings con guardas para aliases de directorio
+y artefactos; no se promete seguridad frente a carreras. La fuente seleccionada
+se copia como `clock-font.ttf`: el filtro no interpola una ruta host arbitraria.
+`session.json` y `manifest.json` guardan configuración/orígenes/hashes efectivos.
+
+Preservados PID/HWND, backends, clocks, audio, codecs, overlays y cierre: audio
+arranca antes del vídeo y se detiene después. Los tests legacy conservan sus
+aserciones de rechazo/aceptación; solo se adaptan al objeto settings explícito.
+Inventario AST `_work/configuration/s4a-consumer-inventory.json`: 11 funciones
+cambiadas, 26 funciones/clases y constantes nativas retenidas idénticas al baseline.
+No equivale a prueba de equivalencia íntegra. Estilo de labels, span/step y
+truncación diagnóstica siguen candidatos documentados; `look.py` instalado elige
+sus propias dependencias PATH, frontera externa pendiente de S7, sin editarlo aquí.
+
+Evidencia: `_work/configuration/s4a-consumer-final-tests/` y los ensayos retenidos
+`s4a-consumer-mutations/`, `s4a-consumer-video-margin/` (28 mutantes en copias,
+baseline verde, kills por aserción sin ERROR; inputs canónicos sin cambios).
+Comando nuevo: `py -3.13 -m unittest tools.test.test_bag2_record_config` desde raíz.
+El primer ensayo persistido falló por un fixture que sustituía recordings fuera
+del contrato real; se corrigió el fixture, no se relajó la guarda. Sus hashes se
+tomaron después de los tests mientras se editaba: no identifican esa ejecución.
+La ronda v2 y la final separada preservan los resultados posteriores; el reporte
+final distingue pruebas nuevas de workflow/harness reutilizados por hash.
+Resultado: 73 recording OK (18 nuevos + 55 legacy), 119 workflow y 108 harness
+OK reutilizados tras comparación de inputs. El verificador final salió 1 al
+previsualizar Unicode en consola cp1252, después de guardar exit 0/log/hash del
+test; validación separada de esos resultados e inputs en `runner-status.json`.
+No se presenta ese fallo de consola como ejecución exitosa del verificador.
+
+Preflight: `_work/workflow/20261115T165909846253Z-s4a-recorder-consumer/`, drift
+conocido solamente. Ghidra MCP verificó identidad y entrypoint, no configuración
+ni captura. FFmpeg se usa en tests con medios sintéticos; no hay toma del juego
+que revisar con ffmpeg-skill ni permiso para runner/recording real. Inventario,
+hashes y mutación son deterministas; no requieren modelo local. No se editan
+settings, tarjetas, overlay ignorado ni herramientas instaladas; no build/deploy
+del runtime. La compilación C aislada de la suite host no construye el juego.
+Documentación FFmpeg consultada: escaping de filtros en `ffmpeg-all.html`, §32.2;
+la copia con basename fijo evita introducir niveles de escaping host.
+
+Goldfish: revisión fría pendiente sobre snapshot separado e inmutable. No es
+aceptación de captura ni permiso de partida. Después de cerrar S4a, continúa S4b.
 
 ## Fuentes vigentes
 

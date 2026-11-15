@@ -2,13 +2,13 @@
 id: system-config-digest
 title: "Configuración host: autoridades y estado"
 tags: ["digest", "config", "migration"]
-summary: "S1/S3a/S3b entregados host; contrato S4a-prep sin consumidor. Migrar grabador sigue pendiente, luego S4b/S5–S7/S2b; sin aceptación del juego."
+summary: "S1/S3a/S3b entregados host; S4a grabador consume resolver y está en cierre host. Después S4b/S5–S7/S2b; sin aceptación del juego."
 related: ["system_config.md", "docs/data-dictionary.md", "plans/pending/host-configuration-migration.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "7b97719ee409fe468df9a439e26f6a31b65901014ef2e953bd5a387b2186947a"
+source_sha256: "b43ffed82ded3fec6116cd972ee350051d24f80c0827962f28a3f6ef57e6fa39"
 ---
 
 # Configuración: estado mínimo
@@ -46,10 +46,12 @@ source_sha256: "7b97719ee409fe468df9a439e26f6a31b65901014ef2e953bd5a387b2186947a
    posteriores: 19 vistas + 113 workflow + 108 harness OK, 24 mutantes en copias.
    Snapshot original y respuestas preservados; siguiente S4a grabador (solo host).
    Sin partida/build/deploy ni edición de herramientas instaladas.
-- S4a-prep registra diez defaults recording y tres rutas,
-  sin operación activa: grabador intacto. 119 workflow + 55 recording OK, 37 mutantes;
-  Goldfish A/B CON HALLAZGOS corregidos, sin segunda revisión. Próximo: S4a consumidor.
-  La preparación no equivale a migración ni autoriza captura o partida.
+- S4a-prep `1058670` registró diez defaults recording y tres rutas; no migró consumidor.
+- S4a consumidor usa settings inmutables, CLI/entorno con provenance y operaciones
+  condicionales. Work/recordings/artefactos guardados, font basename fijo; gates,
+  PID/HWND/audio/clocks/codecs/cierre conservados. 73 recording + 119 workflow +
+  108 harness OK (reutilización por hash explícita), 28 mutantes; Goldfish en fuente.
+  Dependencias PATH de look.py instalado pendientes S7; no partida/captura autorizada.
 - Nuevo/modificado host sigue el estándar central; runtime, hechos PSX y guards
   conservan su autoridad. No tocar historia, releases, settings, saves o terceros.
 - Límites: config no demuestra identidad de estable; TOCTOU no garantizado,
