@@ -1,6 +1,7 @@
 # Audio alignment through native savestate loads
 
-Status: proposal — owner decision pending; no recorder implementation authorized yet.
+Status: approved — owner selected «Corregir grabador (Recomendado)» on 2026-11-15.
+Execution gate: offline feasibility first; no new game trial before that proof.
 Topic: notes/gaso-import.md, Block 4. No external tracker/remote.
 
 ## Evidence and objective
@@ -73,6 +74,28 @@ game's existing save system. Original rejected recordings/manifests remain intac
   user preference is scope (recording fix versus defer and internal Block5), not an
   arbitrary numeric offset or a request to relax a gate.
 
+## Phase1 offline result (2026-11-15)
+
+- Read-only replay `_work/gaso/block2/probe_explicit_pause_model.py` produces
+  explicit-pause-model-feasibility.json without modifying media or manifests.
+  Before/after fits have window6.63/6.82ms, but producer boundaries8496..8502
+  leave5sync rows unmodeled. Fitted jump at common sample6243834 is34.228ms;
+  compare at the same sample, not affine intercepts with different rates.
+- Feasibility NOT demonstrated: gap boundary and audible gap content are not
+  proven. Do not delete those rows or invent silence. Phases2/3 have not started.
+- Source audit: anim-trace at_pcm writes mixer output; main.cpp4386..4394 flushes
+  queued output on load,4420..4451 applies host fade/volume and queue/DRC after
+  that dump. Thus mixer sample counts alone do not prove audible pause contents.
+- Existing audio_trace T3 could observe host PCM, but audio_trace.c4..7/16/195
+  compiles PCM history/WAV dumping out under PSX_NO_DEBUG_TOOLS; this build is OFF.
+  No activation, rebuild or unrelated audio capture attempted. winshot tools have
+  no installed audio collector in their current directory inventory.
+- Next frontier: bounded research for precise audio-block timing/provenance in
+  the unchanged runtime, or a game-process-only host capture source that needs
+  no device install. Prove feasibility offline/host before changing the recorder
+  or launching another game. A larger helper/new capture backend is a scope
+  decision, not silently authorized implementation.
+
 ## Always / Never
 - Always: evidence before acceptance; local sequential Git; same experimental target;
   protect saves/settings; one GPU workload; precise scope and measured limitations.
@@ -86,6 +109,6 @@ game's existing save system. Original rejected recordings/manifests remain intac
 | Phase | State |
 |---|---|
 | Diagnosis | Done: replay and native load log correlate the persistent timing step |
-| 1 | Pending owner scope approval |
+| 1 | Approved; replay performed, blocked on precise gap/audio provenance |
 | 2 | Blocked by1 |
 | 3 | Blocked by2 + Goldfish |

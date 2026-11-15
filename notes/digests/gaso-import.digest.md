@@ -2,13 +2,13 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: handshake F7 funciona, trace completo save/load/recovered/retirada/fin/selector en recovery-ready315.4s. Captura REJECTED audio24.67ms; paso30.7ms en load. Sin aceptación visual. Plan pendiente savestate-recording-audio.md: offline primero,grabador existente,no relajar gates ni cambiar guardado/runtime."
+summary: "Bloque4: trace completo, captura rejected24.67ms. Plan de grabador aprobado; fase1 offline fits6.63/6.82ms pero5sync sin limite y contenido audible de pausa desconocido. No integración/partida/gates cambiados. Siguiente: timing y procedencia de audio preciso en runtime intacto;T3 PCM/WAV no disponible con DEBUG_TOOLS OFF."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "fcc41617c798ec6f328d8435b59af6d5e52940b13f00c21ea0ba04b415ed76f7"
+source_sha256: "b6e43178ad9dc094d84b7b101f900d296401c62a839931e210280b520023bea9"
 ---
 
 # Gas-O: lectura vigente
@@ -23,10 +23,14 @@ luego Up/S o L; confirma ambos0 y slot11. Rechaza flags/RVA inválidos; timeout1
 save/load/recovered(side2gf8499)/retirada(gf8919)/fin/selector en trace.
 Captura REJECTED:audio ventana24.67ms>1frame. Replay localiza paso wall/audio30.704ms
 en loadgf8496..8502, exceso productor32.498ms; otros stalls sin paso comparable.
-Sin aceptación visual ni nueva repetición idéntica. Decisión del owner: propuesta
-plans/pending/savestate-recording-audio.md (viabilidad offline primero, luego soporte
-de pausas explícitas en grabador existente, Goldfish y toma nueva si viable; no
-relajar gates/inventarPCM/tocar guardado/runtime), o posponer y Bloque5 interno.
+Sin aceptación visual ni nueva repetición idéntica. Owner aprobó
+plans/pending/savestate-recording-audio.md: offline primero. Replay real ajusta
+ventanas6.63/6.82ms pero deja5sync sin mapear(gf8496..8502), salto34.228ms a muestra
+común6243834; no demuestra contenido audible de pausa. Dump es pre-cola/DRC/fade;
+T3 PCM/WAV no disponible con DEBUG_TOOLS OFF. No integración ni otra partida.
+Siguiente: timing/procedencia precisa en runtime intacto o fuente solo del proceso
+sin instalar dispositivos; backend/helper grande requiere revisar alcance. No
+inventar silencio/descartar muestras/relajar gates ni tocar guardado/runtime.
 Lo siguiente conserva la cronología:
 Owner autorizó opción1 build/prueba. WIP13d52f9; fuentes canónicas guard0,
 build guard1 con staging respaldado; EXE94922aba desplegado solo en experimental

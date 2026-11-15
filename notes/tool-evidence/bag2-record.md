@@ -784,3 +784,17 @@ Skill: `bag2-game-recording` (`D:/Dev/Tools/agent-data/shared/agents/skills/bag2
   offline marcadores/semántica de pausa y negativos antes de integrar soporte;
   sin inventar audio ni modificar runtime/guardados. Resultado de herramienta:
   útil para detectar límite real, no captura aceptada ni ahorro demostrado.
+
+### Plan aprobado y viabilidad offline no demostrada aún
+
+- Owner seleccionó Corregir grabador. Plan savestate-recording-audio.md fase1
+  primero. Probe read-only con funciones reales audio_placement: ventanas
+ 6.63/6.82ms antes/después, pero5sync sin mapear dentro de gf8496..8502.
+  Salto en la misma muestra6243834:34.228ms; interceptos solos no comparables
+  cuando los rates difieren. No aceptación ni modificación de media/gates.
+- El dump es previo a fade/volumen/cola/DRC; el load vacía output. No prueba
+  contenido audible del hueco. Tap T3 del runtime no ejecutado: historial y
+  dump WAV se compilan fuera en DEBUG_TOOLS=OFF. No build/instalación/partida.
+- Viabilidad pendiente de procedencia/timing más preciso; no fases2/3 ni
+  silencio inventado. Fuente y comandos en plan/ledger, JSON completo en
+  _work/gaso/block2/explicit-pause-model-feasibility.json. Ahorro no medido.

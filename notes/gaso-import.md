@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4 abierto: handshake F7 funciona y trace recovery-ready completa save/load/recovered/retirada/fin/selector. Grabación REJECTED por ventana audio24.67ms; salto persistente30.7ms localizado a carga. No aceptación visual. Propuesta pendiente para soporte de pausas explícitas en grabador, sin tocar guardado/runtime ni relajar gates."
+summary: "Bloque4 abierto: trace completa save/load/recovered/retirada/fin/selector; captura REJECTED audio24.67ms. Plan de grabador aprobado; replay offline separa ajuste pero deja5sync sin límite y contenido de pausa no demostrado. Sin cambios de grabador/runtime/gates ni otra partida. Siguiente: procedencia/timing preciso de audio."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-15"
@@ -146,7 +146,22 @@ doc_kind: evidence
   preservadas y negativos de drift/markers; solo si es viable integrar en
   grabador existente, Goldfish y una toma nueva. Nunca otro sistema de guardado,
   cambio de runtime, PCM inventado, muestras descartadas o gates relajados.
-  Pendiente decisión del owner sobre ese alcance frente a posponer y Bloque5.
+  Owner aprobó explícitamente «Corregir grabador (Recomendado)»; fase1 primero.
+- Fase1 offline: probe_explicit_pause_model.py / explicit-pause-model-feasibility.json.
+  Ajustes antes/después ventana6.63/6.82ms, pero límite productor gf8496..8502
+  deja5sync sin modelo. Salto estimado34.228ms evaluado en muestra común6243834;
+  no comparar solo interceptos de rectas con rates diferentes. Resultado:
+  **viabilidad aún no demostrada**, sin integración ni nueva partida.
+- Fuente del audio: anim-trace at_pcm graba mezcla antes de la cola/DRC/fade/volumen
+  del host; main.cpp4386..4394 vacía output al load y4420..4451 procesa el host.
+  No hay prueba del contenido audible exacto durante el hueco. Audio_trace T3
+  existente omite historial PCM/WAV en PSX_NO_DEBUG_TOOLS (audio_trace.c4..7/16/195);
+  no se forzó un dump ausente ni se cambió build. Inventario winshot sin collector.
+  Razón de omisión documentada; no atribuirle fallo práctico a una herramienta no ejecutada.
+- No se modifica aún tools/test/bag2_record.py ni se inventa silencio/descartan
+  muestras. Próximo interno: investigar marcadores precisos por bloque de audio
+  del runtime intacto o fuente solo del proceso del juego sin instalar dispositivos;
+  demostrar host antes de integrar. Un backend/helper grande exige revisar alcance.
 
 ## Bloque 4: recuperación de ownership slot1 tras load (2026-11-15, candidato host guard0)
 
