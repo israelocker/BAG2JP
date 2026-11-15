@@ -2,16 +2,20 @@
 id: host-configuration-migration-plan-digest
 title: "Configuración central: ampliación de auditoría y migración"
 tags: ["digest", "plan", "config"]
-summary: "Piloto S5a workspace cerrado solo host; Gas-O/Heat, perfiles/caches y S6/S7/S2b pendientes. Sin partida ni despliegue."
+summary: "S5a parcial: workspace cerrado; extracción Gas-O cerrada en host. Resto Gas-O/Heat, perfiles/caches y S6/S7/S2b pendientes; sin partida."
 related: ["plans/pending/host-configuration-migration.md", "system_config.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "70c9f6338f8656699ebcc1d407d2829cd7d89c1644f789e939a7563db95ff7cd"
+source_sha256: "0dfdf90b1e5de1f038febfe562f881ff55676ae51ce2993228d97830fd884b34"
 ---
 
 # Ampliación de configuración central
+
+- Sublote Gas-O extracción: raíces USA/JP desde claves existentes, anunciador
+  independiente y snapshot compartido. V8: 12 lectores +120 workflow +7 HUD,
+  17 mutantes; Goldfish corregido sin segunda revisión. No cierra todo Gas-O ni S5a.
 
 - Owner pidió abarcar todos los archivos de desarrollo y explicitar el estándar
   y significado de claves para reutilización. La regla documental aplica desde ahora.

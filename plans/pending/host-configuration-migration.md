@@ -188,6 +188,12 @@ consumidores aún no leídos ni resolver divergencias en silencio.
 
 ## Decisiones y límites
 
+Sublote S5a Gas-O: lector de extracción USA/JP cerrado solo en host; usa claves
+existentes y mantiene autoridad regional interna del perfil/anunciador. V8: 12
+lectores + 120 workflow + 7 HUD, 17 mutantes; Goldfish corregido sin segunda
+revisión. Siguiente: stock/motions/glyphs/perfil/salida/guardas del builder, luego
+Heat y S5b. No es migración completa del builder ni de S5a.
+
 | Decisión propuesta | Motivo |
 |---|---|
 | Migración host y generadores; runtime sin nuevo parser TOML | Preservar contratos nativos y despliegue |

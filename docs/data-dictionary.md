@@ -46,9 +46,9 @@ migrados se marcan explícitamente como pendientes.
 | `paths.stable_install` | Instalación estable protegida | ruta | native path | común/local | sí | Ruta no vacía sin NUL; cualquier destino de escritura que la solape se rechaza | workflow, workflow-report, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance, dance-capture, recording-record, recording-finalize, recording-frames, native-capture, character-workspace | `project_config.py`; `bag2_workflow.py`; `bag2_report.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py`; `recording_config.py`; `character_workflow.py` | base |
 | `paths.tools_root` | Raíz común de herramientas locales | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; herramientas host (pendiente) | base |
 | `inputs.bag1_usa_disc` | Imagen del disco BAG1 USA | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | — | `project_config.py`; importadores (pendiente) | base |
-| `inputs.bag1_usa_extraction` | Extracción completa del disco BAG1 USA | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | — | `project_config.py`; importadores (pendiente) | base |
+| `inputs.bag1_usa_extraction` | Extracción completa del disco BAG1 USA | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | gaso-source-usa | `project_config.py`; `build_gaso_assets.py`; otros importadores (pendiente) | base |
 | `inputs.bag1_jp_disc` | Imagen del disco BAG1 Japón | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | — | `project_config.py`; importadores (pendiente) | base |
-| `inputs.bag1_jp_extraction` | Extracción completa del disco BAG1 Japón | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | — | `project_config.py`; importadores (pendiente) | base |
+| `inputs.bag1_jp_extraction` | Extracción completa del disco BAG1 Japón | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | gaso-source-jp | `project_config.py`; `build_gaso_assets.py`; otros importadores (pendiente) | base |
 | `inputs.bag1_reference_runtime` | Runtime nativo de referencia para capturas BAG1 | ruta | native path | común/local | sí | Ruta no vacía sin NUL; ejecutarlo requiere autorización de prueba | — | `project_config.py`; referencia nativa (pendiente) | base |
 | `tools.audio_probe` | Buscador de plantillas de audio usado por el reporte | ruta | native path | común/local | sí | Ruta no vacía sin NUL; requerida solo para report-audio cuando hay audio que buscar; no demuestra ejecución | report-audio | `project_config.py`; `bag2_report.py` | base |
 | `tools.python_report` | Intérprete usado por el reporte del workflow | ruta | native path | común/local | sí | Ruta no vacía sin NUL; opcional en preflight, requerida para workflow-report; presencia no prueba PIL ni ejecución | workflow-report | `project_config.py`; `bag2_workflow.py` | base |
@@ -181,6 +181,21 @@ prepare y estado de character_workflow.py; settings resueltos una vez, salidas
 guardadas y provenance en estado/manifiesto. No migra lectores de perfiles,
 caché/init-profile ni builders Gas-O/Heat. El llamador directo de write_state
 debe aportar protected_inputs si desea proteger inputs de un perfil que no recibe.
+
+### S5a: lector regional de Gas-O (parcial)
+
+`build_gaso_assets.py` toma las raíces USA/JP de las dos claves existentes;
+`source_layout.regions.*.extraction` ya no selecciona ubicación en este lector.
+El perfil sigue mandando sobre directorios internos, región del anunciador,
+miembros, IDs, cues y límites nativos. Una configuración resuelta y un perfil
+leído una vez se comparten entre modelo y anunciador antes de crear salida.
+La operación `gaso-source-*` exige solo su región; un build USA con anunciador JP
+necesita ambas. La raíz configurada debe ser un directorio existente; si no,
+`ConfigError` antes de crear salida. No se valida la identidad por hash del disco.
+`--local-config` selecciona el overlay del resolver único; no hay fallback al
+campo antiguo. Siguen pendientes las demás rutas del builder (stock, motions,
+glyphs, perfil y salida), sus guardas de escritura y los scripts Heat/S5b.
+No se declara migración completa del archivo ni generación validada de paquetes.
 
 ## Datos nativos y compartidos
 

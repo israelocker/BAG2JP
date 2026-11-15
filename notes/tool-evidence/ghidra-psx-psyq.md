@@ -2518,3 +2518,19 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   `read_memory(address="0x80035d98", length=8)` volvieron a confirmar identidad,
   SHA y bytes anteriores, sin gaps. Reutilizada instancia; sin cambios de análisis.
   La repetición no añade validación del resolver ni ahorro medido.
+
+## 20261115-ghidra-s5a-gaso-sources - identidad durante el lector host
+
+- Propósito: comprobar MCP al continuar extracción regional Gas-O. Instancia
+  existente; `get_program_info()` primero: SLPM_862.19 Japón, main PSX:LE:32,
+  base 80000000, entrada 80035D98, 1324 funciones; SHA-256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Consulta exacta `read_memory(address="0x80035d98", length=8)` devolvió
+  `0680023c00cf4224`, sin gaps. Llamadas del mismo ensayo agrupadas aquí;
+  coinciden con el registro workspace anterior. No es overlay ni estado vivo.
+- Resultado: identidad confirmada; utilidad limitada a esa comprobación, no
+  acredita extracción/región de assets, resolver ni equivalencia de paquetes.
+  Tests y mutantes host contrastan esas costuras por separado. Análisis y sesión
+  preservados. Tiempo, ahorro y retrabajo desconocidos; no se atribuye mejora.
+- Siguiente: cerrar lector host. Funcmatch no pertinente sin búsqueda de funciones;
+  no hay captura/medios para FFmpeg ni autorización de runner o prueba en partida.

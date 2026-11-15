@@ -2,16 +2,22 @@
 id: data-dictionary-digest
 title: "Diccionario de configuración: uso y límites"
 tags: ["digest", "config", "dictionary"]
-summary: "45 campos; piloto character-workspace reutiliza repo/work/estable sin nuevas claves. Resto S5 pendiente; operaciones no conceden permisos."
+summary: "45 campos; workspace y extracción Gas-O reutilizan claves. Perfil conserva layout/región del anunciador; resto S5 pendiente, sin permisos de juego."
 related: ["docs/data-dictionary.md", "system_config.md", "tools/workflow/project_config.py"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "docs/data-dictionary.md"
-source_sha256: "779ab33be928135729a7510b68ff3b431f064683f59442998c07b67159008016"
+source_sha256: "c87665af2e232200fb7a87bd9d8564ebf24d46f806258f2d9553709547c779e2"
 ---
 
 # Diccionario: antes de consumir claves
+
+- `gaso-source-usa/jp`: cada lector exige solo su clave, y que la raíz sea un
+  directorio existente (sin validar identidad por hash);
+  el build exige también la región independiente del anunciador del perfil.
+  Directorios/IDs/cues siguen en perfil; no fallback a su ubicación extraction.
+  Solo lector migrado, no stock/motions/glyphs/salidas ni guardas del builder.
 
 - `FIELDS` define esquema; TOML común/local define valores; la tabla canónica
   describe los 45 campos y tests impiden divergencia de claves/tipos/unidades/

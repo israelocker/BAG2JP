@@ -512,6 +512,64 @@ perfiles reales, runtime ni aceptación en juego. El siguiente lote es S5a Gas-O
 después scripts Heat; S5b conserva perfiles/caché/init pendientes.
 Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
 
+### S5a: extracción regional Gas-O (sublote parcial, 2026-11-15)
+
+`build_gaso_assets.region_sources` resuelve las raíces mediante las claves
+existentes `inputs.bag1_usa_extraction` y `inputs.bag1_jp_extraction`; operaciones
+`gaso-source-usa/jp`, 45 campos sin nuevos valores TOML. Ya no toma ubicación del
+campo `source_layout.regions.*.extraction`. El perfil conserva directorios internos,
+modelos compartidos y región independiente del anunciador (JP en el perfil actual,
+incluso si el modelo es USA). No altera cues, IDs, conversiones ni gates nativos.
+
+CLI `--local-config` selecciona una configuración por ejecución; `build` comparte
+ese objeto y un perfil leído una vez entre ambos lectores, antes de mkdir.
+Faltar la clave de la región del anunciador, o que su raíz configurada no sea un
+directorio existente, falla con `ConfigError` antes de crear salida. No se
+certifica la identidad de la extracción por hash ni la presencia de cada archivo.
+Solo es el lector de extracción: stock, motions, glyphs, perfil, salida y guardas
+de escritura del builder siguen pendientes, después Heat y S5b perfiles/caches.
+Las rutas restantes no son nuevos fallbacks de este lector; tampoco se presentan
+como conformidad completa del archivo con el estándar central.
+
+Verificación: `py -3.13 -m unittest tools.test.test_gaso_source_config`; fixtures
+relocados, CWD ajeno, precedencia del overlay, perfil sin cambios, snapshot y
+región del anunciador, raíz configurada inexistente y `build` completo con
+lecturas de packs/anunciador/modelos sobre fixtures propios (perfil real USA y JP
+sin raíz USA; perfil sintético con directorios distintos y anunciador USA). La
+conversión se sustituye por stubs: no genera paquetes ni ejecuta juego. Runner
+vigente con logs, inventario AST y mutantes en copias:
+`_work/configuration/verify_gaso_sources_v8.py` (v7, v6 y v5..v2/base conservados).
+Primer ensayo `_work/configuration/s5a-gaso-sources/`: suites host verdes, pero
+baseline en copia falló por faltar policy Heat importada y sus inputs hasheados;
+no se cuenta como kill. V2 añadió Heat pero faltaba policy Gas-O; v3 copia ambas
+y sus inputs verificados sin modificar bytes. V3/v4 tuvieron mutantes FAIL+ERROR:
+no se puntuaron; se corrigieron aserciones y stock fixture, no el contrato.
+V5: 8 lectores + 120 workflow + 7 HUD OK, baseline de copia verde y 8 mutantes
+por aserción sin ERROR. Workflow/HUD se reutilizan por comparación de hashes;
+el reporte distingue esa cadena de las pruebas nuevas. El primer timeout de HUD
+de 10 s no era un resultado verde; el ensayo posterior completo sí terminó.
+Goldfish A/B (`_work/goldfish/gaso-sources-s5a/`, snapshot congelado de 23
+entradas): ambos CON HALLAZGOS, sin defecto funcional confirmado. Triage confirmó
+cuatro: pruebas que no llegaban al consumo de raíces, reutilización HUD sin todas
+sus entradas, anunciador fijo/directorios literales que sobrevivían y raíz
+configurada inexistente aceptada. Corregidos RED→GREEN, **sin segunda revisión**.
+V6 (suites nuevas) dejó un mutante `snapshot` FAIL+ERROR por fixture: conservado,
+sin puntuar. V7 quedó verde, pero el diccionario (entrada de workflow) cambió
+después; v8 repitió todo sobre los bytes finales y es el ensayo de cierre:
+12 lectores + 120 workflow + 7 HUD ejecutados de nuevo, sin reutilizar logs;
+baseline de copia verde y 17 mutantes por aserción sin ERROR.
+Evidencia: `_work/configuration/s5a-gaso-sources-v8/`. La comparación AST contra
+`b1297cd` acota cambios a region_sources/build/main; no demuestra equivalencia de
+paquetes, que no se generaron. Revisión estática: no es ejecución independiente.
+
+Preflight reutilizado: `20261115T211614292018Z-s5a-gaso-extraction-reader`, previo
+al cambio; no sustituye pruebas posteriores. Ghidra MCP confirmó programa japonés
+y bytes de entrada; no verifica configuración ni paquetes. No se usa funcmatch
+sin búsqueda de equivalencias, ni FFmpeg/runner sin medios/prueba de juego.
+Extracción, hashes y mutaciones son deterministas: no requieren modelo local.
+Sin generación de paquetes, grabación, build/deploy de runtime, settings/saves,
+overlay ignorado ni herramientas instaladas. S5a completo permanece pendiente.
+
 ## Fuentes vigentes
 
 - `patches/BAG2JP-game.toml`: configuración reproducible del título, no todos los

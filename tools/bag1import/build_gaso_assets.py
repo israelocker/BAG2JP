@@ -11,8 +11,8 @@ Generates candidate containers for entries:
   - 162: Model B P2 (Gas-O B4 model + 001.bin + accessory)
   - 17: Solo fever choreography (BAG1 Gas-O fever dances, stock Bi-O member 1)
 
-Source disc region comes from the profile's source_layout.regions (usa or jp):
-its extraction root and pack directories; model directories are shared.
+Extraction roots come from the shared host configuration. The profile retains
+regional pack directories, shared model directories and announcer source region.
 
 Uses exact documented seams:
   - Models converted via model_bag1_to_bag2.convert()
@@ -25,16 +25,20 @@ Uses exact documented seams:
   - DFS containers packed via rebuild_dfs_members.build_container()
 
 Usage:
-    py -3.13 tools/bag1import/build_gaso_assets.py [--region usa|jp] [--out-dir DIR]
+    py -3.13 tools/bag1import/build_gaso_assets.py [--local-config TOML] [--region usa|jp] [--out-dir DIR]
 """
 import argparse
 import hashlib
 import json
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/bag1import"))
+sys.path.insert(0, str(ROOT))
+
+from tools.workflow.project_config import ConfigError, ProjectConfig, load_config, require_paths
 
 from model_bag1_to_bag2 import convert, check_bag2
 from preserve_announcer import append_cue, cue_record, rename_cue, replace_cue
@@ -58,12 +62,19 @@ VOICE_MEMBER = 6
 BODY_MEMBERS = (4, 5)
 
 
-def region_sources(region: str) -> tuple[Path, dict, dict]:
-    """Extraction root, pack directories and model directories for one disc region."""
-    layout = json.loads(PROFILE.read_text(encoding="utf-8"))["source_layout"]
+def region_sources(region: str, *, config: ProjectConfig | None = None,
+                   profile: dict | None = None) -> tuple[Path, dict, dict]:
+    """Resolve host extraction location; retain regional layout authority in the profile."""
+    if region not in ("usa", "jp"):
+        raise ConfigError(f"Unsupported Gas-O source region: {region}")
+    config = load_config() if config is None else config
+    extraction, = require_paths(config, (f"inputs.bag1_{region}_extraction",))
+    if not extraction.is_dir():
+        raise ConfigError(f"Gas-O {region} extraction root is not a directory: {extraction}")
+    layout = (json.loads(PROFILE.read_text(encoding="utf-8")) if profile is None else profile)["source_layout"]
     source = layout["regions"][region]
     models = {costume: layout[costume]["model_directory"] for costume in ("costume_a", "costume_b")}
-    return ROOT / source["extraction"], source["pack_directories"], models
+    return extraction, source["pack_directories"], models
 
 
 def write_entry(out_dir: Path, name: str, members: list[bytes]) -> None:
@@ -87,8 +98,13 @@ def build_hud_texture(source: bytes, reference: bytes, label: dict) -> bytes:
     ], target, [glyph.get('spacing_after', 0) for glyph in glyphs])
 
 
-def build(region: str, out_dir: Path) -> None:
-    extraction, pack_dirs, model_dirs = region_sources(region)
+def build(region: str, out_dir: Path, *, config: ProjectConfig | None = None) -> None:
+    """Build candidates; host extraction requirements are checked before output creation."""
+    config = load_config() if config is None else config
+    profile = json.loads(PROFILE.read_text(encoding="utf-8"))
+    extraction, pack_dirs, model_dirs = region_sources(region, config=config, profile=profile)
+    announcer = profile["announcer"]
+    names_root, names_dirs, _ = region_sources(announcer["source_region"], config=config, profile=profile)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Bi-O reference members:
@@ -111,9 +127,6 @@ def build(region: str, out_dir: Path) -> None:
 
     rebased_voice, moved = rebase_sedt(packs["a_p1"][VOICE_MEMBER], 0x1800, 0x6900)
     assert moved == 11, f"Expected 11 cues rebased, got {moved}"
-    profile = json.loads(PROFILE.read_text(encoding="utf-8"))
-    announcer = profile["announcer"]
-    names_root, names_dirs, _ = region_sources(announcer["source_region"])
     names = read_members((names_root / names_dirs["costume_a"] / "P_GAS_A1.DFS").read_bytes())[0]
     names = names[announcer["source_member"]]
     merged_voice = rebased_voice
@@ -172,12 +185,18 @@ def build(region: str, out_dir: Path) -> None:
     print(f"All 9 Gas-O {region} candidate DFS containers built in {out_dir}.")
 
 
-def main() -> None:
+def main(argv: Sequence[str] | None = None) -> None:
+    """Select one configuration snapshot for the requested build."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--region", choices=("usa", "jp"), default="usa")
     parser.add_argument("--out-dir", type=Path)
-    args = parser.parse_args()
-    build(args.region, args.out_dir or DEFAULT_OUT[args.region])
+    parser.add_argument("--local-config", type=Path)
+    args = parser.parse_args(argv)
+    try:
+        config = load_config(local_config=args.local_config)
+        build(args.region, args.out_dir or DEFAULT_OUT[args.region], config=config)
+    except ConfigError as error:
+        parser.error(str(error))
 
 
 if __name__ == "__main__":

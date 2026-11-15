@@ -2,13 +2,13 @@
 id: system-config-digest
 title: "Configuración host: autoridades y estado"
 tags: ["digest", "config", "migration"]
-summary: "Piloto S5a workspace verificado host tras S4; Gas-O/Heat y perfiles/caches pendientes. Goldfish corregido; sin aceptación del juego."
+summary: "S5a parcial: workspace cerrado y lector de extracción Gas-O cerrado en host; restantes rutas Gas-O/Heat y perfiles/caches pendientes. Sin juego."
 related: ["system_config.md", "docs/data-dictionary.md", "plans/pending/host-configuration-migration.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "493ee7cfb508ca55214eba5e4d1a051c25b41826465f6d59aac92ecc360f934a"
+source_sha256: "5d0d4eee65874dbd689787cac768034144711d329893bfb35a8638447630c284"
 ---
 
 # Configuración: estado mínimo
@@ -58,6 +58,12 @@ source_sha256: "493ee7cfb508ca55214eba5e4d1a051c25b41826465f6d59aac92ecc360f934a
   POSIX no probado, locals alternativos no ignorados automáticamente.
 - S4a `1ed6f81` y S4b nativo `18d0c51` son checkpoints históricos; inventario
   bag1native `b60449f`. No equivalen a migrar todos los lectores de referencia.
+- Gas-O extracción: inputs.bag1_usa_extraction/jp_extraction sustituyen ubicación
+  del perfil; perfil conserva directorios y región independiente del anunciador.
+  Un config/perfil por build y raíz existente antes de mkdir; v8: 12 lectores
+  +120 workflow +7 HUD sin reutilizar logs, 17 mutantes; Goldfish corregido sin
+  segunda revisión (detalle en fuente). Stock/motions/
+  glyphs/perfil/salida y guardas del builder aún pendientes; no hubo paquetes.
 - Piloto S5a: character_workflow plan/prepare/state consume work_root y protege
   estable, inputs conocidos y configuración antes de escribir. Snapshot por
   ejecución y provenance; API write_state requiere protected_inputs del llamador

@@ -110,6 +110,8 @@ def _field_registry() -> Mapping[str, FieldSpec]:
         "native-capture": ("repo_root", "paths.work_root", "paths.stable_install",
                             "tools.ffmpeg_native"),
         "character-workspace": ("repo_root", "paths.work_root", "paths.stable_install"),
+        "gaso-source-usa": ("inputs.bag1_usa_extraction",),
+        "gaso-source-jp": ("inputs.bag1_jp_extraction",),
     }
     for operation, keys in requirements.items():
         for key in keys:
