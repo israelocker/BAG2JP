@@ -8,7 +8,7 @@ created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "61ab40a8d17d8dc83101d2b7bf49652c0976fe0c17f096e27bf774a36c8bac30"
+source_sha256: "5cf4698d2d1fdd266fa3a32c59d4649e895bb7e0b01d9a2d516d2df20dc75846"
 ---
 
 # Gas-O: lectura vigente
@@ -29,8 +29,8 @@ Probes/frames/visual-audio-review.json/owner-evidence-sheet.jpg en
 _work/gaso/block2/process-audio/game-trial-a; vídeo/logs/manifest en
 _work/recordings/block4-recovery-process-a. Sin nueva revisión Goldfish: solo
 wrappers_work/docs cambiaron; recorder5e206c4 y58tests/8mutantes/2review reutilizados.
-Siguiente: Bloque5 interno en host (matriz rivales/lados/variantes, duetos), sin
-partida. Pendientes del owner: conformidad selector/retrato/nombre y guard canónico1
+Siguiente: Bloque5 interno en host, sin partida. Requisito owner2026-11-15: TODOS los
+rivales, incluidos solo-BAG2, deben tener animación CAUGHT (fail-closed ya no basta). Pendientes del owner: conformidad selector/retrato/nombre y guard canónico1
 (sigue0). Toma anterior recovery-ready continúa rechazada.
 
 Contexto de la toma rechazada: sección «Bloque 4: guard1 desplegado; toma de recuperación».

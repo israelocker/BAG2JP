@@ -11,6 +11,20 @@ doc_kind: evidence
 
 # Gas-O — ledger canónico
 
+### Requisito del Bloque 5 (owner, 2026-11-15)
+
+- Cita: «en el bloque 5, todos los personajes incluidos los de BAG2 deben tambien
+  tener esa animación de CAUGHT». Alcance: cada rival seleccionable, BAG1 y solo-BAG2,
+  en ambos lados y variantes, debe mostrar la animación CAUGHT al recibir el tanque.
+  El fail-closed actual fuera de los clips 0/1/9 deja de ser aceptable como resultado
+  final. Esto resuelve la decisión abierta en «F2 — altura del tanque frente al rival y
+  rivales solo-BAG2»: los rivales solo-BAG2 no se excluyen. Cómo obtener sus clips
+  (BAG2 nativo, retarget u otro) sigue sin decidir y se investigará primero en host.
+- Pendiente de conformidad del owner: corrección selector/retrato/nombre, vídeo
+  `_work/recordings/block4-consumer-return/owner.mp4` (selector desde ~193s).
+  `wider_initial_home_review` (homes ±700, 2026-11-14) es histórico: el Bloque 1 se
+  aceptó después sobre la base ±870; no se pide revisarlo.
+
 ### Bloque 4: guard1 desplegado; toma de recuperación en preparación (2026-11-15)
 
 - Autorización explícita del owner: «Opción 1: build guard1 + prueba
