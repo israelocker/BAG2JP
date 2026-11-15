@@ -78,7 +78,7 @@ Use a persisted plan and approval for broad changes, migrations or uncertain des
 - Toda validación dentro del juego se graba con video y el audio exacto del juego (skill `bag2-game-recording`, `tools/test/bag2_record.py`; inspección con `ffmpeg-skill`). Sin grabación válida no hay validación en juego.
 - El agent revisa primero la grabación fotograma por fotograma en los momentos relevantes: Ghidra indica qué función o hook importa; los logs indican en qué fotograma/segundo revisar (el grabador sella con hora las líneas de `bag2jp_bag1_versions.log` y los latidos de fotograma; el trace y el watch se ubican por su número de fotograma). Solo cuenta una grabación con `manifest.json` `"accepted": true`.
 - Solo después de su propia validación, el agent entrega video, fotogramas, logs y lo que no pudo verificar, y pregunta al owner únicamente si está conforme. No pide aprobación sin esa evidencia.
-- Límites que deben declararse: la precisión de ±2 fotogramas es una estimación, porque la latencia de pantalla aún no está calibrada; la calidad subjetiva del audio sigue siendo juicio humano; la ventana del juego debe estar visible, sin tapar y entera en el monitor principal (solo probado al 125 %).
+- Límites que deben declararse: no hay precisión garantizada de ±2 fotogramas. Se han observado desfases de unos 3–4, pero falta calibrar la latencia de pantalla para cada ruta; WGC puede repetir/omitir frames. La calidad subjetiva del audio sigue siendo juicio humano. La ventana debe estar visible, no minimizada y entera en el monitor principal (solo probado al 125 %); con gdigrab además debe estar sin tapar. Procedimiento y backends vigentes: notes/character-import-testing.md.
 
 ## Implement and verify
 - Make bounded changes in source/plugins or conversion tools. Verify original words and module/region before MIPS patches; keep guards and restoration.
@@ -110,6 +110,7 @@ Use a persisted plan and approval for broad changes, migrations or uncertain des
 - Match meaning, beat timing, required events and predecessor transitions; unknown mappings remain unresolved. Track all source/target coverage and stock-empty/reused entries.
 - Reuse visual evidence only when motion, catalog, profile, runtime and evidence hashes match. Re-audit changed packages. Preserve the single-GPU schedule.
 - Distinguish configured rules, implemented tools, legacy Heat adapters and unimplemented general matching/graph optimization. Do not claim cross-character support without exercising a second profile.
+- Apply the Gas-O retrospective in notes/character-pipeline.md: reuse the process, not Gas-O's IDs, constants or patches. CAUGHT acceptance covers every BAG1 import and every native BAG2 rival, both sides and all variants/companions; this is a requirement, not coverage already achieved.
 
 ## Coding Standards (applies to all new and modified code)
 

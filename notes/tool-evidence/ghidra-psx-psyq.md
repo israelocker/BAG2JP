@@ -11,6 +11,27 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 20261115-ghidra-retro-standard — contraste documental CAUGHT
+
+- Tipo: uso real acotado para contrastar una afirmación del nuevo estándar.
+- MCP `get_program_info()` confirmó `SLPM_862.19`, main PSX JP, SHA-256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`;
+  `read_memory(address=0x80051897,length=1)` devolvió `4e`, sin gaps. No overlay
+  seleccionado ni cambios de análisis. Version instalada registrada: Ghidra12.1.4.
+- Contraste: inventario Block5 existente y fuente `assets/disc_files/SLPM_862.19`
+  (comparación directa de hash/byte en evidencia `_work/retro/duet-entry35.json`).
+  Demuestra el byte de routing request123→78, no aptitud de un clip ni reproducción.
+- Dictamen: útil para evitar confundir slots BAG1/BAG2 en la norma. Tiempo de
+  preparación/ejecución/retrabajo y ahorro no medidos. No nuevo juego/disassembly:
+  sin parche ni cambio de comportamiento. Reutilizar con el mismo hash/contexto.
+- Consulta posterior del owner sobre distancia: mismo main JP, MCP
+  `read_memory(0x80051918,12)` = `82 82 82 82 82 56 82 82 82 82 82 82` y
+  `read_memory(0x8002ba18,4)` = `17 b6 00 0c` (JAL0x8002d85c original). Contraste
+  con `b1home_pair`/`b1v_home_hook`: el gate admite tabla130, excluye id>=11 e
+  IDs10/14 de personajes; no es filtro de mapa Gas-O. Esto demuestra origen de
+  guard/tabla, no ejecución del hook ni aceptación visual de cada escenario.
+  Tiempo/ahorro no medidos; sin partidas ni cambios de fuente.
+
 ## 20261115-ghidra-block5-inventory — ruta CAUGHT BAG2 por rival
 
 - get_program_info: SLPM_862.19, SHA ea5a1668…. read_memory(0x80051897,1)=4e:

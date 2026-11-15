@@ -5,8 +5,8 @@ tags: ["bag1", "workflow", "index"]
 summary: "Ruta de lectura por fase; no duplica el runbook ni convierte candidatos en importaciones aceptadas."
 related: ["CHARACTER_IMPORT.md", "notes/character-pipeline.md", "notes/character-alternate-entries.md", "notes/character-import-testing.md"]
 created: "2026-10-31"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: index
 ---
 
@@ -21,6 +21,7 @@ hechos a partir de un resumen de chat. No leer todas las notas al empezar.
 |---|---|
 | Reglas, perfil y aceptación | [CHARACTER_IMPORT.md](CHARACTER_IMPORT.md) |
 | Contrato semántico, transiciones y cache | [Pipeline](notes/character-pipeline.md) |
+| Lecciones Gas-O: proceso común frente a excepciones | [Retrospectiva incorporada](notes/character-pipeline.md#lecciones-de-gas-o-incorporadas-2026-11-15) |
 | Reconstrucción DFS, payload y staging | [Entradas alternativas](notes/character-alternate-entries.md) |
 | Calibración, lado/traje y canción completa | [Pruebas](notes/character-import-testing.md) |
 | Estado/evidencia Strike | [Strike](notes/strike-recovery.md) |
@@ -34,6 +35,9 @@ hechos a partir de un resumen de chat. No leer todas las notas al empezar.
 - Preservar imports/mods anteriores, saves y ajustes. Experimental únicamente.
 - Candidato y cache hit no implican aceptación. Exigir los cuatro casos
   P1/A, P1/B, P2/A, P2/B y capacidades aplicables, final y retorno.
+- Validar CAUGHT en cada importado BAG1 y en todos los nativos BAG2: lados,
+  variantes y compañeros. El fallo cerrado protege candidatos incompletos, no
+  satisface el resultado final. Método y límites en el pipeline y las pruebas.
 - Sincronizar explícitamente fuentes/recursos antes de build; preflight no copia.
 - Validar bytes de DUMMY independientemente del guard defectuoso del generador.
 - Al importar escenarios BAG1 a BAG2, no basta con la geometría, texturas y audio: es obligatorio importar y cablear las interacciones y eventos del escenario que avanzan con el puntaje (niveles de puntuación / eventos dinámicos del entorno, como ocurrió en Heat con la rotura de ventanas y en Strike con su progresión; directiva del propietario 2026-11-06).

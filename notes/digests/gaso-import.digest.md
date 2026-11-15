@@ -1,18 +1,24 @@
 ---
 id: gaso-import-digest
-title: "Gas-O: Bloque 4, captura y ciclo de vida"
+title: "Gas-O: retrospectiva y CAUGHT universal pendiente"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: block4-recovery-process-a accepted=true y revisada técnicamente. Save/load/recovered/retirada/fin/fever/selector verificados;20970paquetes/QPC0us/cota0.09915ms.150saves/5configs/94922aba/canonical0 intactos. Owner conforme («Todo bien», incl. audio): Bloque4 aceptado. Pendientes: Bloque5 y decisión guard canónico1; selector aceptado."
+summary: "Bloque4 y selector aceptados. Retrospectiva aprobada para normas, herramientas aparte; CAUGHT universal pendiente y guard0. Entrada35 stock con observación de dueto, no aceptación universal."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "64bb13084ad38361703baff223dad1a0158a3c0644cd66111fb920e992738a2b"
+source_sha256: "b89c5c8bd63f91ab19f0f296d88eb19c4cc32362e151865e86ab3de69879b47f"
 ---
 
 # Gas-O: lectura vigente
 
+- Owner aprobó «Normas ahora, herramientas aparte» e investigar entrada35.
+  Resultado en «Retrospectiva incorporada al estándar» y «Corrección de alcance»
+  de la fuente: reglas en pipeline/pruebas/código, skills actualizadas; sin runtime.
+  Entrada35 sigue stock; los dos result.json antiguos citados tienen revisión
+  pendiente. Retirada la aprobación universal de 08-11, sin revocar aceptaciones
+  parciales posteriores de Bloque2/4. Conteos retrospectivos aproximados, no ahorro.
 Último resultado: «Toma por proceso aceptada y revisada: Bloque4 aceptado por el owner».
 Única toma block4-recovery-process-a:314.223s total,208.867s vídeo1920x1080,
 manifestaccepted=true,2090heartbeats/4late/1stall79ms,20970paquetes nativos,
@@ -23,7 +29,7 @@ visible205/207.5/208.5s con nombre/retrato Gas-O/Heat correctos.114slots de fram
 inspeccionados,6hojas más overview/muestrasfinales. No corrupción observada en
 las muestras de recuperación; salida de hold/tanque observada en retiro.
 Audio medido-28.6LUFS/TP-13.9dBTP,sin normalizar. Owner revisó owner.mp4 y
-respondió «Todo bien» (recuperación, salida y audio): Bloque4 aceptado. Latencia pantalla no calibrada(±2frames estimado); no se establece primer
+respondió «Todo bien» (recuperación, salida y audio): Bloque4 aceptado. Latencia no calibrada (sin garantía ±2); no se establece primer
 frame exacto del selector.150saves/5configs/94922aba/canonical0/stable intactos.
 Probes/frames/visual-audio-review.json/owner-evidence-sheet.jpg en
 _work/gaso/block2/process-audio/game-trial-a; vídeo/logs/manifest en
@@ -34,11 +40,11 @@ rivales, incluidos solo-BAG2, deben tener animación CAUGHT (fail-closed ya no b
 Validar CAUGHT forma parte de la aceptación de cada personaje importado y de los
 nativos BAG2 (owner 2026-11-15).
 Inventario host «Bloque 5: inventario CAUGHT por rival»: request123→slot78 en BAG2
-(Ghidra); las18 librerías stock usan19 pistas como clip70 BAG1, semántica coincidente
-salvo Pander; altura raíz por personaje. Owner eligió «Pose BAG1 asignada»: propia si hay
-equivalente BAG1; solo-BAG2 una de las12 poses por cuerpo/estilo con tabla a revisar;
-Pander pose propia; todas ajustadas a su altura. Corrección: la postura CAUGHT BAG1 es estándar
-(rotaciones idénticas salvo pista5 Kitty-N/Strike); solo cambia la raíz por personaje.
+(Ghidra); las18 librerías stock contienen motions de19 pistas como clip70 BAG1.
+Hay similitud estadística por pista salvo Pander; compatibilidad visual pendiente.
+La elección inicial «Pose BAG1 asignada» se corrigió: no hay12 posturas distintas.
+CAUGHT BAG1 es estándar (rotaciones idénticas salvo pista5 Kitty-N/Strike); cambia
+la raíz por personaje. No se necesita tabla de asignación. Pander sigue candidato.
 Raíz: TIRED69 predice mejor en BAG1 (MAE35) pero no se traslada a BAG2; siguiente
 cinemática directa validada en los14 BAG1. Pander: solo pistas13/14 divergen. Selector/retrato/nombre aceptado por el owner2026-11-15. Único pendiente
 del owner: guard canónico1 (sigue0); owner acordó validarlo al cierre del Bloque5. Toma anterior recovery-ready continúa rechazada.

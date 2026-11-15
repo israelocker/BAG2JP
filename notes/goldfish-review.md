@@ -5,7 +5,7 @@ tags: ["workflow", "review", "evidence", "process"]
 summary: "Procedimiento acotado para lanzar revisores sin contexto (efecto Goldfish): lista cerrada de rutas que lo disparan, registro durable en la nota del tema y veredicto que no es aprobación."
 related: ["AGENTS.md", "notes/character-pipeline.md", "notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-10"
-updated: "2026-11-10"
+updated: "2026-11-15"
 doc_kind: process
 ---
 
@@ -50,6 +50,11 @@ Reglas adicionales:
 - **Máximo una revisión por checkpoint.** Mismo diff sin cambios no se repite.
 - Si no se aplica, se anota la omisión y su razón en la nota del tema, igual que
   se registra una herramienta bloqueada. Silenciar la omisión no vale.
+- Conservar spec, respuestas y hashes/copia exacta de todos los archivos revisados,
+  incluidas skills externas al repo si están en alcance. Un diff sin sus entradas
+  no identifica lo que leyó el revisor. Documentar las correcciones posteriores.
+- Una respuesta cortada por cuota o sin material es `REVISIÓN NO UTILIZABLE`,
+  nunca «sin hallazgos». Si no quedan revisores, aplicar la omisión de abajo.
 - Ante un cambio mixto (una ruta de la lista y otra fuera), se aplica y el spec
   declara qué queda fuera de revisión.
 

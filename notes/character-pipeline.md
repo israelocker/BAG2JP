@@ -5,8 +5,8 @@ tags: ["character", "pipeline", "workflow"]
 summary: "Reglas por evidencia y límites de los helpers; perfiles de datos, no pipelines clonados."
 related: ["CHARACTER_IMPORT.md", "notes/character-alternate-entries.md", "notes/character-import-testing.md", "notes/strike-recovery.md"]
 created: "2026-10-31"
-updated: "2026-11-06"
-edited: "2026-11-06"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: requirements
 ---
 
@@ -106,6 +106,87 @@ hashes y rutas en [Strike](strike-recovery.md). Aplicar como comprobación, no p
     `test_strike_full_match.py` (canción+fever+retorno, A y B), `probe_cue_table.py`,
     `test_strike_scale_mirror.py`, Dance View individual. Restaurar ajustes/tarjetas
     (lo hace `IsolatedFiles`; si un run se interrumpe, restaurar desde su `baseline/`).
+
+## Lecciones de Gas-O incorporadas (2026-11-15)
+
+Owner aprobó incorporar las normas y dejar las mejoras ejecutables para otra
+tarea. Evidencia y estado: [retrospectiva Gas-O](gaso-import.md#retrospectiva-incorporada-al-estándar-2026-11-15).
+Estas reglas no certifican cobertura actual ni un conversor universal.
+
+### Reutilizar el proceso, parametrizar el personaje
+
+1. **Inventario por variante.** Registrar región/hash, ID, lado/traje, grafo,
+   bindings, cola del miembro y slots vacíos/reutilizados. Un miembro puede tener
+   bytes válidos tras el modelo; no truncarlos. No hay slot vacío común a todas
+   las librerías BAG2 (Pander usa 1; Hiro usa 97). Un hueco no prueba ausencia de
+   consumidores. Auditar dispatcher, llamadas directas y overlays antes de reservar.
+2. **DBI.** Comparar el código del anfitrión con el modelo importado; no conservarlo
+   ni reemplazarlo a ciegas. Adaptar solo stores/copias/inicializadores demostrados,
+   con contrato de palabras originales, hashes y restauración por variante. Los
+   21/30 bindings y cinco copias de Bi-O son evidencia de Gas-O, no una plantilla.
+3. **SPU y cues.** Aplicar el presupuesto `voice_bank.max_body_bytes` ya descrito
+   arriba, medido en el anfitrión real, antes de importar. Probar VS espejo (dos
+   bancos) y verificar RAM completa cuando los actores exceden 2 MiB. El límite
+   64032 B de Bi-O no es universal. Confirmar significado de cues por tabla nativa
+   y escucha/transcripción antes de remapear; nombres, frases y efectos son distintos.
+   Validar tono objetivamente frente al control nativo además de la escucha humana.
+4. **Escala y fidelidad.** Medir primero modelo, motions y captura nativa del mismo
+   personaje/región. Distinguir unidades de modelo, escala efectiva y cámara; buscar
+   escritores también en el mod host. Registrar valores y procedencia por variante
+   (incluida escala sin resolver); no suplirlos con porcentajes elegidos ni declarar
+   «exacto» a partir de un build o una escucha. Cambios con pérdida requieren su gate.
+5. **CAUGHT, requisito del owner.** Validar la pose en todos los importados BAG1 y
+   nativos BAG2, P1/P2, variantes y cada compañero de parejas. Los 28 clips BAG1
+   comparados tienen postura común salvo pista 5 de Kitty-N/Strike; difieren en la
+   raíz. Conservar esas variantes y resolver colocación por modelo. La regla de raíz
+   sigue sin resolver; Pander 13/14 es un candidato sin validación visual. Ni formato
+   de 19 pistas ni similitud estadística prueban retarget correcto. Registrar cada
+   celda pendiente: el banco actual solo cubre Heat/Strike/Gas-O BAG1.
+6. **Hold y versión.** Para una reacción que deba mantenerse, verificar en el
+   controlador real loop/clamp, traslación y salida. El clamp metadata+5=1 corrigió
+   CAUGHT; no aplicarlo a todos los clips. Seleccionar la versión del receptor por
+   su lado al consumirla, no por la versión del atacante. Comprobar re-hit y parejas.
+7. **Escenarios.** Identificar ojo y objetivo de cámara antes de escalar distancia;
+   tomar el aspecto de la presentación viva, no solo de settings. Comparar el mismo
+   recorrido/frames nativos completos: una mejora local no prueba el resto del intro.
+   Mantener los eventos por puntaje exigidos en la receta de escenarios.
+8. **Motor común.** Un cambio compartido obliga a comprobar los imports afectados:
+   regenerar el mapping anterior byte a byte cuando se espera estabilidad y auditar
+   diferencias regionales miembro a miembro. No exigir igualdad entre regiones donde
+   las fuentes difieren. Matriz y pruebas: [harness](character-import-testing.md).
+
+### RE: demostrar la costura antes de construir sobre ella
+
+- Confirmar región, hash, base, layout y módulo cargado. Buscar también en
+  `system/*.dbi` y código host; el main no contiene todos los consumidores.
+- Ghidra MCP sigue siendo obligatorio. Si no hay función definida, leer el rango
+  con MCP y desensamblar con Capstone (`skipdata=True`); los huecos/datos no son
+  instrucciones. Confirmar candidatos, callers y rol en Ghidra, no por byte sweep.
+  `FUNCTION_NOT_FOUND` no significa función ausente del juego. Ante backend caído,
+  seguir la recuperación registrada en `notes/tool-evidence/ghidra-psx-psyq.md`.
+- Separar punteros de instrucciones y offsets de disco/archivo/RAM; comprobar
+  JAL+8 y delay slot. No usar direcciones de docstrings de otro build como prueba.
+- Demostrar request→slot y orden de eventos en el intérprete PSXRecomp con entradas
+  nativas acotadas antes de desarrollar el adaptador. Enganchar antes del consumidor;
+  probar también ramas negativas/reflejo. Un fixture artificial se etiqueta como tal.
+- Memoria, lifecycle, guards y generación AOT: [estándar de código](../docs/coding-standards.md#regresiones-aprendidas-en-gas-o).
+
+### Exclusivo de Gas-O: no convertir en regla global
+
+Tanque/criogenia, humo, dimensiones/tiempos, voces de Gas-O sobre Bi-O, parche DBI
+concreto, selector BI-O/GAS-O y cam95 quedan en su nota/perfil/adaptador.
+La colocación del tanque es propia; el deber de validar al receptor CAUGHT es común.
+No clonar esos valores para el siguiente personaje ni añadir campos de perfil que
+el generador aún no implementa. Requisitos documentados no equivalen a validadores.
+
+**Distancia: implementación común, no excepción Gas-O.** Los hooks de home,
+leash y centrado en `bag2jp_bag1_versions.c` seleccionan bailarines BAG1 por lado,
+no solo el mapa Gas-O. `bag2jp_bag1_home.h` usa ±870×zoom/256 en escenarios normales
+admitidos por su tabla/layout, con exclusiones para especiales y parejas; BAG2
+nativo conserva su inicio. Este valor se calibró en el trabajo Gas-O, no es un
+campo de perfil ni una garantía de separación visual en todos los escenarios.
+Inventariar esas excepciones y validar el escenario real, no copiar una distancia
+en píxeles. Ver «Retrospectiva incorporada» de Gas-O para evidencia y límites.
 
 ## Referencia cacheada
 

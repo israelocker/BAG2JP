@@ -2,11 +2,11 @@
 id: character-import-testing
 title: "Pruebas y diagnóstico reutilizables de importación de personajes"
 tags: ["bag1", "character", "testing", "acceptance", "debugging"]
-summary: "Gates observados del harness, calibración por runtime, matriz lado/traje, canción completa, conservación de mods/saves y fallos reales de Strike."
+summary: "Gates del harness, matriz lado/traje/CAUGHT y grabación WGC/audio por proceso; lecciones Strike/Gas-O sin aceptación automática."
 related: ["notes/character-alternate-entries.md", "notes/character-pipeline.md", "notes/game-controls.md", "notes/strike-recovery.md"]
 created: "2026-11-02"
-updated: "2026-11-06"
-edited: "2026-11-06"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: reference
 ---
 
@@ -108,6 +108,67 @@ el driver lo rechaza si no coincide con el solicitado, no lo oculta.
 Comparar con referencia nativa del **mismo personaje/traje/versión**. Compartir
 coordenadas TIM o no colgarse no basta. Reutilizar video solo si coinciden hashes
 de motion/profile/catalog/runtime/evidencia; audio cambiado exige prueba de audio.
+
+### Aceptación ampliada tras Gas-O (2026-11-15)
+
+- Cubrir los cuatro casos lado/traje, versiones mixtas y espejo, en al menos dos
+  escenarios dentro del alcance. Si el harness no soporta una celda, dejarla
+  pendiente; no simular cobertura. Incluir ambos actores/compañeros en parejas.
+- CAUGHT debe revisarse en cada importado BAG1 y cada nativo BAG2: postura,
+  raíz/pies, hold sin deriva, re-hit, liberación y retorno. Conservar variantes
+  legítimas y no aceptar «fail-closed» como cobertura final.
+- Cues/tono: comparar dump SPU con control nativo cuando haya remuestreo o sospecha
+  de pitch; la escucha subjetiva no prueba el factor de resampling.
+- Separar «fever2 ejecutado» de fidelidad/aceptación del dueto; registrar versión,
+  contenido stock/adaptado y conformidad con alcance preciso.
+
+## Grabación: procedimiento vigente tras Gas-O
+
+Esta sección sustituye las recetas históricas basadas únicamente en dump/gdigrab.
+No autoriza partidas nuevas: rigen los permisos de AGENTS.md.
+
+1. Verificar exe instalado por hash y reutilizar calibración solo con inputs
+   idénticos. Aislar settings/tarjetas, comprobar baseline y restauración también
+   en fallos; no crear otro sistema de saves. No cerrar aplicaciones del owner.
+2. Pasar explícitamente flags de diagnóstico por el harness: `Session.start`
+   filtra `BAG2JP_*` heredadas. Comprobar allowlist y opciones realmente soportadas;
+   para actores de RAM ampliada solicitar dump de 8 MiB, no asumirlo del default.
+3. Elegir audio **por proceso** con `--audio-backend process`; el default del CLI
+   sigue siendo `dump` (cambiarlo es tarea aparte). Grabar solo el proceso verificado
+   del juego, nunca mezcla global. Mantener trace/heartbeat para ubicar eventos.
+4. Preferir `--capture-backend wgc` instalado y verificado; `auto` puede caer a
+   gdigrab, así que comprobar el backend real. WGC evita ventanas superpuestas, no
+   garantiza frames exactos; gdigrab exige ventana sin tapar y su guard reversible.
+   Visible, no minimizada, área completa y principal al 125 % siguen siendo el
+   entorno probado. No mezclar modelos GPU con la captura.
+5. Abrir el grabador antes del tramo relevante (normalmente selección de escenario)
+   y mantenerlo hasta el retorno al selector. Muestrear combate tras observar su
+   fase, no gastar todo el presupuesto en VS. Usar tags/ficheros únicos y ordenar
+   fotogramas por número/tiempo, no lexicográficamente.
+6. Esperar señales nativas observables, no sleeps fijos. Para save/load reutilizar
+   menú nativo y su handshake: `.pst` nuevo no vacío y `.thumb` completa de 49164 B
+   en el formato actual confirman guardado mejor que stderr bufferizado. No
+   generalizar ese tamaño a otro formato. Parar/cerrar el grabador **antes** que
+   el juego, también en la ruta de error.
+7. Finalizar una vez y exigir manifest `accepted=true`. Nunca recortar,
+   re-finalizar para rescatar, descartar pares a mano ni relajar gates. Si falla,
+   conservar evidencia y diagnosticar reloj/audio/ventana offline antes de repetir.
+   Pausas reales cerca de gf8000/12000/16000 se observaron repetidamente; causa
+   raíz pendiente. Audio por proceso resolvió el caso save/load citado, no prueba
+   que el emulador haya dejado de pausarse.
+8. Revisar primero que se ve BAG2JP y luego los eventos fotograma a fotograma,
+   contrastando trace/events y referencia nativa. `accepted=true` solo acepta la
+   captura: no certifica cámara, HUD, pose, guardado ni audio subjetivo. No prometer
+   precisión ±2; desfases observados de 3–4 frames no son calibración universal.
+9. Entregar video, frames, logs y límites solo después de revisar; preguntar por
+   conformidad del owner, no pedirle que haga la validación inicial del agente.
+
+Comandos grabador (`py -3.13 tools/test/bag2_record.py`): `record --tag <fresh>
+--capture-backend wgc --audio-backend process`, `finalize --tag <fresh>` y
+`frames --tag <fresh> --frame <gf> --span 12 --step 2`. Lanzar `record` en background
+con el harness existente y su política de cierre; no reconstruir un runner ad hoc.
+Evidencia de las correcciones: [Gas-O](gaso-import.md#retrospectiva-incorporada-al-estándar-2026-11-15),
+[grabador](tool-evidence/bag2-record.md) y [FFmpeg](tool-evidence/ffmpeg-skill.md).
 
 ## 5. Evidencia y señales de diagnóstico
 

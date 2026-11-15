@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4: nueva toma block4-recovery-process-a accepted=true; save/load/recovered/retirada/fin/fever/selector revisados. Audio por proceso20970paquetes sin pérdidas/QPC0us,cota0.09915ms.150saves/5configs/runtime94922aba/guard0 intactos. Owner conforme («Todo bien», incl. audio): Bloque4 aceptado. Pendientes: Bloque5 (matriz rivales/duetos), conformidad selector y decisión guard canónico1."
+summary: "Bloque4 y selector aceptados; Bloque5 CAUGHT universal pendiente, guard canónico0. Retrospectiva aprobada para normas; herramientas aparte y dueto35 con aceptación acotada, no universal."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-15"
@@ -11,6 +11,111 @@ doc_kind: evidence
 
 # Gas-O — ledger canónico
 
+### Retrospectiva incorporada al estándar (2026-11-15)
+
+- Aprobación del owner: «Normas ahora, herramientas aparte (Recomendado)» e
+  «Investigar y corregir (Recomendado)» para la entrada35. Objetivo: llevar lo
+  demostrado a la próxima importación, no reutilizar constantes de Gas-O.
+- Cinco informes en `_work/retro/gaso-{1,2,3,4}.md` y `tools.md`; propuesta
+  `_work/retro/proposal.md` (13 reglas parametrizables +32 de proyecto antes de
+  fusionar duplicados). Sus conteos de tomas/revisiones son estimaciones manuales
+  de logs solapados, no benchmark ni porcentajes de ahorro demostrados.
+
+| Clasificación | Qué se conserva | Destino canónico |
+|---|---|---|
+| Solo Gas-O | Tanque/humo, voces sobre Bi-O, palabras DBI, selector y cam95 | Esta nota y adaptadores/perfil Gas-O |
+| Proceso común, datos propios | Inventario, DBI/bindings, presupuesto SPU/cues, escala, CAUGHT/hold/receptor, cámara y regresión compartida | `notes/character-pipeline.md`, «Lecciones de Gas-O incorporadas» |
+| Aceptación por personaje | P1/P2×A/B, espejo/mixtos, escenarios, compañeros y CAUGHT de importados/nativos | `CHARACTER_IMPORT.md`, `IMPORT_STANDARD.md`, `notes/character-import-testing.md` |
+| Grabación | WGC, audio por proceso explícito, handshake save/load, cerrar grabador primero, no rescatar rechazos y revisar pixels/eventos | `notes/character-import-testing.md` y skill `bag2-game-recording` |
+| Desarrollo | Guards contra originales, AOT, MIPS en intérprete, RAM/lifecycle, RED compilable, mutantes por aserción, suite con baseline | `docs/coding-standards.md` y pipeline RE |
+| Build/revisión | Fuente/build por hash, payload canónico, manifiestos, snapshot del material Goldfish | Skills build/RE/pipeline y `notes/goldfish-review.md` |
+
+- Prácticas repetidas: protección/restauración de saves/configs, calibración por
+  exe, revisión fría y pruebas de la costura. Antipatrones: retomas sin diagnóstico,
+  build de otra copia, guards tautológicos, claims de fidelidad por retorno al
+  selector y decompilación amplia sin pregunta. La norma prescribe cómo evitarlos;
+  no demuestra que la deuda existente esté corregida ni que otro perfil ya funcione.
+- Pendiente **como herramientas, no implementado en esta unidad**: default
+  `--audio-backend process` (CLI aún `dump`), controles fail-fast de staging/capacidad
+  en preflight, auditoría explícita de flags/allowlist, plantilla de probes del
+  decoder y reparación de fallos históricos de suite. Cada uno requiere su propia
+  regresión; no se cambian parsers de perfil ni se pone verde la suite por decreto.
+- Procedencia: SPU/DBI/cues en secciones de 06–07-11; «Verificación de Double Fever»
+  y corrección abajo; clamp en «F2»; save/load/audio en «Bloque4» y
+  `notes/tool-evidence/bag2-record.md`; latencia observada ~3–4 en el cierre de
+  la captura `gaso-bubble-aspect-heat-bag1` (`_work/gaso/aspect-review`). No convertir
+  esa observación en calibración global.
+- Herramientas consideradas: Ghidra MCP verificado sobre main JP, lectura acotada
+  de request123; preflight sin cambio de fuentes (48 coincidentes, drift CAUGHT
+  conocido preservado). Scripts deterministas para hashes/estado/checker. No nuevo
+  FFmpeg, juego, build, dumpsxiso o funcmatch: solo documentación, sin inputs media,
+  assets ni búsqueda nueva de equivalentes; evidencia anterior reutilizada. No
+  modelo local para decidir semántica/aceptación; los informes ya resolvieron el
+  trabajo masivo. El agente de dueto falló por cuota sin veredicto; se investigó
+  directamente, no se contó como revisión.
+- Aclaración de distancia (consulta del owner, 15-11): **homes ±870 no son
+  exclusivos del mapa Gas-O**. El hook compartido `b1v_home_hook` filtra por versión
+  BAG1 del bailarín, no por escenario Gas-O. `b1home_pair` admite escenarios id<11
+  con tabla130 y zoom válido, actores principales sin IDs10/14; otros conservan
+  inicio nativo. Coloca X=±870×zoom/256 en vez de ±520×zoom/256. No fija píxeles ni
+  obliga al rival BAG2 a usar la misma separación. Leash/centrado también son
+  comunes, con sus propios gates. El origen de la calibración en Gas-O no convierte
+  esa función en exclusiva ni demuestra validación visual en todos los escenarios.
+  Código: `bag2jp_bag1_versions.c:144-152,246-275` y `bag2jp_bag1_home.h:17-58`.
+  Ghidra main JP confirma tabla51918 y llamada BA18; log del tool conserva bytes.
+  Contraste fuente/binario en `_work/retro/distance-scope.json`.
+- Goldfish: dos revisores, ambos `CON HALLAZGOS`; snapshot de17 entradas y spec
+  en `_work/goldfish/gaso-retro-standard-20261115/`. Corregidos: similitud estadística
+  no igualada a compatibilidad visual; fuente CAUGHT ya decidida; snapshot solo en
+  hitos; referencias a computer-use inexistente; rótulo de stills sin garantía ±2.
+  Duplicación del checklist de grabación no bloqueante: se conserva para uso directo
+  y remite al procedimiento canónico. Escenarios de consulta resueltos por ambos;
+  no prueba de mejora conductual bajo presión. Sin otra ronda sobre inputs iguales.
+  Triaje, respuestas y hashes finales se conservan en el mismo directorio. Checker
+  dirigido: 13 documentos modificados sin issues; SHA de digests comprobados.
+  Auditoría global sigue no verde (165 errores/9 avisos ajenos). Evidencia de cierre:
+  `_work/retro/approved-20261115/final-docs-check.json`. Sin build ni partida nuevos.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+### Validación pendiente: separación en escenario Robo-Z (owner, 2026-11-15)
+
+- El owner solicita validar cómo se aplica allí la regla compartida de distancia.
+  Recuerda Robo-Z gigante, jugador pequeño dentro de un helicóptero y un escenario
+  particular de campaña; no recuerda si estaba disponible en VS. **Es el recuerdo
+  del owner y una pregunta por verificar**, no un inventario confirmado.
+- Identificar juego/versión/región, ID y recursos del escenario; comprobar acceso
+  real en campaña y disponibilidad nativa en VS, sin desbloquearlo ni cambiar su
+  acceso como parte de esta nota. No confundir el mapa BAG1 con el de Robo-Z Gold.
+- Contrastar home/leash/centrado y zoom/escala/cámara de ese encuentro: que el jefe
+  conserve tamaño y colocación nativos, el jugador/helicóptero no quede desplazado
+  o recortado y los ataques/transiciones sigan funcionando. Verificar qué gates se
+  aplican a los actores; no asumir que id>=11 o el filtro de parejas ya lo cubren.
+- Hasta esa validación no extrapolar ±870 desde escenarios normales ni declarar
+  cobertura de campaña por una prueba VS. Si hace falta una excepción, justificarla
+  por evidencia antes de tocar código. Esta unidad solo registra el pendiente;
+  cualquier nueva partida requiere autorización y grabación válida según AGENTS.
+
+### Corrección de alcance: entrada35 / Double Fever (2026-11-15)
+
+- «Stock» describe contenido, no falta de soporte: el índice alternativo actual
+  no tiene fila35. El builder genera fever solo17; no convierte35 a un supuesto
+  dueto BAG1. No hace falta inventar una coreografía BAG1 para esa mecánica BAG2.
+- Las partidas históricas `20261106T232951078763Z-gaso-voice-budget-double-strike-finish`
+  y `20261107T001149362684Z-gaso-announcer-names-double-strike-finish` existen, con
+  capturas y trace; ambos `result.json` dicen `complete_awaiting_visual_review` y
+  `visual_review: pending`. No se encontró manifest con esos tags bajo
+  `_work/recordings/`. Esto limita esas pruebas antiguas; no exige aplicarles
+  retroactivamente un protocolo que aún no existía.
+- La afirmación del 08-11 «formalmente verificada y documentada como aprobada»
+  entró en Git en `5ecb04c` (09-11), sin cita de conformidad ni evidencia suficiente
+  para aprobación universal. **Se retira esa conclusión**, no las observaciones de
+  ejecución. Tampoco está acreditada allí la escucha subjetiva que proclamaba.
+- Conservar las aceptaciones posteriores con su alcance: Bloque2 (toma
+  `block2-duet-b`, fixture) y el dueto natural observado en `block4-consumer-return`
+  no certifican toda la matriz de rivales/variantes. No pedir al owner que resuelva
+  la contradicción de nuestras etiquetas ni revocar aceptaciones ajenas al claim.
+  Evidencia de la investigación: `_work/retro/duet-entry35.json`.
+
 ### Requisito del Bloque 5 (owner, 2026-11-15)
 
 - Cita: «en el bloque 5, todos los personajes incluidos los de BAG2 deben tambien
@@ -18,12 +123,12 @@ doc_kind: evidence
   en ambos lados y variantes, debe mostrar la animación CAUGHT al recibir el tanque.
   El fail-closed actual fuera de los clips 0/1/9 deja de ser aceptable como resultado
   final. Esto resuelve la decisión abierta en «F2 — altura del tanque frente al rival y
-  rivales solo-BAG2»: los rivales solo-BAG2 no se excluyen. Cómo obtener sus clips
-  (BAG2 nativo, retarget u otro) sigue sin decidir y se investigará primero en host.
+  rivales solo-BAG2»: los rivales solo-BAG2 no se excluyen. Fuente decidida: postura
+  estándar BAG1; adaptación, raíz y validación pendientes, primero en host.
 - Requisito ampliado (owner, 2026-11-15): el objetivo es importar todos los
   personajes BAG1, así que validar la pose CAUGHT forma parte de la aceptación de
   cada personaje importado (versión BAG1) **y** debe validarse también en los
-  personajes nativos de BAG2. Propuesto para el estándar de importación.
+  personajes nativos de BAG2. Incorporado al estándar por aprobación posterior.
 - Corrección selector/retrato/nombre: **aceptada por el owner (2026-11-15)** con
   «Si el retrato vuelve a GAS-O eso queda aprobado», sobre
   `_work/recordings/block4-consumer-return/owner.mp4` (selector desde ~193s).
@@ -58,7 +163,8 @@ doc_kind: evidence
   Chichi/Sally14, Michael Doi15, McLoad16, Hustle Kong17. Parejas: 10 y14; Shorty
   con compañero crea dos tanques.
 - Evidencia `_work/gaso/block5/{inventory.json,track-semantics-probe.json}`.
-  Siguiente: decisión del owner sobre la fuente de pose para los solo-BAG2.
+  Paso histórico ya resuelto: decisión del owner sobre fuente de pose, corregida
+  después por la comparación de rotaciones que sigue.
 - **Decisión del owner (2026-11-15): «Pose BAG1 asignada (Recomendado)».** Con
   equivalente BAG1: su propia pose clip70, ajustada a su altura. Solo-BAG2: una de
   las12 poses originales asignada por cuerpo/estilo, ajustada a su altura, con tabla
@@ -2499,6 +2605,9 @@ limpieza documental global ni se regeneran resúmenes de trabajo ajeno.
    - Cámara de combate balanceada entre líder, rival y fondo.
 
 **Verificación de Double Fever (dueto) y compatibilidad de animación (2026-11-08).**
+**Registro histórico: la conclusión de aprobación del punto4 y la escucha del
+punto3 están corregidas en «Corrección de alcance: entrada35 / Double Fever»
+(15-11). Ejecución observada no equivale a aceptación universal.**
 Auditoría y análisis de la coreografía de dueto (entrada 35 de archivo, `characters/bi_o/choreography_b`):
 1. **Composición de Dueto en BAG2**: La entrada 35 contiene 11 slots (animaciones de baile en pareja BAG2, 138.604 bytes, SHA-256 `df5daebc...`). Dicho archivo es global e idéntico para casi todos los personajes de BAG2 (17 de 18 personajes comparten el mismo binario). En BAG1 no existía la mecánica de Double Fever Time; por diseño estándar de importación (`IMPORT_STANDARD.md`), los personajes de BAG1 heredan las coreografías de dueto de BAG2.
 2. **Evidencia en Combate Real**: Las ejecuciones completas de doble Gas-O (`20261106T232951078763Z-gaso-voice-budget-double-strike-finish` y `20261107T001149362684Z-gaso-announcer-names-double-strike-finish`) alcanzaron la fase `fever2` en fotogramas f15119-f16774 (fase 1/7/2 a 1/7/5 y 1/9/5), ejecutando las animaciones de dueto sincrónico (P1 anim126 / P2 anim127 y P2 anim135; anim130 / anim131). Las capturas visuales (`match-12.png`, `match-13.png`) confirman la postura y baile coordinado de ambos trajes de Gas-O (A y B) sin deformación de malla, glitch de huesos ni cuelgues del motor.

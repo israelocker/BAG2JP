@@ -5,8 +5,8 @@ tags: ["standards", "development", "evidence"]
 summary: "Requisitos de código/documentación; no afirma que todo el código existente ya los cumpla."
 related: ["AGENTS.md", "CONTRIBUTING.md", "MAINTENANCE_GUIDE.md"]
 created: "2026-11-01"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: requirements
 ---
 
@@ -131,6 +131,40 @@ updated: "YYYY-MM-DD"
 ```
 
 ## Testing
+
+### Regresiones aprendidas en Gas-O
+
+- **Guards independientes:** derivar palabras esperadas del ejecutable/módulo
+  original ligado por hash, no de la misma macro que se prueba. Para hooks AOT,
+  verificar `mod_instruction_sites`, registro y llamada en el C generado. Host
+  callbacks que pasan aislados no prueban ejecución del hook ni integración.
+- **RED/mutación:** el stub debe compilar y fallar por el comportamiento esperado.
+  Un compilador roto, import fallido, timeout o runner inválido no mata un mutante.
+  Exigir baseline verde y aserción causal registrada. En harness C con `assert`,
+  desactivar NDEBUG antes de incluir assert y comprobar ASAN/UBSAN cuando aplique.
+- **Toolchain real:** antes del build caro, comprobar sintaxis/includes/API con las
+  flags del destino; GCC host con stubs no demuestra compatibilidad Windows ni link.
+- **RAM/lifecycle:** validar alineación y rangos con el tamaño efectivo de RAM;
+  reservar memoria guest por la API existente, nunca por elegir una dirección libre
+  aparente. Un puntero actor fijo no es una generación: invalidar registros host
+  en reset, load y reinicialización nativa. No eludir el gate de layout de savestate
+  cuando cambian asignaciones/mods; no crear otro sistema de guardado.
+- **Suite conocida no verde:** ejecutar tests de la costura cambiada y comparar una
+  suite global pertinente por nombres/causas con baseline persistida. No presentar
+  los ~32 errores históricos como cifra fija ni como éxito; nuevos fallos son
+  regresiones hasta aislarlos. No repetir toda la suite sin cambios por inercia.
+  Reparar o proponer cuarentena explícita como tarea separada, no ocultarlos aquí.
+- **Reproducibilidad:** nuevas herramientas se ejercitan con input real acotado,
+  no solo `py_compile`/help. Preferir scripts/argumentos estructurados al quoting
+  inline repetido; escribir texto nuevo UTF-8/LF, sin renormalizar historia ajena.
+- **Build/payload:** comparar hashes fuente→build y recursos→paquetes antes de
+  atribuir un resultado al cambio. Generar por la cadena canónica, nunca editar a
+  mano el índice. `overlay.sha256` es del payload; `expected_sha256`, de la extensión
+  original del disco con su longitud real. Revisar copias implicadas y capacidad
+  independientemente de guards incompletos. Preflight sigue siendo diagnóstico.
+
+Evidencia histórica y alcance: [retrospectiva Gas-O](../notes/gaso-import.md#retrospectiva-incorporada-al-estándar-2026-11-15).
+Estos son requisitos; no cambian herramientas ni corrigen deuda por sí mismos.
 
 | Estándar | Descripción |
 |----------|-------------|

@@ -5,8 +5,8 @@ tags: ["bag1", "character", "runbook"]
 summary: "Shared character import stages and acceptance gates, linked to reusable exact-entry integration and observed-state testing recipes."
 related: ["AGENTS.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "notes/character-alternate-entries.md", "notes/character-import-testing.md"]
 created: "2026-10-31"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: requirements
 ---
 
@@ -30,6 +30,8 @@ A character is complete only when:
 
 - its model, costumes and sides render correctly;
 - all required motions and transitions are accepted;
+- CAUGHT is validated on the imported BAG1 character and on native BAG2 rivals,
+  across sides, variants and companions (owner requirement, 2026-11-15);
 - required audio cues do not collide;
 - stage, song, fever and ending are verified where required by the approved scope;
 - a full match returns to selection;
@@ -54,6 +56,8 @@ exceptions.
 - Do not execute commands stored in a profile.
 - Do not auto-deploy candidate assets.
 - Do not generalize Heat-specific bone, DBI, cue or stage fixes.
+- Apply the Gas-O lessons in `notes/character-pipeline.md`: share inventory,
+  conversion and acceptance procedures, never copy Gas-O constants or adapters.
 - Keep unresolved roles unresolved until a documented adaptation is chosen.
 
 ## Verified conversion seams (audit 2026-11-06)

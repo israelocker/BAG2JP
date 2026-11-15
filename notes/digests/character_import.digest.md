@@ -5,16 +5,19 @@ tags: ["digest", "bag1"]
 summary: "Perfiles de datos, inventario por personaje y aceptación dentro de alcance; comandos en la fuente."
 related: ["CHARACTER_IMPORT.md", "IMPORT_STANDARD.md"]
 created: "2026-11-02"
-updated: "2026-11-06"
+updated: "2026-11-15"
 doc_kind: digest
 source: "CHARACTER_IMPORT.md"
-source_sha256: "71e34c3d8cadf5d2b4b24cedc0f91e5894911a80f51a5915a534577550c5c743"
+source_sha256: "31ae9b4442bc943cf146a1d399dcfff4c1a25e9174990bfb6dd1ed9b1ba48e3b"
 ---
 
 - Fuente canónica: [CHARACTER_IMPORT](../../CHARACTER_IMPORT.md); entrada mínima:
   [IMPORT_STANDARD](../../IMPORT_STANDARD.md). No leer ambos completos por defecto.
 - Perfiles de datos; identificar ID/layout, contrato por significado/beats/eventos
   y predecesores. No clonar Heat ni generalizar DBI/cues/escenario.
+- Lecciones Gas-O: mismo proceso con datos propios, no sus constantes/adaptadores.
+  CAUGHT se exige en cada importado BAG1 y nativo BAG2, lados/variantes/compañeros;
+  es requisito de aceptación, no cobertura ya alcanzada.
 - `init-profile` produce schema 1, plan/prepare requieren schema 2 y gates
   (también evidencia gameplay); no simular capacidades/aceptación para pasar.
 - Construir candidatos preservando imports previos; DFS con offsets reales,
