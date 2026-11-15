@@ -311,6 +311,66 @@ corresponde a los mutantes listados, no a alternativas sustituidas tras dar ERRO
 audio/RAM/SPU conservan sus controles legacy. Calendario VRAM registrado significa
 programado, no necesariamente observado en juego. Estos límites no son aceptación.
 
+### S4a-prep: contrato host del grabador (consumo pendiente)
+
+Se separa un checkpoint preparatorio de S4a: el grabador combina captura, clocks,
+audio y cierre; registrar primero el contrato permite revisar el esquema compartido
+sin mezclarlo con esa reescritura. No cambia autoridad ni permisos. **S4a no está
+entregado**: `bag2_record.py` conserva los bytes de `a0f3935` (SHA-256
+`88f7d437aa081c6072c6663ccfe6ca4b076449e5bb8be5f9113b882a2c4bf594`).
+
+Se preparan diez `recording.*` (FPS/duración y presupuestos host) y tres rutas:
+`tools.ffprobe_review`, `tools.ffmpeg_look`, `tools.recording_font`. Los defaults
+viven en TOML y se contrastan con el inventario del grabador. Las rutas no tienen
+valor común; ninguna operación activa exige estas claves. El futuro consumidor
+deberá preservar CLI explícita y `BAG2JP_FFMPEG_WGC` con provenance, sin fallback
+oculto. PID/HWND, audio, gates, máscaras, formatos y orden de cierre quedan fuera.
+240 FPS y un día son techos de cordura del esquema, no calibración ni gates.
+No se modificó el overlay local ignorado.
+
+Evidencia: `_work/configuration/s4a-recording-inventory.json` (40 entradas,
+extracción acotada, no exhaustiva) y `s4a-recording-inventory-addendum.json`
+(dos literales inline de window poll/process audio con fuente/hash).
+`_work/configuration/s4a-prep-final-tests-v2/`: 119 workflow, incluidos 6 tests
+nuevos; 55 recording OK reutilizados tras comparar ocho fuentes/tests sin cambios
+con `a0f3935`. `_work/configuration/s4a-prep-final-mutations/`: baseline verde y
+37/37 assertion-killed en copias; inputs canónicos sin cambios. Ronda original
+28/28 preservada, sin pretender cobertura integral.
+Comando nuevo desde la raíz: `py -3.13 -m unittest tools.workflow.test_recording_config`.
+Suites e invocaciones exactas quedan en el reporte. El preflight pasó:
+`_work/workflow/20261115T163501481593Z-s4a-recorder-config/`, solo drift conocido.
+
+Herramientas: Ghidra MCP verificó binario y lectura acotada del entrypoint; utilidad
+limitada a identidad, no prueba de configuración. Las pruebas host usan medios
+sintéticos/fixtures y procesos propios; no son una nueva toma del juego. No se
+ejecuta runner ni captura de partida; no hay material nuevo que inspeccionar con
+ffmpeg-skill. Inventario/hashes/mutación son deterministas, sin modelo local.
+Sin build/deploy de runtime, settings, tarjetas ni herramientas instaladas editadas.
+La suite host compila un fixture C aislado en WSL; no construye el runtime.
+
+Goldfish S4a-prep, 2026-11-15: dos revisores fríos A/B CON HALLAZGOS. Snapshot
+original de 16 archivos y respuestas literales en `_work/goldfish/recording-config-prep/`;
+SHA-256 del manifiesto revisado:
+`894194d0587fae5fc7991806c0e18022e77e953d7c487f0b7e71104f1edccec9`.
+A1/B1/B2 confirmados: expectativas enteras independientes, valores/orígenes de
+todos los campos en overlays y ausencia de las tres rutas en el TOML distribuido.
+Alternativas incorrectas pasaban las seis pruebas originales; ahora fallan por
+aserción en copias. NIT de inventario corregido con addendum, sin sobrescribir
+el original. Se añaden mutantes de rama numérica. Un ensayo intermedio tuvo
+34 kills y un mutante con FAIL+ERROR (no puntuado): se reforzó el contrato de error
+ConfigError y se repitieron los mismos 37 mutantes, no se sustituyó ese mutante.
+Las pruebas UNC originales quedan preservadas; la ronda final usa rutas relativas
+para no necesitar resolver shares. Un verificador asumió un módulo inexistente y
+no ejecutó pruebas; su fallo se conserva, la evidencia válida es v2.
+Sin segunda revisión; los revisores no certificaron ejecución, hashes, baseline
+histórico íntegro ni disponibilidad de herramientas. Opcional inválido sí bloquea
+la carga global; opcional ausente no activa ni se exige por una operación.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Siguiente: S4a consumo real del resolver por `bag2_record.py`, pruebas de
+precedencia, operaciones y guardas antes de efectos, conservando backend/audio/
+clocks/metadata/cierre; después S4b. No autoriza grabación ni partida.
+
 ## Fuentes vigentes
 
 - `patches/BAG2JP-game.toml`: configuración reproducible del título, no todos los

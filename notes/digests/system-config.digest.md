@@ -2,13 +2,13 @@
 id: system-config-digest
 title: "Configuración host: autoridades y estado"
 tags: ["digest", "config", "migration"]
-summary: "S1 y S3a entregados; S3b migra vistas PowerShell a JSON central. S4–S7/S2b y auditoría global pendientes; solo verificación host, no aceptación del juego."
+summary: "S1/S3a/S3b entregados host; contrato S4a-prep sin consumidor. Migrar grabador sigue pendiente, luego S4b/S5–S7/S2b; sin aceptación del juego."
 related: ["system_config.md", "docs/data-dictionary.md", "plans/pending/host-configuration-migration.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "c71de89003f1449941f4b9309236c8a9ce9f9bdb768cd5e5ec07995e7cc5d589"
+source_sha256: "7b97719ee409fe468df9a439e26f6a31b65901014ef2e953bd5a387b2186947a"
 ---
 
 # Configuración: estado mínimo
@@ -46,6 +46,10 @@ source_sha256: "c71de89003f1449941f4b9309236c8a9ce9f9bdb768cd5e5ec07995e7cc5d589
    posteriores: 19 vistas + 113 workflow + 108 harness OK, 24 mutantes en copias.
    Snapshot original y respuestas preservados; siguiente S4a grabador (solo host).
    Sin partida/build/deploy ni edición de herramientas instaladas.
+- S4a-prep registra diez defaults recording y tres rutas,
+  sin operación activa: grabador intacto. 119 workflow + 55 recording OK, 37 mutantes;
+  Goldfish A/B CON HALLAZGOS corregidos, sin segunda revisión. Próximo: S4a consumidor.
+  La preparación no equivale a migración ni autoriza captura o partida.
 - Nuevo/modificado host sigue el estándar central; runtime, hechos PSX y guards
   conservan su autoridad. No tocar historia, releases, settings, saves o terceros.
 - Límites: config no demuestra identidad de estable; TOCTOU no garantizado,

@@ -61,8 +61,16 @@ def _field_registry() -> Mapping[str, FieldSpec]:
                  "bag1_reference_runtime"):
         fields[f"inputs.{name}"] = FieldSpec("path", "native path", True, "input")
     for name in ("audio_probe", "python_report", "winshot_root", "build_script",
-                 "ffmpeg_review", "ffmpeg_wgc", "ghidra_launcher", "ghidra_project"):
+                  "ffmpeg_review", "ffmpeg_wgc", "ghidra_launcher", "ghidra_project",
+                  "ffprobe_review", "ffmpeg_look", "recording_font"):
         fields[f"tools.{name}"] = FieldSpec("path", "native path", True, "tool")
+    # Prepared only: no recording operation requires these until its consumer migrates.
+    for name in ("max_seconds", "poll_seconds", "alive_check_seconds", "window_wait_seconds",
+                 "window_poll_seconds", "ffmpeg_quit_seconds", "ffmpeg_stop_poll_seconds",
+                 "process_audio_extra_seconds"):
+        fields[f"recording.{name}"] = FieldSpec("number", "seconds", True, "host_budget", maximum=86400.0)
+    fields["recording.fps"] = FieldSpec("integer", "capture frames/second", True, "host_budget", maximum=240)
+    fields["recording.ffmpeg_extra_seconds"] = FieldSpec("integer", "seconds", True, "host_budget", maximum=86400)
     for name in ("state_timeout_seconds", "helper_timeout_seconds", "startup_timeout_seconds",
                  "finish_timeout_seconds"):
         # One day is a sanity ceiling far below threading.TIMEOUT_MAX on every platform.
@@ -154,8 +162,12 @@ def _validate_layer(data: dict, root: Path, *, local: bool) -> dict[str, Path | 
         if local and not spec.local_override:
             raise ConfigError(f"{key}: local policy override is forbidden")
         if spec.kind == "integer":
-            if spec.expected is None or type(value) is not int or value != spec.expected:
-                raise ConfigError(f"{key}: expected integer {spec.expected}")
+            if spec.expected is not None:
+                if type(value) is not int or value != spec.expected:
+                    raise ConfigError(f"{key}: expected integer {spec.expected}")
+            elif (type(value) is not int or value <= 0
+                  or (spec.maximum is not None and value > spec.maximum)):
+                raise ConfigError(f"{key}: expected a positive integer up to {spec.maximum:g}")
         elif spec.kind == "number":
             finite = False
             if type(value) in (int, float):

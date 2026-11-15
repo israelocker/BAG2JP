@@ -2,13 +2,13 @@
 id: host-configuration-migration-plan-digest
 title: "Configuración central: ampliación de auditoría y migración"
 tags: ["digest", "plan", "config"]
-summary: "Plan aprobado: S1, S3a y S3b entregados host; siguiente S4a grabador, luego S4b/S5–S7/S2b y auditoría semántica. Sin build/deploy/partida."
+summary: "S1/S3a/S3b entregados host; S4a-prep prepara esquema, no migra grabador. Siguiente consumo S4a, luego S4b/S5–S7/S2b. Sin build/deploy/partida."
 related: ["plans/pending/host-configuration-migration.md", "system_config.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "6f58874aebed2d7ef0d314f579997ef54d16c57900c7fef1c0f08ec5abf57a37"
+source_sha256: "afa8ad40727acb2aaa8b4c0ce92f3d76f8623fb610143a52d9f459ff6fe5a64f"
 ---
 
 # Ampliación de configuración central
@@ -38,6 +38,10 @@ source_sha256: "6f58874aebed2d7ef0d314f579997ef54d16c57900c7fef1c0f08ec5abf57a37
    inputs/archivos/destinos. Goldfish A/B con hallazgos corregidos; pruebas y mutantes
    posteriores: 19 vistas + 113 workflow + 108 harness OK, 24 mutantes en copias;
    sin aceptación en juego ni segunda revisión. Siguiente S4a (solo host).
+- S4a-prep separa contrato (10 defaults + 3 rutas, sin operación activa) del consumidor
+  aún intacto. 119 workflow + 55 recording OK, 37 mutantes; Goldfish A/B con hallazgos
+  corregidos por pruebas, sin segunda revisión.
+  No avanzar a S4b antes de migrar realmente el grabador.
 - S3: versus y PowerShell; S4: captura/FFmpeg/referencias; S5: importadores/perfiles;
   S6: herramientas de paquetes/instalador; S7: bootstrap/externos y cierre.
 - Lotes pequeños con tests/diccionario/operaciones/consumidores reales, Goldfish y

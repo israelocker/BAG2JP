@@ -56,6 +56,9 @@ migrados se marcan explícitamente como pendientes.
 | `tools.build_script` | Script de build instalado | ruta | native path | común/local | sí | Ruta no vacía sin NUL; el script instalado fija su propio árbol y toolchain | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `tools.ffmpeg_review` | FFmpeg usado en revisión de video | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; revisión (pendiente) | base |
 | `tools.ffmpeg_wgc` | FFmpeg usado en captura WGC | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; captura (pendiente) | base |
+| `tools.ffprobe_review` | FFprobe del grabador; sin ubicación común | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no exige existencia al cargar | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `tools.ffmpeg_look` | Script look.py para inspección del grabador | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo; no exige existencia | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `tools.recording_font` | Fuente de etiquetas del video de revisión | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no prueba disponibilidad ni altera texto/estilo | — | `project_config.py`; bag2_record.py (pendiente) | base |
 | `tools.ghidra_launcher` | Lanzador de Ghidra instalado | ruta | native path | común/local | sí | Ruta no vacía sin NUL; su presencia no prueba que MCP responda | — | `project_config.py`; análisis (pendiente) | base |
 | `tools.ghidra_project` | Proyecto Ghidra del binario principal | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no sustituye verificar el programa cargado | — | `project_config.py`; análisis (pendiente) | base |
 | `harness.state_timeout_seconds` | Presupuesto de espera de estado o popup; default actual 25.0 s | número | seconds | común/local | sí | Número finito mayor que cero y ≤ 86400; bool, texto y no finitos prohibidos | versus-session | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; discover_strike_id*.py legado (pendiente) | base |
@@ -65,6 +68,16 @@ migrados se marcan explícitamente como pendientes.
 | `harness.key_hold_ms` | Duración de pulsación del contrato de input observado; default 100 ms | entero | milliseconds | común | no | Entero exactamente 100; política bloqueada, override local prohibido | versus-session | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; discover_strike_id*.py legado (pendiente) | base |
 | `harness.key_gap_ms` | Separación entre inputs del contrato observado; default 350 ms | entero | milliseconds | común | no | Entero exactamente 350; política bloqueada, override local prohibido | versus-session | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; discover_strike_id*.py legado (pendiente) | base |
 | `harness.menu_fade_seconds` | Margen tras observar el menú (comentario de fade en la fuente); default 1.3 s | número | seconds | común | no | Número finito positivo exactamente 1.3; política bloqueada, override local prohibido | versus-session | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; discover_strike_id*.py legado (pendiente) | base |
+| `recording.fps` | FPS solicitado al capturador; default 60 | entero | capture frames/second | común/local | sí | Entero positivo ≤ 240; bool y float prohibidos; techo de cordura host, no gate | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.max_seconds` | Duración máxima de captura; default 900.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; bool, texto y no finitos prohibidos | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.poll_seconds` | Intervalo de muestreo host; default 0.004 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no modifica gates de sincronía | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.alive_check_seconds` | Intervalo para comprobar proceso/ventana; default 1.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no cambia identidad ni aceptación | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.window_wait_seconds` | Presupuesto para encontrar la ventana; default 60.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; timeout no acepta una ventana inválida | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.window_poll_seconds` | Intervalo de búsqueda de ventana; default 0.5 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400 | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.ffmpeg_quit_seconds` | Presupuesto para cerrar FFmpeg; default 30.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no cambia propiedad ni orden de cierre | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.ffmpeg_extra_seconds` | Margen entero de duración del capturador; default 5 s | entero | seconds | común/local | sí | Entero positivo ≤ 86400; bool y float prohibidos | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.ffmpeg_stop_poll_seconds` | Intervalo de espera de cierre FFmpeg; default 0.1 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400 | — | `project_config.py`; bag2_record.py (pendiente) | base |
+| `recording.process_audio_extra_seconds` | Margen del backend process audio; default 60.0 s | número | seconds | común/local | sí | Número finito positivo ≤ 86400; no cambia reloj/productor/gates | — | `project_config.py`; bag2_record.py (pendiente) | base |
 
 Los campos de política (`build.jobs`, `pins.*`) y el derivado `repo_root` no se
 pueden sobrescribir desde el archivo local. Ningún campo demuestra por sí mismo que
@@ -77,6 +90,13 @@ ejecuta preflight; `workflow-report` además necesita `tools.python_report`.
 se solicita búsqueda y existe el WAV; `report-sheet` exige la instalación
 estable para proteger el destino antes de escribir una hoja de capturas.
 El runtime C y los scripts instalados no pasan a consumir TOML por esta tabla.
+
+S4a-prep registra diez defaults host `recording.*` y tres rutas de herramienta,
+todavía **sin operación activa ni consumidor en el grabador**. `bag2_record.py`
+conserva sus literales mientras se prepara la migración de consumo. Los límites
+240 FPS y un día son techos de cordura del esquema, no calibración ni condiciones
+de aceptación. Audio, clocks, PID/HWND, máscaras, formatos y gates quedan fuera
+de estos knobs. Las rutas no tienen default de máquina ni fallback implícito.
 
 Cobertura S1: rutas, pins, distribución WSL y comprobación de jobs del script
 legacy. Defaults numéricos de espera/layout del reporte y otras herramientas

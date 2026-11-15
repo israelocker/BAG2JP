@@ -2,19 +2,19 @@
 id: data-dictionary-digest
 title: "Diccionario de configuración: uso y límites"
 tags: ["digest", "config", "dictionary"]
-summary: "Campos y operaciones del resolver: S1, S3a y vistas S3b; consultar tabla canónica antes de reutilizar claves. Tiempos legacy y otras familias siguen pendientes."
+summary: "44 campos: S1/S3a/S3b y 13 campos S4a-prep sin operación ni consumidor. Consultar tabla canónica antes de reutilizar claves; grabador todavía pendiente."
 related: ["docs/data-dictionary.md", "system_config.md", "tools/workflow/project_config.py"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "docs/data-dictionary.md"
-source_sha256: "b709649a70a75a1a7fefc8f37917ba0665b35528f5a566bc3c26a69ce1ad0ff3"
+source_sha256: "29733a94a55880da5920f3509bcd345451019d36e922c4e5f18b1bf79f89a508"
 ---
 
 # Diccionario: antes de consumir claves
 
 - `FIELDS` define esquema; TOML común/local define valores; la tabla canónica
-  describe los 31 campos y tests impiden divergencia de claves/tipos/unidades/
+  describe los 44 campos y tests impiden divergencia de claves/tipos/unidades/
   origen/permisos/operaciones. Reutilizar por significado; no duplicar defaults.
 - Política: build.jobs2 y pins no se pueden sobrescribir localmente; repo_root se
   deriva. Ubicaciones locales verificadas no se copian al común ni a consumidores.
@@ -41,4 +41,7 @@ source_sha256: "b709649a70a75a1a7fefc8f37917ba0665b35528f5a566bc3c26a69ce1ad0ff3
    se conserva. Padre/hijo fijan inputs/archivos/destinos; rutas literales, overrides
    relativos intactos y acceptance no reutiliza salidas/backups existentes.
 - Guardas no race-safe; tiempos/estados/direcciones de vistas permanecen en fuente,
-   no consumen la política versus. Configuración nunca es permiso de partida.
+    no consumen la política versus. Configuración nunca es permiso de partida.
+- S4a-prep: diez recording.* (host, positivos, segundos≤86400; fps entero≤240 y
+  extra_seconds entero≤86400) y tres rutas opcionales de FFprobe/look/fuente.
+  Sin operación activa ni consumo en bag2_record.py; no calibración/gates nativos.

@@ -2470,3 +2470,19 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   comprobación. No se cambian direcciones, funciones ni análisis guardados.
   Tiempo, ahorro y retrabajo manual no medidos; no se afirman mejoras cuantificadas.
 - Siguiente: conservar evidencia; no repetir estas lecturas sin un nuevo propósito.
+
+## 20261115-ghidra-s4a-recording-config - identidad y lectura acotada
+
+- Propósito: cumplir la verificación MCP durante S4a-prep; no hay cambio nativo.
+  Instancia existente, `get_program_info()` primero: SLPM_862.19 (Japón), main
+  executable PSX:LE:32, base 80000000, entrada 80035D98, 1324 funciones; SHA-256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Consulta exacta: `read_memory(address="0x80035d98", length=8)` devolvió
+  `0680023c00cf4224`, sin gaps. No representa un overlay ni estado vivo de partida.
+- Validación independiente: hash/bytes coinciden con 20261115-ghidra-s3b-view-config;
+  el contrato host se verifica aparte mediante pruebas y mutaciones.
+- Resultado: identidad/lectura confirmadas; utilidad limitada a esa comprobación,
+  no certifica migración ni gates. Sin cambios de análisis/sesiones. Tiempo,
+  ahorro y retrabajo manual desconocidos; no se afirman mejoras cuantificadas.
+- Siguiente: continuar consumo host S4a; no hacen falta equivalencias MIPS/funcmatch
+  para este contrato. Grabación, runner y pruebas en partida fuera de autorización.
