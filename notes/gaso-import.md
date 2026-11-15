@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4: nueva toma block4-recovery-process-a accepted=true; save/load/recovered/retirada/fin/fever/selector revisados. Audio por proceso20970paquetes sin pérdidas/QPC0us,cota0.09915ms.150saves/5configs/runtime94922aba/guard0 intactos. Falta conformidad del owner y escucha subjetiva; Bloque5 pendiente."
+summary: "Bloque4: nueva toma block4-recovery-process-a accepted=true; save/load/recovered/retirada/fin/fever/selector revisados. Audio por proceso20970paquetes sin pérdidas/QPC0us,cota0.09915ms.150saves/5configs/runtime94922aba/guard0 intactos. Owner conforme («Todo bien», incl. audio): Bloque4 aceptado. Pendientes: Bloque5 (matriz rivales/duetos), conformidad selector y decisión guard canónico1."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-15"
@@ -203,7 +203,7 @@ doc_kind: evidence
   READY/STOP/terminal verificables; fallos cierran sin fallback. Siguiente:
   validador/helper con TDD, adaptador opt-in y finalize lossless, regresión/Goldfish.
 
-#### Toma por proceso aceptada y revisada: conformidad pendiente (2026-11-15)
+#### Toma por proceso aceptada y revisada: Bloque4 aceptado por el owner (2026-11-15)
 
 - Única nueva toma autorizada: `block4-recovery-process-a`, run
   `_work/versus-runs/20261115T084937699074Z-block4-recovery-process-a`,314.223s.
@@ -240,9 +240,15 @@ doc_kind: evidence
   Se reutilizan58tests/8mutantes y los2Goldfish corregidos; no se repiten sin input
   nuevo. No build/deploy/release/snapshot. Toma anterior recovery-ready permanece
   rechazada24.67ms, sin alterarla ni re-finalizarla.
-- Estado: prueba técnica del Bloque4 satisfecha, **conformidad del owner pendiente**
-  (incluye escucha/calidad/volumen subjetivos). Siguiente: entregar vídeo, hoja y
-  logs; preguntar únicamente si está conforme. Sin nueva partida ni Bloque5 ahora.
+- Estado: prueba técnica del Bloque4 satisfecha. **Owner conforme (2026-11-15):**
+  tras revisar `owner.mp4` (carga/recuperación40–44s, salida48–51s y audio)
+  respondió «Todo bien». Cubre recuperación CAUGHT tras load, retirada y escucha
+  subjetiva de esta toma; **Bloque4 aceptado**. No cubre: conformidad pendiente de
+  la corrección selector/retrato/nombre (no se le pidió revisar esa parte), matriz
+  de rivales/lados/variantes (Bloque5) ni activar guard1 en la fuente canónica
+  (sigue0; requiere decisión explícita del owner). Sin build/deploy/snapshot.
+- Siguiente: Bloque5 interno en host (matriz rivales/lados/variantes y duetos) sin
+  partida; cualquier prueba en juego o guard canónico1 necesita autorización.
 
 #### Backend opt-in integrado y verificado en host (2026-11-15)
 

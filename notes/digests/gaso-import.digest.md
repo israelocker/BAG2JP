@@ -2,18 +2,18 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: block4-recovery-process-a accepted=true y revisada técnicamente. Save/load/recovered/retirada/fin/fever/selector verificados;20970paquetes/QPC0us/cota0.09915ms.150saves/5configs/94922aba/canonical0 intactos. Pendiente conformidad y escucha del owner; sin Bloque5 ni otra toma."
+summary: "Bloque4: block4-recovery-process-a accepted=true y revisada técnicamente. Save/load/recovered/retirada/fin/fever/selector verificados;20970paquetes/QPC0us/cota0.09915ms.150saves/5configs/94922aba/canonical0 intactos. Owner conforme («Todo bien», incl. audio): Bloque4 aceptado. Pendientes: Bloque5, conformidad selector, decisión guard canónico1."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "441057d44b526a36965b97c545462255a62d59845b1c9cd5bf7525b1ef0c82fe"
+source_sha256: "61ab40a8d17d8dc83101d2b7bf49652c0976fe0c17f096e27bf774a36c8bac30"
 ---
 
 # Gas-O: lectura vigente
 
-Último resultado: «Toma por proceso aceptada y revisada: conformidad pendiente».
+Último resultado: «Toma por proceso aceptada y revisada: Bloque4 aceptado por el owner».
 Única toma block4-recovery-process-a:314.223s total,208.867s vídeo1920x1080,
 manifestaccepted=true,2090heartbeats/4late/1stall79ms,20970paquetes nativos,
 9247770frames44100Hz/QPC0us/0descartes/cota0.09915ms. Sourcefloat conservado,
@@ -22,15 +22,16 @@ retiro49.049s/gf8779, fin175.818s/gf16378,feverfinal180.096s/gf16635, selector
 visible205/207.5/208.5s con nombre/retrato Gas-O/Heat correctos.114slots de frames
 inspeccionados,6hojas más overview/muestrasfinales. No corrupción observada en
 las muestras de recuperación; salida de hold/tanque observada en retiro.
-Audio medido-28.6LUFS/TP-13.9dBTP,sin normalizar. Escucha subjetiva pendiente del
-owner; latencia pantalla no calibrada(±2frames estimado); no se establece primer
+Audio medido-28.6LUFS/TP-13.9dBTP,sin normalizar. Owner revisó owner.mp4 y
+respondió «Todo bien» (recuperación, salida y audio): Bloque4 aceptado. Latencia pantalla no calibrada(±2frames estimado); no se establece primer
 frame exacto del selector.150saves/5configs/94922aba/canonical0/stable intactos.
 Probes/frames/visual-audio-review.json/owner-evidence-sheet.jpg en
 _work/gaso/block2/process-audio/game-trial-a; vídeo/logs/manifest en
 _work/recordings/block4-recovery-process-a. Sin nueva revisión Goldfish: solo
 wrappers_work/docs cambiaron; recorder5e206c4 y58tests/8mutantes/2review reutilizados.
-Siguiente: entregar evidencia y preguntar solo conformidad del owner; no nueva
-partida ni Bloque5 automático. Toma anterior recovery-ready continúa rechazada.
+Siguiente: Bloque5 interno en host (matriz rivales/lados/variantes, duetos), sin
+partida. Pendientes del owner: conformidad selector/retrato/nombre y guard canónico1
+(sigue0). Toma anterior recovery-ready continúa rechazada.
 
 Contexto de la toma rechazada: sección «Bloque 4: guard1 desplegado; toma de recuperación».
 Actualización vigente «Continuación: handshake de readiness F7»: owner aclaró
