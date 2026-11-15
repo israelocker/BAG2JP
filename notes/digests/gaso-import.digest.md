@@ -8,11 +8,18 @@ created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "33bcfb6aa524a17b3db834b5425f53b9f6fdfb3314223bf94f5339aafe812be2"
+source_sha256: "c6d2685cf7aebf811bbcb0c23202d79e00cd98ccd345b50862ec5c6f0b50ebc7"
 ---
 
 # Gas-O: lectura vigente
 
+- Reanálisis completo autorizado: tres matrices (19/18/20 casos solapados) y rutas/
+  skills revisadas; fuente «Reanálisis de cobertura del estándar». Nuevo contrato
+  de escenario por fases, identidad/residencia/audio detalladas, integración regional
+  inequívoca y contradicciones corregidas. Se preservan todas las aceptaciones/
+  aplazamientos y pendientes de implementación.26docs sin issues,32tests del
+  checker pasan; dos Goldfish con correcciones aplicadas. Plan archivado en
+  `plans/archive/standards-coverage-recheck.md`; ningún cambio runtime/partida.
 - Owner aprobó «Normas ahora, herramientas aparte» e investigar entrada35.
   Resultado en «Retrospectiva incorporada al estándar» y «Corrección de alcance»
   de la fuente: reglas en pipeline/pruebas/código, skills actualizadas; sin runtime.

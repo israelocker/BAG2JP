@@ -2,11 +2,11 @@
 id: character-alternate-entries
 title: "Integración reutilizable de personajes mediante entradas alternativas"
 tags: ["bag1", "character", "dfs", "payload", "workflow"]
-summary: "Reconstrucción DFS, preservación de personajes existentes, payload exacto en DUMMY.BIN y sincronización manual antes de compilar. Lecciones verificadas con Heat y Strike; límites explícitos."
+summary: "DFS/payload regional exactos, preservación por slice/hash, índice de nueve campos y staging manual; repack legacy y límites explícitos."
 related: ["CHARACTER_IMPORT.md", "notes/character-pipeline.md", "notes/character-import-testing.md", "notes/strike-recovery.md"]
 created: "2026-11-02"
-updated: "2026-11-06"
-edited: "2026-11-06"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: reference
 ---
 
@@ -108,10 +108,12 @@ stock del disco creyendo que contiene BAG1, ni extraer `size` en vez de `alt_siz
 Así se perdieron temporalmente las versiones Heat y sus entradas fever/escenario.
 Tras empaquetar, comparar hashes de todas las filas preservadas, no solo su número.
 
-Para actualizar filas existentes, `alternate_payload.py` ofrece `repack`; conserva
-metadatos y rechaza entradas desconocidas, pero tiene base/capacidad fijas JP.
-No añade automáticamente personajes nuevos. La reconstrucción completa usa un
-spec que enumera tanto filas preservadas como nuevas.
+`alternate_payload.py:repack` es un helper **legacy de siete campos** (regex `ROW`
+y desempaquetado explícitos), con base/capacidad fijas JP. No admite el índice
+regional actual de nueve campos ni añade automáticamente personajes. No usarlo
+para el payload regional ni editar su salida a mano para simular compatibilidad.
+La reconstrucción completa usa un spec con filas preservadas y nuevas, de ambas
+regiones; comprobar hashes de cada slice y metadatos stock, no un número fijo de filas.
 
 La recuperación histórica de Heat desde una copia anidada y el índice de Git
 `096533d` está descrita en `notes/strike-recovery.md`. Esa copia fue una fuente
@@ -130,6 +132,22 @@ rescate con rutas/commit fijos, no el generador compartido a copiar.
 
 73/1 son **ejemplo Strike**, no valores universales. `kind`: 0=P1, 1=P2,
 2=fever del ganador, 3=escenario. Rutas relativas al CWD o absolutas.
+El ejemplo `file` representa una fila legacy sin variante JP; no supone que los
+bytes International sean japoneses. Para una fila regional usar **en vez de** `file`:
+
+```json
+{"rows": [{"entry": 73, "chr": 1, "kind": 0,
+           "regions": {"international": "<candidate-international.dfs>",
+                       "japanese": "<candidate-japanese.dfs>"}}]}
+```
+
+`regions` exige esas dos claves y excluye `file`. Si son idénticos, ambos nombres
+pueden referenciar el mismo archivo; deduplicar solo tras comparación exacta. El
+índice regional contiene `entry, chr, kind, off, size, alt_off, alt_size, jp_off,
+jp_size`. **`jp_size=0` significa ausente, no idéntico.** Cada miembro fuente que
+difiere entre regiones necesita transformación rastreable o exclusión explícita;
+comprobar primero reproducción byte a byte del candidato de referencia cuando se
+espera estabilidad, no igualdad forzada entre fuentes regionales distintas.
 
 ```powershell
 py -3.13 tools/bag1import/make_alt_entries_exact.py <original-disc.bin> <entries.json> <output-dir>
@@ -156,6 +174,12 @@ manifest.offset=458823680 y base relativa=0x1B538000. Volver a verificar para ot
 imagen. `sha256` del overlay es el del payload; `expected_sha256` es el hash de
 los bytes originales que reemplaza, **no** el del payload. En DUMMY verificado
 eran ceros de longitud igual al payload; no asumir ceros en otro destino.
+Tras cambiar payload o extensión original cubierta, recalcular hashes aplicables
+y comprobar todas las copias implicadas con
+`py -3.13 tools/bag1import/check_payload_manifest.py`. Inventariar las copias reales;
+cuatro fue el caso Gas-O, no un conteo universal. Ese checker no sustituye auditar
+cada entrada/variante preservada ni convierte un generador de una etapa en una
+orquestación completa de staging/deploy.
 
 **Validaciones manuales todavía obligatorias:** el script lee solo 4096 B de
 tabla DF2_, no valida exhaustivamente count/IDs duplicados/kind/chr. El código

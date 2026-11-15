@@ -23,6 +23,7 @@ hechos a partir de un resumen de chat. No leer todas las notas al empezar.
 | Contrato semántico, transiciones y cache | [Pipeline](notes/character-pipeline.md) |
 | Lecciones Gas-O: proceso común frente a excepciones | [Retrospectiva incorporada](notes/character-pipeline.md#lecciones-de-gas-o-incorporadas-2026-11-15) |
 | Reconstrucción DFS, payload y staging | [Entradas alternativas](notes/character-alternate-entries.md) |
+| Escenario completo: cámara por fase, texturas, eventos, props y audio | [Contrato de escenario](notes/bag1-stage-song.md#contrato-y-checklist-de-aceptación-por-escenario) |
 | Calibración, lado/traje y canción completa | [Pruebas](notes/character-import-testing.md) |
 | Estado/evidencia Strike | [Strike](notes/strike-recovery.md) |
 | Historia Heat y adaptadores específicos | [Heat](notes/bag1-character.md) |
@@ -39,11 +40,15 @@ hechos a partir de un resumen de chat. No leer todas las notas al empezar.
   variantes y compañeros. El fallo cerrado protege candidatos incompletos, no
   satisface el resultado final. Método y límites en el pipeline y las pruebas.
 - Sincronizar explícitamente fuentes/recursos antes de build; preflight no copia.
-- Validar bytes de DUMMY independientemente del guard defectuoso del generador.
+- Validar capacidad DUMMY en bytes independientemente del guard de la revisión/copia
+  usada; estado y límites del generador en la receta de integración.
 - Al importar escenarios BAG1 a BAG2, no basta con la geometría, texturas y audio: es obligatorio importar y cablear las interacciones y eventos del escenario que avanzan con el puntaje (niveles de puntuación / eventos dinámicos del entorno, como ocurrió en Heat con la rotura de ventanas y en Strike con su progresión; directiva del propietario 2026-11-06).
 - Importar cada personaje, canción y escenario BAG1 desde **ambos discos**, USA
   (`_work/bag1_disc_full`) y Japón (`_work/bag1jp_disc_full`, sin la censura
-  americana), y ofrecer las dos variantes en la elección de versión del juego.
+  americana), y ofrecer las variantes mediante las opciones regionales existentes
+  de [contenido regional](notes/regional.md). Modelos y escenarios usan sus opciones
+  globales independientes; canciones, su opción existente. No confundir región con
+  BAG1/BAG2 por lado ni añadir otro selector.
   Comparar miembro a miembro; si una región es idéntica, reutilizar sus bytes y no
   duplicar payload. Heat y Strike siguen solo con fuentes USA: pendiente tras Gas-O
   (directiva del propietario 2026-11-06, regla permanente).

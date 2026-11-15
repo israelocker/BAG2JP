@@ -105,7 +105,9 @@ hashes y rutas en [Strike](strike-recovery.md). Aplicar como comprobación, no p
 11. **Aceptación mínima reutilizable** (`_work/character_import/strike/`):
     `test_strike_full_match.py` (canción+fever+retorno, A y B), `probe_cue_table.py`,
     `test_strike_scale_mirror.py`, Dance View individual. Restaurar ajustes/tarjetas
-    (lo hace `IsolatedFiles`; si un run se interrumpe, restaurar desde su `baseline/`).
+     (lo hace `IsolatedFiles`; si un run se interrumpe, comprobar ownership y cambios
+     concurrentes antes de restaurar desde su `baseline/`; conservar el conflicto,
+     no sobrescribir cambios del owner con una copia antigua).
 
 ## Lecciones de Gas-O incorporadas (2026-11-15)
 
@@ -146,10 +148,22 @@ Estas reglas no certifican cobertura actual ni un conversor universal.
    controlador real loop/clamp, traslación y salida. El clamp metadata+5=1 corrigió
    CAUGHT; no aplicarlo a todos los clips. Seleccionar la versión del receptor por
    su lado al consumirla, no por la versión del atacante. Comprobar re-hit y parejas.
+   La selección solicitada no prueba el asset realmente cargado/residente: autenticar
+   versión, binding y bytes al consumir. Un préstamo de slot pertenece al actor y
+   contexto demostrados; comprobar aliases con compañeros y no modificar una tabla
+   global compartida como si fuese privada. Retirar/restaurar solo tras comprobar
+   que current/previous y decoder/cachés ya no referencian el préstamo. Invalidar
+   host en reset/load no retira ni autentica una publicación guest: el callback
+   `session_reset` de este contrato no escribe sobre guest de identidad perdida;
+   tras load, recuperar ownership desde bindings/bytes nativos comprobados o dejar
+   explícito el límite. Esto prescribe el contrato, no un lifecycle universal ya probado.
 7. **Escenarios.** Identificar ojo y objetivo de cámara antes de escalar distancia;
    tomar el aspecto de la presentación viva, no solo de settings. Comparar el mismo
    recorrido/frames nativos completos: una mejora local no prueba el resto del intro.
    Mantener los eventos por puntaje exigidos en la receta de escenarios.
+   Aplicar su [checklist por escenario](bag1-stage-song.md#contrato-y-checklist-de-aceptación-por-escenario):
+   posiciones/recorridos/transiciones por fase, VRAM/render, entorno/props, audio y
+   layout/modo con aplicabilidad explícita. Un intro aceptado no prueba las demás fases.
 8. **Motor común.** Un cambio compartido obliga a comprobar los imports afectados:
    regenerar el mapping anterior byte a byte cuando se espera estabilidad y auditar
    diferencias regionales miembro a miembro. No exigir igualdad entre regiones donde
@@ -164,6 +178,11 @@ Estas reglas no certifican cobertura actual ni un conversor universal.
    compartido y datos/assets propios; no clonar el parche Gas-O ni sus direcciones,
    paletas o hashes. Bi-O/Gas-O es la evidencia de origen; **Comet BAG2/Frida BAG1**
    es un requisito futuro indicado por el owner, no soporte ya implementado.
+   Inventariar también consumidores de identidad adicionales, incluida la pantalla
+   VS: declarar por consumidor aceptado, pendiente o fuera del alcance aprobado.
+   Selector/HUD correctos no acreditan arte/nombre VS. Gas-O dejó ese arte fuera
+   de alcance; no convertirlo aquí en un requisito de aceptación nuevo sin resolver
+   esa decisión ni afirmar que ya está corregido.
 10. **Nombre del HUD sobre la barra de puntuación.** Validarlo aparte del
     selector: debe aparecer completo, legible, en su lado y con la identidad de la
     versión elegida durante la partida. Nunca vacío, desaparecido ni con el nombre

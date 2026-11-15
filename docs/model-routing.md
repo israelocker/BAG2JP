@@ -5,8 +5,8 @@ tags: ["workflow", "context", "resources"]
 summary: "Aplicación de preferencias del propietario sin porcentajes de ahorro ni telemetría inventados."
 related: ["AGENTS.md", "MAINTENANCE_GUIDE.md", "notes/documentation-audit.md"]
 created: "2026-11-02"
-updated: "2026-11-04"
-edited: "2026-11-04"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: requirements
 ---
 
@@ -41,9 +41,12 @@ instalar dependencias o abrir agentes simplemente para usar todos los recursos.
   duplicadas; estimación heurística, no tokenizer.
 - `/dcp stats` (plugin `@tarquinen/opencode-dcp`): ahorro de la poda en la sesión.
 
-## Optimización de OpenCode (configurada 2026-11-04)
+## Optimización de OpenCode (observación histórica 2026-11-04)
 
-Se aplica sola en cada sesión nueva; no requiere pasos del agente.
+Configuración observada en esa fecha, no garantía sobre el harness o catálogo de
+una sesión posterior. No instalar, cambiar plugins/configuración ni ejecutar
+acciones de gestión de contexto a partir de esta nota. Prevalecen las herramientas,
+modos y permisos explícitos de la sesión; un recordatorio no es autorización.
 
 - `.opencode/opencode.json` (versionado): `policies` ocultan skills y MCP ajenos
   al port (Sanity, Fastly, Bright Data, Auth0, SEO, marketing…) y
@@ -55,8 +58,10 @@ Se aplica sola en cada sesión nueva; no requiere pasos del agente.
   `@ramtinj95/opencode-tokenscope@1.8.1`, `opencode-context-usage@0.3.1`.
   Probar candidatos nuevos con `D:/Dev/Tools/opencode-plugin-test/test_plugin.ps1
   -WaitSeconds 90 <pkg@ver>` antes de instalarlos.
-- Si el agente ve recordatorios de DCP, comprimir solo rangos cerrados; mantener
-  sin comprimir la tarea activa. Ajustar DCP solo con cifras de `/dcp stats`.
+- En aquella configuración se describió poda/compactación por rangos. Su uso está
+  sujeto al modo y autorización del harness actual; no asumir ejecución automática
+  ni permiso de comprimir por ver metadatos. Cualquier ajuste sigue requiriendo
+  alcance autorizado y medición real, no esta observación histórica.
 
 Los antiguos objetivos «60–90%», «8 KB» o «30–45 minutos» sin comparación no son
 resultados. Registrar método, conjunto y alcance antes/después, sin inventar ahorro.

@@ -11,6 +11,25 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 20261115-ghidra-standards-recheck — consultas de los auditores documentales
+
+- Tipo: uso acotado reportado por subagentes; sin análisis/instalación ni partidas.
+- Ambos informes conservan MCP `get_program_info()` → `SLPM_862.19`, main PSX JP,
+  SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  Auditor personajes: `get_function_by_address(0x800125fc)` → función
+  `800125fc..8001262b`, confirma existencia, no semántica/lifecycle. Auditor escenarios:
+  `read_memory(0x800555a8,8)` → `98 00 88 00 a4 00 98 00`; índice u16 1=136,
+  compatible con duración stock citada. No overlay de escenario verificado.
+- Evidencia: `_work/retro/standards-recheck/{characters,stages}.md`; contraste de
+  referencias con fuentes documentales en esos informes. La primaria no presenta
+  esos leads como prueba de ejecución/aceptación ni repite consultas sin pregunta.
+  Auditor workflow omitió MCP por restricción documental y lo declaró; sin efecto
+  sobre el uso efectivo de MCP por los otros auditores y las consultas previas de
+  esta sesión. Captura/FFmpeg/intérprete no ejecutados: ningún cambio de media/código.
+- Dictamen: inconcluso para comportamiento; identidad/bytes acotados, no utilidad
+  universal. Tiempo, retrabajo y ahorro no medidos. Reutilizar mismos inputs y
+  confirmar consumidores en la tarea de implementación, no por esta revisión.
+
 ## 20261115-ghidra-retro-standard — contraste documental CAUGHT
 
 - Tipo: uso real acotado para contrastar una afirmación del nuevo estándar.

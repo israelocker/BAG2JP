@@ -5,8 +5,8 @@ tags: ["online", "netsync", "reference"]
 summary: "Distingue código netsync, pruebas locales históricas y aceptación real entre máquinas todavía no acreditada."
 related: ["notes/character-import-testing.md", "notes/project.md"]
 created: "2026-10-29"
-updated: "2026-11-02"
-edited: "2026-11-02"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: reference
 ---
 
@@ -20,6 +20,11 @@ Hay dos vías distintas: netplay del framework y sincronización de resultados
 de pasos del título. No aplicar opciones/limitaciones de una a la otra.
 Cambios de assets o timing requieren revisar identidad de contenido de ambos peers.
 Dos selecciones que coinciden visualmente no prueban sincronización musical.
+Inventariar qué cubre realmente la identidad/fingerprint de la implementación
+activa y qué queda fuera: runtime, mods/opciones, payload/índice, región y timing
+pertinentes. Un campo igual entre peers no prueba igualdad de inputs excluidos de
+ese campo. Contrastar código/bytes antes de prescribir otro formato o afirmar un
+bug; esta regla no cambia protocolo ni autoriza conexión o prueba online.
 
 El [registro histórico](archive/online-before-audit.md) documenta experimentos de
 dos procesos en una máquina (LAN, relay, direct IP), barreras, focus pause y audio.

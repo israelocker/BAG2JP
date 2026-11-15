@@ -5,8 +5,8 @@ tags: ["assets", "archive", "reference"]
 summary: "Identidad de assets, herramientas instaladas y uso pertinente obligatorio con historial individual de efectividad."
 related: ["notes/character-alternate-entries.md", "notes/bag1-stage-song.md"]
 created: "2026-10-26"
-updated: "2026-11-13"
-edited: "2026-11-06"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: reference
 ---
 
@@ -99,9 +99,9 @@ historial. Por ensayo registrar:
 4. Mantener la aceptación real del juego y la escucha humana donde correspondan.
    Un primer éxito no valida todos los personajes, overlays ni formatos propietarios.
 
-Primer ensayo recomendado, aún pendiente: decodificar copias de XA/STR ya
-inventariadas con jPSXdec y contrastar canal, duración y contenido con la evidencia
-existente. La instalación no ejecutó ese ensayo ni modificó assets.
+En la instalación del06-11 quedó pendiente un primer ensayo XA/STR; no es estado
+actual de la herramienta. Los ensayos posteriores y sus límites se consultan en
+su [historial jPSXdec](tool-evidence/jpsxdec.md); no inferir éxito para STR de un uso XA.
 
 ### Historial por herramienta y pertinencia
 
@@ -120,13 +120,19 @@ todos los historiales como contexto de inicio. Consultar solo los pertinentes.
 | [ffmpeg-skill](tool-evidence/ffmpeg-skill.md) | Cuando haga falta medir, recortar, comparar frames, extraer o medir audio, generar montajes o comprobar archivos de video/audio en el proyecto |
 | [bag2_record.py](tool-evidence/bag2-record.md) | Siempre en toda validación en juego (AGENTS «Validación en juego grabada»): video + audio exacto del juego alineado a fotogramas; skill `bag2-game-recording` |
 
-### ffmpeg-skill (instalado en el proyecto, 2026-11-10)
-
-Integrado en `tools/ffmpeg-skill` (v3.2.3). Doctor: 84 capacidades disponibles, 0 requeridas faltantes, 1 opcional faltante (`parakeet`). **Uso obligatorio cuando sea pertinente** para evidencia o procesamiento de video/audio; no sustituye pruebas de juego ni demuestra fidelidad por sí solo. No aplicar normalización, eliminación de silencios ni cambios de velocidad a evidencia original sin autorización. Historial: `notes/tool-evidence/ffmpeg-skill.md`." Desde 2026-11-12 la copia cargada como skill es `.agents/skills/ffmpeg-skill` (v3.6.0, completada con autorización); `tools/ffmpeg-skill` (v3.2.3) queda duplicada hasta que el owner decida (ver ffmpeg-skill-002).
 | [Ghidra / PSX / PsyQ](tool-evidence/ghidra-psx-psyq.md) | Siempre según AGENTS; firmas PsyQ solo cuando aporten a la identificación concreta |
 | [PCSX-Redux](tool-evidence/pcsx-redux.md) | Un diagnóstico complementario necesite GPU/GTE/breakpoints y no lo resuelva la referencia nativa; respetar autorización y sesiones |
 | [funcmatch.py](tool-evidence/funcmatch.md) | Se busquen equivalentes de funciones de los ejecutables principales BAG1/BAG2, no overlays |
 | [Intérprete PSXRecomp](tool-evidence/psxrecomp-interpreter.md) | Haga falta ejecutar un tramo MIPS real fuera del juego con RAM/callees delimitados; no sustituye render/cadencia ni aceptación en partida |
+
+### ffmpeg-skill (instalación histórica y ruta operativa)
+
+Instalación del10-11 en `tools/ffmpeg-skill` v3.2.3: doctor84 capacidades,0 requeridas
+faltantes,1 opcional (`parakeet`). Desde12-11 se carga `.agents/skills/ffmpeg-skill`
+v3.6.0; la copia antigua se conserva hasta decisión del owner, no se borra aquí.
+Ver [historial](tool-evidence/ffmpeg-skill.md), entrada ffmpeg-skill-002. Usar cuando
+sea pertinente, sin confundir doctor con aceptación de media/juego ni normalizar,
+eliminar silencios o alterar velocidad de evidencia original sin autorización.
 
 No se impone una prueba peligrosa ni un cambio de configuración ajeno al objetivo.
 Si procede la herramienta pero está bloqueada, ya existe evidencia reutilizable

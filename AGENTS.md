@@ -56,7 +56,7 @@ When the owner only says "continúa", "sigue con lo pendiente" or similar:
 6. Reuse successful searches/checks/builds/captures/reviews while their inputs/runtime remain unchanged and no new evidence contradicts them. Reuse the running process and its log; do not start a duplicate check to compensate for waiting.
 7. Save small task-owned local checkpoints after appropriate verification. Label unaccepted candidates experimental/WIP, record failed or missing checks and never imply acceptance or deployment permission from a commit.
 8. Update one canonical topic note when facts, procedure or task state change: result, evidence and next step. Keep NOTES.md as links, not a second status ledger.
-9. Cold review (owner request 2026-11-10): if the change touches `tools/**`, `mods-src/**`, `patches/**`, a payload or manifest file, `AGENTS.md`, `IMPORT_STANDARD.md` or `docs/coding-standards.md`, run the Goldfish review described in `notes/goldfish-review.md` before closing it, and record the verdict or the omission in the topic note. It never replaces the verification or acceptance gates above.
+9. Cold review (owner request 2026-11-10): use the canonical trigger list in `notes/goldfish-review.md` for executable `tools/**`, `mods-src/**`, `patches/**`, payloads/manifests and the named policy files. Run its Goldfish review before closing an applicable change and record the verdict or omission in the topic note. It never replaces verification or acceptance. A `.md`-only tool note is not executable; a real payload/manifest is identified by its role, not just its filename.
 
 Use a persisted plan and approval for broad changes, migrations or uncertain design decisions. For a small correction under an already approved objective, the objective/check above suffices; do not create another extensive planning round. New scope or a new consequential decision still needs approval.
 
@@ -101,7 +101,7 @@ Use a persisted plan and approval for broad changes, migrations or uncertain des
 
 ## Local efficiency (owner authorized 2026-10-30)
 - Prefer verified local scripts and installed tools; use local models for bounded, reviewable bulk work, one GPU model at a time. Keep game-test GPU use separate.
-- The workflow helper provides `preflight`, `build`, `test-stage-select` and `report --tag <tag>` with logs/timings in `_work/workflow/`. Drift is diagnostic: source/resource staging is still manual and must be verified before build/deploy. The exact payload generator's DUMMY capacity guard also needs an independent byte-capacity check until corrected; do not claim either safeguard is automated.
+- The workflow helper provides `preflight`, `build`, `test-stage-select` and `report --tag <tag>` with logs/timings in `_work/workflow/`. Drift is diagnostic: source/resource staging is still manual and must be verified before build/deploy. Independently check DUMMY capacity in bytes; generator/build-copy guard status is revision-specific (see notes/character-alternate-entries.md). A correct comparison in one copy does not verify the deployed workflow; do not claim these safeguards are fully automated.
 - Build reusable automation when it removes a demonstrated repeated step. Preserve the local Git, experimental deployment and in-game acceptance workflow above; measure improvements before claiming savings.
 
 ## Shared character standard (owner requested 2026-10-31)

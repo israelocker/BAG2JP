@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/character-import-testing.md"
-source_sha256: "0e795014241e6aeda421797eaff5c24bdac6d727187d19e21edc26202c73c55b"
+source_sha256: "9805c699d539d8980df2604fb3d83048e1ae98a4941bad0f2f8c5bd4c21753af"
 ---
 
 # Pruebas: lectura por fase
@@ -27,6 +27,9 @@ source_sha256: "0e795014241e6aeda421797eaff5c24bdac6d727187d19e21edc26202c73c55b
   flags por harness, trace/heartbeat, tags únicos, guardar desde escenario a retorno.
 - Handshake observable para menú/save/load; cerrar grabador antes que juego.
   No rescatar ni relajar gates; diagnosticar offline antes de otra toma.
+- Registrar features/flags efectivos y rutas reales de tarjetas sin sobrescribir
+  cambios concurrentes; distinguir reloj musical/global/QPC/video. Primera
+  presentación del selector también se revisa, no solo el estado estabilizado.
 - Manifest accepted=true solo acepta captura. Revisar pixels BAG2JP y cada evento,
   audio objetivo más escucha humana. Latencia no calibrada; no garantía ±2 frames.
 - Comandos, backends, límites del harness y fallos conocidos en la fuente.

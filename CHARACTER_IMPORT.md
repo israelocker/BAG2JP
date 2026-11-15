@@ -240,7 +240,17 @@ Never assume Heat's counts, IDs, bones, fever folders or model layout.
 - Preserve required victory announcer names only when the character exists in both
   games and the capability is verified.
 - Do not assume a second bank loads. Verify the actual BAG2 loader behavior.
-- Keep fever cues muted when appropriate.
+- Preserve required fever audio; suppress a cue only under an explicit, evidenced
+  adaptation (for example a host-character cue that must not leak). Heat's old
+  blanket-muting recipe is not a rule for other imports.
+- Inventory announcer consumers separately when applicable: VS names on both
+  sides, victory names, phrases and "versus" may live in different banks. A verified
+  cue base does not verify every consumer. Record which final samples are exact,
+  deduplicated or resampled; voice fitting does not prove SFX/announcer fidelity.
+- Audit parallel effects/audio callbacks before redirecting a request or suppressing
+  a channel: changing motion can leave particles/SFX, and suppressing an effect can
+  also remove sound. Distinguish event/dispatcher IDs from actual SPU cues; test
+  character branches and re-hit without generalizing Gas-O's numeric IDs.
 
 ## 9. Asset and package rules
 
@@ -248,8 +258,8 @@ Use `notes/character-alternate-entries.md` for the executable recipe. Rebuild
 members with `rebuild_dfs_members.py`; generate full payload/index from explicit
 rows with `make_alt_entries_exact.py`. Keep old BAG1 bytes from the accepted
 payload, not stock disc entries. Validate actual DUMMY byte capacity independently:
-the canonical generator now compares bytes, but the build-tree copy differs and
-that prior change is not certified by this documentary audit. Never truncate
+the canonical generator compares bytes, but do not infer equality or tested safety
+of another revision/build copy. Never truncate
 growing entries, reuse stale DFS offsets or assume preflight synchronizes sources.
 
 - Generate candidates only.

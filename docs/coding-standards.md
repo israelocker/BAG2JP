@@ -25,7 +25,7 @@ es señal para revisar responsabilidades, no motivo para fragmentarla mecánicam
 |----------|-------------|
 | No magic constants | Reemplazar literales numéricos con `#define` o `enum` con nombres descriptivos. Direcciones, puertos, tamaños de buffer, límites de frames deben ser constantes nombradas. |
 | Validate input early | Verificar punteros, rangos y valores de retorno al inicio de cada función. |
-| One purpose per function | Las funciones deben hacer una cosa; dividir funciones de más de 30 líneas. |
+| One purpose per function | Una responsabilidad por función; revisar funciones largas sin dividir mecánicamente por número de líneas. |
 | Comment the "why" | El código explica qué; los comentarios explican por qué se tomó una decisión. |
 | Group related `#define` | Colocar constantes al inicio del archivo, antes de su primer uso, con comentarios inline explicando su propósito. |
 
@@ -113,7 +113,8 @@ def validate_file(path: Path, fix: bool = False) -> list[str]:
 - Una autoridad por tema; índices enlazan y digests resumen con `source` y hash.
   No mantener variantes clean/optimized con aceptación independiente.
 - Cambio documental: checker y revisión de afirmaciones/enlaces. Cambio de
-  comportamiento: regresión RED→GREEN y aceptación relevante del runtime.
+  comportamiento del juego: regresión RED→GREEN y aceptación relevante del runtime.
+  Tooling host: regresiones en su costura, no partida por defecto; rige AGENTS.
 - No se certifica ahorro con porcentajes genéricos ni con tests no relacionados.
 
 ### Plantilla de frontmatter
@@ -171,4 +172,4 @@ Estos son requisitos; no cambian herramientas ni corrigen deuda por sí mismos.
 | Descriptive test names | `test_buffer_ms_rejects_out_of_range` no `test1`. |
 | Edge cases | Probar valores límite (mín, máx, cero, vacío). |
 | One assertion per test | Cuando sea posible, cada prueba verifica un comportamiento. |
-| In-game acceptance | Un cambio de código está completo solo después de que el flujo en juego pase, no solo después de compilar. |
+| Verification at the relevant seam | Un cambio de comportamiento del juego requiere su flujo en juego, no solo compilar. Tooling host requiere sus regresiones; documentación, comprobación documental. Rigen los permisos de AGENTS. |

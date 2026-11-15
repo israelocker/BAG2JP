@@ -1,12 +1,12 @@
 ---
 id: bag1-stage-song-heat
-title: "Escenarios y canciones BAG1: Heat y Strike"
+title: "Escenarios y canciones BAG1: contrato compartido y evidencia"
 tags: ["bag1", "heat", "stage", "song"]
-summary: "Receta compartida Heat/Strike, fuentes JP, audio y evidencia delimitada; campaña y escucha pendientes."
+summary: "Checklist por fases: cámaras, recursos, eventos por puntaje, props, render y audio; evidencia Heat/Strike/Gas-O sin aceptación universal."
 related: ["notes/bag1-character.md", "notes/character-pipeline.md", "notes/character-import-testing.md"]
 created: "2026-10-30"
-updated: "2026-11-06"
-edited: "2026-11-06"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: reference
 ---
 
@@ -35,6 +35,9 @@ doc_kind: reference
    El reporte conserva `experimental=true`; su texto fijo «stock sound bank» es
    obsoleto cuando `native_sfx_bank0=true`: comprobar bytes, no ese texto.
 4. Revisar referencias externas/CLUT/UV, cámara, efectos, luces y lista vacía.
+   Completar el [contrato por fases](#contrato-y-checklist-de-aceptación-por-escenario)
+   antes de declarar importación completa; los valores del ejemplo Strike no son
+   parámetros universales ni una autorización de usar cámaras BAG2 en otro mapa.
    **Requisito obligatorio:** identificar e importar las interacciones y eventos
    del escenario que avanzan con el puntaje (`level` vs `prev_level`); no basta
    con la geometría estática ni la pista de audio.
@@ -80,6 +83,122 @@ Las partidas Strike anteriores al port de escenario usaban **Heat BAG2** como
 escenario/canción. No prueban Strike BAG1. Los candidatos visuales iniciales
 conservaban audio/SFX BAG2; fueron sustituidos por las revisiones descritas abajo.
 
+## Contrato y checklist de aceptación por escenario
+
+Detalle incorporado el15-11 al contrastar casos Heat/Strike/Gas-O. Es requisito
+documental de cada importación, no afirmación de cobertura ni un nuevo conversor.
+Guardar esta ficha en la nota/perfil **existente** del escenario, sin crear otra
+guía paralela. Cada fila debe declarar **aplica / no aplica con evidencia /
+desconocido** y distinguir requisito, implementación, evidencia nativa, test host,
+prueba en juego y conformidad del owner, con hashes/revisión y límites. Un caso
+aceptado no rellena celdas de otro escenario/región/modo.
+
+### Identidad, formato y geometría
+
+- Identificar juego, región/disco, ID, módulo/base, hashes, callbacks y acceso
+  nativo campaña/VS por variante. Layout normal, especial o jefe no son sinónimos.
+  Robo-Z gigante/helicóptero y disponibilidad VS siguen preguntas del owner por
+  verificar en Gas-O; no inventar acceso, desbloquear mapas ni certificar campaña
+  por una prueba VS/Ending View.
+- Mapear miembros, orden/cursor del loader, tipos de nodos, instancias/referencias,
+  transforms, colas, chart, bancos de cámara y lista de animaciones. No truncar cola
+  ni vaciar animaciones porque el mapa estático ya aparezca. Justificar conservación
+  stock/lista vacía y cualquier recurso no interpretado; son límites, no equivalencia.
+- Registrar unidades y escala efectiva de escenario/props/actores frente a cámara.
+  Contrastar transformaciones y render nativo; ×1.5, flattening y nodos de un ejemplo
+  no se aplican por analogía. Si dos notas discrepan, identificar revisiones/inputs
+  antes de diagnosticar un defecto del candidato actual.
+
+### Cámaras: posición, trayectoria y transiciones son comprobaciones distintas
+
+| Fase aplicable | Qué debe quedar inventariado y revisado |
+|---|---|
+| Presentación → READY → GO | Banco, disparador, trayectoria completa, encuadre y enlace al combate |
+| Baile/combate | Bancos/controlador, movimientos y cambios de plano con actores y entorno activos |
+| Entrada/solo/fever/salida | Selección real de pistas, duración/ritmo y continuidad al entrar y volver |
+| Final y retorno | Cámara durante poses/resultados y salida sin heredar estado indebido |
+
+Por fila registrar formato/consumidor, claves, ojo/objetivo cuando corresponda,
+tiempo nativo, ritmo, duración, interpolación y condiciones de cambio. No asumir
+que los últimos tres componentes son ángulos: en el banco Gas-O comprobado son
+objetivo xyz. Antes de transformar, verificar tamaño, rangos y preservación de
+datos que no deben cambiar. Al adaptar distancia, hacerlo respecto al objetivo
+con la convención demostrada, no escalando seis valores a ciegas.
+
+Comparar recorrido completo y enlaces con instantes/cámara equivalentes; un buen
+fotograma o una fórmula host no prueban fidelidad de movimiento/GTE. Registrar
+distancia/velocidad/tramos estáticos como adaptaciones **solo donde fueron
+aprobadas**; conservar la adaptación Gas-O ya aceptada sin convertirla en regla
+universal ni revocarla para imponer exactitud temporal nueva. Otros desacuerdos
+de fidelidad quedan pendientes de decisión, no se resuelven copiando cam95.
+Alcance concreto Gas-O: [Bloque3 aceptado](gaso-import.md#bloque-3-escenario-hud-y-audio-re-hit-de-heat-2026-11-14-aceptado-por-el-propietario),
+toma `block3-stage-c`; allí constan payload/runtime, recorrido del intro y límites
+de temporización/ventilador. Esa aceptación acotada no certifica todas las pistas.
+
+### Texturas, recursos dinámicos y render
+
+- Trazar miembro→descriptor→imagen/CLUT/tpage/UV, incluidos atlas comunes y sprites;
+  un TIM local no necesariamente contiene todas las dependencias. Verificar bpp,
+  flags reales, coordenadas, ocupación VRAM y consumidores/MoveImage antes de retarget.
+- Revisar uploads/copias y paletas animadas durante las fases relevantes, con ambos
+  actores y mods aplicables. Separar simulación estática de VRAM observada; una
+  imagen rara no demuestra descarga/corrupción de texturas. Un negativo solo cubre
+  los recursos/rangos inspeccionados, no los comprimidos o indirectos omitidos.
+- Distinguir culling de pantalla, profundidad/GTE, clipping, ordenación OT y VRAM.
+  Comparar cámara/fase/tiempo equivalentes y revisar todo el trayecto, incluidas
+  caras tardías. Para una corrección respaldada, conservar materiales/transforms
+  y superficies ajenas; regenerar el inventario del **candidato**. No subdividir
+  todas las caras ni introducir bias global por el arreglo local del cartel GAS.
+  Mantener la mejora de estructuras Strike aplazada; este estándar no la reactiva.
+- Separar luces de escenario y actor; documentar estado/objetivo, interpolación,
+  reloj y accesos indexados. No reponer el override facial Strike rechazado.
+  Para partículas/sprites: emisor, trigger, lifetime, recursos/mezcla, ABI y proyección
+  deben estar identificados; revisar aparición, evolución y retirada. Tests
+  aritméticos aislados no prueban render integrado ni autorizan forzar efectos.
+
+### Entorno por puntuación y props
+
+Aplicar el contrato de la sección siguiente, ya obligatorio: para cada estado o
+efecto anotar fuente de puntuación/actor(es), umbrales nativos, adaptación BAG2
+aprobada, condición, callback, recursos y resultado visible esperado. Probar antes,
+en y después de cada transición pertinente; los umbrales Heat o best-score Gas-O
+no son universales. Nivel correcto en RAM no demuestra que ocurrió cada efecto.
+
+Comprobar identidad/residencia y variante antes del shim; no afectar el mapa stock
+de la misma casilla. Demostrar orden productor→update→prev conforme al consumidor
+nativo, no imponer un orden por la descripción de otro mapa. Cubrir primer beat,
+fin, reset/revancha y negativos stock/otra entrada/sin shim donde aplique.
+
+Por prop dinámico registrar inicialización, estado/transform, reloj/delta,
+disparadores, topes/wrap y salida. Probar todas las ramas de accesos reubicados y
+contrastar original/candidato en intérprete cuando sea la costura adecuada: «cero
+referencias sin mapear» no prueba LUI/globals en otra rama. El ventilador Gas-O
+enseñó ese proceso; sus divisores/nodos no son estándar para otros props. Velocidad
+en RAM y cadencia visual requieren evidencia distinta; declarar lo que no se pudo ver.
+
+### Música, SFX, opciones y flujo completo
+
+- Por región/opción registrar identidad de canción, archivo/canal/extents, hashes,
+  tabla nativa de duración, chart/arranque/final y edición CD aprobada. Duración de
+  WAV/FLAC no equivale al fin lógico de batalla; 44100Hz no acredita origen CD.
+  No elegir tema por nombre de carpeta ni copiar cortes/fades de otro escenario.
+- Por SFX identificar emisor/evento→cue→banco/muestra, tono/tiempo y reproducción
+  real junto a música, ambos actores y fever. Separar bytes, disparo y escucha
+  humana. La frase fija de un reporte no prevalece sobre el banco efectivo; copiar
+  un banco no prueba que se use ni que sus recursos estén en el paquete activo.
+- Separar versión del personaje por lado, región global de modelos, región global
+  de escenarios y opción musical existente: [autoridad regional](regional.md).
+  Probar selección/carga real y vuelta a stock; variante ausente no equivale a
+  variante idéntica. No añadir un selector ni inferir estado vivo del default.
+- Para el layout probado revisar P1/P2, mixtos/opuestos y parejas aplicables,
+  home/leash/centrado, zoom y cámara por fase. La implementación BAG1 común y sus
+  exclusiones están en el [pipeline](character-pipeline.md); no imponer ±870 ni
+  separación fija de pantalla a encuentros especiales sin verificar sus gates.
+- Exigir canción/fever/final/retorno del flujo aplicable y [grabación/revisión](character-import-testing.md).
+  Campaña, VS y Ending View conservan evidencia y alcances separados. No deducir
+  aceptación auditiva, online o de todos los niveles de una partida terminada.
+  Toda prueba nueva conserva autorización, ajustes/tarjetas y aceptación del owner.
+
 ## Requisito obligatorio: eventos e interacciones del escenario según el puntaje (2026-11-06)
 
 - **Regla general de importación de escenarios BAG1 a BAG2:**
@@ -87,16 +206,16 @@ conservaban audio/SFX BAG2; fueron sustituidos por las revisiones descritas abaj
 - **Lógica nativa en BAG1:**
   En BAG1, la función de actualización del escenario (`update`, e.g. `0x801DDC60` en Strike JP, `FUN_801d...` en Heat) compara en cada ciclo el nivel de puntuación actual (`level`, en Strike JP `0x8006F638`, en Heat `0x80068714`) frente al nivel previo (`prev_level`, en Strike JP `0x8006EACC`, en Heat `0x800979D0`). Si `level > prev_level`, se activan los eventos de transformación del entorno correspondientes al nuevo nivel.
 - **Adaptación requerida en BAG2JP:**
-  El motor de BAG2 calcula el nivel de baile (`0x8005141C`) con sus propias tablas y umbrales. Para que el escenario importado reaccione, es imprescindible:
+  El motor de BAG2 calcula el nivel de baile (`0x8005141C`) con sus propias tablas y umbrales. La receta histórica siguiente describe las costuras Heat/Strike; cada escenario debe demostrar su propio contrato y orden de consumo, no copiar esas globales sin verificar. Para que el escenario importado reaccione, es imprescindible:
   1. Que `b1s_vblank` (`bag2jp_bag1_stage.c`) adapte la puntuación de BAG2 al formato de nivel esperado por el escenario BAG1 y lo escriba en el shim de comunicación (`B1S_SHIM + 8`).
   2. Que el guard del escenario en `b1s_vblank` no descarte el escenario (p. ej. `psx_mod_read_byte(stage) > 1` descarta otros escenarios que no sean 0 o 1).
-  3. Que el DBI o trampolín del escenario invoque el `update` nativo propagando `level` (`SHIM + 8`) a `prev_level` (`SHIM + 9`).
+  3. Que el DBI o trampolín invoque el `update` nativo y gestione `level`/`prev_level` con el orden demostrado para ese escenario (en el shim histórico: `+8`/`+9`). No acreditar todos los efectos por observar solo esos dos bytes.
 - **Incidencia observada en Strike BAG1 (revisión 2026-11-06):**
   Durante la prueba en vivo de duelo ordenado (`_work/versus-runs/20261106T043419201749Z-ordered-heat-heat-strike-strike`), el propietario observó y reportó: *«el escenario de strike no esta avanzando, recuerda que mientras mas puntaje haces el escenario va teniendo eventos, lo mismo paso con la importación del escenario de heat, se habia importado bien, pero faltaba la interacción del escenario cuando iba subiendo su puntaje, ponlo en una nota que cuando importas los escenarios de bag1 a bag2 tambien tienes que importar esas interacciones del escenario con el puntaje»*.
   El escenario de Strike cargó su geometría y música, pero está estático frente a la puntuación. Esta interacción con el puntaje queda registrada como requisito mandatorio pendiente de implementación para Strike y para todo futuro escenario BAG1.
 
 - **Incidencia resuelta: Pasillos laterales y celdas ausentes (2026-11-06):**
-  - Causa: En el modelo original de BAG1 (`ST_STRI.DFS` archivo 5, 44 huesos), los huesos 0 a 39 utilizaban 10 mallas maestras (tipo 1) en Z=+29607 y 30 referencias relativas (tipo 2) a Z=-29589, -9857 y +9875 para instanciar los pasillos a lo largo de Z. BAG2 no soporta huesos tipo 2 en modelos de escenario, por lo que las 3 secciones laterales en Z no se renderizaban y las maestras quedaban desplazadas hacia adelante fuera de cámara.
+  - Observación: En el modelo original de BAG1 (`ST_STRI.DFS` archivo 5, 44 huesos), los huesos 0 a 39 utilizaban 10 mallas maestras (tipo 1) en Z=+29607 y 30 referencias relativas (tipo 2) a Z=-29589, -9857 y +9875 para instanciar los pasillos a lo largo de Z. La explicación inicial atribuyó las secciones ausentes a una falta global de soporte tipo2 en BAG2. **Conclusión retirada:** la lectura posterior de `0x80022660` contiene `case 2` (véase «Prueba pendiente: estructuras laterales durante solos»). El éxito de flattening en ese candidato no demuestra tal limitación universal ni resuelve los huecos/culling posteriores.
   - Solución: Se implementó `flatten_type2=True` en `tools/bag1import/model_bag1_to_bag2.py` y se configuró en `tools/bag1import/profiles/stages/strike.json`. Esto expande cada nodo tipo 2 en una malla independiente tipo 1 con su propia copia de geometría.
   - Validación: Reempaquetado del DFS de Strike (334.816 bytes, 44 nodos tipo 1), actualización de payload `bag1_alt.bin`, compilación y prueba en vivo con captura de pantalla (`strike-stage-flattened-run-v6`). Los pasillos, las rejas de las celdas de la prisión, el suelo continuo y las luces del techo ahora se renderizan perfectamente en ambos lados flanqueando a los bailarines.
 

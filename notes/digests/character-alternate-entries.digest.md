@@ -5,11 +5,11 @@ tags: ["digest", "character", "payload"]
 summary: "Checklist de integración DFS/DUMMY y límites antes de desplegar otro personaje."
 related: ["notes/character-alternate-entries.md", "notes/character-import-testing.md"]
 created: "2026-11-02"
-updated: "2026-11-06"
-edited: "2026-11-06"
+updated: "2026-11-15"
+edited: "2026-11-15"
 doc_kind: digest
 source: "notes/character-alternate-entries.md"
-source_sha256: "f344113a7c6a4d2ceb3456204ba26326ec3c781c4d4099998fd871c6bba12a78"
+source_sha256: "1cb64d0e5abfff567ecf6351e86bd78bfcceb84b0afdb6fe881f59428cc3f735"
 ---
 
 # Integración: resumen
@@ -23,11 +23,16 @@ source_sha256: "f344113a7c6a4d2ceb3456204ba26326ec3c781c4d4099998fd871c6bba12a78
   leerlas del disco stock. Hash por fila antes/después, no solo count.
 - `make_alt_entries_exact.py <disc> <rows.json> <out>`: bytes exactos, sectores
   2048, deduplicación; jamás truncar alternativas mayores que stock.
-- El generador canónico ya usa capacidad en bytes por cambios previos, no el
-  build divergente. Sigue obligatorio validar `payload_bytes <= DUMMY extent
+- Filas regionales usan `regions` con international/japanese, sin `file`; si son
+  iguales compartir archivo/bytes. Índice nueve campos; `jp_size=0` es ausente,
+  no equivalente. Repack legacy siete campos no sirve para este esquema.
+- El generador canónico usa capacidad en bytes; no inferir otra revisión/copia.
+  Sigue obligatorio validar `payload_bytes <= DUMMY extent
   bytes` aparte; revisar count/IDs únicos/kind/chr y tabla 4096 B.
 - Manifest `disc_user` absoluto; índice relativo a BUST2; raw2352 es otro espacio.
 - SHA payload ≠ expected SHA de bytes originales reemplazados.
+- Tras cambios, comprobar manifiestos de las copias realmente implicadas con
+  `check_payload_manifest.py`; no sustituye auditoría de slices/metadata de regiones.
 - Opciones/plugin no son genéricos por añadir una fila. Strike está bajo
   feature `bag1-heat`; no existe `bag1-strike`.
 - Sincronizar mods-src→build/src y recursos→mods/preloaded antes de build.

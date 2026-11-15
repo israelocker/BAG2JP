@@ -38,12 +38,16 @@ estas rutas:
 - `tools/**` (código ejecutable; los `.md` de `tools/` no cuentan)
 - `mods-src/**`
 - `patches/**`
-- el generador de payload o su manifiesto (archivos con `payload` o `manifest`
-  en el nombre)
+- el generador de payload, un payload o su manifiesto, identificados por su función
+  en el paquete y sus rutas declaradas, no solo por contener `payload`/`manifest`
+  en el nombre
 - `AGENTS.md`, `IMPORT_STANDARD.md`, `docs/coding-standards.md`
 
 No se aplica si el diff completo cae en `notes/**`, `docs/**` (salvo las tres
 rutas anteriores), `_work/**`, o si es solo typo, enlace o recuento.
+Esa exclusión se refiere a documentación/evidencia: un payload o manifiesto real
+no deja de activar revisión por estar en `_work/` o tener otro nombre. Un texto
+que solo menciona un payload no es por ello un manifiesto.
 
 Reglas adicionales:
 

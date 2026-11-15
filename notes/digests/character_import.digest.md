@@ -8,7 +8,7 @@ created: "2026-11-02"
 updated: "2026-11-15"
 doc_kind: digest
 source: "CHARACTER_IMPORT.md"
-source_sha256: "c4c62ada79a6fa69b7a3a7f9582f327729c854f4ed23a3f7020dcd250034517a"
+source_sha256: "35d1b4b2ed1800abb81c04d66e1aab1fc84a172c248da9132d8662fa41b0c4b3"
 ---
 
 - Fuente canónica: [CHARACTER_IMPORT](../../CHARACTER_IMPORT.md); entrada mínima:
@@ -20,6 +20,8 @@ source_sha256: "c4c62ada79a6fa69b7a3a7f9582f327729c854f4ed23a3f7020dcd250034517a
   identidad BAG2. Comet/Frida es caso futuro, no soporte actual.
   Nombre sobre puntuación visible/legible y correcto durante partida; el selector
   o retrato correcto no acredita el HUD.
+- Audio: no blanket-muting Heat; consumidores VS/victoria/frases y efectos paralelos
+  por request se auditan separadamente. Constantes/cues y adaptaciones por evidencia.
   CAUGHT se exige en cada importado BAG1 y nativo BAG2, lados/variantes/compañeros;
   es requisito de aceptación, no cobertura ya alcanzada.
 - `init-profile` produce schema 1, plan/prepare requieren schema 2 y gates

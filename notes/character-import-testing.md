@@ -28,6 +28,13 @@ al selector no demuestra por sí solo las demás.
   su proceso. Revisar `restoration.verified`, no asumirlo por exit code.
 - La identidad del proceso incluye ruta y tiempo de inicio: no aceptar PID
   reciclado, otra instalación ni logs de un arranque anterior.
+- Inventariar rutas efectivas de tarjetas, no solo sus nombres. Para una ruta
+  histórica externa usar únicamente el puente existente con copias protegidas y
+  restauración comprobada, sin normalizar preferencias permanentemente. No
+  sobrescribir cambios concurrentes del owner para imponer un baseline antiguo.
+- Registrar opciones/features efectivas y guard de publicación del candidato;
+  código latente no significa feature activo. Un fixture artificial se etiqueta
+  y no acredita el caso natural, ni su flag autoriza otra partida.
 - Una GPU local a la vez; no ejecutar modelos GPU durante capturas del juego.
 
 ## 2. Calibrar una vez por ejecutable cambiado
@@ -103,6 +110,10 @@ el driver lo rechaza si no coincide con el solicitado, no lo oculta.
   versiones opuestas de esa casilla no deben contaminarse. Comprobar assets nativos
   y sus reemplazos HD si están activos, sin afectar a otros personajes. Ver el
   contrato común «Identidad visual por versión» del pipeline, no copiar el parche.
+  Revisar también la **primera presentación** al retornar y cada consumidor por
+  lado, no solo el estado estabilizado: un retrato correcto puede coexistir con
+  un primer nombre obsoleto. Una cancelación simulada host no prueba cancelación
+  real por pad; conservar el alcance de cada evidencia.
 - Nombre sobre la barra de puntuación: **gate independiente del selector/retrato**.
   Exigir que esté presente, completo, legible y en el lado correcto durante la
   partida, con el nombre de la versión activa (Gas-O, no Bi-O ni vacío). Cubrir
@@ -196,6 +207,10 @@ Evidencia de las correcciones: [Gas-O](gaso-import.md#retrospectiva-incorporada-
 
 No interpretar punteros/slots basura después de descargar el módulo como una
 animación real. `req65535` tampoco es automáticamente un rol aceptado.
+Identificar dominio/anclas de cada contador: song-frame, frame global, heartbeat,
+QPC y tiempo de video no son intercambiables. Usar `events.json`/clock del mismo
+run y las sondas existentes cuando estén disponibles; una pausa real no se explica
+por atribuirla sin contraste al reloj civil. Diagnóstico offline antes de retomar.
 
 Direcciones JP verificadas (no exportar a otra región sin revalidar):
 DF2_=0x8005D418; root=0x8005D3D4; fases=0x8005D3D8/DC/E0;

@@ -11,6 +11,75 @@ doc_kind: evidence
 
 # Gas-O — ledger canónico
 
+### Reanálisis de cobertura del estándar (owner, 2026-11-15)
+
+- Encargo: «analiza todo el estandar que tenemos, y reanaliza si estas considerando
+  realmente todos los casos que vimos y agrega el detalle en caso sea necesario o
+  de un mejor resultado». Alcance aprobado sigue **normas, no herramientas/runtime**.
+  Plan ejecutado: `plans/archive/standards-coverage-recheck.md`.
+- Tres contrastes: escenarios19 casos, personajes18, workflow20 (se solapan, no son
+  57 bugs ni prueba de exhaustividad de todo el historial); revisión primaria de
+  rutas/skills/digests. Evidencia y matriz de leads en
+  `_work/retro/standards-recheck/{stages,characters,workflow,primary}.md`, inventario
+  de17 documentos y8skills por hash en `input-inventory.json`.
+- Regla de cierre: cada caso examinado debe quedar cubierto, detallado, excepción
+  acotada o pendiente explícito. Los ya cubiertos (HUD/retrato, CAUGHT universal,
+  SPU, semántica/transiciones, restauración, rechazo de tomas) no se duplican como
+  supuestas omisiones ni se convierten en implementación aceptada.
+- **Escenarios:** checklist canónico en `notes/bag1-stage-song.md`, con cámaras por
+  fase (posición/trayectoria/ritmo/transición), miembros/colas/escala, atlas/VRAM
+  dinámicos, render/OT/clipping, estados por puntaje/update/shim, props/luces/efectos,
+  música/SFX y layout/modo/lados. Conserva adaptaciones de cámara Gas-O aprobadas,
+  mejora Strike aplazada y pregunta Robo-Z, sin desbloquear ni iniciar campaña.
+- **Personajes:** residencia real frente a selección, préstamo por actor/aliases y
+  retirada quiescente, reset/load de ownership, primera presentación del selector,
+  identidad VS inventariada sin ampliar su alcance aprobado, consumidores de audio
+  VS/victoria y efectos paralelos. No reponer overrides rechazados ni silenciar
+  voces fever por una regla Heat antigua.
+- **Integración/regional:** contrato `regions`/índice9 campos, JP ausente distinto
+  de idéntico, slices previos por hash, repack legacy7 no apto para esquema regional,
+  y checks de manifiestos/capacidad por revisión/copia. Modelos/escenarios regionales
+  globales separados de versión por lado y canciones en su namespace existente.
+- **Desarrollo:** retiradas órdenes contradictorias de cortar funciones a30líneas
+  y exigir partida a todo tooling host. Goldfish reconoce payload/manifiesto por
+  función y aclara notas no ejecutables. Dominio de relojes, flags efectivos,
+  tarjetas históricas y cobertura real del fingerprint online precisados; sin
+  cambios de protocolo ni nuevas pruebas online/campaña autorizadas.
+- Corregida causa histórica «BAG2 no soporta tipo2»: ya había un `case2` documentado;
+  flattening era solución del candidato, no incapacidad global. Fuente de assets
+  separa instalación de ensayos posteriores. Cuatro digests obsoletos detectados
+  y recontrastados; hashes solo se renuevan tras revisar contenido.
+- Skills `bag1-import` y `psx-recomp-disc-mod` corregidas: quitar receta Heat como
+  estándar universal (cámaras baile BAG2/fever sin voces/escala fija), referencias
+  computer-use inexistentes, defaults de ejemplo como autoridad y estado en NOTES.
+  Originales respaldados con hashes en `_work/retro/standards-recheck/external-before/`.
+  Lookup de project-config actualizado con el comando verificado de tests del
+  checker y precedencia del estado canónico frente a flags pendientes históricos;
+  una entrada antigua no manda repetir una partida ya aceptada.
+- Límites: no se releyó el ledger entero ni se probó cada perfil/modo. Guard canónico0,
+  Block5, root/Pander y Robo-Z siguen pendientes; tampoco se certifican timings
+  nativos, CLUT, VRAM dinámica o matriz de cámaras con esta edición. Tooling,
+  baseline rota y automatización diferida conservan sus tareas, sin nuevos campos
+  de perfil ni mejoras de ahorro declaradas.
+- Preflight102743936018Z pasó0.314s; fuentes/recursos/runtime conservados. Scripts
+  deterministas para inventario y checker; MCP de auditores en log Ghidra. Hubo
+  patches rechazados por contexto no coincidente (fuente/digest, lookup y fragmentos);
+  no modificaron archivos y se rehicieron contra texto real. No
+  FFmpeg/grabador/build/juego: unidad documental con evidencia anterior reutilizada.
+- Verificación dirigida:26 documentos del cambio sin issues;32tests del checker
+  pasan0.770s. Auditoría global sigue no verde:161errores/9avisos ajenos. Informe
+  dirigido final en `_work/retro/standards-recheck/final-docs-check.json`; hashes
+  de digests y skills revisados contra bytes/snapshots, sin atribuir ahorro.
+- Goldfish:2revisores, ambos con hallazgos documentales acotados, aplicados: DBI
+  anfitrión no prohibido si compatible (comparar, no conservar/reemplazar a ciegas),
+  baseline no sobrescribe cambios concurrentes y partidas exigidas solo para cambios
+  del juego. Añadidos enlaces de alcance cámara Gas-O y opciones regionales. Material
+  exacto, respuestas, triaje y hashes finales en
+  `_work/goldfish/standards-coverage-recheck-20261115/`. El digest de proyecto fue
+  contrastado por la primaria contra la fuente completa; no se presenta como lectura
+  íntegra de ese source por los revisores. No otra ronda sobre inputs iguales.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
 ### Retrospectiva incorporada al estándar (2026-11-15)
 
 - Aprobación del owner: «Normas ahora, herramientas aparte (Recomendado)» e
