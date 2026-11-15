@@ -63,6 +63,19 @@ doc_kind: evidence
   rivales reciben la postura estándar BAG1 y solo se ajusta su raíz (altura/offset)
   por personaje; los equivalentes BAG1 conservan su variante (pista5 de Kitty-N/
   Strike). Pander sigue pendiente de comprobar si la postura estándar le encaja.
+- **Regla de raíz (host, 2026-11-15):** la Y del CAUGHT BAG1 no sale de una regla
+  física exacta: HAM_/SHOP y PET_/SYOW comparten clip con modelos distintos. Validación
+  dejando uno fuera (14 BAG1): constante MAE160.6; altura del modelo68.2; mediana de
+  la librería58.8; slot0 45.5; **TIRED69 lineal35.4** (y=343.7+0.8774·tired). Pero no
+  se traslada a BAG2: slot78 dura44 frames (TIRED BAG1 34) y para Heat BAG2 predice
+  1583, cuando su mediana de baile1445≈Heat BAG1 1449 (CAUGHT1443). **Descartada como
+  regla final.** Siguiente: cinemática directa con el modelo (pies del CAUGHT al mismo
+  nivel que en su propio baile), validada primero en los14 BAG1.
+  `_work/gaso/block5/caught-root-{predictors,bag2}.json`.
+- **Pander:** frente a los otros17, solo las pistas13 y14 divergen (suma de3 ejes
+  330°/503° vs ~55–60° típico, casi giro de180°); las demás dentro de la variación
+  normal. Candidato: postura estándar con corrección de esas dos pistas a partir de
+  su propia librería; sin prueba visual. `_work/gaso/block5/pander-tracks.json`.
 
 ### Bloque 4: guard1 desplegado; toma de recuperación en preparación (2026-11-15)
 
