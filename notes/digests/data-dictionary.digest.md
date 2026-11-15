@@ -2,19 +2,19 @@
 id: data-dictionary-digest
 title: "Diccionario de configuración: uso y límites"
 tags: ["digest", "config", "dictionary"]
-summary: "44 campos: S1/S3a/S3b y grabador S4a con operaciones condicionales. Consultar tabla canónica; CLI/entorno con provenance, sin fallback de máquina ni nuevos gates."
+summary: "45 campos; piloto character-workspace reutiliza repo/work/estable sin nuevas claves. Resto S5 pendiente; operaciones no conceden permisos."
 related: ["docs/data-dictionary.md", "system_config.md", "tools/workflow/project_config.py"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "docs/data-dictionary.md"
-source_sha256: "49bc7d684c932e1ebc7bd5b4b5dbd9cdc948a9a5fa8bd987c312230eafe1e82d"
+source_sha256: "779ab33be928135729a7510b68ff3b431f064683f59442998c07b67159008016"
 ---
 
 # Diccionario: antes de consumir claves
 
 - `FIELDS` define esquema; TOML común/local define valores; la tabla canónica
-  describe los 44 campos y tests impiden divergencia de claves/tipos/unidades/
+  describe los 45 campos y tests impiden divergencia de claves/tipos/unidades/
   origen/permisos/operaciones. Reutilizar por significado; no duplicar defaults.
 - Política: build.jobs2 y pins no se pueden sobrescribir localmente; repo_root se
   deriva. Ubicaciones locales verificadas no se copian al común ni a consumidores.
@@ -48,3 +48,8 @@ source_sha256: "49bc7d684c932e1ebc7bd5b4b5dbd9cdc948a9a5fa8bd987c312230eafe1e82d
   frames exigen solo su contrato. CLI y override WGC registrados por ejecución.
   Herramientas con archivo existente, salidas guardadas, fuente copiada con nombre
   fijo; no calibración/gates nativos. PATH del look.py externo sigue pendiente S7.
+- S4b registra tools.ffmpeg_native para native-capture, sin default de máquina.
+- Piloto character-workspace usa repo_root/work_root/stable_install: outputs
+  plan/prepare/state bajo work/character-import, guardas y provenance. No migra
+  perfiles, caches, init-profile ni generadores Gas-O/Heat. write_state directo
+  exige que el llamador indique inputs protegidos ajenos a la configuración.

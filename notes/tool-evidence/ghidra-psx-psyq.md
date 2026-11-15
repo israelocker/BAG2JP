@@ -2501,3 +2501,20 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   captura, sincronía ni aceptación de partida. Se preservaron instancia/análisis.
   Tiempo, ahorro y retrabajo desconocidos. No se usa funcmatch sin búsqueda de
   equivalencias; runner/grabación real fuera de autorización.
+
+## 20261115-ghidra-s5a-workspace - identidad antes del piloto host
+
+- Propósito: verificar MCP y programa antes del inventario S5a. Instancia existente;
+  `get_program_info()` primero confirmó SLPM_862.19 Japón, main PSX:LE:32,
+  base 80000000, entrada 80035D98, 1324 funciones; SHA-256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Consulta `read_memory(address="0x80035d98", length=8)`: 0680023c00cf4224,
+  sin gaps. Coincide con lectura S4a previa; no es overlay ni memoria de partida.
+- Resultado limitado a identidad; no prueba resolver, hashes de perfil o workspace.
+  Esas costuras se verifican con tests host independientes. Sin modificar análisis.
+  Tiempo/ahorro/retrabajo desconocidos; funcmatch no pertinente sin equivalencias.
+
+- Continuación del mismo ensayo S5a: `get_program_info()` primero y la misma
+  `read_memory(address="0x80035d98", length=8)` volvieron a confirmar identidad,
+  SHA y bytes anteriores, sin gaps. Reutilizada instancia; sin cambios de análisis.
+  La repetición no añade validación del resolver ni ahorro medido.

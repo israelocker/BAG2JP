@@ -2,13 +2,13 @@
 id: system-config-digest
 title: "Configuración host: autoridades y estado"
 tags: ["digest", "config", "migration"]
-summary: "S1/S3a/S3b entregados host; S4a grabador consume resolver y está en cierre host. Después S4b/S5–S7/S2b; sin aceptación del juego."
+summary: "Piloto S5a workspace verificado host tras S4; Gas-O/Heat y perfiles/caches pendientes. Goldfish corregido; sin aceptación del juego."
 related: ["system_config.md", "docs/data-dictionary.md", "plans/pending/host-configuration-migration.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "52909b53ca20548d0a4357e8fb7672a060185738dbf8e38ff391cd60ddd61f3c"
+source_sha256: "493ee7cfb508ca55214eba5e4d1a051c25b41826465f6d59aac92ecc360f934a"
 ---
 
 # Configuración: estado mínimo
@@ -56,3 +56,13 @@ source_sha256: "52909b53ca20548d0a4357e8fb7672a060185738dbf8e38ff391cd60ddd61f3c
   conservan su autoridad. No tocar historia, releases, settings, saves o terceros.
 - Límites: config no demuestra identidad de estable; TOCTOU no garantizado,
   POSIX no probado, locals alternativos no ignorados automáticamente.
+- S4a `1ed6f81` y S4b nativo `18d0c51` son checkpoints históricos; inventario
+  bag1native `b60449f`. No equivalen a migrar todos los lectores de referencia.
+- Piloto S5a: character_workflow plan/prepare/state consume work_root y protege
+  estable, inputs conocidos y configuración antes de escribir. Snapshot por
+  ejecución y provenance; API write_state requiere protected_inputs del llamador
+   cuando el perfil no se conoce. 38 readers (37 OK, 1 file-symlink omitido por
+   privilegio), 120 workflow OK y 17 mutantes por aserción. Goldfish A/B CON HALLAZGOS
+   corregidos sin segunda revisión; comparación física de salidas y provenance fijadas
+   en tests. No es S5a completo: Gas-O/Heat,
+  rutas de perfiles, cache/init y dependencias externas siguen pendientes.

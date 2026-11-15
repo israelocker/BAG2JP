@@ -7,6 +7,13 @@ import re
 import struct
 import tempfile
 import datetime
+import sys
+from collections.abc import Iterable, Sequence
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.workflow.project_config import (
+    ConfigError, ProjectConfig, assert_write_target, export_config, load_config, require_paths,
+)
 
 def file_sha(path):
     with Path(path).open("rb") as stream:
@@ -110,8 +117,40 @@ def motion_fingerprint_data(data):
     digest = hashlib.sha256(json.dumps(hashes, separators=(",", ":")).encode()).hexdigest()
     return digest, len(hashes)
 
-def _state_path(project, character):
-    return Path(project) / "_work" / "character-import" / character / "state.json"
+def _workspace_config(project: Path | str, config: ProjectConfig | None = None) -> ProjectConfig:
+    config = config if config is not None else load_config(repo_root=project)
+    if config.repo_root != Path(project).resolve():
+        raise ConfigError("Workspace configuration belongs to a different project")
+    require_paths(config, ("paths.work_root", "paths.stable_install"))
+    return config
+
+
+def _workspace_file(config: ProjectConfig, character: str, *parts: str,
+                    protected_inputs: Iterable[Path] = ()) -> Path:
+    if not isinstance(character, str) or not re.fullmatch(r"[a-z0-9-]+", character):
+        raise ConfigError("Character must be a slug")
+    work, = require_paths(config, ("paths.work_root",))
+    path = assert_write_target(config, work / "character-import" / character / Path(*parts), role="work")
+    if path.exists() and not path.is_file():
+        raise ConfigError(f"Expected a workspace file: {path}")
+    protected = [Path(p).resolve() for p in protected_inputs]
+    protected += [Path(p).resolve() for p in config.input_files.values() if p]
+    if path in protected:
+        raise ConfigError(f"Workspace output would overwrite an input: {path}")
+    return path
+
+
+def _workspace_inputs(profile_path: Path | str, project: Path | str, profile: dict) -> tuple[Path, ...]:
+    project = Path(project)
+    inputs = [Path(profile_path)]
+    inputs += [project / profile[key] for key in ("source_animation_list", "game_catalog", "reference_runtime")]
+    inputs += [project / item["file"] for item in profile.get("assets", {}).values()]
+    catalog = json.loads((project / profile["game_catalog"]).read_text(encoding="utf-8"))
+    inputs += [project / item["file"] for game in catalog["games"].values() for item in game["inputs"]]
+    inputs += [project / item["evidence"]["file"] for item in profile.get("exceptions", [])
+               if item.get("status") == "verified"]
+    inputs += [project / item["file"] for item in profile.get("validation_evidence", [])]
+    return tuple(inputs)
 
 def _atomic_write_json(path, value):
     path = Path(path)
@@ -181,26 +220,33 @@ def character_plan(profile_path, project):
             "stage":profile.get("stage"),"pending_exceptions":pending,"gaps":gaps,
             "prepare_ready":not gaps,"acceptance":cases,"next_action":"prepare" if not gaps else "resolve_gaps"}
 
-def write_state(project, plan, status="planned"):
+def write_state(project: Path | str, plan: dict, status: str = "planned", *,
+                config: ProjectConfig | None = None, protected_inputs: Iterable[Path] = ()) -> Path:
+    """Write host state; callers must supply profile inputs that cannot be overwritten."""
+    config = _workspace_config(project, config)
     state = {"schema":1,"character":plan["character"],"display_name":plan["display_name"],
              "stage":plan["stage"],"status":status,"pending_exceptions":plan["pending_exceptions"],
              "gaps":plan["gaps"],"prepare_ready":plan["prepare_ready"],"next_action":plan["next_action"],
              "acceptance_count":len(plan["acceptance"]),"updated_utc":datetime.datetime.now(datetime.timezone.utc).isoformat()}
-    path = _state_path(project, plan["character"])
+    state["configuration"] = export_config(config, operation="character-workspace")
+    path = _workspace_file(config, plan["character"], "state.json", protected_inputs=protected_inputs)
     _atomic_write_json(path,state)
     return path
 
-def prepare_workspace(profile_path, project):
+def prepare_workspace(profile_path: Path | str, project: Path | str, *,
+                      config: ProjectConfig | None = None) -> dict:
+    """Create only a candidate manifest, protecting validated inputs and host configuration."""
+    config = _workspace_config(project, config)
     profile, pending = load_profile(profile_path, project)
     plan = character_plan(profile_path, project)
     if plan["gaps"]:
         raise ValueError("Cannot prepare: "+", ".join(plan["gaps"]))
-    root = Path(project) / "_work" / "character-import" / profile["character"] / "candidate"
-    root.mkdir(parents=True, exist_ok=True)
+    inputs = _workspace_inputs(profile_path, project, profile)
+    path = _workspace_file(config, profile["character"], "candidate", "manifest.json", protected_inputs=inputs)
     manifest = {"schema":1,"character":profile["character"],"status":"candidate_only",
                 "profile_sha256":file_sha(profile_path),"assets":profile.get("assets",{}),
-                "acceptance":plan["acceptance"],"deployed":False}
-    path = root / "manifest.json"
+                "acceptance":plan["acceptance"],"deployed":False,
+                "configuration":export_config(config, operation="character-workspace")}
     _atomic_write_json(path,manifest)
     return {"status":"candidate_created","character":profile["character"],"manifest":str(path),"deployed":False}
 
@@ -311,11 +357,13 @@ def init_profile(project, profile_path, character, source_archive, source_list, 
         stream.write(json.dumps(profile,indent=2)+"\n")
     return {"status":"profile_initialized","character":character,"animation_count":count,"generation_ready":False}
 
-def main():
+def main(argv: Sequence[str] | None = None) -> int:
+    """Dispatch profile actions; preflight every workspace output before writes."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("action", choices=("init-profile", "validate-profile", "cache-record", "cache-check",
                                          "plan", "prepare", "status", "acceptance-plan"))
     parser.add_argument("--project", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument("--local-config", type=Path)
     parser.add_argument("--profile", type=Path, required=True)
     parser.add_argument("--cache", type=Path)
     parser.add_argument("--evidence", type=Path, action="append", default=[])
@@ -324,7 +372,21 @@ def main():
     parser.add_argument("--source-list", type=Path)
     parser.add_argument("--runtime", type=Path)
     parser.add_argument("--catalog", type=Path, default=Path("tools/bag1import/contracts/bag1-usa-bag2jp.roles.json"))
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+    config = None
+    protected_inputs = ()
+    if args.action in ("plan", "prepare"):
+        try:
+            config = _workspace_config(args.project, load_config(repo_root=args.project, local_config=args.local_config))
+            profile, _ = load_profile(args.profile, args.project)
+            protected_inputs = _workspace_inputs(args.profile, args.project, profile)
+            state_path = _workspace_file(config, profile["character"], "state.json", protected_inputs=protected_inputs)
+            if args.action == "prepare":
+                manifest_path = _workspace_file(config, profile["character"], "candidate", "manifest.json", protected_inputs=protected_inputs)
+                if state_path == manifest_path:
+                    raise ConfigError("Workspace state and manifest must have distinct physical destinations")
+        except ConfigError as error:
+            parser.error(str(error))
     if args.action == "init-profile":
         if not all((args.character,args.source_archive,args.source_list,args.runtime)):
             parser.error("init-profile needs --character --source-archive --source-list --runtime")
@@ -342,11 +404,11 @@ def main():
         else:
             result = {"status":args.action+"_ready","character":plan["character"],"plan":plan}
             if args.action == "plan":
-                write_state(args.project, plan, "planned")
+                write_state(args.project, plan, "planned", config=config, protected_inputs=protected_inputs)
     elif args.action == "prepare":
-        result = prepare_workspace(args.profile, args.project)
+        result = prepare_workspace(args.profile, args.project, config=config)
         plan = character_plan(args.profile, args.project)
-        write_state(args.project, plan, "candidate_created")
+        write_state(args.project, plan, "candidate_created", config=config, protected_inputs=protected_inputs)
     else:
         if args.cache is None:
             parser.error("--cache is required for cache actions")

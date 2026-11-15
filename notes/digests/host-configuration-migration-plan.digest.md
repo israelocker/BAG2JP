@@ -2,13 +2,13 @@
 id: host-configuration-migration-plan-digest
 title: "Configuración central: ampliación de auditoría y migración"
 tags: ["digest", "plan", "config"]
-summary: "S1/S3a/S3b entregados host; S4a consumidor en cierre host, después S4b/S5–S7/S2b. Sin build/deploy del runtime, captura ni partida."
+summary: "Piloto S5a workspace cerrado solo host; Gas-O/Heat, perfiles/caches y S6/S7/S2b pendientes. Sin partida ni despliegue."
 related: ["plans/pending/host-configuration-migration.md", "system_config.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "aa3bd012ef9afdff927dd031227dca2975000d36c398358d5a0efdb983b93ddb"
+source_sha256: "70c9f6338f8656699ebcc1d407d2829cd7d89c1644f789e939a7563db95ff7cd"
 ---
 
 # Ampliación de configuración central
@@ -44,7 +44,12 @@ source_sha256: "aa3bd012ef9afdff927dd031227dca2975000d36c398358d5a0efdb983b93ddb
   Consumidor S4a posterior: settings por ejecución y operaciones condicionales,
   CLI/entorno con provenance y guardas de salidas/aliases; 73 recording + 119 workflow
   + 108 harness OK, 28 mutantes en copias. Goldfish/estado final en fuente canónica;
-  no avanzar a S4b antes de cerrar esta verificación host.
+   checkpoint consumidor posterior `1ed6f81`; S4b nativo `18d0c51` y auditoría
+   bag1native `b60449f`, sin afirmar migración de todos los lectores pendientes.
+- S5a parcial: workspace plan/prepare/state, 38 readers (37 OK, 1 omitido por
+   privilegio file-symlink), 120 workflow y 17 mutantes por aserción. Reutiliza tres
+   claves; preserva inputs/hashes nativos. Goldfish A/B CON HALLAZGOS corregidos,
+   sin segunda revisión; faltan Gas-O/Heat y rutas de perfil/cache/init de S5b.
 - S3: versus y PowerShell; S4: captura/FFmpeg/referencias; S5: importadores/perfiles;
   S6: herramientas de paquetes/instalador; S7: bootstrap/externos y cierre.
 - Lotes pequeños con tests/diccionario/operaciones/consumidores reales, Goldfish y

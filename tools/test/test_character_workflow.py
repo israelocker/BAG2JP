@@ -149,18 +149,24 @@ class CharacterPlanTests(unittest.TestCase):
                           "stage-load","song-end","ending-video-credits-return",
                           "announcer-name","online-content-identity"} <= cases)
     def test_prepare_creates_manifest_but_never_deploys(self):
+        self.configure_workspace()
         result=workflow.prepare_workspace(self.profile,self.root)
         manifest=Path(result["manifest"])
         self.assertTrue(manifest.is_file())
         self.assertIn("candidate",manifest.parts)
         self.assertFalse(any(p.name=="BAG2JP.exe" for p in self.root.rglob("*")))
     def test_state_write_is_compact_and_resumable(self):
+        self.configure_workspace()
         plan=workflow.character_plan(self.profile,self.root)
         path=workflow.write_state(self.root,plan,"planned")
         state=json.loads(path.read_text())
         self.assertEqual(state["character"],"alpha")
         self.assertEqual(state["next_action"],"prepare")
         self.assertLess(path.stat().st_size,8192)
+
+    def configure_workspace(self):
+        config = self.root / "config"; config.mkdir()
+        (config / "project.toml").write_text('schema_version=1\n[paths]\nwork_root="_work"\nstable_install="stable"\n')
 
 if __name__=="__main__":
     unittest.main()

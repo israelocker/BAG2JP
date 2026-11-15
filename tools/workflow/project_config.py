@@ -108,7 +108,8 @@ def _field_registry() -> Mapping[str, FieldSpec]:
                                "tools.ffmpeg_review", "tools.ffprobe_review", "tools.recording_font"),
         "recording-frames": ("repo_root", "paths.work_root", "paths.stable_install", "tools.ffmpeg_look"),
         "native-capture": ("repo_root", "paths.work_root", "paths.stable_install",
-                           "tools.ffmpeg_native"),
+                            "tools.ffmpeg_native"),
+        "character-workspace": ("repo_root", "paths.work_root", "paths.stable_install"),
     }
     for operation, keys in requirements.items():
         for key in keys:

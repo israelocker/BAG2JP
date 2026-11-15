@@ -447,6 +447,71 @@ No hay cambios de juego, captura, build, deploy, settings, saves, overlay local 
 herramientas instaladas. `tools.ffmpeg_native` queda `unresolved` hasta que el owner
 configure la ubicación verificada en `config/project.local.toml`.
 
+### S5a piloto workspace (parcial, 2026-11-15)
+
+`character_workflow.py` migra únicamente `plan`/`prepare` y `write_state` a las
+claves existentes repo_root/work_root/stable_install. La operación registrada es
+`character-workspace`; siguen 45 campos, sin TOML nuevo ni cambios del overlay local.
+El CLI acepta `--local-config`, resuelve una vez y pasa el mismo objeto inmutable.
+Estado y manifiesto se guardan bajo work/character-import/slug, con provenance.
+CLI precomprueba ambas salidas antes de escribir; rechaza tipo directorio, hardlinks,
+aliases de estable y coincidencias con inputs/configuración. La API `write_state`
+sin perfil protege config y los `protected_inputs` que su llamador debe suministrar.
+El CLI compara también ambos destinos físicos: estado y manifiesto deben diferir.
+Las APIs modificadas documentan su contrato y anotan parámetros/resultados.
+No hay garantía TOCTOU ni transacción entre manifiesto y estado.
+
+Inventario S2a de los cuatro fuentes en
+`_work/configuration/s5a-workspace-final/inventory.json`: Gas-O conserva PROFILE,
+stock/MOTIONS/defaults y glyph/extraction de perfiles; Heat conserva rutas VM,
+knobs STAGE y generación/deploy legacy. No se ejecutan esos scripts destructivos.
+Rutas de perfiles/caché/init-profile permanecen pendientes: **no es S5a completo**.
+Validación nativa, regiones, hashes, acceptance y assets no cambian.
+
+Pruebas desde raíz: `py -3.13 -m unittest tools.test.test_character_workflow
+tools.test.test_character_workspace_config` (38 declarados: 37 ejecutados OK y uno
+omitido por privilegio Windows de symlink de archivo; 24 legacy + 14 nuevos), y
+`py -3.13 -m unittest discover -s tools/workflow -p test_*.py` (120 OK).
+17 mutantes en copias: baseline verde, kills por aserción sin ERROR, hashes canónicos
+sin cambios; reportes/diffs/logs en `_work/configuration/s5a-workspace-final`.
+Comando exacto: `py -3.13 _work/configuration/verify_s5a_workspace_final.py`;
+el wrapper carga `verify_s5a_workspace.py` y modifica explícitamente OUT y casos.
+La ronda anterior usó `verify_s5a_workspace_v2.py`; su diccionario recibió prosa
+después de ejecutarse y sus hashes no identifican ese documento posterior. La
+ronda final vuelve a comprobar la suite workflow con el diccionario actual.
+Primer ensayo
+`s5a-workspace` retenido: el mutante de identidad falló por ValueError de inputs,
+no por aserción; no se contabiliza. El test ahora usa write_state con plan válido.
+La prueba de tipo intercepta el primer writer, sin ocultar la guarda real.
+Baseline previo: 24 tests legacy; RED inicial por CLI sin overlay y por colisión
+real con un asset en manifest; GREEN posterior con bytes protegidos intactos.
+Goldfish detectó colisión entre destinos: RED por aserción en la costura CLI,
+comparación de rutas físicas añadida y GREEN. La prueba con file-symlink real quedó
+omitida por WinError 1314: la prueba ejecutada usa un doble de resolución después
+de ambas guardas reales; no se atribuye validación filesystem a ese doble. Junctions
+de directorio y hardlinks sí se prueban realmente. Hubo un ensayo intermedio con
+clave de hash de test incorrecta (`hashes` en vez de `config`); se corrigió el test,
+no el formato del resolver, y no se cuenta como RED válido.
+Pruebas nuevas fijan valores/hashes efectivos, snapshot previo a cambios del overlay,
+CLI read-only sin TOML y protección de inputs explícitos/config al escribir estado.
+
+Preflight reutilizado `20261115T185752700108Z-s5a-reader-inventory`, con drift
+Gas-O conocido; no es comparación del código posterior ni permiso de build.
+Ghidra MCP confirmó main Japón/entrypoint; no prueba configuración host. No se usa
+funcmatch sin buscar equivalentes; FFmpeg/runner no pertinentes sin media/partida;
+inventario/hashes/mutaciones deterministas no necesitan un modelo local.
+Sin paquetes, captura, partida, runtime build/deploy ni edición de herramientas,
+settings, saves o configuración local.
+
+Goldfish: A/B CON HALLAZGOS sobre 19 inputs congelados en
+`_work/goldfish/s5a-workspace/`. A1/B1 confirmados y corregidos; A2/B2 amplían tests
+y mutantes; A3/B3 se resuelven con evidencia final ligada al diccionario y wrapper
+exactos. Estándares de firmas/docstrings corregidos. Respuestas literales, triage y
+hashes originales preservados; no segunda revisión. Sin equivalencia empírica de
+perfiles reales, runtime ni aceptación en juego. El siguiente lote es S5a Gas-O,
+después scripts Heat; S5b conserva perfiles/caché/init pendientes.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
 ## Fuentes vigentes
 
 - `patches/BAG2JP-game.toml`: configuración reproducible del título, no todos los
