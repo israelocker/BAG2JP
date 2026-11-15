@@ -2,29 +2,31 @@
 id: host-configuration-migration-plan-digest
 title: "Configuración central: ampliación de auditoría y migración"
 tags: ["digest", "plan", "config"]
-summary: "Plan propuesto de auditoría semántica y migración por consumidores; barrido automático de 471 archivos, lote workflow/report autorizado WIP, resto pendiente de aprobación."
+summary: "Plan aprobado de migración host: S1 workflow/report entregado con guardas/overlay/equivalencia; auditoría semántica/checker y demás familias aún pendientes de ejecución."
 related: ["plans/pending/host-configuration-migration.md", "system_config.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "794ecaef3bf44aa829aa465f2d790efd8aef76facd2ecc988b09326cc505d41b"
+source_sha256: "51e409206a41b065b4b5907820605308a0829dffe9e2a80a9e11e7ca21692cdb"
 ---
 
 # Ampliación de configuración central
 
 - Owner pidió abarcar todos los archivos de desarrollo y explicitar el estándar
   y significado de claves para reutilización. La regla documental aplica desde ahora.
-- Migración ampliada propuesta, no aprobada aún. Workflow/report sí autorizado,
-  con 83 tests dirigidos verdes en WIP; no cerrado ni certificado por esa cifra.
+- Plan ampliado aprobado con «Si continúa» el 2026-11-15; ejecución inline, sin
+  cambios externos, builds, partidas o despliegues implícitos.
 - Inventario por archivo/hash: 471 versionados; señales automáticas de rutas de
   máquina/relativas, entorno, defaults y constantes nativas. No equivale a revisión
   semántica ni a una lista de defectos confirmados. No rastreados se preservan.
-- S1: cerrar workflow/report (guardas/work_root, overlay, audio opcional, build fijo,
-  métricas y equivalencia). Bash instalado fija árbol/toolchain: no fingir migración.
+- S1 entregado: work_root y guardas de logs/sheet/build; overlay absoluto al child,
+  Python/probe opcionales según operación; script fijo inspeccionado sin ejecutarlo.
+  101 pruebas dirigidas, 103 workflow discovery, 8 mutantes muertos y Goldfish aplicado.
+  Prueba real workflow→report leyó logs existentes, no fue una nueva partida.
 - S2: auditoría semántica por familia y checker con baseline/excepciones justificadas;
   ningún archivo sin disposición y regresión causal ante nuevos hardcodes.
-  S2a (análisis) puede continuar sin otra aprobación; S2b (código) espera el plan.
+  Ambos autorizados; S2b espera disposiciones semánticas de S2a, no otro gate humano.
 - S3: versus y PowerShell; S4: captura/FFmpeg/referencias; S5: importadores/perfiles;
   S6: herramientas de paquetes/instalador; S7: bootstrap/externos y cierre.
 - Lotes pequeños con tests/diccionario/operaciones/consumidores reales, Goldfish y

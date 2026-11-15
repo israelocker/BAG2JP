@@ -2,7 +2,7 @@
 id: host-configuration-migration
 title: "Configuración central: auditoría completa y migración por consumidores"
 tags: ["plan", "config", "standards", "migration"]
-summary: "Propuesta de ampliación: inventariar todos los archivos de desarrollo, distinguir configuración de datos nativos y migrar consumidores con diccionario y pruebas de equivalencia; lote workflow/report ya autorizado, aún en curso."
+summary: "Ampliación aprobada: inventariar todos los archivos de desarrollo, distinguir configuración de datos nativos y migrar consumidores con diccionario y pruebas de equivalencia; workflow/report en ejecución."
 related: ["system_config.md", "docs/coding-standards.md", "docs/data-dictionary.md", "AGENTS.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
@@ -16,15 +16,16 @@ doc_kind: plan
 El owner pidió analizar todos los archivos de desarrollo, eliminar rutas/valores
 operativos en duro de sus consumidores y hacer explícito el estándar y el
 significado de cada clave para reutilización futura. La regla documental se
-aplica desde ahora. Esta propuesta amplía la migración: **pendiente de aprobación
-de este plan**, salvo workflow/report, autorizado anteriormente con «si procede».
-No bloquear el análisis interno por esa aprobación; no iniciar otros lotes de
-migración mientras siga abierta.
+aplica desde ahora. El owner aprobó la ampliación con **«Si continúa»** el
+2026-11-15, tras la pregunta explícita sobre ejecutar este plan por lotes sin
+instalaciones externas, partidas ni despliegues. Workflow/report ya estaba
+autorizado anteriormente con «si procede». Ejecución inline y secuencial.
 
 La base y el piloto de manifiestos están entregados (`7fefc07`, `28fc1e9`).
-Workflow/report tienen código y 83 tests dirigidos en verde en el árbol de trabajo,
-pero **no están cerrados**: faltan guardas/equivalencia completa, metadatos,
-diccionario final y Goldfish. No convertir esa cifra en aceptación del lote.
+S1 workflow/report entrega rutas/pins/WSL, metadatos, guardas y compatibilidad del
+script fijo: 101 pruebas dirigidas, 103 en discovery de workflow y Goldfish aplicado.
+No se certifican defaults numéricos legacy, otros consumidores, integración POSIX
+ni build/juego con esas cifras; permanecen en los lotes y evidencias correspondientes.
 
 ## Alcance del inventario inicial
 
@@ -102,7 +103,7 @@ consumidores aún no leídos ni resolver divergencias en silencio.
 
 ### S2 — Completar auditoría semántica e instrumentar guardia (M, dividido)
 - S2a Blocked by: ninguno; es análisis interno ya autorizado por el owner.
-- S2b Blocked by: aprobación de ampliación y disposiciones semánticas de S2a.
+- S2b Blocked by: disposiciones semánticas de S2a; aprobación del plan obtenida.
 - S2a: revisar asignaciones, defaults, entorno y lectores de cada archivo host,
   tests y generadores de la lista; registrar clave destino o excepción justificada.
 - S2b: crear `audit_config.py` y `test_audit_config.py` en `tools/workflow/`,
@@ -198,6 +199,6 @@ contrato o permisos vuelve al owner; no se resuelve con otro fallback.
 |---|---|
 | Estándar explícito | Documentado; Goldfish de 2 revisores CON HALLAZGOS aplicado; no aprobación de la migración |
 | Inventario inicial | 471 versionados clasificados automáticamente; revisión semántica pendiente |
-| S1 workflow/report | Autorizado, WIP; no checkpoint de aceptación |
+| S1 workflow/report | Entregado: 101 pruebas dirigidas, 103 workflow discovery, 8 mutantes; Goldfish aplicado y prueba real de logs existentes |
 | S2a auditoría semántica | Autorizada; triaje inicial disponible, revisión contextual pendiente |
-| S2b y S3–S7 | Implementación propuesta, pendiente de aprobación de ampliación |
+| S2b y S3–S7 | Aprobados; pendientes de sus dependencias y ejecución |

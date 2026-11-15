@@ -11,7 +11,7 @@ schema_version = 1
 # bag1_reference_runtime
 
 [tools]
-# python_report, winshot_root, build_script, ffmpeg_review, ffmpeg_wgc
+# audio_probe, python_report, winshot_root, build_script, ffmpeg_review, ffmpeg_wgc
 # ghidra_launcher, ghidra_project
 
 # Never override build.jobs or pins in this local file.

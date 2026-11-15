@@ -81,17 +81,48 @@ este barrido no concede por sí solo ninguna disposición semántica.
 | Consumidor/familia | Estado real |
 |---|---|
 | Resolutor y checker de manifiestos | Entregados en `7fefc07` / `28fc1e9` |
-| Workflow/report | Lote autorizado, código WIP y 83 pruebas dirigidas OK; cierre pendiente |
-| Audio probe | Clave `tools.audio_probe` y ruta local añadidas en el WIP, no cierre del lote |
+| Workflow/report | S1 entregado: rutas/pins/WSL/jobs y guardas; 101 pruebas dirigidas OK, Goldfish aplicado |
+| Audio probe | Clave `tools.audio_probe` y ruta local verificada; requisito solo al buscar audio existente |
 | Harness/PowerShell/captura | Pendientes de análisis semántico y migración |
 | Importadores/perfiles/herramientas de paquetes/instalador | Pendientes por lotes |
 | Bash instalado fijo / bootstrap del harness | Exigen contrato y verificación propios; no migrados |
 
-El lote workflow/report aún debe probar work_root y destinos protegidos, overlay
-en subprocess, dependencia opcional de audio_probe y coherencia del build fijo.
-El preflight real `_work/workflow/20261115T131557487604Z-config-wide-audit/metrics.json`
-pasó en 0.371 s; conserva el drift conocido de `bag2jp_gaso_caught.c` (diagnóstico,
-no staging ni build). No se ejecutó partida, deploy, build ni cambio de settings.
+S1 prueba work_root/destinos protegidos, overlay absoluto en subprocess, dependencia
+opcional de audio_probe/python_report y coherencia del build fijo. Ocho mutantes
+en copias temporales murieron por aserción con baseline verde; fuentes canónicas
+no modificadas por las mutaciones. Log final: `_work/configuration/lot1-mutations-goldfish/`;
+la primera matriz de cinco se conserva en `lot1-mutations/` de la misma carpeta.
+Suite dirigida: 101 OK; discovery de `tools/workflow`: 103 OK. No se presenta como
+suite global del juego ni se ejecuta discovery de tests con efectos no examinados.
+
+Preflight real: `_work/workflow/20261115T135004565296Z-config-lot1-proof/metrics.json`,
+0.395 s, contrato legacy compatible con árbol real/jobs2; conserva el drift conocido
+de `bag2jp_gaso_caught.c` (diagnóstico, no staging ni build). Ruta completa
+workflow→reporte con overlay relativo y el Python configurado, tras corregir Goldfish:
+`_work/workflow/20261115T140149654970Z-config-lot1-final-readonly/metrics.json` pasó
+leyendo logs ya existentes; no es evidencia nueva de una partida ni grabación.
+No se ejecutó partida, deploy, build ni cambio de settings.
+
+Límite S1: migra rutas/pins/distribución y contrasta jobs; defaults numéricos de
+espera/layout del reporte siguen en el inventario semántico, no certificados como
+configurados. Bash instalado no se ha migrado: el adaptador reconoce solo su forma
+literal de seis líneas, expone hash/toolchain/árbol/jobs y bloquea build si formato,
+árbol o jobs divergen. Preflight informa la incompatibilidad sin fingir reubicación.
+Las rutas de reporte son nativas según config, sin adivinar montajes; integración
+POSIX no probada. Guardas de rutas no prometen protección TOCTOU ni identidad de
+una instalación mal identificada en la config local.
+
+Goldfish S1 (2026-11-15): dos revisores, ambos **CON HALLAZGOS**; copias/spec y
+respuestas en `_work/goldfish/config-lot1/`. SHA-256 del manifiesto revisado:
+`d407276e11145c57368694168c3f3e3bcbc9da4451de02a9fc3d47afd3ad2b2f`.
+Confirmados y corregidos con RED→GREEN: build sin guarda de su destino estable,
+redirección Bash aceptada como path literal, WAV aparecido durante la espera y
+directorio confundido con WAV. Se eliminaron causas alternativas en los tests
+de jobs/texto shell y mayúsculas de estable. La selección opcional se resuelve
+después de esperar y antes de stdout/escrituras; el build valida raíz y carpeta
+efectiva con rol build antes de lanzar Bash. Sin hallazgos refutados. No se relanzó
+la revisión; las correcciones están ligadas a tests/mutantes y hashes posteriores.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
 
 Herramientas consideradas: Git + Python stdlib para extracción determinista y
 hashes; MCP Ghidra obligatorio confirmó SLPM JP y byte nativo (log individual).
@@ -112,8 +143,8 @@ los reviewers no ejecutaron código ni certificaron tests. Triaje/respuestas y
 correcciones posteriores se conservan junto al spec. Checks documentales e
 integridad del inventario acreditan esta unidad, no el código workflow/report WIP.
 Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
-La ampliación de migración espera la aprobación del plan; análisis y documentación
-continúan bajo la autorización existente.
+El owner aprobó ejecutar el plan ampliado con «Si continúa» el 2026-11-15.
+Análisis/migración host siguen por lotes; no autoriza partidas ni cambios externos.
 
 
 ## Fuentes vigentes

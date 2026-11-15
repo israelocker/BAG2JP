@@ -1,7 +1,7 @@
 """Resolve shared host-tool configuration without launching tools or writing files."""
 
 import argparse
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import hashlib
 import json
 import os
@@ -58,9 +58,23 @@ def _field_registry() -> Mapping[str, FieldSpec]:
     for name in ("bag1_usa_disc", "bag1_jp_disc", "bag1_usa_extraction", "bag1_jp_extraction",
                  "bag1_reference_runtime"):
         fields[f"inputs.{name}"] = FieldSpec("path", "native path", True, "input")
-    for name in ("python_report", "winshot_root", "build_script", "ffmpeg_review", "ffmpeg_wgc",
-                 "ghidra_launcher", "ghidra_project"):
+    for name in ("audio_probe", "python_report", "winshot_root", "build_script",
+                 "ffmpeg_review", "ffmpeg_wgc", "ghidra_launcher", "ghidra_project"):
         fields[f"tools.{name}"] = FieldSpec("path", "native path", True, "tool")
+    workflow = ("repo_root", "paths.work_root", "paths.stable_install", "paths.build_root",
+                "paths.experimental_install", "tools.build_script", "pins.psxrecomp",
+                "pins.recomp_ui", "build.jobs", "wsl.distribution")
+    report = ("repo_root", "paths.work_root", "paths.experimental_install")
+    requirements = {
+        "workflow": workflow,
+        "workflow-report": workflow + ("tools.python_report",),
+        "report": report,
+        "report-audio": report + ("tools.audio_probe",),
+        "report-sheet": report + ("paths.stable_install",),
+    }
+    for operation, keys in requirements.items():
+        for key in keys:
+            fields[key] = replace(fields[key], operations=fields[key].operations + (operation,))
     return MappingProxyType(fields)
 
 
@@ -176,7 +190,8 @@ WRITE_ROLES = MappingProxyType({
     FIELDS[f"paths.{name}"].role: f"paths.{name}"
     for name in ("work_root", "build_root", "experimental_install")
 })
-OPERATIONS = ("inspect", "payload-manifest")
+OPERATIONS = ("inspect", *dict.fromkeys(operation for spec in FIELDS.values()
+                                       for operation in spec.operations))
 
 
 def _normalized(path: Path) -> str:

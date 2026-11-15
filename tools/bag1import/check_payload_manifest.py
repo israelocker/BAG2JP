@@ -20,7 +20,12 @@ from pathlib import Path
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tools.workflow.project_config import ConfigError, load_config, require_paths
+from tools.workflow import project_config
+
+# Aliases keep the resolver patchable in tests; the class is read from its module so a
+# reloaded registry still raises the exception type this module catches.
+load_config = project_config.load_config
+require_paths = project_config.require_paths
 
 PACKAGE = Path("bag2jp.feature.bag1-content/1.0.0")
 OVERLAY = "payload/bag1_alt.bin"
@@ -70,7 +75,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         try:
             packages = default_packages(load_config(local_config=args.local_config))
-        except ConfigError as exc:
+        except project_config.ConfigError as exc:
             print(f"config error: {exc}", file=sys.stderr)
             return 2
     failed = 0

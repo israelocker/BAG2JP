@@ -13,7 +13,8 @@ DOC = REPO / "docs/data-dictionary.md"
 FIELDS_HEADING = "## Campos de configuración"
 NATIVE_HEADING = "## Datos nativos y compartidos"
 TYPE_LABELS = {"integer": "entero", "path": "ruta", "revision": "revisión", "string": "cadena"}
-IMPLEMENTED_CONSUMERS = {"project_config.py", "check_payload_manifest.py"}
+IMPLEMENTED_CONSUMERS = {"project_config.py", "check_payload_manifest.py",
+                       "bag2_workflow.py", "bag2_report.py"}
 MACHINE_PATH = r"(?<![\w:/])[A-Za-z]:[\\/]"
 
 

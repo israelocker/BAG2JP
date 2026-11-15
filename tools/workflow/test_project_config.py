@@ -232,10 +232,13 @@ class AdapterTests(ConfigFixture):
 
     @unittest.skipUnless(os.name == "nt", "Windows case-insensitive semantics; unverified elsewhere")
     def test_windows_case_variant_of_stable_is_not_writable(self):
+        self.write_local('schema_version = 1\n[paths]\nwork_root = "work"\n'
+                         'stable_install = "work/stable"\n')
+        (self.root / "work/stable").mkdir()
         cfg = self.load()
-        with self.assertRaises(config.ConfigError):
-            config.assert_write_target(cfg, self.root / "STABLE/BAG2JP.exe",
-                                       role="experimental")
+        with self.assertRaisesRegex(config.ConfigError, "protected stable"):
+            config.assert_write_target(cfg, self.root / "work/STABLE/BAG2JP.exe", role="work")
+        self.assertTrue(config._is_within(Path("D:/stable"), Path("d:/STABLE/file")))
 
     def test_stable_directory_alias_is_not_writable(self):
         cfg = self.load()
@@ -467,6 +470,21 @@ def _make_directory_alias(link: Path, target: Path) -> bool:
                                 capture_output=True, text=True)
         return result.returncode == 0
     return False
+
+
+class WorkflowOperationTests(ConfigFixture):
+    def test_workflow_and_report_operations_declare_real_requirements(self):
+        self.assertIn("workflow", config.OPERATIONS)
+        self.assertIn("report", config.OPERATIONS)
+        self.assertIn("report-audio", config.OPERATIONS)
+        self.assertIn("report-sheet", config.OPERATIONS)
+        self.assertIn("workflow", config.FIELDS["paths.work_root"].operations)
+        self.assertIn("workflow", config.FIELDS["paths.stable_install"].operations)
+        self.assertNotIn("workflow", config.FIELDS["tools.python_report"].operations)
+        self.assertNotIn("report", config.FIELDS["tools.audio_probe"].operations)
+        self.assertIn("report-audio", config.FIELDS["tools.audio_probe"].operations)
+        self.assertIn("report-sheet", config.FIELDS["paths.stable_install"].operations)
+        self.assertIn("workflow-report", config.FIELDS["tools.python_report"].operations)
 
 
 class RequirementTests(ConfigFixture):

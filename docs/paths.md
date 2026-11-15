@@ -12,8 +12,9 @@ doc_kind: reference
 
 # Rutas del entorno BAG2JP
 
-Rutas de esta máquina, no defaults portables. Autoridad: AGENTS y constantes
-de `tools/workflow/bag2_workflow.py` contrastadas en el preflight de la auditoría.
+Rutas de esta máquina, no defaults portables. Autoridad operativa para los
+consumidores migrados: configuración común/local y resolutor `project_config.py`,
+con los límites de permisos de AGENTS; esta tabla es el registro humano.
 
 | Propósito | Ruta |
 |---|---|
