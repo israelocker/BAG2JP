@@ -164,6 +164,16 @@ Estas reglas no certifican cobertura actual ni un conversor universal.
    compartido y datos/assets propios; no clonar el parche Gas-O ni sus direcciones,
    paletas o hashes. Bi-O/Gas-O es la evidencia de origen; **Comet BAG2/Frida BAG1**
    es un requisito futuro indicado por el owner, no soporte ya implementado.
+10. **Nombre del HUD sobre la barra de puntuación.** Validarlo aparte del
+    selector: debe aparecer completo, legible, en su lado y con la identidad de la
+    versión elegida durante la partida. Nunca vacío, desaparecido ni con el nombre
+    del anfitrión por defecto (Gas-O no debe mostrar Bi-O). Comprobar P1/P2, A/B,
+    versiones mixtas/opuestas en la misma casilla y vuelta a BAG2. Revisar durante
+    el flujo probado, no solo al entrar al escenario: un retrato/selector correcto
+    no demuestra HUD correcto. Auditar textura, glyphs, CLUT/UV, descriptor y sus
+    consumidores cuando aplique; reutilizar el proceso, no los rectángulos ni bytes
+    de Gas-O. Esta regla alcanza futuros pares como Comet/Frida sin certificar su
+    implementación ni sustituir la validación grabada.
 
 ### RE: demostrar la costura antes de construir sobre ella
 

@@ -116,6 +116,26 @@ doc_kind: evidence
   nuevos sobre el consumidor, solo aclaración de norma con evidencia ya vigente.
   Comprobación dirigida: `_work/retro/portrait-identity-standard-check.json`.
 
+### Aclaración del estándar: nombre sobre puntuación (owner, 2026-11-15)
+
+- El owner exige comprobar el nombre encima de la barra de puntuación para no
+  repetir su desaparición en Gas-O. La norma anterior sobre selector/retrato no lo
+  especificaba: **HUD y selector son gates distintos**, no aceptación heredada.
+- Incorporado al pipeline, matriz de pruebas y completitud del runbook. Debe
+  verse completo/legible en su lado y corresponder a la versión elegida durante
+  el flujo probado; no vacío ni con el nombre del anfitrión. Cubrir P1/P2×A/B,
+  mixtos y versiones opuestas en una casilla, y restaurar nombre nativo al volver
+  a BAG2. Esto también es requisito para futuros pares como Comet/Frida.
+- El procedimiento de auditar assets/descriptores/consumidores del HUD es común;
+  glyphs, rectángulos, CLUT/hashes y parches concretos de Gas-O no son universales.
+  No se añaden capacidades runtime ni se declara Frida implementada.
+- Unidad documental, con auto-revisión declarada y omisión Goldfish por la lista
+  cerrada de rutas (mismo alcance notes/runbook/digests; no tools, AGENTS,
+  IMPORT_STANDARD, coding-standards o runtime). Preflight de la aclaración anterior
+  reutilizado: fuentes/recursos/runtime no cambiaron. Sin nuevo Ghidra/FFmpeg/build
+  o partida: se reutiliza evidencia del HUD Gas-O, sin nueva hipótesis técnica.
+  Comprobación dirigida: `_work/retro/scoreboard-name-standard-check.json`.
+
 ### Corrección de alcance: entrada35 / Double Fever (2026-11-15)
 
 - «Stock» describe contenido, no falta de soporte: el índice alternativo actual

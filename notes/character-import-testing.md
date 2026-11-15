@@ -103,6 +103,12 @@ el driver lo rechaza si no coincide con el solicitado, no lo oculta.
   versiones opuestas de esa casilla no deben contaminarse. Comprobar assets nativos
   y sus reemplazos HD si están activos, sin afectar a otros personajes. Ver el
   contrato común «Identidad visual por versión» del pipeline, no copiar el parche.
+- Nombre sobre la barra de puntuación: **gate independiente del selector/retrato**.
+  Exigir que esté presente, completo, legible y en el lado correcto durante la
+  partida, con el nombre de la versión activa (Gas-O, no Bi-O ni vacío). Cubrir
+  P1/P2×A/B, mixtos y versiones opuestas de la misma casilla; al volver a BAG2,
+  restaurar su nombre nativo. Revisar las fases relevantes del flujo grabado para
+  detectar desapariciones, no darlo por válido solo porque se vea en el selector.
 - Modelo/texturas: frente/espalda, UV, CLUT, accesorios, articulaciones y escala.
 - Movimiento: normales/especiales, duración, transiciones y predecesores;
   ataques/defensas/reacciones, cansancio, caída y recuperación.

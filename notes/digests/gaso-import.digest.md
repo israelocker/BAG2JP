@@ -8,7 +8,7 @@ created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "d5fe3bd2fa4983692aeecd67f1769e2dd5097807271c8a6e656d2b911359ac48"
+source_sha256: "33bcfb6aa524a17b3db834b5425f53b9f6fdfb3314223bf94f5339aafe812be2"
 ---
 
 # Gas-O: lectura vigente
@@ -22,6 +22,9 @@ source_sha256: "d5fe3bd2fa4983692aeecd67f1769e2dd5097807271c8a6e656d2b911359ac48
 - Aclaración owner: conmutar retrato/nombre es estándar común para toda casilla
   compartida; solo assets/hashes/parche BI-O/GAS-O son específicos. Añadido al
   pipeline, aceptación y pruebas. Futuro Comet/Frida aún no implementado.
+- Owner exige además nombre sobre barra de puntuación: requisito común, separado
+  del selector/retrato; presente, legible y correcto por versión/lado en partida.
+  Incorporado a pipeline/runbook/pruebas, sin cambios runtime ni nueva partida.
 Último resultado: «Toma por proceso aceptada y revisada: Bloque4 aceptado por el owner».
 Única toma block4-recovery-process-a:314.223s total,208.867s vídeo1920x1080,
 manifestaccepted=true,2090heartbeats/4late/1stall79ms,20970paquetes nativos,

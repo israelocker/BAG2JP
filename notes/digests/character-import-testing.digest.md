@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/character-import-testing.md"
-source_sha256: "22701e2629550d3a476c795cf06bbd9951cbdf229f1506bec4e3be3bf655bdfd"
+source_sha256: "0e795014241e6aeda421797eaff5c24bdac6d727187d19e21edc26202c73c55b"
 ---
 
 # Pruebas: lectura por fase
@@ -20,6 +20,8 @@ source_sha256: "22701e2629550d3a476c795cf06bbd9951cbdf229f1506bec4e3be3bf655bdfd
   todos los importados/nativos y compañeros es requisito, aún no cobertura.
 - Casilla compartida: retrato/nombre por versión/lado; cambio/vuelta a BAG2,
   preview/cancelación/confirmación, stage select y retorno, también HD si activo.
+- Nombre encima de puntuación: validación aparte, visible/completo/legible durante
+  el flujo grabado, versión y lado correctos; vuelta a BAG2 restaura su nombre.
 - «Grabación: procedimiento vigente tras Gas-O» sustituye recetas antiguas:
   WGC verificado y `--audio-backend process` explícito (default CLI aún dump),
   flags por harness, trace/heartbeat, tags únicos, guardar desde escenario a retorno.

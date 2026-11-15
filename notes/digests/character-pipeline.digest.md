@@ -9,7 +9,7 @@ updated: "2026-11-15"
 edited: "2026-11-15"
 doc_kind: digest
 source: "notes/character-pipeline.md"
-source_sha256: "14bcd2df1453e032cf8591d034bf60672e5b4f300a9bf2bc0ff978f34a1d1e22"
+source_sha256: "bc8b3a4a3ed687882f1bb50d2407a914ed2ef0701c217f4e8e96cce9643787be"
 ---
 
 # Pipeline compartido: resumen
@@ -19,6 +19,8 @@ source_sha256: "14bcd2df1453e032cf8591d034bf60672e5b4f300a9bf2bc0ff978f34a1d1e22
   CAUGHT universal (requisito, cobertura pendiente), hold y versión del receptor.
   Compartir casilla exige retrato/nombre por versión y lado, sin contaminar BAG2;
   Bi-O/Gas-O demuestra el caso, Comet/Frida es requisito futuro aún sin implementar.
+  Nombre sobre barra de puntuación: gate separado del selector, presente/legible
+  y correcto por versión/lado durante partida; nunca vacío ni nombre anfitrión.
   RE: módulo correcto, Ghidra MCP + bytes/Capstone, intérprete antes del adaptador.
   Root CAUGHT y corrección Pander siguen siendo investigación, no solución validada.
 - 04-11/06-11: checklist de lecciones verificadas (carpeta=traje/sufijo=lado, alineación DFS 4 B, copias de atlas MoveImage del DBI BAG2, esqueleto por traje, neutral/política de slots, RAM 8 MB, voces rebasadas + anunciador, escala del bailarín, rostro/iluminación, hashes del manifest, eventos del escenario por puntaje, pruebas de aceptación). Ver «Lecciones verificadas» de la fuente.

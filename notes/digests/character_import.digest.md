@@ -8,7 +8,7 @@ created: "2026-11-02"
 updated: "2026-11-15"
 doc_kind: digest
 source: "CHARACTER_IMPORT.md"
-source_sha256: "db72c0045f55fb4c4e1ac2656aa8a7249861a23479c5fc330ceec47cfcf3cd5e"
+source_sha256: "c4c62ada79a6fa69b7a3a7f9582f327729c854f4ed23a3f7020dcd250034517a"
 ---
 
 - Fuente canónica: [CHARACTER_IMPORT](../../CHARACTER_IMPORT.md); entrada mínima:
@@ -18,6 +18,8 @@ source_sha256: "db72c0045f55fb4c4e1ac2656aa8a7249861a23479c5fc330ceec47cfcf3cd5e
 - Lecciones Gas-O: mismo proceso con datos propios, no sus constantes/adaptadores.
   Retrato/nombre del personaje por versión y lado al compartir casilla; preservar
   identidad BAG2. Comet/Frida es caso futuro, no soporte actual.
+  Nombre sobre puntuación visible/legible y correcto durante partida; el selector
+  o retrato correcto no acredita el HUD.
   CAUGHT se exige en cada importado BAG1 y nativo BAG2, lados/variantes/compañeros;
   es requisito de aceptación, no cobertura ya alcanzada.
 - `init-profile` produce schema 1, plan/prepare requieren schema 2 y gates
