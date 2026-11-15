@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "42032018c11cf00cb4567755c34381c945dd521dcc5c80036e6a5bd474025e42"
+source_sha256: "97ea491976bb69173987eac6ca272a3972c297d2aa6a721ae66f383120619e32"
 ---
 
 # Configuración: estado mínimo
@@ -30,9 +30,14 @@ source_sha256: "42032018c11cf00cb4567755c34381c945dd521dcc5c80036e6a5bd474025e42
 - 471 archivos versionados inventariados automáticamente, con hashes/procedencia.
   No equivalen a análisis semántico ni ausencia de hardcodes. S2 y demás familias
   pendientes; plan ampliado aprobado. Defaults numéricos legacy siguen candidatos.
-- S2a parcial: GAME/WINSHOT/CATALOG del harness trazados; tres lectores de producción
-  y dos tests dependen de exports actuales. No retirar globals rompiendo lectores;
-  wrappers legacy no se borran por referencias obsoletas. No se ha ejecutado harness.
+- S2a familia harness: runner, tres lectores y tres tests leídos; disposiciones por
+  hash en `plans/pending/host-configuration-harness-audit.json`; nav parcial, global
+  471 pendiente. No retirar globals rompiendo lectores; discovery legacy conservado.
+- Preparación S3: siete `harness.*` (deadlines 25/35/40/420 s, tope 86400;
+  hold/gap/fade 100 ms/350 ms/1.3 s observados y bloqueados, sin override local).
+  Registrados y validados, sin consumidor ni operación activa; literales del runner
+  intactos. Goldfish: 0 BLOCKER, 6 SHOULD-FIX corregidos o registrados (riesgo
+  legacy `run_case`/Popen global para S3a). No es aceptación ni permiso de despliegue.
 - Nuevo/modificado host sigue el estándar central; runtime, hechos PSX y guards
   conservan su autoridad. No tocar historia, releases, settings, saves o terceros.
 - Límites: config no demuestra identidad de estable; TOCTOU no garantizado,

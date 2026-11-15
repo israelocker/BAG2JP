@@ -12,7 +12,7 @@ REPO = Path(__file__).resolve().parents[2]
 DOC = REPO / "docs/data-dictionary.md"
 FIELDS_HEADING = "## Campos de configuración"
 NATIVE_HEADING = "## Datos nativos y compartidos"
-TYPE_LABELS = {"integer": "entero", "path": "ruta", "revision": "revisión", "string": "cadena"}
+TYPE_LABELS = {"integer": "entero", "number": "número", "path": "ruta", "revision": "revisión", "string": "cadena"}
 IMPLEMENTED_CONSUMERS = {"project_config.py", "check_payload_manifest.py",
                        "bag2_workflow.py", "bag2_report.py"}
 MACHINE_PATH = r"(?<![\w:/])[A-Za-z]:[\\/]"
@@ -83,7 +83,7 @@ class DictionaryTests(unittest.TestCase):
             with self.subTest(key=key):
                 self.assertEqual(row["Tipo"], TYPE_LABELS[spec.kind])
                 self.assertEqual(row["Unidad"], spec.unit)
-                if spec.kind == "integer":
+                if spec.kind in ("integer", "number") and spec.expected is not None:
                     self.assertIn(f"exactamente {spec.expected}", row["Validación"])
                 if spec.role == "derived":
                     self.assertEqual(row["Origen"], "derivado")
@@ -136,7 +136,9 @@ class DictionaryTests(unittest.TestCase):
         template = tomllib.loads(text)
         # Only the shared schema line is live; every location stays commented out.
         self.assertEqual(sorted(_flatten(template)), [("schema_version", 1)])
-        sections = set(re.findall(r"^\[([a-z_]+)\]", text, re.M)) - {"paths", "inputs", "tools"}
+        allowed = {key.split(".")[0] for key, spec in config.FIELDS.items()
+                   if "." in key and spec.local_override}
+        sections = set(re.findall(r"^\[([a-z_]+)\]", text, re.M)) - allowed
         self.assertEqual(sorted(sections), [])
 
 

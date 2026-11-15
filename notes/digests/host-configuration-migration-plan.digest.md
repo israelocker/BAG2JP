@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "0591fcc94ab11f436ae123d071b965026b1a1888916b21fb3611a4c986012217"
+source_sha256: "a7680d2f914c6fdb47716be91539893e4d10c3614735b2d3fb4c771389cbde66"
 ---
 
 # Ampliación de configuración central
@@ -27,9 +27,13 @@ source_sha256: "0591fcc94ab11f436ae123d071b965026b1a1888916b21fb3611a4c986012217
 - S2: auditoría semántica por familia y checker con baseline/excepciones justificadas;
   ningún archivo sin disposición y regresión causal ante nuevos hardcodes.
   Ambos autorizados; S2b espera disposiciones semánticas de S2a, no otro gate humano.
-- S2a en curso: primer mapa del harness encuentra tres lectores de producción que
-  capturan/leen globals y dos módulos de tests; migrar la API coherentemente, no
-  quitar globals sin trazar lectores. Faltan secciones de selección/finish y lectores.
+- S2a familia harness auditada por hash (nav parcial, global 471 pendiente); migrar
+  la API coherentemente con ajustes por ejecución, no quitar globals sin sus lectores.
+- Preparación S3: siete `harness.*` (deadlines 25/35/40/420 s, tope 86400;
+  hold/gap/fade 100 ms/350 ms/1.3 s observados y bloqueados, sin override local).
+  Registrados y validados, sin consumidor ni operación activa; literales del runner
+  intactos. Goldfish: 0 BLOCKER, 6 SHOULD-FIX corregidos o registrados (riesgo
+  legacy `run_case`/Popen global para S3a). No es aceptación ni permiso de despliegue.
 - S3: versus y PowerShell; S4: captura/FFmpeg/referencias; S5: importadores/perfiles;
   S6: herramientas de paquetes/instalador; S7: bootstrap/externos y cierre.
 - Lotes pequeños con tests/diccionario/operaciones/consumidores reales, Goldfish y

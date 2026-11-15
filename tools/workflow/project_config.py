@@ -4,6 +4,7 @@ import argparse
 from dataclasses import dataclass, replace
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -26,7 +27,8 @@ class FieldSpec:
     local_override: bool
     role: str
     operations: tuple[str, ...] = ()
-    expected: int | None = None
+    expected: int | float | None = None
+    maximum: float | None = None
 
 
 @dataclass(frozen=True)
@@ -34,7 +36,7 @@ class ProjectConfig:
     """An immutable resolved host configuration."""
 
     repo_root: Path
-    values: Mapping[str, Path | str | int]
+    values: Mapping[str, Path | str | int | float]
     origins: Mapping[str, str]
     input_hashes: Mapping[str, str | None]
     input_files: Mapping[str, str | None]
@@ -61,6 +63,13 @@ def _field_registry() -> Mapping[str, FieldSpec]:
     for name in ("audio_probe", "python_report", "winshot_root", "build_script",
                  "ffmpeg_review", "ffmpeg_wgc", "ghidra_launcher", "ghidra_project"):
         fields[f"tools.{name}"] = FieldSpec("path", "native path", True, "tool")
+    for name in ("state_timeout_seconds", "helper_timeout_seconds", "startup_timeout_seconds",
+                 "finish_timeout_seconds"):
+        # One day is a sanity ceiling far below threading.TIMEOUT_MAX on every platform.
+        fields[f"harness.{name}"] = FieldSpec("number", "seconds", True, "host_budget", maximum=86400.0)
+    fields["harness.key_hold_ms"] = FieldSpec("integer", "milliseconds", False, "policy", expected=100)
+    fields["harness.key_gap_ms"] = FieldSpec("integer", "milliseconds", False, "policy", expected=350)
+    fields["harness.menu_fade_seconds"] = FieldSpec("number", "seconds", False, "policy", expected=1.3)
     workflow = ("repo_root", "paths.work_root", "paths.stable_install", "paths.build_root",
                 "paths.experimental_install", "tools.build_script", "pins.psxrecomp",
                 "pins.recomp_ui", "build.jobs", "wsl.distribution")
@@ -119,7 +128,7 @@ def _resolve_path(value: str, root: Path, key: str) -> Path:
         raise ConfigError(f"{key}: cannot resolve path") from exc
 
 
-def _validate_layer(data: dict, root: Path, *, local: bool) -> dict[str, Path | str | int]:
+def _validate_layer(data: dict, root: Path, *, local: bool) -> dict[str, Path | str | int | float]:
     fields = _flatten(data)
     if not local and "schema_version" not in fields:
         raise ConfigError("common: schema_version is required")
@@ -133,6 +142,19 @@ def _validate_layer(data: dict, root: Path, *, local: bool) -> dict[str, Path | 
         if spec.kind == "integer":
             if spec.expected is None or type(value) is not int or value != spec.expected:
                 raise ConfigError(f"{key}: expected integer {spec.expected}")
+        elif spec.kind == "number":
+            finite = False
+            if type(value) in (int, float):
+                try:
+                    finite = math.isfinite(value)
+                except OverflowError:
+                    pass
+            if (not finite or value <= 0
+                    or (spec.maximum is not None and value > spec.maximum)
+                    or (spec.expected is not None and value != spec.expected)):
+                exact = f" exactly {spec.expected}" if spec.expected is not None else ""
+                bound = f" up to {spec.maximum:g}" if spec.maximum is not None else ""
+                raise ConfigError(f"{key}: expected a positive finite number{bound}{exact}")
         elif not isinstance(value, str) or not value.strip() or "\0" in value:
             raise ConfigError(f"{key}: expected a nonempty string")
         elif spec.kind == "revision" and not re.fullmatch(r"[0-9a-fA-F]{7,40}", value):

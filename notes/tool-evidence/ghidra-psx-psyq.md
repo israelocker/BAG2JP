@@ -2415,3 +2415,26 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   ahorro no medido. No se abrió otra instancia ni se instaló/configuró nada.
 - Siguiente: conservar el dato bajo autoridad nativa; auditar consumidores host
   por separado conforme al plan de migración.
+
+## 20261115-ghidra-harness-config — datos de observación frente a ajustes host
+
+- Tipo: uso real acotado, solo lectura; instancia existente, Ghidra 12.1.4 según
+  registro instalado. MCP exacto: `get_program_info()` primero;
+  `read_memory(address="0x8005D3E0", length=4)` después.
+- Programa: SLPM_862.19 Japón, main PSX LE32, base 0x80000000, SHA-256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Resultado: identidad correcta; lectura `?? ?? ?? ??`, gap 8005d3e0–8005d3e3 por
+  memoria sin inicializar. No es un fallo de MCP ni una lectura de la partida viva.
+- Propósito: delimitar el watch RESULT_STATE del harness respecto a presupuestos
+  de tiempo configurables. El nombre/papel del watch viene de las fuentes y la
+  evidencia previa; esta consulta no prueba su valor ni semántica de runtime.
+- Evidencia: consultas anteriores y auditoría por hash
+  `plans/pending/host-configuration-harness-audit.json`. Contraste independiente:
+  el programa/base/hash coinciden con la referencia original; falta inicialización
+  runtime por diseño, no se inicia una partida para suplirla.
+- Dictamen: inconcluso para estado/valor nativo actual; útil solo para verificar
+  identidad, alcance y límite de la lectura. No justifica convertir direcciones o
+  gates en knobs libres ni afirma utilidad general de Ghidra para rutas host.
+- Medición: ejecución, preparación/revisión/retrabajo y ahorro no medidos.
+- Siguiente: conservar la autoridad nativa y resolver solo budgets/ubicaciones host;
+  no crear ni renombrar funciones, sesiones o datos del proyecto Ghidra.

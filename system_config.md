@@ -146,7 +146,7 @@ Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue
 El owner aprobó ejecutar el plan ampliado con «Si continúa» el 2026-11-15.
 Análisis/migración host siguen por lotes; no autoriza partidas ni cambios externos.
 
-### S2a: primer mapa de lectores del harness (parcial)
+### S2a: disposición contextual de la familia del harness
 
 Se trazaron GAME→`paths.experimental_install`, WINSHOT→`tools.winshot_root`,
 CATALOG y carpetas de runs→`paths.work_root`; repo_root sigue derivado. Además de
@@ -156,17 +156,62 @@ Algunos capturan las rutas al importar: retirar globals sin migrar lectores romp
 esa API. Los wrappers discover también citan SELECT_ROOTS, ausente del módulo
 actual; es indicio de API legacy, no prueba de desuso ni permiso para borrarlos.
 
-Evidencia por hash y secciones leídas: `_work/configuration/versus-semantic-audit.json`
-y `versus-reader-inventory.json` de la misma carpeta. Faltan las secciones de
-selección/finish y revisión completa de lectores/tests. No se ejecutó ni modificó
-el harness, ni se registraron claves numéricas aún. Sus direcciones/capacidad de
-watches/allowlist y gates de revisión no se vuelven knobs libres. El catálogo
-vigente comprueba runtime/grafo/imágenes/evidencia; no se inventa un gate automático
-de hashes de scripts donde hoy solo se reportan como procedencia.
+El primer mapa quedó en `2b25d3f`; después se completó la lectura del runner,
+sus tres lectores y tres módulos de pruebas. Disposiciones versionadas por hash,
+con candidatos y excepciones: [auditoría de esta familia](plans/pending/host-configuration-harness-audit.json).
+`versus_navigation.py` sigue revisado parcialmente como dependencia de guards,
+no se declara toda su implementación auditada. La auditoría global de 471 archivos
+continúa incompleta. No se ejecutó ni modificó el código del harness.
+
+Sus direcciones/capacidad de watches/allowlist y gates de revisión no se vuelven
+knobs libres. El catálogo vigente comprueba runtime/grafo/imágenes/evidencia; no
+se inventa un gate automático de hashes de scripts donde hoy solo se reportan como
+procedencia. Las rutas de helpers son relativas a su raíz configurada; los nombres
+de archivos de protocolo no necesitan una clave distinta por cada filename.
 
 Omisión Goldfish de esta continuación S2a: solo análisis/evidencia y nota/digests,
 sin código ejecutable versionado ni política de la lista cerrada; auto-revisión
 documental declarada, no presentada como otra revisión en frío.
+
+### Preparación numérica S3: esquema, no activación del consumidor
+
+Se registraron siete `harness.*` en el TOML común/diccionario, pasando de 24 a
+31 campos: cuatro deadlines (25/35/40/420 segundos, tope 86400) y hold/gap/fade observados y bloqueados
+(100 ms / 350 ms / 1.3 s). Se preservan valores observados en fuentes; ninguno
+se conecta aún a `versus_session.py` ni tiene operación activa asignada.
+Los presupuestos admiten números finitos positivos (no bool/texto, NaN/inf ni
+enteros que desborden la representación flotante). Los tres valores de input son
+política bloqueada: valor común exacto y sin override local. Un valor válido por
+esquema no demuestra por sí solo soporte del timeout por una API de plataforma.
+
+Pruebas: siete RED antes del registro → siete GREEN; suite host dirigida 108 OK,
+discovery de workflow 110 OK y cuatro mutantes muertos por aserción en copias.
+El baseline del harness es 63 tests, todos con fixtures/mocks, sin proceso del juego.
+Primer intento de agruparlos desde `tools/test` dio un fallo de importación
+(`tools` fuera de sys.path): se conservó el log y se corrigió solo el comando,
+con `PYTHONPATH` apuntando al repo; no se relajó ni modificó un test para hacerlo pasar.
+Logs en `_work/configuration/harness-*.log` y `harness-config-mutations/`.
+
+Próximo: migrar la lectura por ejecución y sus consumidores de forma coherente,
+sin global mutable para seleccionar overlay. Los scripts discovery no se usan como
+base del engine: `SELECT_ROOTS` falta y sus flujos no tienen el aislamiento ni la
+grabación de la vía vigente. Conservarlos como legacy hasta tratar sus límites,
+sin borrado, lanzamiento, ampliación de allowlist o aceptación visual implícita.
+Otros budgets/layouts/capturas quedan nombrados como candidatos en la auditoría,
+no registrados ni certificados por haber preparado estos siete.
+
+Goldfish del esquema numérico/auditoría (2026-11-15): dos revisores en frío sobre
+15 entradas congeladas por hash; 0 BLOCKER, 6 SHOULD-FIX, varios NIT. Corregidos:
+tope de 86400 s para presupuestos (antes 1e300 pasaba), aserciones por causa
+exacta, variantes de tipo en la política bloqueada, test unresolved≠missing,
+«calibrado» → «observado y bloqueado» (no hay registro de calibración de hold/gap),
+cobertura indirecta del batch y precedencia CLI `--finish-timeout` > TOML.
+Registrado como riesgo legacy, sin corregir aquí: `run_case` sustituye el
+`subprocess.Popen` global e inyecta fixtures fuera del allowlist; su corrección
+pertenece a S3a. RED 44 subpruebas → GREEN; 3 mutantes nuevos muertos por aserción.
+Registro: `_work/goldfish/harness-config-prep/` (`reviewers.md`, `triage.md`,
+`corrections.sha256.json`). Veredicto de revisor: no es aprobación del
+propietario ni permiso de despliegue.
 
 
 ## Fuentes vigentes

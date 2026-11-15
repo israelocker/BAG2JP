@@ -1,0 +1,186 @@
+{
+  "schema": 1,
+  "created_utc": "2026-11-15T14:56:57.833727+00:00",
+  "scope": "Bounded S2a harness family, not the full 471-file inventory or completed migration.",
+  "prepared_settings_status": "7 keys validated in resolver only; no current harness consumer or active operation claims",
+  "files": [
+    {
+      "file": "tools/test/versus_session.py",
+      "sha256": "db0e654cc87bf8418f63d925bc5ac2b68dbe929551042f77bfa1966fa3b4254d",
+      "review_status": "source_read_configuration_disposition_migration_pending",
+      "coverage": "All 565 source lines read across bounded sections; helpers and lifecycle included.",
+      "bindings": [
+        {
+          "source": "GAME",
+          "target": "paths.experimental_install",
+          "use": "identity/launch/settings/logs/copies",
+          "migration": "pending; guard physical experimental destination before writes"
+        },
+        {
+          "source": "WINSHOT",
+          "target": "tools.winshot_root",
+          "use": "derive postkey.ps1/winshot.ps1 helper names",
+          "migration": "pending; preserve argv and selected PID"
+        },
+        {
+          "source": "CATALOG",
+          "target": "paths.work_root",
+          "suffix": "versus-navigation/catalog.json",
+          "use": "read reviewed graph/write probe catalog",
+          "migration": "pending; preserve runtime/graph/image gates"
+        },
+        {
+          "source": "run/discovery/batch directories",
+          "target": "paths.work_root",
+          "suffix": "versus-runs or versus-navigation/<discovery>",
+          "migration": "pending; role=work and safe run names before mkdir"
+        },
+        {
+          "source": "REPO",
+          "target": "repo_root",
+          "use": "derived bootstrap, not an editable machine root"
+        }
+      ],
+      "prepared_keys": {
+        "TIMEOUT / Session.wait / popup waits": "harness.state_timeout_seconds",
+        "PowerShell subprocess deadline": "harness.helper_timeout_seconds",
+        "Session startup telemetry wait": "harness.startup_timeout_seconds",
+        "song/return budget in Session and Strike batch": "harness.finish_timeout_seconds",
+        "postkey HoldMs": "harness.key_hold_ms",
+        "postkey GapMs": "harness.key_gap_ms",
+        "observed menu fade delay": "harness.menu_fade_seconds"
+      },
+      "unregistered_candidates": [
+        {
+          "literal_role": "opening/title/gameplay wait budgets 60/30/60 seconds",
+          "destination": "separate named harness deadline fields; not the 40-second startup telemetry budget"
+        },
+        {
+          "literal_role": "periodic finish captures/polling 20/1 seconds",
+          "destination": "named capture/poll budget fields"
+        },
+        {
+          "literal_role": "CloseMainWindow WaitForExit 15000 ms / reap 2 seconds",
+          "destination": "separate close/reap deadline fields; preserve refusal to restore while alive"
+        },
+        {
+          "literal_role": "helper stderr excerpt [-1500:] characters",
+          "destination": "named diagnostic excerpt budget; not a safety gate"
+        },
+        {
+          "literal_role": "log suffix 65536 bytes",
+          "destination": "named bounded log-tail byte budget"
+        },
+        {
+          "literal_role": "contact-sheet 1200/600/340/370 and label offset 342",
+          "destination": "named layout data; derive width/row offsets, do not duplicate geometric constants"
+        },
+        {
+          "literal_role": "discovery boot 300 / root-7 wait 60 / move 15 seconds / max_steps 30",
+          "destination": "discovery-specific named budget fields, not Session startup or normal state wait"
+        },
+        {
+          "literal_role": "Strike capture interval 20 / poll 0.5 / max 9 / followup 2",
+          "destination": "shared interval where meaning matches, distinct polling/evidence budgets otherwise"
+        }
+      ],
+      "exceptions": [
+        {
+          "class": "native_domain",
+          "items": "RAM addresses, bit masks/shifts, 2mb/8mb extents, MAX_WATCH32 native capacity, roots/modes, character/stage IDs and aliases",
+          "authority": "native/runtime contracts and versus_navigation; never arbitrary host knobs"
+        },
+        {
+          "class": "reviewed_scenario_data",
+          "items": "probe edges and Strike P1/P2-A/B matrix, attack animation74, VRAM fixture frame schedules",
+          "authority": "existing scenario contract/tests; keep fixed meaning and explicit fixture labels, not environment defaults"
+        },
+        {
+          "class": "security_policy",
+          "items": "debug variable allowlist, independent controls, stale/foreign telemetry rejection, PID/path/start-time ownership, no restore under live process",
+          "authority": "current guards/tests and AGENTS; not local overrides"
+        },
+        {
+          "class": "protocol_structure",
+          "items": "BAG2JP.exe, settings/keybind filenames, trace names, helper script filenames, JSON output fields",
+          "authority": "runtime/helper formats; derive from configured roots rather than make every filename a separate key"
+        },
+        {
+          "class": "path_safety_policy",
+          "items": "run tag pattern [A-Za-z0-9_-]{1,48}",
+          "authority": "safe run-directory naming guard; not a local knob"
+        },
+        {
+          "class": "domain_limits_pending_native_precision",
+          "items": "menu/survey/stage loop bounds6/15/16",
+          "authority": "current bounded navigation behavior; do not claim these literals prove complete native enumeration"
+        }
+      ],
+      "cli_precedence": "--finish-timeout (default 420.0) already exists; after migration an explicit CLI value overrides TOML and the parser default becomes the resolved harness.finish_timeout_seconds.",
+      "api_constraint": "Use immutable per-run resolved settings; preserve/migrate existing module-path readers coherently, never select an overlay by mutating shared globals."
+    },
+    {
+      "file": "tools/test/versus_navigation.py",
+      "sha256": "8ece69f9b46edc9fc3a967566697f5aa88dc4ccd9ee30903b738a69cf7f6ab7e",
+      "review_status": "dependency_guard_review_partial",
+      "coverage": "review/graph/image/freshness/observation guard seams plus their tests; not a full rewrite or audit of all nav implementation",
+      "constraint": "Keep exact acceptance predicates, restoration and original data authorities. Script hashes in result metadata are not an automatic catalog rejection gate."
+    },
+    {
+      "file": "tools/test/discover_strike_id.py",
+      "sha256": "8bef899c75b61a4489953a155acce463710e99cfab1074cc0c2d3f904dc314e5",
+      "review_status": "legacy_source_read_not_execution_accepted",
+      "capture": "GAME and DISCOVERY_DIR captured at import; default wait parameter captures vs.TIMEOUT",
+      "configuration": "Use the same root/helper/state/input-policy meanings as the shared harness, but separate discovery 300/60/15/30 budgets.",
+      "limits": [
+        "vs.SELECT_ROOTS is absent from current versus_session source",
+        "No IsolatedFiles lifecycle or recorded game acceptance in these scripts",
+        "Do not run, delete or clone their engine as a migration shortcut",
+        "Game launched with stdout=PIPE that is never drained: legacy blocking risk"
+      ]
+    },
+    {
+      "file": "tools/test/discover_strike_id_p1.py",
+      "sha256": "05a132c305b6f3bbd72bca011bc16108a03b1aa9720a14f097230580903af3c3",
+      "review_status": "legacy_source_read_not_execution_accepted",
+      "capture": "GAME and DISCOVERY_DIR captured at import; default wait parameter captures vs.TIMEOUT",
+      "configuration": "Use the same root/helper/state/input-policy meanings as the shared harness, but separate discovery 300/60/15/30 budgets.",
+      "limits": [
+        "vs.SELECT_ROOTS is absent from current versus_session source",
+        "No IsolatedFiles lifecycle or recorded game acceptance in these scripts",
+        "Do not run, delete or clone their engine as a migration shortcut",
+        "Game launched with stdout=PIPE that is never drained: legacy blocking risk"
+      ]
+    },
+    {
+      "file": "tools/test/strike_acceptance_batch.py",
+      "sha256": "c1cfdfbae80d90cf6181dc76e1621cacae130ab1d91d5ad966472f5c6aa485eb",
+      "review_status": "source_read_migration_pending",
+      "configuration": "Reads vs.GAME/CATALOG/REPO and constructs Session, so it reaches all seven harness.* values indirectly through vs.Session/vs.powershell; its own finish loop (< 420, poll 0.5 s, captures inside the budget) is equivalent in meaning but not identical to finish_match. Migrate using one shared per-run settings object.",
+      "preserve": "case coverage, runtime hash equality, reviewed graph/images, safe_to_restore predicate and awaiting-review statuses",
+      "limits": "Do not run --execute under host-only authorization; no recording added or accepted here.",
+      "legacy_risk": "run_case replaces the global subprocess.Popen and injects BAG2JP_TEST_STRIKE_ATTACK or BAG2JP_TEST_HEAT_STRIKE_DUEL plus BAG2JP_VRAM_DUMP after build_game_env, bypassing DEBUG_ENV_ALLOWLIST and Session.debug_fixtures. Recorded, not fixed here; the migration must replace it with an explicit per-run fixture declaration, not a global mutation."
+    },
+    {
+      "file": "tools/test/test_versus_navigation.py",
+      "sha256": "34c1bfc2c2bd5b57c7588f4dfba63994fe6d4f4a756723facee50ffd5eab2ca0",
+      "review_status": "tests_read_fixture_dependency_migration_pending",
+      "preserve": "Real behavioral assertions; migrate GAME monkeypatch fixtures to explicit per-run settings before removing globals.",
+      "constraint": "Observed-session subclasses omit super().__init__; update their fixtures, not production fallback state or native expectations."
+    },
+    {
+      "file": "tools/test/test_versus_session_env.py",
+      "sha256": "1243e12f0a865223f89a0fd9a285bb2b1eba3ca3680066628b67a8d03f4a6d60",
+      "review_status": "tests_read_fixture_dependency_migration_pending",
+      "preserve": "Real behavioral assertions; migrate GAME monkeypatch fixtures to explicit per-run settings before removing globals.",
+      "constraint": "Observed-session subclasses omit super().__init__; update their fixtures, not production fallback state or native expectations."
+    },
+    {
+      "file": "tools/test/test_strike_acceptance_batch.py",
+      "sha256": "1da130fdad6a2d8e9b9daa81ecdd38c6280dc3a978d07a8d49534f43697cd76e",
+      "review_status": "tests_read_fixture_dependency_migration_pending",
+      "preserve": "Real behavioral assertions; migrate GAME monkeypatch fixtures to explicit per-run settings before removing globals.",
+      "constraint": "Observed-session subclasses omit super().__init__; update their fixtures, not production fallback state or native expectations."
+    }
+  ]
+}

@@ -14,4 +14,8 @@ schema_version = 1
 # audio_probe, python_report, winshot_root, build_script, ffmpeg_review, ffmpeg_wgc
 # ghidra_launcher, ghidra_project
 
-# Never override build.jobs or pins in this local file.
+[harness]
+# Optional wait-budget overrides after a consumer adopts this section:
+# state_timeout_seconds, helper_timeout_seconds, startup_timeout_seconds, finish_timeout_seconds
+
+# Never override build.jobs, pins or locked harness input policy here.

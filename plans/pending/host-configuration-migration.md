@@ -117,6 +117,9 @@ consumidores aún no leídos ni resolver divergencias en silencio.
 
 ### S3 — Harness versus y PowerShell (sub-lotes S/M)
 - Blocked by: S1, S2a de esta familia.
+- Preparación de esquema: siete campos observados de deadlines/input con tests de
+  tipos/finite/política; el registro no significa consumo por el runner ni operación
+  activa. Preservar las tres constantes de input observado como política bloqueada.
 - S3a: `tools/test/versus_session.py`, pruebas de navegación; GAME/WINSHOT/CATALOG
   y defaults operativos sin cambiar RAM watches, allowlists ni aislamientos.
 - S3b: `bag2_endings_view.ps1`, `bag2_endings_acceptance.ps1`,
@@ -200,5 +203,6 @@ contrato o permisos vuelve al owner; no se resuelve con otro fallback.
 | Estándar explícito | Documentado; Goldfish de 2 revisores CON HALLAZGOS aplicado; no aprobación de la migración |
 | Inventario inicial | 471 versionados clasificados automáticamente; revisión semántica pendiente |
 | S1 workflow/report | Entregado: 101 pruebas dirigidas, 103 workflow discovery, 8 mutantes; Goldfish aplicado y prueba real de logs existentes |
-| S2a auditoría semántica | En curso: primer mapa parcial del harness y 3 lectores; no clearance de 471 archivos |
+| S2a auditoría semántica | Familia harness: fuentes/3 lectores/3 tests leídos y disposición por hash; nav parcial y global 471 aún pendientes |
+| S3 preparación de esquema | 7 campos preparados (presupuestos ≤ 86400 s), runner sin consumirlos; Goldfish 0 BLOCKER, 6 SHOULD-FIX corregidos/registrados |
 | S2b y S3–S7 | Aprobados; pendientes de sus dependencias y ejecución |

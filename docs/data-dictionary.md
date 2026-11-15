@@ -58,6 +58,13 @@ migrados se marcan explícitamente como pendientes.
 | `tools.ffmpeg_wgc` | FFmpeg usado en captura WGC | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; captura (pendiente) | base |
 | `tools.ghidra_launcher` | Lanzador de Ghidra instalado | ruta | native path | común/local | sí | Ruta no vacía sin NUL; su presencia no prueba que MCP responda | — | `project_config.py`; análisis (pendiente) | base |
 | `tools.ghidra_project` | Proyecto Ghidra del binario principal | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no sustituye verificar el programa cargado | — | `project_config.py`; análisis (pendiente) | base |
+| `harness.state_timeout_seconds` | Presupuesto de espera de estado o popup; default actual 25.0 s | número | seconds | común/local | sí | Número finito mayor que cero y ≤ 86400; bool, texto y no finitos prohibidos | — | `project_config.py`; versus_session.py (pendiente); discovery scripts (pendiente) | base |
+| `harness.helper_timeout_seconds` | Deadline del helper PowerShell; default actual 35.0 s | número | seconds | común/local | sí | Número finito mayor que cero y ≤ 86400; no cambia las condiciones de identidad/PID | — | `project_config.py`; versus_session.py (pendiente); discovery scripts (pendiente) | base |
+| `harness.startup_timeout_seconds` | Espera de telemetría al iniciar Session; default actual 40.0 s, no el boot de discovery | número | seconds | común/local | sí | Número finito mayor que cero y ≤ 86400; no acepta estado incompleto al vencer | — | `project_config.py`; versus_session.py (pendiente) | base |
+| `harness.finish_timeout_seconds` | Presupuesto para fin de canción y retorno al selector; default actual 420.0 s | número | seconds | común/local | sí | Número finito mayor que cero y ≤ 86400; conservar predicados de retorno y restauración | — | `project_config.py`; versus_session.py (pendiente); strike_acceptance_batch.py (pendiente) | base |
+| `harness.key_hold_ms` | Duración de pulsación del contrato de input observado; default 100 ms | entero | milliseconds | común | no | Entero exactamente 100; política bloqueada, override local prohibido | — | `project_config.py`; versus_session.py (pendiente); discovery scripts (pendiente) | base |
+| `harness.key_gap_ms` | Separación entre inputs del contrato observado; default 350 ms | entero | milliseconds | común | no | Entero exactamente 350; política bloqueada, override local prohibido | — | `project_config.py`; versus_session.py (pendiente); discovery scripts (pendiente) | base |
+| `harness.menu_fade_seconds` | Margen tras observar el menú (comentario de fade en la fuente); default 1.3 s | número | seconds | común | no | Número finito positivo exactamente 1.3; política bloqueada, override local prohibido | — | `project_config.py`; versus_session.py (pendiente); discovery scripts (pendiente) | base |
 
 Los campos de política (`build.jobs`, `pins.*`) y el derivado `repo_root` no se
 pueden sobrescribir desde el archivo local. Ningún campo demuestra por sí mismo que
@@ -75,6 +82,24 @@ Cobertura S1: rutas, pins, distribución WSL y comprobación de jobs del script
 legacy. Defaults numéricos de espera/layout del reporte y otras herramientas
 siguen siendo candidatos de la auditoría semántica ampliada; no se declara
 migración integral de todos los valores por cerrar las rutas de este lote.
+
+Los siete campos `harness.*` están **preparados y validados**, pero el harness
+todavía **no los consume**: sus consumidores permanecen marcados `pendiente` y
+no tienen operación activa asignada. Los defaults se copiaron de los lectores
+auditados, sin variar tiempos ni lanzar el juego. Los deadlines son presupuestos
+de espera, no predicados de aceptación. El hold/gap/fade observado es política
+versionada y bloqueada por esquema; no pasa a ser un knob local. Registrar campos
+no elimina los literales de consumidores: falta migración y prueba de equivalencia.
+`discovery scripts` designa `discover_strike_id.py` y `discover_strike_id_p1.py`;
+son lectores legacy pendientes, no herramientas declaradas seguras para ejecutarse.
+Ningún documento local prueba una calibración de hold/gap: «bloqueado» es una
+decisión de política sobre valores observados, no evidencia de calibración.
+`strike_acceptance_batch.py` alcanza los siete campos de forma indirecta mediante
+`vs.Session`/`vs.powershell`; solo el presupuesto de fin tiene literal propio
+(bucle `< 420`, sondeo 0.5 s, capturas dentro del presupuesto), equivalente en
+significado pero no idéntico al de `finish_match`. `versus_session.py` ya acepta
+`--finish-timeout` (default 420.0): al migrar, un argumento CLI explícito prevalece
+sobre el TOML y el default del parser pasa a ser el valor resuelto.
 
 Precedencia de los `inputs.*`: la configuración local selecciona los insumos de las
 herramientas host. Los valores equivalentes de `source_layout.regions` en los
