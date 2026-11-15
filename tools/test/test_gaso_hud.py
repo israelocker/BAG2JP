@@ -6,9 +6,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'tools/bag1import'))
+sys.path.insert(0, str(ROOT))
 
 from build_gaso_assets import build_hud_texture, read_members, region_sources
 from tim_retarget import parse, retarget, paste_native_glyphs
+from tools.workflow.project_config import load_config
 
 
 def indices(data: bytes) -> list[list[int]]:
@@ -19,15 +21,17 @@ def indices(data: bytes) -> list[list[int]]:
     return [flat[i:i + width] for i in range(0, len(flat), width)]
 
 
+_CONFIG = load_config()
+_PROFILE = json.loads((ROOT / 'tools/bag1import/profiles/gaso.json').read_text(encoding='utf-8'))
+
+
 class GasoHudTest(unittest.TestCase):
     def test_native_font_keeps_original_glyph_widths(self) -> None:
-        profile = json.loads((ROOT / 'tools/bag1import/profiles/gaso.json').read_text(encoding='utf-8'))
-        self.assertEqual(profile['hud_name']['target_rect'], [0, 0, 69, 7])
+        self.assertEqual(_PROFILE['hud_name']['target_rect'], [0, 0, 69, 7])
 
     def test_s_has_transparent_spacing_not_the_neighbouring_t(self) -> None:
-        profile = json.loads((ROOT / 'tools/bag1import/profiles/gaso.json').read_text(encoding='utf-8'))
         data = (ROOT / 'assets/archive/characters/bi_o/pack_a_p1/003.tim').read_bytes()
-        result = indices(build_hud_texture(data, data, profile['hud_name']))
+        result = indices(build_hud_texture(data, data, _PROFILE['hud_name']))
         # G15 + A16 + S14: column45 is spacing, not STRIKE's next glyph at x70.
         self.assertEqual([row[45] for row in result[:7]], [0] * 7)
 
@@ -37,17 +41,15 @@ class GasoHudTest(unittest.TestCase):
         self.assertIn('0x80093F6Cu, 0x3C0400FFu', source)
 
     def test_profile_matches_both_native_bio_hud_descriptors(self) -> None:
-        profile = json.loads((ROOT / 'tools/bag1import/profiles/gaso.json').read_text(encoding='utf-8'))
-        x0, y0, x1, y1 = profile['hud_name']['stock_rect']
+        x0, y0, x1, y1 = _PROFILE['hud_name']['stock_rect']
         descriptor = bytes([x0, y0, x1 - x0, y1 - y0, 1, 0])
         overlay = (ROOT / 'assets/archive/system/005.dbi').read_bytes()
         self.assertEqual(descriptor, overlay[0xee52:0xee58])
         self.assertEqual(descriptor, overlay[0xeebe:0xeec4])
 
     def test_all_regional_costumes_preserve_every_pixel_outside_hud_slot(self) -> None:
-        profile = json.loads((ROOT / 'tools/bag1import/profiles/gaso.json').read_text(encoding='utf-8'))
         reference, _ = read_members((ROOT / '_work/stage_import/gaso/stock_bio_entries/pack_a_p1.dfs').read_bytes())
-        label = profile['hud_name']
+        label = _PROFILE['hud_name']
         # Independently slice native raster indices, no copier/palette helper.
         expected = [[] for _ in range(7)]
         for path, rect, spacing in (
@@ -63,7 +65,7 @@ class GasoHudTest(unittest.TestCase):
                 expected[y].extend([0] * spacing)
         self.assertEqual({v for row in expected for v in row}, {0, 9, 10, 11, 12, 13, 14, 15})
         for region in ('usa', 'jp'):
-            source_root, dirs, _ = region_sources(region)
+            source_root, dirs, _ = region_sources(region, config=_CONFIG, profile=_PROFILE)
             for costume, filename in (('costume_a', 'P_GAS_A1.DFS'), ('costume_a', 'P_GAS_B1.DFS'),
                                       ('costume_b', 'P_GAS_A3.DFS'), ('costume_b', 'P_GAS_B3.DFS')):
                 with self.subTest(region=region, filename=filename):

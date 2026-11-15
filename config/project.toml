@@ -3,6 +3,8 @@ schema_version = 1
 
 [paths]
 work_root = "_work"
+gaso_out_usa = "_work/character_import/gaso/candidate"
+gaso_out_jp = "_work/character_import/gaso/candidate-jp"
 
 [wsl]
 distribution = "Ubuntu"
@@ -41,3 +43,9 @@ ffmpeg_quit_seconds = 30.0
 ffmpeg_extra_seconds = 5
 ffmpeg_stop_poll_seconds = 0.1
 process_audio_extra_seconds = 60.0
+
+[inputs]
+gaso_profile = "tools/bag1import/profiles/gaso.json"
+gaso_stock_bio = "_work/stage_import/gaso/stock_bio_entries"
+gaso_stock_fever = "assets/archive/characters/bi_o/choreography_a"
+gaso_motions = "_work/gaso/test_001.bin"
