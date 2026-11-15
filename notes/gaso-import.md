@@ -50,6 +50,10 @@ doc_kind: evidence
   con compañero crea dos tanques.
 - Evidencia `_work/gaso/block5/{inventory.json,track-semantics-probe.json}`.
   Siguiente: decisión del owner sobre la fuente de pose para los solo-BAG2.
+- **Decisión del owner (2026-11-15): «Pose BAG1 asignada (Recomendado)».** Con
+  equivalente BAG1: su propia pose clip70, ajustada a su altura. Solo-BAG2: una de
+  las12 poses originales asignada por cuerpo/estilo, ajustada a su altura, con tabla
+  que el owner revisará. Pander: pose propia por su esqueleto divergente.
 
 ### Bloque 4: guard1 desplegado; toma de recuperación en preparación (2026-11-15)
 
