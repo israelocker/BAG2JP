@@ -1,4 +1,7 @@
 """Regression tests for observed-state versus selection and safe test sessions."""
+from contextlib import redirect_stderr
+import dataclasses
+import io
 from pathlib import Path
 import tempfile
 import unittest
@@ -10,22 +13,23 @@ from unittest.mock import patch
 import versus_session
 
 import versus_navigation as nav
+from versus_settings_fixture import LOCAL, build_config, make_settings, relocated_root
 
 
 class NavigationTests(unittest.TestCase):
     """Catch silent fallback, wrong mode, stale evidence and shared input."""
 
     def test_explicit_ram_dump_reaches_child_without_inheriting_other_debug_flags(self):
+        settings = make_settings(self, versus_session)
         with tempfile.TemporaryDirectory() as directory:
-            game = Path(directory)
+            game = settings.game
             (game / 'settings.toml').write_text('[controller]\np1_device="keyboard"\np2_device="keyboard"\n')
             (game / 'keybinds.ini').write_text('')
-            session = versus_session.Session(game)
+            session = versus_session.Session(Path(directory), settings)
             session.ram_dump_frame = 7500
             session.ram_dump_size = '8mb'
             try:
-                with patch.object(versus_session, 'GAME', game), \
-                     patch.object(versus_session, 'powershell', return_value='0'), \
+                with patch.object(versus_session, 'powershell', return_value='0'), \
                      patch.object(versus_session, 'process_identity', return_value={}), \
                      patch.object(nav, 'parse_bindings', return_value={}), \
                      patch.object(nav, 'key_for'), patch.object(nav, 'wait_until'), \
@@ -42,12 +46,11 @@ class NavigationTests(unittest.TestCase):
                     log.close()
 
     def _launch_env(self, session: versus_session.Session, environ: dict) -> dict:
-        game = session.run
+        game = session.settings.game
         (game / 'settings.toml').write_text('[controller]\np1_device="keyboard"\np2_device="keyboard"\n')
         (game / 'keybinds.ini').write_text('')
         try:
-            with patch.object(versus_session, 'GAME', game), \
-                 patch.object(versus_session, 'powershell', return_value='0'), \
+            with patch.object(versus_session, 'powershell', return_value='0'), \
                  patch.object(versus_session, 'process_identity', return_value={}), \
                  patch.object(nav, 'parse_bindings', return_value={}), \
                  patch.object(nav, 'key_for'), patch.object(nav, 'wait_until'), \
@@ -61,7 +64,7 @@ class NavigationTests(unittest.TestCase):
 
     def test_music_timing_diagnostic_and_extra_watches_reach_child(self):
         with tempfile.TemporaryDirectory() as directory:
-            session = versus_session.Session(Path(directory))
+            session = versus_session.Session(Path(directory), make_settings(self, versus_session))
             session.watch_extra = [(0x80355C5C, 4), (0x80354148, 1)]
             env = self._launch_env(session, {'BAG2JP_TEST_B1M_TIMING': '1', 'BAG2JP_CPU_SKILL': '9'})
         self.assertEqual(env.get('BAG2JP_TEST_B1M_TIMING'), '1')
@@ -73,21 +76,23 @@ class NavigationTests(unittest.TestCase):
 
     def test_watch_overflow_is_refused_before_launch(self):
         with tempfile.TemporaryDirectory() as directory:
-            session = versus_session.Session(Path(directory))
+            session = versus_session.Session(Path(directory), make_settings(self, versus_session))
             session.watch_cues = True
             session.watch_extra = [(0x80354148, 1)]
             with self.assertRaisesRegex(ValueError, 'at most 32'):
                 self._launch_env(session, {})
 
     def test_watch_overflow_is_refused_before_any_run_directory(self):
-        argv = ['versus_session.py', '--action', 'run', '--temporary-controls', '--watch-cues',
-                '--watch-extra', '80354148:1']
-        with patch('sys.argv', argv), \
+        argv = ['--action', 'run', '--temporary-controls', '--watch-cues', '--watch-extra', '80354148:1']
+        config = build_config(relocated_root(self))
+        errors = io.StringIO()
+        with patch.object(versus_session, 'load_config', return_value=config), \
              patch.object(versus_session, 'powershell') as shell, \
              patch.object(versus_session.Path, 'mkdir') as mkdir, \
-             self.assertRaises(SystemExit) as stop:
-            versus_session.main()
+             redirect_stderr(errors), self.assertRaises(SystemExit) as stop:
+            versus_session.main(argv)
         self.assertEqual(stop.exception.code, 2)
+        self.assertIn('at most 32', errors.getvalue())
         shell.assert_not_called()
         mkdir.assert_not_called()
 
@@ -115,7 +120,7 @@ class NavigationTests(unittest.TestCase):
         self.assertEqual(nav.validate_pick("Strike", "BAG1", "A"), 1)
 
     def test_finish_waits_through_fever_until_guarded_selector(self):
-        session = versus_session.Session(Path("unused"))
+        session = versus_session.Session(Path("unused"), make_settings(self, versus_session))
         states = iter([
             {"root": nav.GAMEPLAY_ROOT, "mode": 2, "guard1": 0, "guard2": 0},
             {"root": 13, "mode": 2, "guard1": 0, "guard2": 0},
@@ -129,10 +134,21 @@ class NavigationTests(unittest.TestCase):
         self.assertEqual(capture.call_args_list[-1].args, ("returned-selector",))
 
     def test_finish_times_out_in_battle_instead_of_claiming_return(self):
-        session = versus_session.Session(Path("unused"))
+        session = versus_session.Session(Path("unused"), make_settings(self, versus_session))
         with patch.object(versus_session.time, "monotonic", side_effect=[0, 421]):
             with self.assertRaises(TimeoutError):
                 session.finish_match()
+
+    def test_finish_budget_comes_from_resolved_settings(self):
+        local = LOCAL + '[harness]\nfinish_timeout_seconds = 5.0\n'
+        session = versus_session.Session(Path("unused"), make_settings(self, versus_session, local))
+        self.assertEqual(session.settings.finish_timeout, 5.0)
+        with patch.object(versus_session.time, "monotonic", side_effect=[0, 6]), \
+                patch.object(session, "state",
+                             side_effect=AssertionError("state polled after the resolved budget")) as observe, \
+                self.assertRaises(TimeoutError):
+            session.finish_match()
+        observe.assert_not_called()
 
     def test_invalid_costume_rejected(self):
         with self.assertRaises(ValueError):
@@ -262,8 +278,12 @@ class NavigationTests(unittest.TestCase):
             nav.key_for(bindings, 1, "circle")
 
     def test_menu_waits_for_title_without_unsafe_start(self):
+        # A fade distinct from the locked 1.3 proves menu() reads its session settings.
+        settings = dataclasses.replace(make_settings(self, versus_session), menu_fade=0.4)
+
         class ObservedSession(versus_session.Session):
             def __init__(self):
+                self.settings = settings
                 self.observed = {"root": 0, "mode": 0, "menu": 0,
                                  "p1_status": 65536, "p2_status": 65536,
                                  "guard1": 0x27BDFFC8, "guard2": 0x27BDFFB0}
@@ -290,9 +310,10 @@ class NavigationTests(unittest.TestCase):
                 pass
 
         session = ObservedSession()
-        with patch.object(versus_session.time, "sleep"):
+        with patch.object(versus_session.time, "sleep") as pause:
             session.menu()
         self.assertEqual(session.state()["mode"], 2)
+        pause.assert_any_call(settings.menu_fade)
 
     def test_popup_log_from_previous_process_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -302,8 +323,11 @@ class NavigationTests(unittest.TestCase):
                 versus_session.session_log(path, path.stat().st_mtime + 10)
 
     def test_opening_skip_happens_only_in_observed_root5(self):
+        settings = make_settings(self, versus_session)
+
         class OpeningSession(versus_session.Session):
             def __init__(self):
+                self.settings = settings
                 self.observed = {"root": 5, "mode": 0, "menu": 0,
                                  "p1_status": 65536, "p2_status": 65536,
                                  "guard1": 0x27BDFFC8, "guard2": 0x27BDFFB0}
@@ -415,9 +439,10 @@ class NavigationTests(unittest.TestCase):
     def test_helper_metric_counts_invocation(self):
         before = versus_session.HELPER_CALLS
         response = subprocess.CompletedProcess([], 0, stdout="ok", stderr="")
-        with patch.object(versus_session.subprocess, "run", return_value=response):
-            versus_session.powershell("Write-Output ok")
+        with patch.object(versus_session.subprocess, "run", return_value=response) as run:
+            versus_session.powershell("Write-Output ok", 12.5)
         self.assertEqual(versus_session.HELPER_CALLS - before, 1)
+        self.assertEqual(run.call_args.kwargs["timeout"], 12.5)
 
     def test_unterminated_watch_row_cannot_replace_complete_observation(self):
         complete = "f000001 " + " ".join(f"{address:08X}=0" for address, _ in nav.WATCHES.values())

@@ -83,7 +83,7 @@ este barrido no concede por sí solo ninguna disposición semántica.
 | Resolutor y checker de manifiestos | Entregados en `7fefc07` / `28fc1e9` |
 | Workflow/report | S1 entregado en `46d528c`: rutas/pins/WSL/jobs y guardas; 101 pruebas dirigidas OK, Goldfish aplicado |
 | Audio probe | Clave `tools.audio_probe` y ruta local verificada; requisito solo al buscar audio existente |
-| Harness/PowerShell/captura | Pendientes de análisis semántico y migración |
+| Harness/PowerShell/captura | S3a entregado: driver/batch/wrapper consumen el resolver; 108 tests harness + 113 workflow OK; Goldfish SIN HALLAZGOS BLOQUEANTES |
 | Importadores/perfiles/herramientas de paquetes/instalador | Pendientes por lotes |
 | Bash instalado fijo / bootstrap del harness | Exigen contrato y verificación propios; no migrados |
 
@@ -212,6 +212,35 @@ pertenece a S3a. RED 44 subpruebas → GREEN; 3 mutantes nuevos muertos por aser
 Registro: `_work/goldfish/harness-config-prep/` (`reviewers.md`, `triage.md`,
 `corrections.sha256.json`). Veredicto de revisor: no es aprobación del
 propietario ni permiso de despliegue.
+
+### S3a: versus session consume la configuración host (entregado)
+
+Driver, batch y wrapper toman rutas y presupuestos del resolver único, por run e
+inmutables. `HarnessSettings` resuelto por `versus-inspect`/`versus-session`;
+juego rol `experimental`, catálogo/runs rol `work`; guardas antes de efectos.
+`Session(run, settings, *, fixtures=...)` con `DECLARED_FIXTURE_ALLOWLIST` y
+`fixtures` de solo lectura; el batch declara fixture y calendario VRAM por sesión,
+sin sustituir `subprocess.Popen`; el entorno heredado sigue filtrado. `--finish-timeout`
+explícito gana al TOML; default del parser = valor resuelto; el wrapper lo reenvía
+solo si está enlazado. `assert_process_safe` se retiró (solo legacy lo usaba).
+
+Evidencia: harness 108 tests OK (antes 97); workflow dirigido 113 OK; discovery de
+workflow 113 OK. Mutantes en copias: 31/31 muertos por aserción (reporte en
+`_work/configuration/versus-session-mutations/`, incluye `provenance.json` con HEAD
+y hashes). `versus_session.py` pasó de CRLF a LF a propósito. Sin partida ni deploy.
+
+Goldfish S3a (2026-11-15): dos revisores en frío sobre 20 entradas congeladas por
+hash; 0 BLOCKER. Hallazgos MENOR corregidos: exit 2 en rechazo de guarda (A1),
+test del sink de presupuesto (A2), reenvío condicionado del wrapper (A3), registro
+de `debug_fixtures` (A4), atribución de consumidores en el diccionario (A5),
+reasignación de `Session.fixtures` (B1), mezcla de evidencia entre sesiones (B2),
+registro de fixture/VRAM armado (B3), mutantes que sobrevivían (B4), `KeyError` por
+`[controller]` ausente y negativa por sesión activa fuera del `try` (B5). DUDAS
+refutadas y documentadas: `versus-inspect` exige el deadline del helper (A6) y el
+guard experimental en la inspección de solo lectura es intencional (B6); nota de
+locale de `[double]` en PowerShell y guard no race-safe (B7). Triaje/respuestas y
+hashes posteriores: `_work/goldfish/versus-session-s3a/`. Veredicto de revisor:
+no es aprobación del propietario ni permiso de despliegue.
 
 
 ## Fuentes vigentes

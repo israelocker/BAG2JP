@@ -204,5 +204,6 @@ contrato o permisos vuelve al owner; no se resuelve con otro fallback.
 | Inventario inicial | 471 versionados clasificados automáticamente; revisión semántica pendiente |
 | S1 workflow/report | Entregado: 101 pruebas dirigidas, 103 workflow discovery, 8 mutantes; Goldfish aplicado y prueba real de logs existentes |
 | S2a auditoría semántica | Familia harness: fuentes/3 lectores/3 tests leídos y disposición por hash; nav parcial y global 471 aún pendientes |
-| S3 preparación de esquema | 7 campos preparados (presupuestos ≤ 86400 s), runner sin consumirlos; Goldfish 0 BLOCKER, 6 SHOULD-FIX corregidos/registrados |
+| S3a harness versus | Entregado: driver/batch/wrapper consumen resolver; 108 tests harness + 113 workflow OK; 31 mutantes; Goldfish 0 BLOCKER (hallazgos MENOR corregidos/refutados) |
+| S3 preparación de esquema | 7 campos preparados (presupuestos ≤ 86400 s), consumidos por S3a; Goldfish 0 BLOCKER, 6 SHOULD-FIX corregidos/registrados |
 | S2b y S3–S7 | Aprobados; pendientes de sus dependencias y ejecución |

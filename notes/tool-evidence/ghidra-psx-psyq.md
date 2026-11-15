@@ -2438,3 +2438,18 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Medición: ejecución, preparación/revisión/retrabajo y ahorro no medidos.
 - Siguiente: conservar la autoridad nativa y resolver solo budgets/ubicaciones host;
   no crear ni renombrar funciones, sesiones o datos del proyecto Ghidra.
+
+## 20261115-ghidra-s3a-identity - comprobación de identidad sin lectura nativa
+
+- Tipo: uso real acotado, solo lectura; instancia existente. MCP exacto:
+  `get_program_info()`; sin lectura de memoria ni de funciones.
+- Programa: SLPM_862.19, PSX:LE:32, 1324 funciones, SHA-256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Propósito: arranque obligatorio del sub-lote S3a (migración de rutas y
+  presupuestos host de `versus_session.py`). El sub-lote no toca direcciones,
+  máscaras, IDs ni gates nativos; por eso no se hizo lectura acotada.
+- Validación independiente: hash y programa coinciden con la entrada
+  20261115-ghidra-harness-config.
+- Dictamen: identidad confirmada; sin utilidad práctica adicional para este
+  sub-lote. Medición: tiempo y ahorro no medidos.
+- Siguiente: lectura acotada solo si un lote posterior toca datos nativos.

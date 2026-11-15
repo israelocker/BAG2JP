@@ -5,7 +5,6 @@ import hashlib
 import json
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import sys
 import time
@@ -28,7 +27,7 @@ def validate_cases(cases):
         raise ValueError('Both Heat stages required')
 
 
-def observe_match(session, case, nav, vs):
+def observe_match(session, case, nav):
     """Observe native attack/fever traces and actual song exit; no RAM/state writes."""
     started = time.monotonic()
     offset = 0
@@ -36,8 +35,8 @@ def observe_match(session, case, nav, vs):
     previous_attack = None
     next_regular = started + 20
     left = None
-    trace = vs.GAME / 'bag2jp_anim_trace.log'
-    while time.monotonic() - started < 420:
+    trace = session.settings.game / 'bag2jp_anim_trace.log'
+    while time.monotonic() - started < session.settings.finish_timeout:
         state = session.state()
         with trace.open('r', encoding='utf-8', errors='replace') as stream:
             stream.seek(offset)
@@ -80,32 +79,27 @@ def observe_match(session, case, nav, vs):
     raise TimeoutError('Song did not return to selector')
 
 
-def run_case(case, folder, runtime, catalog, nav, vs):
+def run_case(case, folder, runtime, catalog, nav, vs, settings):
     """Reuse the verified session driver and its settings/save isolation unchanged."""
-    folder.mkdir()
-    session = vs.Session(folder)
-    files = nav.IsolatedFiles(vs.GAME, folder,
-                             safe_to_restore=lambda: session.process is None or session.process.poll() is not None)
-    original = subprocess.Popen
+    game = settings.game
     fixture = 'BAG2JP_TEST_STRIKE_ATTACK' if case['side'] == 1 else 'BAG2JP_TEST_HEAT_STRIKE_DUEL'
     first = 8000 if case['stage'] == 'HeatBAG1' else 6500
     frames = list(range(first, first + 8 * 120, 120))
-
-    def launch(command, **kwargs):
-        if command[0] == str(vs.GAME / 'BAG2JP.exe'):
-            kwargs['env'][fixture] = '1'
-            kwargs['env']['BAG2JP_VRAM_DUMP'] = ','.join(map(str, frames))
-        return original(command, **kwargs)
-
+    folder.mkdir()
+    # The fixture and VRAM schedule are declared for this session only, never patched into Popen.
+    session = vs.Session(folder, settings, fixtures={fixture: '1'})
+    session.vram_dump_frames = tuple(frames)
+    files = nav.IsolatedFiles(game, folder,
+                             safe_to_restore=lambda: session.process is None or session.process.poll() is not None)
     result = dict(case=case, runtime_sha256=runtime, status='failed', fixture=fixture,
-                  visual_review='pending', scheduled_vram_frames=frames)
-    subprocess.Popen = launch
+                  debug_fixtures=None, visual_review='pending', scheduled_vram_frames=frames)
     try:
         with files:
             try:
-                if nav.sha256(vs.GAME / 'BAG2JP.exe') != runtime:
+                if nav.sha256(game / 'BAG2JP.exe') != runtime:
                     raise ValueError('Runtime changed during batch')
                 session.start()
+                result['debug_fixtures'] = session.debug_fixtures
                 session.menu()
                 edges = nav.validated_edges(catalog, runtime)
                 picks, characters, costumes = [], [], []
@@ -117,27 +111,23 @@ def run_case(case, folder, runtime, catalog, nav, vs):
                     costumes.append(int(costume == 'B'))
                 result['picks'] = picks
                 session.match(case['stage'], characters, costumes)
-                result['finish'] = observe_match(session, case, nav, vs)
+                result['finish'] = observe_match(session, case, nav)
                 result['status'] = 'machine_complete_awaiting_review'
                 if not result['finish']['attack_trace_frames']:
                     result['status'] = 'incomplete_no_strike_attack'
             finally:
                 for name in ('bag2jp_anim_trace.log', 'bag2jp_bag1_versions.log', 'bag2jp_watch.log',
                              'bag2jp_charsel_popup.log'):
-                    source = vs.GAME / name
-                    if source.exists() and source.stat().st_mtime >= session.started:
-                        shutil.copy2(source, folder / name)
+                    vs.copy_current(game / name, folder, session.started)
                 result['vram_files'] = []
                 for frame in frames:
-                    source = vs.GAME / f'bag2jp_vram_{frame}.bin'
-                    if source.exists() and source.stat().st_mtime >= session.started:
-                        shutil.copy2(source, folder / source.name)
+                    source = game / f'bag2jp_vram_{frame}.bin'
+                    if vs.copy_current(source, folder, session.started):
                         result['vram_files'].append(source.name)
                 session.close()
     except (OSError, ValueError, RuntimeError, TimeoutError, subprocess.SubprocessError) as exc:
         result['error'] = str(exc)
     finally:
-        subprocess.Popen = original
         result.update(restoration=files.restoration, checkpoints=session.checkpoints,
                       screenshots=session.shots)
         vs.save_result(folder, result, bool(session.shots))
@@ -153,10 +143,12 @@ def batch_status(results):
     return 'finished_awaiting_review' if complete else 'stopped_on_failure'
 
 
-def main():
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--execute', action='store_true', help='explicitly authorize isolated game tests')
-    args = parser.parse_args()
+    parser.add_argument('--local-config', type=Path, default=None,
+                        help='local TOML overlay; relative selections anchor to the repository')
+    args = parser.parse_args(argv)
     validate_cases(CASES)
     if not args.execute:
         print(json.dumps(CASES, indent=2))
@@ -164,20 +156,36 @@ def main():
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import versus_navigation as nav
     import versus_session as vs
-    if vs.powershell('@(Get-Process BAG2JP -ErrorAction SilentlyContinue).Count') != '0':
-        raise ValueError('Active game; no settings changed')
-    runtime = nav.sha256(vs.GAME / 'BAG2JP.exe')
-    catalog = json.loads(vs.CATALOG.read_text())
+    try:
+        config = vs.load_config(local_config=args.local_config)
+        settings = vs.resolve_settings(config)
+    except vs.project_config.ConfigError as exc:
+        parser.error(f'config error: {exc}')
+    if vs.powershell('@(Get-Process BAG2JP -ErrorAction SilentlyContinue).Count',
+                     settings.helper_timeout) != '0':
+        print(json.dumps({'status': 'refused', 'error': 'Active game; no settings changed'}), flush=True)
+        return 1
+    runtime = nav.sha256(settings.game / 'BAG2JP.exe')
+    catalog = json.loads(settings.catalog.read_text())
     nav.validated_edges(catalog, runtime)
     nav.verify_catalog_review(catalog)
     stamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
-    batch = vs.REPO / '_work/versus-runs' / f'{stamp}-strike-acceptance-batch'
-    batch.mkdir()
+    try:
+        batch = vs.project_config.assert_write_target(
+            config, settings.runs / f'{stamp}-strike-acceptance-batch', role='work')
+    except vs.project_config.ConfigError as exc:
+        parser.error(f'config error: {exc}')
+    batch.mkdir(parents=True)
     report = dict(runtime_sha256=runtime, runner_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                  configuration=settings.provenance(),
                   status='running', cases=[], limitations=['Actor lighting requires visual review',
                   'Ending and stage mode 0xB not covered by versus cases'])
     for case in CASES:
-        result = run_case(case, batch / case['name'], runtime, catalog, nav, vs)
+        try:
+            result = run_case(case, batch / case['name'], runtime, catalog, nav, vs, settings)
+        except Exception as exc:  # a case escaping its own contract must still leave an honest report
+            result = dict(case=case, runtime_sha256=runtime, status='failed', restoration={},
+                          error=f'{type(exc).__name__}: {exc}')
         report['cases'].append(result)
         (batch / 'batch.json').write_text(json.dumps(report, indent=2))
         print(json.dumps({'batch': str(batch), 'case': case['name'], 'status': result['status'],

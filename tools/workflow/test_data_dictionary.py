@@ -14,7 +14,8 @@ FIELDS_HEADING = "## Campos de configuración"
 NATIVE_HEADING = "## Datos nativos y compartidos"
 TYPE_LABELS = {"integer": "entero", "number": "número", "path": "ruta", "revision": "revisión", "string": "cadena"}
 IMPLEMENTED_CONSUMERS = {"project_config.py", "check_payload_manifest.py",
-                       "bag2_workflow.py", "bag2_report.py"}
+                       "bag2_workflow.py", "bag2_report.py",
+                       "versus_session.py", "strike_acceptance_batch.py"}
 MACHINE_PATH = r"(?<![\w:/])[A-Za-z]:[\\/]"
 
 

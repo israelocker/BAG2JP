@@ -74,12 +74,20 @@ def _field_registry() -> Mapping[str, FieldSpec]:
                 "paths.experimental_install", "tools.build_script", "pins.psxrecomp",
                 "pins.recomp_ui", "build.jobs", "wsl.distribution")
     report = ("repo_root", "paths.work_root", "paths.experimental_install")
+    versus_inspect = ("repo_root", "paths.experimental_install", "paths.stable_install",
+                      "harness.helper_timeout_seconds")
+    versus_session = versus_inspect + (
+        "paths.work_root", "tools.winshot_root", "harness.state_timeout_seconds",
+        "harness.startup_timeout_seconds", "harness.finish_timeout_seconds",
+        "harness.key_hold_ms", "harness.key_gap_ms", "harness.menu_fade_seconds")
     requirements = {
         "workflow": workflow,
         "workflow-report": workflow + ("tools.python_report",),
         "report": report,
         "report-audio": report + ("tools.audio_probe",),
         "report-sheet": report + ("paths.stable_install",),
+        "versus-inspect": versus_inspect,
+        "versus-session": versus_session,
     }
     for operation, keys in requirements.items():
         for key in keys:
@@ -206,6 +214,13 @@ def require_paths(config: ProjectConfig, keys: Sequence[str]) -> tuple[Path, ...
         result.append(config.values[key])
     return tuple(result)
 
+
+def require_values(config: ProjectConfig, keys: Sequence[str]) -> tuple:
+    """Return resolved registered values of any kind in request order; never invent defaults."""
+    unresolved = [key for key in keys if key not in FIELDS or key not in config.values]
+    if unresolved:
+        raise ConfigError(f"{', '.join(unresolved)}: required value is unresolved or unregistered")
+    return tuple(config.values[key] for key in keys)
 
 
 WRITE_ROLES = MappingProxyType({

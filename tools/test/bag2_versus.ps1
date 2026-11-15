@@ -14,7 +14,9 @@ param(
     [switch]$AudioDump,
     [switch]$Finish,
     [switch]$StageSurvey,
-    [double]$FinishTimeout = 420
+    # Omit to use the resolved harness.finish_timeout_seconds; a bound value overrides it.
+    [double]$FinishTimeout,
+    [string]$LocalConfig
 )
 $ErrorActionPreference = 'Stop'
 $arguments = @('-3.13', "$PSScriptRoot/versus_session.py", '--action', $Action,
@@ -25,6 +27,8 @@ $arguments = @('-3.13', "$PSScriptRoot/versus_session.py", '--action', $Action,
 if ($TemporaryControls) { $arguments += '--temporary-controls' }
 if ($AudioDump) { $arguments += '--audio-dump' }
 if ($StageSurvey) { $arguments += '--stage-survey' }
-if ($Finish) { $arguments += '--finish', '--finish-timeout', $FinishTimeout }
+if ($Finish) { $arguments += '--finish' }
+if ($PSBoundParameters.ContainsKey('FinishTimeout')) { $arguments += '--finish-timeout', $FinishTimeout }
+if ($PSBoundParameters.ContainsKey('LocalConfig')) { $arguments += '--local-config', $LocalConfig }
 & py @arguments
 if ($LASTEXITCODE -ne 0) { throw "Versus harness failed (exit $LASTEXITCODE); inspect its result.json" }

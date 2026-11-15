@@ -73,10 +73,36 @@ class HarnessConfigurationTests(ConfigFixture):
                 with self.subTest(name=name, literal=literal):
                     self.assert_config_error(f"harness\\.{name}: expected")
 
-    def test_registered_fields_do_not_claim_current_runner_consumption(self):
+    def test_versus_session_operation_claims_every_migrated_harness_value(self):
+        # S3a migrated versus_session.py; only the session operation consumes the policy values.
         self.assert_registered()
         for name in TIMEOUTS | LOCKED_INPUT:
-            self.assertEqual(config.FIELDS[f"harness.{name}"].operations, ())
+            expected = ("versus-inspect", "versus-session") if name == "helper_timeout_seconds" \
+                else ("versus-session",)
+            with self.subTest(name=name):
+                self.assertEqual(config.FIELDS[f"harness.{name}"].operations, expected)
+        session = set(config.export_config(self.load(), operation="versus-session")["missing"])
+        self.assertTrue({"paths.experimental_install", "paths.stable_install",
+                         "tools.winshot_root"} <= session)
+        self.assertNotIn("paths.work_root", session)
+
+    def test_versus_inspect_requires_only_identity_keys(self):
+        self.write_local('[paths]\nexperimental_install = "game"\nstable_install = "stable"\n')
+        self.common.write_bytes((REPO / "config/project.toml").read_bytes())
+        exported = config.export_config(self.load(), operation="versus-inspect")
+        self.assertEqual(exported["missing"], [])
+        required = {key for key, spec in config.FIELDS.items() if "versus-inspect" in spec.operations}
+        self.assertEqual(required, {"repo_root", "paths.experimental_install", "paths.stable_install",
+                                    "harness.helper_timeout_seconds"})
+
+    def test_require_values_returns_any_kind_in_order_and_rejects_unresolved(self):
+        self.common.write_bytes((REPO / "config/project.toml").read_bytes())
+        resolved = self.load()
+        self.assertEqual(config.require_values(resolved, ("harness.key_gap_ms", "paths.work_root")),
+                         (350, self.root / "_work"))
+        for key in ("tools.winshot_root", "harness.unknown", "repo"):
+            with self.subTest(key=key), self.assertRaisesRegex(config.ConfigError, "unresolved"):
+                config.require_values(resolved, (key,))
 
     def test_absent_harness_table_is_unresolved_not_missing_for_active_operations(self):
         self.assert_registered()
@@ -87,6 +113,10 @@ class HarnessConfigurationTests(ConfigFixture):
                 with self.subTest(operation=operation, name=name):
                     self.assertIn(f"harness.{name}", exported["unresolved"])
                     self.assertNotIn(f"harness.{name}", exported["missing"])
+        exported = config.export_config(resolved, operation="versus-session")
+        for name in TIMEOUTS | LOCKED_INPUT:
+            with self.subTest(operation="versus-session", name=name):
+                self.assertIn(f"harness.{name}", exported["missing"])
 
     def test_new_harness_table_does_not_add_personal_paths(self):
         data = tomllib.loads((REPO / "config/project.toml").read_text(encoding="utf-8"))
