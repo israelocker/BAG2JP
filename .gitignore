@@ -16,3 +16,5 @@ mods-src/_superseded/
 *.bin
 *.exe
 __pycache__/
+# Machine-local host configuration; keep the portable common file and template tracked.
+/config/project.local.toml

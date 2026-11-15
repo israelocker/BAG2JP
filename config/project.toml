@@ -1,0 +1,17 @@
+# Portable host defaults and reviewed policy. Machine locations belong in the local file.
+schema_version = 1
+
+[paths]
+work_root = "_work"
+
+[wsl]
+distribution = "Ubuntu"
+
+[build]
+# Owner-approved parallelism, not a machine-local override.
+jobs = 2
+
+[pins]
+# Preserve the existing workflow's revision-prefix semantics.
+psxrecomp = "1a3fc0db"
+recomp_ui = "3f1d6f1"

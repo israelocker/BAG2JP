@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "plans/pending/host-configuration-foundation.md"
-source_sha256: "2f09e1df88c88f4e74b4008533f3afcc58cea9ea6ecdac48e9ad78518d4fac3d"
+source_sha256: "59c2473f107aca80b7112a690c7187e31c6e1971f36b4e2376c0559e31cdb68e"
 ---
 
 # Primera entrega host

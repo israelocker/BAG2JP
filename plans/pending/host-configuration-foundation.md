@@ -104,6 +104,7 @@ class ProjectConfig:
     values: Mapping[str, Path | str | int]       # flattened dotted keys
     origins: Mapping[str, str]                 # common/local/derived per key
     input_hashes: Mapping[str, str | None]      # common/local/schema; missing local=None
+    input_files: Mapping[str, str | None]       # paths actually read; schema is the resolver
 
 def load_config(*, repo_root: Path | None = None,
                 local_config: Path | None = None) -> ProjectConfig: ...
@@ -302,8 +303,8 @@ above are future instructions, not results from this planning session.
 
 | Task | Status |
 |---|---|
-| 1. Resolver | Not started |
-| 2. Adapters/guards | Not started |
+| 1. Resolver | Done: 41-test suite green, Goldfish applied |
+| 2. Adapters/guards | Done: guards mutation-killed, Goldfish applied |
 | 3. Dictionary/local setup | Not started |
 | 4. Manifest pilot | Not started |
 | 5. Acceptance/checkpoint | Not started |

@@ -12,22 +12,33 @@ doc_kind: reference
 
 # Configuración
 
-## Configuración host: especificación aprobada, implementación pendiente
+## Configuración host: base y piloto en curso
 
-El owner eligió «Host primero» y aprobó diseñar configuración común/local,
-cargador y diccionario de datos, y después aprobó la
-[especificación escrita](docs/superpowers/specs/2026-11-15-host-configuration-design.md).
-Los archivos operativos `config/project.toml`/`project.local.toml` y el cargador
-**aún no existen**; las rutas actuales siguen en sus consumidores/documentación.
-No confundir esta propuesta con settings vivos ni con datos nativos de perfiles.
-Siguiente: revisión del [plan de base/piloto](plans/pending/host-configuration-foundation.md)
-y elección de método antes de código. Primer lote: resolver/diccionario y checker
-de manifiestos de lectura; workflow/harness/captura/perfiles siguen en roadmap, no
-migrados por crear TOML. El script Bash instalado tiene root fijo y requiere su
-lote explícito; no se da por configurable cambiando solo Python.
-Omisión Goldfish de esta unidad documental: solo spec/plan y sistema de referencia, fuera
-de la lista cerrada; auto-revisión de alcance, tipos/unidades, precedencia,
-bootstrap, permisos y preservación de perfiles/CLI, no prueba de implementación.
+El owner eligió «Host primero», aprobó el diseño común/local + cargador +
+diccionario, la [especificación escrita](docs/superpowers/specs/2026-11-15-host-configuration-design.md)
+y el [plan de base/piloto](plans/pending/host-configuration-foundation.md), y pidió
+ejecutarlo directamente aquí.
+
+Estado real (15-11): `config/project.toml` y `config/project.local.example.toml`
+existen; `tools/workflow/project_config.py` resuelve y valida configuración, con
+41 pruebas host en verde y guardas de escritura probadas por mutación. El archivo
+local real, el diccionario de datos y la migración del checker de manifiestos aún
+**no** existen. Ningún consumidor de juego/build fue migrado: workflow, harness,
+captura, importadores y perfiles siguen en el roadmap. El script Bash instalado
+tiene root y toolchain fijos y requiere su lote explícito.
+
+No confundir esta base con settings vivos ni con datos nativos de perfiles.
+`repo_root` no se configura; el `.gitignore` solo cubre el local por defecto, no
+un `--local-config` alternativo. La configuración no demuestra la identidad de la
+instalación estable ni autoriza operaciones, despliegues o partidas.
+
+Goldfish de este checkpoint (`_work/goldfish/host-config-foundation/`, 2 revisores
+en frío, veredicto **CON HALLAZGOS**): guardas de estable/prefijo/destino vacío
+sin ejercitar y `_is_within` roto con raíz de unidad. Corregidos con casos nuevos y
+cuatro mutantes muertos; `wsl.distribution` sin charset (refutado: rechazaría
+nombres válidos), identidad de la instalación estable y symlink roto como límites
+declarados. Revisor: no es aprobación del propietario ni permiso de despliegue.
+
 
 ## Fuentes vigentes
 

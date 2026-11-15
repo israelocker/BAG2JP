@@ -1,0 +1,17 @@
+# Copy to project.local.toml, then add only verified machine locations.
+# This template intentionally contains no personal/operational absolute paths.
+# Relative values anchor to the repository, not the working directory.
+schema_version = 1
+
+[paths]
+# build_root, experimental_install, stable_install, tools_root, work_root
+
+[inputs]
+# bag1_usa_disc, bag1_jp_disc, bag1_usa_extraction, bag1_jp_extraction
+# bag1_reference_runtime
+
+[tools]
+# python_report, winshot_root, build_script, ffmpeg_review, ffmpeg_wgc
+# ghidra_launcher, ghidra_project
+
+# Never override build.jobs or pins in this local file.
