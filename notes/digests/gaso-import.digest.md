@@ -8,7 +8,7 @@ created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "49583ade3e17b62c2f8ac2987408d8e928ee130bf9d250f21049df7611161a39"
+source_sha256: "10861b3ab4f301c1dbf252876f5fe17ac3dcb72c831182915fb74f63e13f9149"
 ---
 
 # Gas-O: lectura vigente
@@ -35,7 +35,8 @@ Inventario host «Bloque 5: inventario CAUGHT por rival»: request123→slot78 e
 (Ghidra); las18 librerías stock usan19 pistas como clip70 BAG1, semántica coincidente
 salvo Pander; altura raíz por personaje. Owner eligió «Pose BAG1 asignada»: propia si hay
 equivalente BAG1; solo-BAG2 una de las12 poses por cuerpo/estilo con tabla a revisar;
-Pander pose propia; todas ajustadas a su altura. Selector/retrato/nombre aceptado por el owner2026-11-15. Único pendiente
+Pander pose propia; todas ajustadas a su altura. Corrección: la postura CAUGHT BAG1 es estándar
+(rotaciones idénticas salvo pista5 Kitty-N/Strike); solo cambia la raíz por personaje. Selector/retrato/nombre aceptado por el owner2026-11-15. Único pendiente
 del owner: guard canónico1 (sigue0); owner acordó validarlo al cierre del Bloque5. Toma anterior recovery-ready continúa rechazada.
 
 Contexto de la toma rechazada: sección «Bloque 4: guard1 desplegado; toma de recuperación».

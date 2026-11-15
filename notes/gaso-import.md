@@ -40,8 +40,13 @@ doc_kind: evidence
   **Pander diverge** (1.20 vs1.94). Altura de raíz distinta por personaje
   (1291..1712 vs1437 de Heat BAG1): el clip necesita ajustar la traslación Y.
   Es una estadística de librería, **no** prueba de reproducción ni visual.
-- Clip70 BAG1: 12 poses distintas en14 packs A (HAM_=SHOP, PET_=SYOW idénticos),
-  2 frames estáticos salvo hueso5 de Strike. La similitud de librería entre personajes
+- Clip70 BAG1: 12 clips con bytes distintos en14 packs A (HAM_=SHOP, PET_=SYOW
+  idénticos), 2 frames. **Corrección (pregunta del owner):** la postura es estándar.
+  Rotaciones de las19 pistas idénticas (0.0°) en los28 clips A/B salvo la pista5 de
+  Kitty-N (24.6°) y Strike (22.9°, además se mueve). Lo que cambia es la raíz:
+  altura Y1294..1851 y desplazamiento X/Z (Robo X-187). Evidencia
+  `_work/gaso/block5/caught-pose-comparison.json` (máximo por pista y eje, 2 frames,
+  referencia Heat A). La similitud de librería entre personajes
   (0.19–0.68) refleja estilo de baile y no sirve para elegir pose «más parecida».
 - Roster BAG2 (ID): con equivalente BAG1 Heat0, Strike1, Kelly4, Kitty-N7, Hiro8,
   Capoeira10, Robo-Z Gold11 (Robo-Z); sin verificar Shorty5 y Columbo12 (abreviaturas
@@ -54,6 +59,10 @@ doc_kind: evidence
   equivalente BAG1: su propia pose clip70, ajustada a su altura. Solo-BAG2: una de
   las12 poses originales asignada por cuerpo/estilo, ajustada a su altura, con tabla
   que el owner revisará. Pander: pose propia por su esqueleto divergente.
+- Consecuencia de la corrección: no hay12 poses entre las que elegir. Todos los
+  rivales reciben la postura estándar BAG1 y solo se ajusta su raíz (altura/offset)
+  por personaje; los equivalentes BAG1 conservan su variante (pista5 de Kitty-N/
+  Strike). Pander sigue pendiente de comprobar si la postura estándar le encaja.
 
 ### Bloque 4: guard1 desplegado; toma de recuperación en preparación (2026-11-15)
 
