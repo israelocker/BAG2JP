@@ -2,11 +2,17 @@
 param([Parameter(Mandatory)][int]$GameId,[Parameter(Mandatory)][string]$ExpectedExe,
  [Parameter(Mandatory)][string]$Cases,[Parameter(Mandatory)][string]$Output,
  [Parameter(Mandatory)][int]$CurrentIndex,[Parameter(Mandatory)][int]$ItemCount,
- [string]$ConfirmKey='X',[string]$WatchLog='',[string]$IndexAddress='801BFA98',[string]$KeyTool='D:\Dev\Tools\winshot\postkey.ps1',
- [string]$ShotTool='D:\Dev\Tools\winshot\winshot.ps1')
+ [string]$ConfirmKey='X',[string]$WatchLog='',[string]$IndexAddress='801BFA98',[string]$KeyTool='',
+ [string]$ShotTool='', [string]$LocalConfig='')
 $ErrorActionPreference='Stop'
+. "$PSScriptRoot/view_config.ps1"
+$config=Get-ViewConfig -Operation dance-capture -Output $Output -LocalConfig $LocalConfig -ExpectedExe $ExpectedExe -KeyTool $KeyTool -ShotTool $ShotTool
+$Output=$config.effective.output
+$ExpectedExe=$config.effective.exe
+$KeyTool=$config.effective.key_tool
+$ShotTool=$config.effective.shot_tool
 $game=Get-Process -Id $GameId
-if ($game.Path -ne $ExpectedExe) { throw 'Unexpected game process' }
+if ([IO.Path]::GetFullPath($game.Path) -ne [IO.Path]::GetFullPath($ExpectedExe)) { throw 'Unexpected game process' }
 if ($ItemCount -lt 2 -or $CurrentIndex -lt 0 -or $CurrentIndex -ge $ItemCount) { throw 'Invalid viewer index contract' }
 if (Test-Path -LiteralPath $Output) { throw 'Preserve existing capture output' }
 $items=@(Get-Content -LiteralPath $Cases -Raw | ConvertFrom-Json)
@@ -22,8 +28,8 @@ function Read-ViewerIndex {
  if ($value -ge $ItemCount) { throw 'Viewer index out of bounds' }
  return $value
 }
-New-Item -ItemType Directory -Path $Output | Out-Null
 if ($IndexAddress -notmatch '^[0-9A-Fa-f]{8}$') { throw 'Invalid watch address' }
+New-Item -ItemType Directory -Path $Output | Out-Null
 $timeline=@();$cursor=$CurrentIndex
 foreach ($item in $items) {
  $step=([int]$item.index-$cursor+$ItemCount)%$ItemCount;$key='Right'

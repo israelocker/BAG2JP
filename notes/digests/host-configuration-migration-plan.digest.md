@@ -2,13 +2,13 @@
 id: host-configuration-migration-plan-digest
 title: "Configuración central: ampliación de auditoría y migración"
 tags: ["digest", "plan", "config"]
-summary: "Plan aprobado de migración host: S1 workflow/report entregado con guardas/overlay/equivalencia; auditoría semántica/checker y demás familias aún pendientes de ejecución."
+summary: "Plan aprobado: S1, S3a y S3b entregados host; siguiente S4a grabador, luego S4b/S5–S7/S2b y auditoría semántica. Sin build/deploy/partida."
 related: ["plans/pending/host-configuration-migration.md", "system_config.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "a7680d2f914c6fdb47716be91539893e4d10c3614735b2d3fb4c771389cbde66"
+source_sha256: "6f58874aebed2d7ef0d314f579997ef54d16c57900c7fef1c0f08ec5abf57a37"
 ---
 
 # Ampliación de configuración central
@@ -31,9 +31,13 @@ source_sha256: "a7680d2f914c6fdb47716be91539893e4d10c3614735b2d3fb4c771389cbde66
   la API coherentemente con ajustes por ejecución, no quitar globals sin sus lectores.
 - Preparación S3: siete `harness.*` (deadlines 25/35/40/420 s, tope 86400;
   hold/gap/fade 100 ms/350 ms/1.3 s observados y bloqueados, sin override local).
-  Registrados y validados, sin consumidor ni operación activa; literales del runner
-  intactos. Goldfish: 0 BLOCKER, 6 SHOULD-FIX corregidos o registrados (riesgo
-  legacy `run_case`/Popen global para S3a). No es aceptación ni permiso de despliegue.
+   Consumidos por S3a (108 harness + 113 workflow OK, 31 mutantes listados).
+   Goldfish no es aceptación ni permiso de despliegue; ver límites en system_config.
+- S3b: tres vistas PS usan JSON del resolver con destinos guardados, identidad/PID
+   y parámetros conservados; helpers explícitos preceden al TOML, padre/hijo fijan
+   inputs/archivos/destinos. Goldfish A/B con hallazgos corregidos; pruebas y mutantes
+   posteriores: 19 vistas + 113 workflow + 108 harness OK, 24 mutantes en copias;
+   sin aceptación en juego ni segunda revisión. Siguiente S4a (solo host).
 - S3: versus y PowerShell; S4: captura/FFmpeg/referencias; S5: importadores/perfiles;
   S6: herramientas de paquetes/instalador; S7: bootstrap/externos y cierre.
 - Lotes pequeños con tests/diccionario/operaciones/consumidores reales, Goldfish y

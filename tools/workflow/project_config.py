@@ -88,6 +88,12 @@ def _field_registry() -> Mapping[str, FieldSpec]:
         "report-sheet": report + ("paths.stable_install",),
         "versus-inspect": versus_inspect,
         "versus-session": versus_session,
+        "endings-view": ("repo_root", "paths.work_root", "paths.experimental_install",
+                         "paths.stable_install", "tools.winshot_root"),
+        "endings-acceptance": ("repo_root", "paths.work_root", "paths.experimental_install",
+                               "paths.stable_install", "tools.winshot_root"),
+        # Explicit dance helper arguments may satisfy the tool dependency instead.
+        "dance-capture": ("repo_root", "paths.work_root", "paths.stable_install"),
     }
     for operation, keys in requirements.items():
         for key in keys:

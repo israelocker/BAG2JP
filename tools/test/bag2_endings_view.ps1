@@ -1,15 +1,30 @@
 # Target only the supplied task-owned experimental process. Does not change settings/cards.
 param([Parameter(Mandatory=$true)][int]$GameId,
       [ValidateSet('options','selector','cancel','accept')][string]$Action = 'selector',
-      [string]$Tag = 'endings-view')
+      [string]$Tag = 'endings-view', [string]$LocalConfig = '', [string]$ExpectedConfig = '')
 $ErrorActionPreference = 'Stop'
-$E = 'D:/Games/Bust A Groove 2 (Japan)/BAG2JP-exp-8mb'
-$Out = "D:/Dev/Recomp/BAG2JP/_work/$Tag"
-$Keys = 'D:/Dev/Tools/winshot/postkey.ps1'
-if ((Get-Process -Id $GameId).Path -ne "$E/BAG2JP.exe".Replace('/', '\')) { throw 'Not the experimental game process' }
+. "$PSScriptRoot/view_config.ps1"
+$config=Get-ViewConfig -Operation endings-view -Output $Tag -LocalConfig $LocalConfig
+# A parent run pins the resolver inputs, not a mutable settings/overlay global.
+if($ExpectedConfig) {
+    $expected=$ExpectedConfig | ConvertFrom-Json
+    foreach($name in @('common','local','schema')) {
+        if($expected.$name -ne $config.config.$name) { throw 'View configuration changed during parent run' }
+    }
+    foreach($section in @('files','effective')) {
+        foreach($property in $config.$section.psobject.Properties) {
+            if($expected.$section.($property.Name) -cne $property.Value) { throw 'View configuration changed during parent run' }
+        }
+    }
+}
+$E=$config.effective.game
+$Out=$config.effective.output
+$Keys=$config.effective.key_tool
+$ShotTool=$config.effective.shot_tool
+if ([IO.Path]::GetFullPath((Get-Process -Id $GameId).Path) -ne [IO.Path]::GetFullPath($config.effective.exe)) { throw 'Not the experimental game process' }
 New-Item -ItemType Directory -Force $Out | Out-Null
 function State {
-    $line = Get-Content "$E/bag2jp_watch.log" -Tail 1
+    $line = Get-Content -LiteralPath "$E/bag2jp_watch.log" -Tail 1
     if ($line -match '8005D3D4=([0-9A-F]+).*80192028=([0-9A-F]+)') {
         return @([Convert]::ToInt32($Matches[1],16), [Convert]::ToInt32($Matches[2],16))
     }
@@ -23,8 +38,8 @@ function WaitRoot([int[]]$Roots, [int]$Seconds=20) {
 }
 function Shot([string]$Name) {
     $path = "$Out/$Name.png"
-    if(Test-Path $path) { $path = "$Out/$Name-$(Get-Date -Format yyyyMMdd-HHmmssfff).png" }
-    & 'D:/Dev/Tools/winshot/winshot.ps1' -Ids $GameId -Out $path
+    if(Test-Path -LiteralPath $path) { $path = "$Out/$Name-$(Get-Date -Format yyyyMMdd-HHmmssfff).png" }
+    & $ShotTool -Ids $GameId -Out $path
 }
 if ($Action -in @('options','selector')) {
     for($i=0; $i -lt 12 -and (State)[0] -ne 7; $i++) { Key @('Return'); Start-Sleep 2 }
@@ -44,6 +59,6 @@ if ($Action -in @('options','selector')) {
     WaitRoot @(12,13); Key @('S'); Start-Sleep 1; Shot 'costume';
     Key @('Right','S'); WaitRoot @(26,27) 30; Start-Sleep 12; Shot 'ending'
 }
-Copy-Item "$E/bag2jp_endings_view.log" "$Out/$Action-plugin.log"
-Get-Content "$E/bag2jp_endings_view.log" -Tail 8
+Copy-Item -LiteralPath "$E/bag2jp_endings_view.log" -Destination "$Out/$Action-plugin.log"
+Get-Content -LiteralPath "$E/bag2jp_endings_view.log" -Tail 8
 "state=$(State)"

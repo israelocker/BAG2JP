@@ -35,15 +35,15 @@ migrados se marcan explícitamente como pendientes.
 | Clave | Significado | Tipo | Unidad | Origen | Fuente local | Validación | Operaciones | Consumidor | Estado |
 |---|---|---|---|---|---|---|---|---|
 | `schema_version` | Versión del esquema TOML que acepta el cargador | entero | schema version | común/local | sí | Entero exactamente 1; el valor local no adelanta un esquema futuro | — | `project_config.py` | base |
-| `repo_root` | Raíz del repo usada para anclar rutas y configuración | ruta | native path | derivado | no | Derivada del propio módulo; configurarla es un error | workflow, workflow-report, report, report-audio, report-sheet, versus-inspect, versus-session | `project_config.py`; `check_payload_manifest.py`; `bag2_workflow.py`; `versus_session.py` | base |
+| `repo_root` | Raíz del repo usada para anclar rutas y configuración | ruta | native path | derivado | no | Derivada del propio módulo; configurarla es un error | workflow, workflow-report, report, report-audio, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance, dance-capture | `project_config.py`; `check_payload_manifest.py`; `bag2_workflow.py`; `versus_session.py`; `view_config.py` | base |
 | `build.jobs` | Paralelismo de compilación fijado por el owner | entero | compile jobs | común | no | Entero exactamente 2; override local prohibido | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `pins.psxrecomp` | Revisión fijada de PSXRecomp | revisión | Git hex prefix | común | no | 7–40 caracteres hexadecimales; override local prohibido | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `pins.recomp_ui` | Revisión fijada de Recomp UI | revisión | Git hex prefix | común | no | 7–40 caracteres hexadecimales; override local prohibido | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `wsl.distribution` | Distribución WSL para comandos envueltos | cadena | distribution name | común/local | sí | Cadena no vacía sin NUL; sin charset porque los nombres registrados varían | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
-| `paths.work_root` | Raíz de evidencias, logs y fixtures locales | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo | workflow, workflow-report, report, report-audio, report-sheet, versus-session | `project_config.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py` | base |
+| `paths.work_root` | Raíz de evidencias, logs y fixtures locales | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo | workflow, workflow-report, report, report-audio, report-sheet, versus-session, endings-view, endings-acceptance, dance-capture | `project_config.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py` | base |
 | `paths.build_root` | Árbol de build del proyecto | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo | payload-manifest, workflow, workflow-report | `project_config.py`; `check_payload_manifest.py`; `bag2_workflow.py` | base |
-| `paths.experimental_install` | Instalación experimental usada en pruebas | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no puede solaparse con la estable al escribir | payload-manifest, workflow, workflow-report, report, report-audio, report-sheet, versus-inspect, versus-session | `project_config.py`; `check_payload_manifest.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py` | base |
-| `paths.stable_install` | Instalación estable protegida | ruta | native path | común/local | sí | Ruta no vacía sin NUL; cualquier destino de escritura que la solape se rechaza | workflow, workflow-report, report-sheet, versus-inspect, versus-session | `project_config.py`; `bag2_workflow.py`; `bag2_report.py`; `versus_session.py`; `strike_acceptance_batch.py` | base |
+| `paths.experimental_install` | Instalación experimental usada en pruebas | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no puede solaparse con la estable al escribir | payload-manifest, workflow, workflow-report, report, report-audio, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance | `project_config.py`; `check_payload_manifest.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py` | base |
+| `paths.stable_install` | Instalación estable protegida | ruta | native path | común/local | sí | Ruta no vacía sin NUL; cualquier destino de escritura que la solape se rechaza | workflow, workflow-report, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance, dance-capture | `project_config.py`; `bag2_workflow.py`; `bag2_report.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py` | base |
 | `paths.tools_root` | Raíz común de herramientas locales | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; herramientas host (pendiente) | base |
 | `inputs.bag1_usa_disc` | Imagen del disco BAG1 USA | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | — | `project_config.py`; importadores (pendiente) | base |
 | `inputs.bag1_usa_extraction` | Extracción completa del disco BAG1 USA | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no se exige salvo para la operación que la usa | — | `project_config.py`; importadores (pendiente) | base |
@@ -52,7 +52,7 @@ migrados se marcan explícitamente como pendientes.
 | `inputs.bag1_reference_runtime` | Runtime nativo de referencia para capturas BAG1 | ruta | native path | común/local | sí | Ruta no vacía sin NUL; ejecutarlo requiere autorización de prueba | — | `project_config.py`; referencia nativa (pendiente) | base |
 | `tools.audio_probe` | Buscador de plantillas de audio usado por el reporte | ruta | native path | común/local | sí | Ruta no vacía sin NUL; requerida solo para report-audio cuando hay audio que buscar; no demuestra ejecución | report-audio | `project_config.py`; `bag2_report.py` | base |
 | `tools.python_report` | Intérprete usado por el reporte del workflow | ruta | native path | común/local | sí | Ruta no vacía sin NUL; opcional en preflight, requerida para workflow-report; presencia no prueba PIL ni ejecución | workflow-report | `project_config.py`; `bag2_workflow.py` | base |
-| `tools.winshot_root` | Directorio del runner de capturas | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no demuestra que el runner esté activo | versus-session | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py` | base |
+| `tools.winshot_root` | Directorio del runner de capturas | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no demuestra que el runner esté activo | versus-session, endings-view, endings-acceptance | `project_config.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py` | base |
 | `tools.build_script` | Script de build instalado | ruta | native path | común/local | sí | Ruta no vacía sin NUL; el script instalado fija su propio árbol y toolchain | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `tools.ffmpeg_review` | FFmpeg usado en revisión de video | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; revisión (pendiente) | base |
 | `tools.ffmpeg_wgc` | FFmpeg usado en captura WGC | ruta | native path | común/local | sí | Ruta no vacía sin NUL; sin valor verificado para esta máquina | — | `project_config.py`; captura (pendiente) | base |
@@ -91,7 +91,8 @@ catálogo `versus-navigation/catalog.json` y runs `versus-runs` bajo
 solo `versus-inspect` (identidad del proceso y deadline del helper). Los deadlines
 son presupuestos de espera, no predicados de aceptación. El hold/gap/fade observado
 es política versionada y bloqueada por esquema; no pasa a ser un knob local, y
-ningún documento local prueba su calibración. `--finish-timeout` explícito
+ningún documento local prueba su calibración. Las guardas resuelven ancestros y
+enlaces existentes, pero no eliminan carreras de filesystem. `--finish-timeout` explícito
 prevalece sobre el TOML; el default del parser es el valor resuelto y
 `bag2_versus.ps1` solo reenvía `-FinishTimeout` si el llamador lo enlaza.
 `strike_acceptance_batch.py` recibe los mismos settings, usa el presupuesto de fin
@@ -108,10 +109,27 @@ copian, y su migración o retiro queda pendiente de decisión.
 El batch y el driver consumen estas claves a través de `resolve_settings`/`Session`,
 no con lecturas propias del TOML. Un rechazo de guarda del directorio de run o de
 batch sale con código 2 antes de crear nada; una sesión activa se rechaza con
-código 1 sin escribir. Solo se archiva evidencia con `mtime` posterior al inicio de
-la propia sesión (`copy_current`), de modo que un run que no llegó a lanzar no
-hereda logs de otro. El batch registra además el fixture y el calendario VRAM que
-armó cada sesión, no solo lo que pidió.
+código 1 sin escribir. `copy_current` exige inicio propio y `mtime` posterior para
+cuatro logs del driver y las copias del batch; audio/RAM/SPU del driver conservan
+sus controles legacy. El batch registra fixtures y calendario VRAM programado,
+no demuestra por ese registro que cada captura haya ocurrido.
+
+S3b: los wrappers de endings y Dance View reciben JSON de `view_config.py`, adaptador
+de `load_config`/`export_config`/`assert_write_target`; PowerShell no analiza TOML.
+`endings-view` y `endings-acceptance` requieren instalación experimental, estable,
+work y helpers. `dance-capture` conserva `ExpectedExe` explícito y requiere work y
+estable; exige `tools.winshot_root` solo si falta algún override `KeyTool`/`ShotTool`.
+Los overrides explícitos, incluidos `.<separador>helper.ps1`, prevalecen sin perder
+su texto de ejecución; no hay fallback de máquina. Tags relativos y
+`Output` se anclan a work; rutas absolutas solo se admiten dentro de work y sin
+solapar estable. El padre pasa al hijo destino absoluto, overlay seleccionado y
+hashes, identidad de archivos y destinos efectivos: una divergencia bloquea el hijo
+antes de sus efectos. Acceptance exige una salida nueva, por lo que no reutiliza
+backups preexistentes; las operaciones de archivos usan rutas literales (incluidos
+corchetes), sin interpretación de comodines. No es una garantía contra carreras.
+Son guardas de configuración, no permisos para ejecutar una partida. Los tiempos
+de input, esperas, direcciones y estados nativos de estos scripts permanecen
+versionados en su fuente; no consumen los valores `harness.*` del contrato versus.
 
 Precedencia de los `inputs.*`: la configuración local selecciona los insumos de las
 herramientas host. Los valores equivalentes de `source_layout.regions` en los

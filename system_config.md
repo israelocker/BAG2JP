@@ -83,7 +83,7 @@ este barrido no concede por sí solo ninguna disposición semántica.
 | Resolutor y checker de manifiestos | Entregados en `7fefc07` / `28fc1e9` |
 | Workflow/report | S1 entregado en `46d528c`: rutas/pins/WSL/jobs y guardas; 101 pruebas dirigidas OK, Goldfish aplicado |
 | Audio probe | Clave `tools.audio_probe` y ruta local verificada; requisito solo al buscar audio existente |
-| Harness/PowerShell/captura | S3a entregado: driver/batch/wrapper consumen el resolver; 108 tests harness + 113 workflow OK; Goldfish SIN HALLAZGOS BLOQUEANTES |
+| Harness/PowerShell/captura | S3a (`e9236e7`) y S3b entregados solo host; S4 pendiente. S3b: 19 vistas PS7/5.1 + 113 workflow + 108 harness, 24 mutantes; sin aceptación en juego |
 | Importadores/perfiles/herramientas de paquetes/instalador | Pendientes por lotes |
 | Bash instalado fijo / bootstrap del harness | Exigen contrato y verificación propios; no migrados |
 
@@ -242,6 +242,74 @@ locale de `[double]` en PowerShell y guard no race-safe (B7). Triaje/respuestas 
 hashes posteriores: `_work/goldfish/versus-session-s3a/`. Veredicto de revisor:
 no es aprobación del propietario ni permiso de despliegue.
 
+
+### S3b: wrappers de endings y Dance View (entregado host)
+
+`view_config.py` adapta el único resolver y exporta JSON con destinos efectivos;
+`view_config.ps1` solo invoca Python 3.13 y consume ese JSON. Reutiliza cinco claves
+existentes, sin nuevos campos ni defaults en TOML. `endings-view` y
+`endings-acceptance` guardan experimental/work y protegen estable antes de mkdir,
+backups, helpers o lanzamiento. `dance-capture` conserva la identidad explícita
+`ExpectedExe` (incluida referencia nativa), protege el Output bajo work y conserva
+overrides de helpers; solo exige winshot_root si falta alguno. El proceso por PID
+sigue verificado antes de efectos. Destino existente Dance View se preserva.
+
+El padre endings reenvía destino absoluto, overlay efectivo, hashes e identidad de
+archivos/destinos al hijo; una divergencia bloquea al hijo antes de actuar. Acceptance
+exige una salida nueva y no reutiliza backups preexistentes. Lecturas, hashes,
+copias y escrituras usan rutas literales, sin expandir corchetes. Los overrides
+relativos conservan su texto de ejecución. No hay global
+mutable de overlays. Direcciones, estados, índices, teclas y tiempos observados no
+se convierten en knobs. `ObserveSeconds` conserva parámetro y default 42; las
+esperas legacy siguen como candidatos de auditoría semántica, no como configuración
+ya migrada. Las guardas de filesystem no son race-safe.
+
+Inventario y decisiones: `_work/configuration/s3b-view-inventory.json`. Host final:
+19 tests de vistas PS7/5.1, 113 workflow y 108 harness OK; 24/24 mutantes
+assertion-killed en copias. Reportes: `_work/configuration/s3b-final-tests/` y
+`_work/configuration/s3b-view-post-review-mutations/`. Baseline de 19 reutilizado
+tras comprobar hashes de ocho inputs sin cambios; ronda anterior 12 tests/14
+mutantes preservada. Preflight pasó (solo drift conocido `bag2jp_gaso_caught.c`):
+`_work/workflow/20261115T155630190723Z-s3b-view-config/`.
+
+Herramientas: Ghidra MCP verificó identidad y lectura acotada (log de herramienta
+20261115-ghidra-s3b-view-config). PowerShell 7 y 5.1 ejecutan los wrappers con
+dobles de proceso, teclas, capturas y escrituras en árboles temporales; no es prueba
+en juego. FFmpeg, grabador y runner real no se usan: no hay media nueva y la partida
+no está autorizada. Extracción/hashes/mutaciones son deterministas; un modelo local
+no aporta validación independiente a esos cálculos, por lo que no se usa aquí.
+Sin build, deploy, cambios instalados, settings personales ni tarjetas.
+
+Comando del lote, desde la raíz: `py -3.13 -m unittest tools.test.test_view_config`.
+La suite conserva wrappers y resolver reales; procesos/inputs/capturas/escrituras
+son dobles salvo el caso de proveedor literal, que copia y lee solo archivos
+temporales con un hermano señuelo. Un hook rechaza helpers externos al fixture
+antes de invocarlos (launcher Python seleccionado permitido); no es un sandbox
+contra código host malicioso. Registra también Set-Content y prueba padre/hijo
+reales. Validación de IndexAddress precede ahora a mkdir.
+
+Goldfish S3b, 2026-11-15: dos revisores fríos (A configuración/guardas, B costuras y
+pruebas), ambos CON HALLAZGOS sobre snapshot inmutable de 17 archivos. Copia,
+manifiesto original y respuestas literales: `_work/goldfish/view-config-s3b/`.
+SHA-256 del manifiesto del estado revisado:
+`b86ad5fc657de8f49198c8826306f0c9913741f2da9933d7e73218e7f30fca58`.
+A1–A5/B1–B4 confirmados (A5 duplica B3/B4); corregidos por RED→GREEN y mutantes
+en copias, sin segunda revisión. A2 endurece el contrato de selección/destino,
+no demuestra divergencia espontánea del padre anterior. La equivalencia íntegra
+con el baseline y el comportamiento de helpers reales no fueron certificados por
+los revisores. Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Siguiente sublote aprobado: S4a `bag2_record.py` (host) y después S4b lectores de
+referencias/`run_match_and_attack.py`. No implica autorizar una grabación en juego.
+
+Corrección documental de la evidencia S3a anterior: los inputs Goldfish se
+regeneraron después de corregir; sus hashes actuales no identifican exactamente
+los bytes originales vistos por los revisores. `reviewers.md`/`triage.md` son
+síntesis, no respuestas literales, y no hubo segunda revisión. El reporte 31/31
+corresponde a los mutantes listados, no a alternativas sustituidas tras dar ERROR.
+`copy_current` cubre cuatro logs del driver y las copias del batch; otras copias de
+audio/RAM/SPU conservan sus controles legacy. Calendario VRAM registrado significa
+programado, no necesariamente observado en juego. Estos límites no son aceptación.
 
 ## Fuentes vigentes
 

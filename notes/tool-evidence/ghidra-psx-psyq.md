@@ -2453,3 +2453,20 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Dictamen: identidad confirmada; sin utilidad práctica adicional para este
   sub-lote. Medición: tiempo y ahorro no medidos.
 - Siguiente: lectura acotada solo si un lote posterior toca datos nativos.
+
+## 20261115-ghidra-s3b-view-config - identidad y lectura acotada
+
+- Propósito: verificar por MCP el programa durante S3b, sin cambiar código nativo.
+  Instancia existente; `get_program_info()` primero: SLPM_862.19 (Japón),
+  PSX:LE:32, base 80000000, entrada 80035D98, 1324 funciones, SHA-256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Consultas exactas: `read_memory(address="8005D3D4", length=4)` devolvió memoria
+  no inicializada (`??`); no prueba el root vivo usado por los wrappers.
+  `read_memory(address="80035D98", length=8)` devolvió `0680023c00cf4224`, sin gaps.
+  Main executable, sin atribuir estos datos a un overlay cargado en partida.
+- Validación independiente: identidad/hash iguales a 20261115-ghidra-s3a-identity;
+  las pruebas host verifican por separado rutas/argv, no semántica MIPS ni gameplay.
+- Resultado: identidad y lectura MCP confirmadas; utilidad práctica limitada a esa
+  comprobación. No se cambian direcciones, funciones ni análisis guardados.
+  Tiempo, ahorro y retrabajo manual no medidos; no se afirman mejoras cuantificadas.
+- Siguiente: conservar evidencia; no repetir estas lecturas sin un nuevo propósito.

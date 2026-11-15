@@ -2,13 +2,13 @@
 id: system-config-digest
 title: "Configuración host: autoridades y estado"
 tags: ["digest", "config", "migration"]
-summary: "Base/piloto y S1 workflow/report entregados; plan ampliado aprobado, auditoría semántica y demás lotes pendientes. No certifica migración global ni aceptación del juego."
+summary: "S1 y S3a entregados; S3b migra vistas PowerShell a JSON central. S4–S7/S2b y auditoría global pendientes; solo verificación host, no aceptación del juego."
 related: ["system_config.md", "docs/data-dictionary.md", "plans/pending/host-configuration-migration.md"]
 created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "97ea491976bb69173987eac6ca272a3972c297d2aa6a721ae66f383120619e32"
+source_sha256: "c71de89003f1449941f4b9309236c8a9ce9f9bdb768cd5e5ec07995e7cc5d589"
 ---
 
 # Configuración: estado mínimo
@@ -35,9 +35,17 @@ source_sha256: "97ea491976bb69173987eac6ca272a3972c297d2aa6a721ae66f383120619e32
   471 pendiente. No retirar globals rompiendo lectores; discovery legacy conservado.
 - Preparación S3: siete `harness.*` (deadlines 25/35/40/420 s, tope 86400;
   hold/gap/fade 100 ms/350 ms/1.3 s observados y bloqueados, sin override local).
-  Registrados y validados, sin consumidor ni operación activa; literales del runner
-  intactos. Goldfish: 0 BLOCKER, 6 SHOULD-FIX corregidos o registrados (riesgo
-  legacy `run_case`/Popen global para S3a). No es aceptación ni permiso de despliegue.
+   Consumidos por S3a (`e9236e7`): settings por ejecución, fixtures de solo lectura,
+   batch sin Popen global, CLI explícita prevalece. 108 harness + 113 workflow OK,
+   31 mutantes listados; snapshots Goldfish originales no retenidos exactamente.
+- S3b: endings/view/acceptance y Dance View usan JSON del resolver; work/estable
+   guardados, helpers explícitos prevalecen y falta parcial exige winshot_root.
+   Dance conserva ExpectedExe nativo; padre/hijo fijan destino/archivos/overlay/hashes.
+   Rutas literales, overrides relativos intactos y salida acceptance nueva.
+   Goldfish A/B CON HALLAZGOS, corregidos sin segunda revisión; pruebas y mutantes
+   posteriores: 19 vistas + 113 workflow + 108 harness OK, 24 mutantes en copias.
+   Snapshot original y respuestas preservados; siguiente S4a grabador (solo host).
+   Sin partida/build/deploy ni edición de herramientas instaladas.
 - Nuevo/modificado host sigue el estándar central; runtime, hechos PSX y guards
   conservan su autoridad. No tocar historia, releases, settings, saves o terceros.
 - Límites: config no demuestra identidad de estable; TOCTOU no garantizado,
