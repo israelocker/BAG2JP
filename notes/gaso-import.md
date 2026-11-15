@@ -23,8 +23,8 @@ doc_kind: evidence
 
 | Clasificación | Qué se conserva | Destino canónico |
 |---|---|---|
-| Solo Gas-O | Tanque/humo, voces sobre Bi-O, palabras DBI, selector y cam95 | Esta nota y adaptadores/perfil Gas-O |
-| Proceso común, datos propios | Inventario, DBI/bindings, presupuesto SPU/cues, escala, CAUGHT/hold/receptor, cámara y regresión compartida | `notes/character-pipeline.md`, «Lecciones de Gas-O incorporadas» |
+| Solo Gas-O | Tanque/humo, voces sobre Bi-O, palabras DBI, assets/hashes BI-O/GAS-O y cam95 | Esta nota y adaptadores/perfil Gas-O |
+| Proceso común, datos propios | Inventario, DBI/bindings, presupuesto SPU/cues, escala, retrato/nombre por versión, CAUGHT/hold/receptor, cámara y regresión compartida | `notes/character-pipeline.md`, «Lecciones de Gas-O incorporadas» |
 | Aceptación por personaje | P1/P2×A/B, espejo/mixtos, escenarios, compañeros y CAUGHT de importados/nativos | `CHARACTER_IMPORT.md`, `IMPORT_STANDARD.md`, `notes/character-import-testing.md` |
 | Grabación | WGC, audio por proceso explícito, handshake save/load, cerrar grabador primero, no rescatar rechazos y revisar pixels/eventos | `notes/character-import-testing.md` y skill `bag2-game-recording` |
 | Desarrollo | Guards contra originales, AOT, MIPS en intérprete, RAM/lifecycle, RED compilable, mutantes por aserción, suite con baseline | `docs/coding-standards.md` y pipeline RE |
@@ -94,6 +94,27 @@ doc_kind: evidence
   cobertura de campaña por una prueba VS. Si hace falta una excepción, justificarla
   por evidencia antes de tocar código. Esta unidad solo registra el pendiente;
   cualquier nueva partida requiere autorización y grabación válida según AGENTS.
+
+### Aclaración del estándar: retrato y nombre por versión (owner, 2026-11-15)
+
+- El owner señala que compartir casilla, como Bi-O/Gas-O, se repetirá al importar
+  personajes; cita **Comet BAG2 con Frida BAG1**. Es requisito futuro, no anuncio
+  de Frida ya implementada ni de una tabla completa de asignación de personajes.
+- La clasificación anterior era demasiado amplia: exclusivos son los retratos,
+  nombres, CLUT/hashes y parches específicos, **no el proceso de conmutarlos**.
+  El estándar común ahora exige identidad correcta por versión/lado, sin afectar
+  al anfitrión BAG2, al otro jugador ni a otras casillas. Incluye vuelta a BAG2,
+  preview/confirmación/cancelación, stage select, retorno y HD si está activo.
+- Incorporado en el pipeline («Identidad visual por versión»), matriz de pruebas
+  y requisito de completitud de `CHARACTER_IMPORT.md`; digests actualizados.
+  Evidencia previa Bi-O/Gas-O y sus tests/revisión se reutiliza sin nueva partida.
+  No se afirma que la implementación actual sea ya genérica para Comet/Frida.
+- Corrección solo documental: omisión Goldfish justificada por su lista cerrada
+  (no AGENTS/IMPORT_STANDARD/coding-standards, tools, runtime ni manifiestos en este
+  diff). Auto-revisión declarada: requisito separado de soporte; bytes del parche
+  no generalizados. Ghidra/FFmpeg/build/juego no repetidos: sin inputs ni hipótesis
+  nuevos sobre el consumidor, solo aclaración de norma con evidencia ya vigente.
+  Comprobación dirigida: `_work/retro/portrait-identity-standard-check.json`.
 
 ### Corrección de alcance: entrada35 / Double Fever (2026-11-15)
 

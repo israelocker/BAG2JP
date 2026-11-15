@@ -8,7 +8,7 @@ created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "b89c5c8bd63f91ab19f0f296d88eb19c4cc32362e151865e86ab3de69879b47f"
+source_sha256: "d5fe3bd2fa4983692aeecd67f1769e2dd5097807271c8a6e656d2b911359ac48"
 ---
 
 # Gas-O: lectura vigente
@@ -19,6 +19,9 @@ source_sha256: "b89c5c8bd63f91ab19f0f296d88eb19c4cc32362e151865e86ab3de69879b47f
   Entrada35 sigue stock; los dos result.json antiguos citados tienen revisión
   pendiente. Retirada la aprobación universal de 08-11, sin revocar aceptaciones
   parciales posteriores de Bloque2/4. Conteos retrospectivos aproximados, no ahorro.
+- Aclaración owner: conmutar retrato/nombre es estándar común para toda casilla
+  compartida; solo assets/hashes/parche BI-O/GAS-O son específicos. Añadido al
+  pipeline, aceptación y pruebas. Futuro Comet/Frida aún no implementado.
 Último resultado: «Toma por proceso aceptada y revisada: Bloque4 aceptado por el owner».
 Única toma block4-recovery-process-a:314.223s total,208.867s vídeo1920x1080,
 manifestaccepted=true,2090heartbeats/4late/1stall79ms,20970paquetes nativos,

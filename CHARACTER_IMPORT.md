@@ -29,6 +29,8 @@ evidence is recorded with unchanged hashes.
 A character is complete only when:
 
 - its model, costumes and sides render correctly;
+- its own portrait and name follow the selected version when sharing a roster
+  slot, independently per side, without corrupting the native BAG2 identity;
 - all required motions and transitions are accepted;
 - CAUGHT is validated on the imported BAG1 character and on native BAG2 rivals,
   across sides, variants and companions (owner requirement, 2026-11-15);

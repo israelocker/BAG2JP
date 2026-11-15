@@ -97,6 +97,12 @@ La regla nativa mirror puede cambiar automáticamente el traje del segundo jugad
 el driver lo rechaza si no coincide con el solicitado, no lo oculta.
 
 - Selección/popup: nombre, ID, versión, traje y puerto correctos.
+- Identidad al compartir casilla (Bi-O/Gas-O; futuro Comet/Frida): retrato y nombre
+  propios para cada versión, en ambos lados/trajes. Probar cambio y vuelta a BAG2,
+  preview/confirmación/cancelación, stage select y retorno; dos jugadores con
+  versiones opuestas de esa casilla no deben contaminarse. Comprobar assets nativos
+  y sus reemplazos HD si están activos, sin afectar a otros personajes. Ver el
+  contrato común «Identidad visual por versión» del pipeline, no copiar el parche.
 - Modelo/texturas: frente/espalda, UV, CLUT, accesorios, articulaciones y escala.
 - Movimiento: normales/especiales, duración, transiciones y predecesores;
   ataques/defensas/reacciones, cansancio, caída y recuperación.

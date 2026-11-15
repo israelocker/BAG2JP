@@ -8,7 +8,7 @@ created: "2026-11-02"
 updated: "2026-11-15"
 doc_kind: digest
 source: "CHARACTER_IMPORT.md"
-source_sha256: "31ae9b4442bc943cf146a1d399dcfff4c1a25e9174990bfb6dd1ed9b1ba48e3b"
+source_sha256: "db72c0045f55fb4c4e1ac2656aa8a7249861a23479c5fc330ceec47cfcf3cd5e"
 ---
 
 - Fuente canónica: [CHARACTER_IMPORT](../../CHARACTER_IMPORT.md); entrada mínima:
@@ -16,6 +16,8 @@ source_sha256: "31ae9b4442bc943cf146a1d399dcfff4c1a25e9174990bfb6dd1ed9b1ba48e3b
 - Perfiles de datos; identificar ID/layout, contrato por significado/beats/eventos
   y predecesores. No clonar Heat ni generalizar DBI/cues/escenario.
 - Lecciones Gas-O: mismo proceso con datos propios, no sus constantes/adaptadores.
+  Retrato/nombre del personaje por versión y lado al compartir casilla; preservar
+  identidad BAG2. Comet/Frida es caso futuro, no soporte actual.
   CAUGHT se exige en cada importado BAG1 y nativo BAG2, lados/variantes/compañeros;
   es requisito de aceptación, no cobertura ya alcanzada.
 - `init-profile` produce schema 1, plan/prepare requieren schema 2 y gates

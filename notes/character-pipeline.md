@@ -154,6 +154,16 @@ Estas reglas no certifican cobertura actual ni un conversor universal.
    regenerar el mapping anterior byte a byte cuando se espera estabilidad y auditar
    diferencias regionales miembro a miembro. No exigir igualdad entre regiones donde
    las fuentes difieren. Matriz y pruebas: [harness](character-import-testing.md).
+9. **Identidad visual por versión, no por slot anfitrión.** Al compartir casilla,
+   el importado debe mostrar su propio retrato y nombre, y el nativo BAG2 los suyos.
+   Conmutar por personaje/versión/lado en el consumidor correcto; conservar preview,
+   confirmación, cancelación, selección de escenario y retorno sin contaminar al
+   otro jugador ni a otros personajes. Probar vuelta a BAG2 y elecciones opuestas
+   simultáneas en la misma casilla, con trajes A/B. Si hay reemplazos HD activos,
+   comprobar también su asociación, además del retrato nativo y nombre. Usar motor
+   compartido y datos/assets propios; no clonar el parche Gas-O ni sus direcciones,
+   paletas o hashes. Bi-O/Gas-O es la evidencia de origen; **Comet BAG2/Frida BAG1**
+   es un requisito futuro indicado por el owner, no soporte ya implementado.
 
 ### RE: demostrar la costura antes de construir sobre ella
 
@@ -174,7 +184,9 @@ Estas reglas no certifican cobertura actual ni un conversor universal.
 ### Exclusivo de Gas-O: no convertir en regla global
 
 Tanque/criogenia, humo, dimensiones/tiempos, voces de Gas-O sobre Bi-O, parche DBI
-concreto, selector BI-O/GAS-O y cam95 quedan en su nota/perfil/adaptador.
+concreto, assets/nombres/hashes específicos BI-O/GAS-O y cam95 quedan en su
+nota/perfil/adaptador. La conmutación de retrato/nombre **sí es estándar común**,
+no una excepción Gas-O; sus bytes y correcciones concretas no se generalizan.
 La colocación del tanque es propia; el deber de validar al receptor CAUGHT es común.
 No clonar esos valores para el siguiente personaje ni añadir campos de perfil que
 el generador aún no implementa. Requisitos documentados no equivalen a validadores.
