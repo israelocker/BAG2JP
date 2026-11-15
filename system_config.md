@@ -428,6 +428,25 @@ la copia con basename fijo evita introducir niveles de escaping host.
 Goldfish: revisión fría pendiente sobre snapshot separado e inmutable. No es
 aceptación de captura ni permiso de partida. Después de cerrar S4a, continúa S4b.
 
+### S4b: lectores de referencia y run_match_and_attack.py (verificación host)
+
+`run_match_and_attack.py` migra al resolver central: la ruta FFmpeg de captura nativa
+BAG1 antes hardcodeada (`D:\ffmpeg\bin\ffmpeg.exe`) ahora se resuelve desde la clave
+`tools.ffmpeg_native` del registro FIELDS, sin valor de máquina en el TOML común.
+La clave está documentada en `docs/data-dictionary.md` con operación `native-capture`
+y consumidor `bag1native/run_match_and_attack.py` marcado `(pendiente)` porque su
+ejecución requiere el juego real (no autorizado). `bag1_mem.py` y `attack_bot.py`
+conservan sus constantes de RAM nativa; ninguna ruta de máquina se agregó al TOML.
+
+Pruebas de host: `tools/test/test_bag1_native_ffmpeg.py` verifica que `ffmpeg_native()`
+resuelve desde el config, rechaza configuración faltante antes de cualquier efecto,
+y que no queda ningún literal de ruta de máquina en el fuente. 81 pruebas de grabación
+y native OK (18.445s). Preflight S4b-reference-readers pasó sin drift.
+
+No hay cambios de juego, captura, build, deploy, settings, saves, overlay local ni
+herramientas instaladas. `tools.ffmpeg_native` queda `unresolved` hasta que el owner
+configure la ubicación verificada en `config/project.local.toml`.
+
 ## Fuentes vigentes
 
 - `patches/BAG2JP-game.toml`: configuración reproducible del título, no todos los

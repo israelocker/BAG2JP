@@ -17,6 +17,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from bag1_mem import Bag1Mem
 from attack_bot import tap, STATE_ADDR, ATTACKS_ADDR, FLAG_ADDR, BEAT_ADDR
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.workflow.project_config import load_config, require_paths
+
 u = ctypes.windll.user32
 VK_RETURN = 0x0D
 VK_DOWN = 0x28
@@ -29,6 +32,18 @@ VK_A = 0x41   # P1 Triangle (Attack)
 VK_M = 0x4D   # P2 Circle (Confirm)
 VK_N = 0x4E   # P2 Cross (Cancel)
 VK_V = 0x56   # P2 Triangle (Attack)
+
+
+def ffmpeg_native(config=None) -> Path:
+    """Resolve the native BAG1 capture FFmpeg from the shared host config.
+
+    Fails fast with a clear error if the machine location is not configured
+    in config/project.local.toml (never a hardcoded machine path).
+    """
+    if config is None:
+        config = load_config(repo_root=Path(__file__).resolve().parents[2])
+    path, = require_paths(config, ("tools.ffmpeg_native",))
+    return path
 
 
 def get_hwnd(pid: int) -> int:
@@ -135,7 +150,7 @@ def main() -> int:
 
     video_path = args.out_dir / "gaso-native-attack-60fps.mp4"
     ff_cmd = [
-        r"D:\ffmpeg\bin\ffmpeg.exe", "-y", "-loglevel", "error",
+        str(ffmpeg_native()), "-y", "-loglevel", "error",
         "-filter_complex", "ddagrab=output_idx=0:framerate=60:offset_x=360:offset_y=0:video_size=1840x1380,hwdownload,format=bgra,scale=920:690",
         "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-t", str(args.duration),
         str(video_path)

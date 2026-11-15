@@ -61,8 +61,8 @@ def _field_registry() -> Mapping[str, FieldSpec]:
                  "bag1_reference_runtime"):
         fields[f"inputs.{name}"] = FieldSpec("path", "native path", True, "input")
     for name in ("audio_probe", "python_report", "winshot_root", "build_script",
-                  "ffmpeg_review", "ffmpeg_wgc", "ghidra_launcher", "ghidra_project",
-                  "ffprobe_review", "ffmpeg_look", "recording_font"):
+                  "ffmpeg_review", "ffmpeg_wgc", "ffmpeg_native", "ghidra_launcher",
+                  "ghidra_project", "ffprobe_review", "ffmpeg_look", "recording_font"):
         fields[f"tools.{name}"] = FieldSpec("path", "native path", True, "tool")
     # Host capture budgets; native acceptance thresholds never enter this registry.
     for name in ("max_seconds", "poll_seconds", "alive_check_seconds", "window_wait_seconds",
@@ -107,6 +107,8 @@ def _field_registry() -> Mapping[str, FieldSpec]:
         "recording-finalize": ("repo_root", "paths.work_root", "paths.stable_install",
                                "tools.ffmpeg_review", "tools.ffprobe_review", "tools.recording_font"),
         "recording-frames": ("repo_root", "paths.work_root", "paths.stable_install", "tools.ffmpeg_look"),
+        "native-capture": ("repo_root", "paths.work_root", "paths.stable_install",
+                           "tools.ffmpeg_native"),
     }
     for operation, keys in requirements.items():
         for key in keys:

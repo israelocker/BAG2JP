@@ -130,11 +130,15 @@ consumidores aún no leídos ni resolver divergencias en silencio.
 
 ### S4 — Captura y referencias (sub-lotes S/M)
 - Blocked by: S3, S2a de esta familia.
-- S4a: `tools/test/bag2_record.py`; S4b:
-  `tools/bag1native/run_match_and_attack.py` y lectores de referencia.
+- S4a: `tools/test/bag2_record.py` — ENTREGADO (commit 1ed6f81): grabador consume
+  el resolver único, settings inmutables, operaciones condicionales, 73 recording OK.
+- S4b: `tools/bag1native/run_match_and_attack.py` y lectores de referencia — en
+  verificación host: `run_match_and_attack.py` usa `tools.ffmpeg_native` desde el
+  resolver (sin literal de ruta de máquina); `bag1_mem.py`/`attack_bot.py` conservan
+  constantes de RAM nativa; tests de host pasan (mocked, sin juego).
 - Costura: resolución de FFmpeg/backends, overlays, metadatos y carpetas aisladas;
   conservar relojes/audio exacto, propiedad de PID/HWND y orden de cierre.
-- Comando: `py -3.13 -m unittest tools.test.test_bag2_record tools.test.test_recording_window tools.test.test_audio_clock_probe tools.test.test_process_audio_capture`.
+- Comando: `py -3.13 -m unittest tools.test.test_bag2_record tools.test.test_bag2_record_config tools.test.test_recording_window tools.test.test_audio_clock_probe tools.test.test_process_audio_capture tools.test.test_bag1_native_ffmpeg`.
 - Sin nueva grabación del juego ni gates relajados; registrar límites de evidencia.
 
 ### S5 — Importadores y perfiles (sub-lotes S/M)

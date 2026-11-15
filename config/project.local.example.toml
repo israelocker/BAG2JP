@@ -14,6 +14,7 @@ schema_version = 1
 # audio_probe, python_report, winshot_root, build_script, ffmpeg_review, ffmpeg_wgc
 # ghidra_launcher, ghidra_project
 # ffprobe_review, ffmpeg_look, recording_font (recorder requires files when used)
+# ffmpeg_native (native BAG1 capture tool, pending machine location)
 
 [harness]
 # Optional wait-budget overrides after a consumer adopts this section:

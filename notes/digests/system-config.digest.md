@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "b43ffed82ded3fec6116cd972ee350051d24f80c0827962f28a3f6ef57e6fa39"
+source_sha256: "52909b53ca20548d0a4357e8fb7672a060185738dbf8e38ff391cd60ddd61f3c"
 ---
 
 # Configuración: estado mínimo
