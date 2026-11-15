@@ -9,7 +9,6 @@ typedef struct { uint32_t character, offset, bytes; } B1CaughtBankEntry;
 
 #define B1CC_GUEST_BASE 0x9f000000u
 #define B1CC_GUEST_BYTES 0x00100000u
-#define B1CC_BAG1_VERSION 1u
 
 static int b1cc_valid_base(uint32_t base) {
     return base >= B1CC_GUEST_BASE && !(base & 3u) &&

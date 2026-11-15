@@ -2274,3 +2274,25 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Dictamen: útil para confirmar la costura exacta de observación; no demuestra
   recuperación de ownership ni ejecución en partida. Ejecución/preparación y
   ahorro no medidos. Reusar bytes/xrefs históricos mientras no cambien entradas.
+
+## 20261115-ghidra-slot1-native-empty — origen nativo de empty_raw
+
+- Propósito: autenticar la tupla vacía de slot1 para recuperar ownership CAUGHT
+  tras load sin journal ni MODMEM. Uso real: namespace MCP `tools.ghidra` en Code
+  Mode, `get_program_info` primero (JP `SLPM_862.19`, SHA256 ea5a1668…1efe,
+  1324 funciones). Decompilación de 800125fc/8001262c/800126a4/80031d3c/
+  800319fc/800326d4/80032a40, xrefs de los tres helpers y disassembly acotada de
+  80031d3c (60 instrucciones). Sin crear/renombrar funciones ni comentarios.
+- Hallazgo: los constructores del actor fijan +0x10 = DFS de motions y llenan
+  raw[] con FUN_800125fc (`[size][payload]...` hasta size0; raw[i]=&payload_i).
+  raw[0]=M+4, raw[1]=M+8+size0; payload con primer word 0 da length0/meta0.
+  FUN_800326d4 reubica/extiende y comparte tablas con el compañero, sin escribir
+  +0x10 y conservando raw[0]; FUN_800319fc copia el +0x10 del principal;
+  FUN_80032a40 usa otra estructura (+0xac). Evidencia transcrita
+  `_work/gaso/block2/slot1-recovery-ghidra.json`.
+- Validación independiente: harness host con DFS nativo, 25/25 mutantes muertos
+  por aserción y dos revisores Goldfish que contrastaron la derivación.
+- Dictamen: útil; permitió autenticar `empty_raw` por derivación nativa en vez de
+  journal (sin cambio de MODMEM/cookie). No demuestra comportamiento en partida.
+  Tiempo ~10 min de consultas; ahorro no medido. Respuestas MCP crudas no
+  guardadas: se transcribieron las líneas relevantes.

@@ -2,14 +2,64 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4: observador init8002BA18 invalida capturas sin alterar RAM/CPU/tuplas;35tests runtime y19/19mutantes,2Goldfish favorables. Suite479tests con1fallo/28errores mismos nombres; guard0 sin despliegue. Ownership savestate pendiente."
+summary: "Bloque4: recuperación de ownership slot1 tras load por derivación nativa del vacío (DFS actor+0x10), solo lectura y solo guard1; 38 tests runtime, 25/25 mutantes, 2 Goldfish favorables. Suite 482 tests con los mismos 29 FAIL/ERROR; guard0 sin despliegue ni partida."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
-updated: "2026-11-14"
+updated: "2026-11-15"
 doc_kind: evidence
 ---
 
 # Gas-O — ledger canónico
+
+## Bloque 4: recuperación de ownership slot1 tras load (2026-11-15, candidato host guard0)
+
+- Base `2ebb765`. Preflight `20261115T032236121663Z-gaso-slot1-recovery` PASS.
+  Sin copia al build, compilación Windows, despliegue ni partida. La fuente
+  canónica sigue con `GASO_CAUGHT_CLIP_PUBLISHED=0`.
+- Ghidra MCP (`20261115-ghidra-slot1-native-empty`,
+  `_work/gaso/block2/slot1-recovery-ghidra.json`): `FUN_80031d3c`, `800319fc` y
+  `800326d4` dejan en actor+0x10 el DFS de motions M y llenan raw[] con
+  `FUN_800125fc` (raw[i] = &payload_i). Por tanto raw[0] = M+4 y
+  raw[1] = M+8+size0. Un payload con primer word 0 da length 0 y meta 0.
+  `800326d4` no escribe +0x10, conserva raw[0] y comparte tablas con el compañero.
+- Cambio: `gaso_caught_native_empty` deriva el vacío nativo (alineación, rangos,
+  raw[0] == M+4). `gaso_caught_bind` lo usa tanto en publicación como en
+  recuperación: un word cero cualquiera ya no cuenta como vacío.
+  `gaso_caught_recover_slot1` corre solo en savestate y solo con guard1, en modo
+  solo lectura. Reclama un lado únicamente si raw[1] es la dirección exacta del
+  clip del bank para su personaje y si VERIFY pasa. Si no, deja una línea
+  «slot1 recovery refused» («native tables» o «contract»). La restauración la
+  hace la retirada existente. El reset no recupera nada. `B1CC_BAG1_VERSION`
+  pasa a `bag2jp_caught_bank.h`. No hay journal ni cambio de MODMEM/cookie.
+- Tests: escenario 10 reescrito (el reset rechaza; el load recupera y reutiliza),
+  27 (recuperación y restauración, también con los dos lados en espejo Gas-O),
+  28 (20 variantes fail-closed) y 29 (5 variantes: la publicación exige el vacío
+  nativo). El harness exige lecturas alineadas, y `enter()` exige que el otro
+  lado no cambie salvo una restauración a vacío. RED: 4 fallos esperados en
+  38 tests. Runtime 38 OK; grupo específico 91 OK en 46.1 s.
+- Mutación `_work/gaso/block2/mutate_slot1_recovery.py`: v1 16/21 (compilaciones
+  inválidas que no cuentan como kill), v2 21/21 y v3 **25/25 kills por aserción
+  runtime**. Informes `slot1-recovery-mutations{-v1,-v2,}.json`.
+- Goldfish: spec `_work/goldfish/spec-block4-slot1-recovery.md`, revisores
+  `ses_e22b7b651ffecsXPNVW6AAQd9G` y `ses_e22b7a2f2ffe7K4Y8KgUl7PFOT`. Ambos dieron
+  SIN HALLAZGOS BLOQUEANTES, también en la re-verificación. Hallazgos aplicados,
+  refutados y aceptados en `_work/goldfish/slot1-recovery-verdict.json`.
+  Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+- Suite global del candidato revisado: 482 tests en 150.4 s, 1 fallo/28 errores,
+  exactamente los mismos 29 nombres que `2ebb765` (ni nuevos ni resueltos), **no
+  verde global**. `slot1-recovery-reviewed-{full-suite.log,suite-comparison.json}`
+  ligan los hashes (fuente `dc9eb3f61c79`, harness `bb405ec7dd8f`). Después solo
+  se corrigió un comentario del harness (escenario 29, variante 4; nuevo SHA
+  `1e773c9ab0dc`): runtime 38 OK en 13.1 s (`slot1-recovery-final-runtime.log`).
+- **Límites:** sin partida ni guard1 en juego. La derivación confía en el formato
+  DFS leído en Ghidra. Si el bank no está listo o está en otra base, la tupla
+  queda sin recuperar y sin log. Las lecturas previas fuera de este cambio siguen
+  sin guarda de alineación. Un kill de mutante cuenta cualquier abort del
+  harness, incluidas sus aserciones de rango. La coexistencia con home solo está
+  comprobada por inspección.
+- Siguiente: proponer al owner un candidato guard1 con build, despliegue en
+  experimental y prueba grabada de load con CAUGHT publicado (requiere su
+  autorización), o seguir con el Bloque 5 interno.
 
 ## Bloque 4: observador de reinicialización nativa (2026-11-14, candidato host guard0)
 

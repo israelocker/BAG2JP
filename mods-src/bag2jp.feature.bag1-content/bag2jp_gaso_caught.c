@@ -38,8 +38,9 @@
  *
  * Still required before the source default may become 1: authenticated
  * recipient/table generation (P2b), in-game evidence of the retirement and
- * owner acceptance. Known limit: reset/savestate forget a published tuple
- * without restoring it; a later publication on those tables fails closed.
+ * owner acceptance. A load reclaims a published tuple read-only against the
+ * native empty tuple (gaso_caught_recover_slot1); a reset does not, and a
+ * later publication on those tables fails closed.
  * Do not allocate placeholder clips or publish slot1 without a captured record.
  * See notes/gaso-import.md, caught-entry-recovery-20261111.
  */
@@ -95,6 +96,7 @@
 #define GASO_CAUGHT_REG_S2 18
 #define GASO_CAUGHT_INIT_VECTOR 16u          /* a2 = sp+16 before native JAL. */
 #define GASO_CAUGHT_INIT_STACK_BYTES 28u     /* Three-word home vector at sp+16. */
+#define GASO_CAUGHT_MOTIONS 0x10u            /* actor's motion DFS, source of raw[] */
 
 int bag2jp_bag1_has_version(int chr);
 int bag2jp_bag1_get_version(int chr, int side);
@@ -524,27 +526,53 @@ static void gaso_caught_entry_cb(struct CPUState *cpu, uint32_t address) {
     }
 }
 
-/* Binding facts from the captured recipient and its live actor. empty_raw is
- * the slot's original raw word; the contract then requires the original tuple
- * (empty_raw, 0, 0) and a zero word at empty_raw before any publication.
- * Returns 0 when the actor or its raw table cannot be read. */
-static int gaso_caught_build_binding(uint32_t side, const B1CaughtBankClip *clip,
-                                     B1CaughtBinding *b) {
-    const uint32_t actor = captured[side].actor;
-    if (!guest_range_ok(actor, B1CB_ACTOR_BYTES, 0)) return 0;
+/* Slot1's native empty raw word, derived like the table builders (FUN_80031d3c,
+ * 800319fc and 800326d4 via FUN_800125fc, read 2026-11-15): the motion DFS at
+ * actor+0x10 is [size][payload]... ending in size 0, and raw[i] = &payload i.
+ * Its payload's first word 0 makes FUN_8001262c/800126a4 store length 0 and
+ * metadata 0. raw[0] must still match. The contract checks the zero word.
+ * Never inferred from a zero word or from host state older than a load. */
+static int gaso_caught_native_empty(uint32_t actor, uint32_t raw_table, uint32_t *empty) {
+    const uint32_t ram_bytes = memory_get_ram_bytes();
+    const uint32_t motions = guest_read_word(actor + GASO_CAUGHT_MOTIONS);
+    if ((motions & 3u) || !guest_range_ok(motions, 4u, 0)) return 0;
+    const uint32_t size0 = guest_read_word(motions);
+    if (!size0 || (size0 & 3u) || size0 >= ram_bytes ||
+        !guest_range_ok(motions, 8u + size0, 0) ||
+        guest_read_word(raw_table) != motions + 4u) return 0;
+    const uint32_t entry1 = motions + 4u + size0;
+    const uint32_t size1 = guest_read_word(entry1);
+    if (size1 < 4u || (size1 & 3u) || !guest_range_ok(entry1 + 4u, size1, 0)) return 0;
+    *empty = entry1 + 4u;
+    return 1;
+}
+
+/* Binding facts from a main actor and its live tables. The contract then
+ * requires the native empty tuple (empty_raw, 0, 0) before any publication.
+ * Returns 0 when the actor or its tables cannot be read or derived. */
+static int gaso_caught_bind(uint32_t actor, uint32_t character, uint32_t side,
+                            const B1CaughtBankClip *clip, B1CaughtBinding *b) {
+    if ((actor & 3u) || !guest_range_ok(actor, B1CB_ACTOR_BYTES, 0)) return 0;
     *b = (B1CaughtBinding){0};
     b->actor = actor;
-    b->character = captured[side].character;
-    b->side = captured[side].side;
+    b->character = character;
+    b->side = side;
     b->count = guest_read_word(actor + B1CB_COUNT);
     b->raw_table = guest_read_word(actor + B1CB_RAW);
     b->length_table = guest_read_word(actor + B1CB_LENGTH);
     b->metadata_table = guest_read_word(actor + B1CB_META);
-    if (b->count <= B1CB_SLOT || !guest_range_ok(b->raw_table + 4u * B1CB_SLOT, 4u, 0)) return 0;
-    b->empty_raw = guest_read_word(b->raw_table + 4u * B1CB_SLOT);
+    if (b->count <= B1CB_SLOT || (b->raw_table & 3u) ||
+        !guest_range_ok(b->raw_table, 4u * (B1CB_SLOT + 1u), 0) ||
+        !gaso_caught_native_empty(actor, b->raw_table, &b->empty_raw)) return 0;
     b->clip = clip->clip;
     b->clip_bytes = clip->clip_bytes;
     return 1;
+}
+
+static int gaso_caught_build_binding(uint32_t side, const B1CaughtBankClip *clip,
+                                     B1CaughtBinding *b) {
+    return gaso_caught_bind(captured[side].actor, captured[side].character,
+                            captured[side].side, clip, b);
 }
 
 /* ---- Host copy of the contract's main-RAM spans ---- */
@@ -779,22 +807,69 @@ static void gaso_caught_forget(void) {
     }
 }
 
-/* Known limit: a tuple published at reset/load time stays in guest RAM. It
- * points into the never-freed bank, and a later publication on the same
- * tables fails closed (the contract needs a zero word at the raw slot). */
+/* Known limit: a reset does not recover a tuple published before it (a real
+ * reset rebuilds the tables). If one survives, a later publication on the
+ * same tables fails closed: slot1 no longer holds the native empty tuple. */
 static void gaso_caught_session_reset(void) {
     gaso_caught_forget();
+}
+
+/* The binding left behind is unused: the side stays unpublished. */
+static void gaso_caught_recovery_refused(uint32_t side, uint32_t actor, const char *reason) {
+    b1v_log("gaso_caught: slot1 recovery refused side=%u actor=%08x (%s)",
+            (unsigned)side + 1u, (unsigned)actor, reason);
+}
+
+/* Reclaim a tuple published before the loaded snapshot was taken. Read-only:
+ * only this bank's exact clip in a main actor's slot1 is claimed, and only
+ * when the contract VERIFY holds against the native empty tuple. Anything
+ * else is not ours and stays untouched. The retirement on later entry calls
+ * restores it, so a load never writes guest RAM. Known limit: with the bank
+ * not ready or at another base (load before activation, other process), a
+ * tuple of ours is not recognised and stays unrecovered without a log. */
+static void gaso_caught_recover_slot1(void) {
+    for (uint32_t side = 0; side < GASO_CAUGHT_SIDES; ++side) {
+        const uint32_t actor = guest_read_word(GASO_CS_ACTORS + side * GASO_CS_MAIN_STRIDE);
+        if ((actor & 3u) || !guest_range_ok(actor, B1CB_ACTOR_BYTES, 0) ||
+            guest_read_byte(actor + GASO_CS_SIDE) != side) continue;
+        const uint32_t character = guest_read_byte(actor + GASO_CS_CHARACTER);
+        const uint32_t raw_table = guest_read_word(actor + B1CB_RAW);
+        B1CaughtBankClip clip = {0};
+        if ((raw_table & 3u) || !guest_range_ok(raw_table + 4u * B1CB_SLOT, 4u, 0) ||
+            !b1cc_lookup(&bank, character, B1CC_BAG1_VERSION, &clip) ||
+            guest_read_word(raw_table + 4u * B1CB_SLOT) != clip.clip) continue;
+        if (!gaso_caught_bind(actor, character, side, &clip, &gaso_caught_binding[side])) {
+            gaso_caught_recovery_refused(side, actor, "native tables");
+            continue;
+        }
+        gaso_caught_clip[side] = clip;
+        if (!gaso_caught_transact(side, GASO_CAUGHT_VERIFY)) {
+            gaso_caught_recovery_refused(side, actor, "contract");
+            continue;
+        }
+        /* VERIFY matched the metadata word; retirement observes slot1 entry and
+         * waits GASO_CAUGHT_UNSTARTED_TICKS like a fresh publication. */
+        gaso_caught_info[side] = guest_read_word(gaso_caught_binding[side].metadata_table +
+                                                 4u * B1CB_SLOT);
+        gaso_caught_published[side] = 1;
+        gaso_caught_publish_tick[side] = gaso_caught_ticks;
+        psx_mod_counter_add("gaso_caught.slot1_recovered", 1u);
+        b1v_log("gaso_caught: slot1 recovered side=%u actor=%08x clip=%08x after load",
+                (unsigned)side + 1u, (unsigned)actor, (unsigned)clip.clip);
+    }
 }
 
 /* Savestate runs after successful guest-state restore, before the restored PC
  * resumes. Rebind host hooks here; do not advance guest gameplay. Clearing
  * captured[] keeps an obsolete record from surviving a load: actor buffers are
  * fixed RAM and controller+0x18 is reset to -1 at every phase-3 pair setup, so
- * a pre-load capture no longer matches any live actor. No guest writes, no
- * allocation, no publication.
+ * a pre-load capture no longer matches any live actor. The published build
+ * then reclaims a loaded tuple read-only. No guest writes, no allocation, no
+ * publication; the shipped default does not read guest RAM here.
  */
 static void gaso_caught_savestate(void) {
     gaso_caught_forget();
+    if (GASO_CAUGHT_CLIP_PUBLISHED) gaso_caught_recover_slot1();
 }
 
 /* ---- Activation: prepare the clip bank once, never repair it ---- */

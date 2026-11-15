@@ -2,19 +2,31 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4: observador init8002BA18 host guard0,35tests runtime PASS/19mutantes y2Goldfish favorables. Suite479tests con1fallo/28errores mismos nombres, sin despliegue; ownership savestate sigue pendiente."
+summary: "Bloque4: recuperación slot1 tras load por vacío nativo derivado (DFS actor+0x10), solo lectura/guard1; 38 tests runtime, 25/25 mutantes, 2 Goldfish favorables. Suite 482 con mismos 29 FAIL/ERROR; sin despliegue ni partida."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
-updated: "2026-11-14"
+updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "44718101cbf852f7be92380f063d3eb9d2a7c5ee75b3d74ef802931645d6cb08"
+source_sha256: "535ac39ce2b0196fb89192764c31280b720037921a58f409b27ec0871cfd6681"
 ---
 
 # Gas-O: lectura vigente
 
-Estado más reciente: sección «Bloque 4: observador de reinicialización nativa».
-Candidato solo host guard0, fuente44a91bf8: observa8002BA18/word0c00b617 con ABI
+Estado más reciente: sección «Bloque 4: recuperación de ownership slot1 tras load».
+Candidato host guard0 sobre 2ebb765. Ghidra: los constructores dejan actor+0x10 =
+DFS de motions M y raw[i]=&payload_i (FUN_800125fc), luego raw[0]=M+4 y vacío
+raw[1]=M+8+size0. `gaso_caught_native_empty` lo deriva con alineación/rangos y lo
+usan publicación y recuperación (un word cero cualquiera ya no vale). En savestate,
+solo con guard1, se reclama un lado si raw[1]==clip exacto del bank y VERIFY pasa;
+si no, log «recovery refused». Solo lectura: restaura la retirada existente. Reset
+no recupera. Sin journal ni cambio MODMEM. Runtime 38 OK, grupo 91 OK 46.1 s,
+mutación 25/25 kills por aserción, Goldfish 2× SIN HALLAZGOS BLOQUEANTES. Suite 482
+tests, mismos 29 FAIL/ERROR (no verde global). Límites: sin partida, bank no listo/
+otra base sin log, lecturas previas sin alinear. Siguiente: candidato guard1 con
+build/deploy/prueba grabada (autorización del owner) o Bloque 5 interno.
+
+Checkpoint anterior 2ebb765 (observador de reinicialización nativa), fuente44a91bf8: observa8002BA18/word0c00b617 con ABI
 principal/actor/stack autenticado; invalida ambas capturas aunque direcciones y
 bytes sean idénticos. Serial host64bit cambia en init/reset/load; no es generación
 de contenido autenticada ni reloj de frames. No escribe RAM/CPU/tuplas/asignaciones,

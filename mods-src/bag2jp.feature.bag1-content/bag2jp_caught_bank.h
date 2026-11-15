@@ -12,6 +12,8 @@
 #define BAG2JP_CAUGHT_BANK_H
 #include <stdint.h>
 
+#define B1CC_BAG1_VERSION 1u   /* the only version with clips */
+
 typedef struct {
     uint32_t guest_base;
     int attempted, ready;

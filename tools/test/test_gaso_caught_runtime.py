@@ -155,6 +155,18 @@ class GasoCaughtRuntimeTest(unittest.TestCase):
         """Retail, expanded and scratchpad stack spans revoke both pending sides."""
         self.run_scenario(26)
 
+    def test_savestate_recovers_published_slot1_from_native_empty(self) -> None:
+        """A load re-derives ownership read-only; retirement restores the DFS empty."""
+        self.run_scenario(27)
+
+    def test_savestate_recovery_fails_closed_without_writes(self) -> None:
+        """Foreign, tampered or non-native tuples are never claimed or restored."""
+        self.run_scenario(28)
+
+    def test_publication_requires_native_empty_slot(self) -> None:
+        """A pointer to some zero word is not the native empty tuple."""
+        self.run_scenario(29)
+
 
 MANIFEST = ROOT / 'mods-src/bag2jp.feature.bag1-content/1.0.0/manifest.toml'
 

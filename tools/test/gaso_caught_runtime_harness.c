@@ -65,6 +65,9 @@
 #define SLOTS 100u
 #define TABLES 0x80110000u                 /* raw, length, metadata per side */
 #define EMPTY_WORDS 0x80118000u            /* slot1's original raw target */
+#define MOTIONS 0x10u                      /* actor's motion DFS (FUN_80031d3c) */
+#define MOTION0_BYTES 8u                   /* entry0 payload before entry1's size */
+#define MOTION1_BYTES 4u                   /* entry1 payload: the empty zero word */
 #define CLIP_FRAMES 2u
 
 /* Arena already used by other plugins, so the bank never starts at 0. */
@@ -92,9 +95,9 @@ static unsigned capture_stored, capture_rejected, entry_taken;
 static unsigned lookup_ready, lookup_rejected;
 static unsigned capture_stale;
 static unsigned capture_generations;
-static unsigned slot1_published, slot1_restored, slot1_dropped;
+static unsigned slot1_published, slot1_restored, slot1_dropped, slot1_recovered;
 static unsigned log_lines, log_entered, log_restore_refused, log_publish_refused, log_lost;
-static unsigned log_reused, log_stale;
+static unsigned log_reused, log_stale, log_recovered, log_recovery_refused;
 static char last_log[256];
 static int fail_allocation;
 static uint32_t expansion1_used = PRIOR_ARENA_BYTES;
@@ -190,14 +193,17 @@ static int is_slot_state(uint32_t address) {
     }
     return 0;
 }
+/* Guest loads are aligned: the plugin must reject odd pointers before reading. */
 uint32_t psx_mod_read_word(uint32_t address) {
-    const uint8_t *p = guest_bytes(address & ~3u, 4u);
+    assert(address % 4u == 0);
+    const uint8_t *p = guest_bytes(address, 4u);
     ++guest_accesses;
     if (is_slot_state(address)) ++slot_state_reads;
     return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 | (uint32_t)p[3] << 24;
 }
 uint16_t psx_mod_read_half(uint32_t address) {
-    const uint8_t *p = guest_bytes(address & ~1u, 2u);
+    assert(address % 2u == 0);
+    const uint8_t *p = guest_bytes(address, 2u);
     ++guest_accesses;
     if (is_slot_state(address)) ++slot_state_reads;
     return (uint16_t)(p[0] | p[1] << 8);
@@ -255,6 +261,7 @@ void psx_mod_counter_add(const char *name, uint32_t delta) {
     else if (strcmp(name, "gaso_caught.lookup_rejected") == 0) ++lookup_rejected;
     else if (strcmp(name, "gaso_caught.slot1_published") == 0) ++slot1_published;
     else if (strcmp(name, "gaso_caught.slot1_restored") == 0) ++slot1_restored;
+    else if (strcmp(name, "gaso_caught.slot1_recovered") == 0) ++slot1_recovered;
     else if (strcmp(name, "gaso_caught.slot1_lost") == 0 ||
              strcmp(name, "gaso_caught.slot1_abandoned") == 0) ++slot1_dropped;
     else assert(!"unexpected counter");
@@ -273,6 +280,8 @@ void b1v_log(const char *fmt, ...) {
     if (strstr(last_log, "slot1 lost") || strstr(last_log, "restore abandoned")) ++log_lost;
     if (strstr(last_log, "slot1 reused")) ++log_reused;
     if (strstr(last_log, "capture stale")) ++log_stale;
+    if (strstr(last_log, "slot1 recovered")) ++log_recovered;
+    if (strstr(last_log, "slot1 recovery refused")) ++log_recovery_refused;
 }
 int bag2jp_bag1_has_version(int chr) {
     return has_version && (chr == GASO || chr == HEAT || chr == STRIKE);
@@ -305,7 +314,11 @@ static uint32_t ram_half(uint32_t address) {
 static uint32_t table_of(uint32_t side, uint32_t field) {
     return TABLES + 0x1000u * (3u * side + (field - RAW) / 4u);
 }
-static uint32_t empty_of(uint32_t side) { return EMPTY_WORDS + 0x10u * side; }
+static uint32_t empty_of(uint32_t side) { return EMPTY_WORDS + 0x40u * side; }
+/* Native DFS [size][payload]...: raw[0] = motions+4, raw[1] = empty word. */
+static uint32_t motions_of(uint32_t side) {
+    return empty_of(side) - 8u - MOTION0_BYTES;
+}
 
 /* Slot1 of the recipient side: raw word, length half and metadata word. */
 typedef struct { uint32_t raw, length, meta; } Slot1;
@@ -356,6 +369,10 @@ static void setup_ram(int side0_character, int side1_character) {
         put_word(actor_of[side] + COUNT, SLOTS);
         for (uint32_t field = RAW; field <= META; field += 4u)
             put_word(actor_of[side] + field, table_of(side, field));
+        put_word(actor_of[side] + MOTIONS, motions_of(side));
+        put_word(motions_of(side), MOTION0_BYTES);
+        put_word(motions_of(side) + 4u + MOTION0_BYTES, MOTION1_BYTES);
+        put_word(table_of(side, RAW), motions_of(side) + 4u);
         put_word(table_of(side, RAW) + 4u, empty_of(side));
     }
     ram[(TABLE + 2u * HEAT) & RAM_MASK] = REQUEST;
@@ -434,7 +451,9 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
     const unsigned publish_refused = log_publish_refused, dropped = slot1_dropped;
     const unsigned reused_before = log_reused, stale_before = log_stale;
     const uint32_t effect_before = ram_word(actor_of[controller_side] + SECONDARY_EFFECT);
+    const Slot1 other_before = slot1_of(controller_side ^ 1u);
     entry(&cpu, ENTRY);
+    const Slot1 other_after = slot1_of(controller_side ^ 1u);
     assert(slot1_dropped - dropped == log_lost - lost);  /* one counter per lost/abandoned line */
     const unsigned took = entry_taken == taken + 1u ? 1u : 0u;
     const unsigned published = slot1_published - pub_before;
@@ -465,7 +484,10 @@ static int enter(uint32_t controller_side, uint32_t mode, uint32_t slot) {
         assert(strstr(last_log, "slot1 restored") != NULL);
     if (memcmp(&cpu, &before, sizeof cpu) == 0) return 0;
     assert(took && GASO_CAUGHT_CLIP_PUBLISHED);
-    assert(slot1_empty(controller_side ^ 1u));       /* the other side is never written */
+    /* The take never writes the other side; only its own retirement may empty it. */
+    assert((other_before.raw == other_after.raw && other_before.length == other_after.length &&
+            other_before.meta == other_after.meta) ||
+           (restored && slot1_empty(controller_side ^ 1u)));
     assert(slot1_holds_clip(controller_side, ram[(actor_of[controller_side] + 4u) & RAM_MASK]));
     before.gpr[REG_A2] = 1;
     assert(memcmp(&cpu, &before, sizeof cpu) == 0);
@@ -868,9 +890,18 @@ static void reset_and_savestate_invalidate_captured(void) {
     assert(!enter(1, 1, HIT_SLOT));   /* no take after reset */
     assert(entry_taken == 1);
 
+    /* A reset alone recovers nothing: the tuple published before it stays in
+     * RAM, so a new take on the same tables is refused and leaves a2. */
+    assert(publish(0, 1));
+    const unsigned refused = log_publish_refused;
+    assert(!enter(1, 1, HIT_SLOT) && entry_taken == 2);
+    assert(log_publish_refused == refused + (GASO_CAUGHT_CLIP_PUBLISHED ? 1u : 0u));
+    assert(GASO_CAUGHT_CLIP_PUBLISHED ? slot1_holds_clip(1, HEAT) : slot1_empty(1));
+
     /* Re-store for the savestate test. */
     assert(publish(0, 1));
     assert(recorded());
+    const unsigned recovered = slot1_recovered;
     savestate_cb();
     assert(bag2jp_gaso_caught_epoch() == epoch + 2u);
     assert(bag2jp_gaso_caught_epoch_hits(1u) == bag2jp_gaso_caught_hits(1u));
@@ -878,14 +909,13 @@ static void reset_and_savestate_invalidate_captured(void) {
            allocations == allocs);
     assert(!recorded());   /* savestate invalidated */
     assert(!enter(1, 1, HIT_SLOT));
-    assert(entry_taken == 1);
+    assert(entry_taken == 2);
 
-    /* Known limit: the tuple published before the reset stays in RAM, so a
-     * new take on the same tables is refused by the contract and leaves a2. */
+    /* The load recovered the orphaned tuple (scenario 27), so a new take
+     * reuses it after VERIFY instead of being refused. */
+    assert(slot1_recovered == recovered + (GASO_CAUGHT_CLIP_PUBLISHED ? 1u : 0u));
     assert(publish(0, 1));
-    const unsigned refused = log_publish_refused;
-    assert(!enter(1, 1, HIT_SLOT) && entry_taken == 2);
-    assert(log_publish_refused == refused + (GASO_CAUGHT_CLIP_PUBLISHED ? 1u : 0u));
+    assert(enter(1, 1, HIT_SLOT) == expect_redirect(1) && entry_taken == 3);
     assert(GASO_CAUGHT_CLIP_PUBLISHED ? slot1_holds_clip(1, HEAT) : slot1_empty(1));
 
     assert(guest_writes == writes + (GASO_CAUGHT_CLIP_PUBLISHED ? 3u : 0u) &&
@@ -1639,6 +1669,167 @@ static void init_stack_geometry_and_two_pending_sides(void) {
     }
 }
 
+/* Load a savestate: never writes or allocates; one line per recovery or
+ * refusal. Returns the recovered publications. */
+static unsigned load(void) {
+    const unsigned writes = guest_writes, allocs = allocations, lines = log_lines;
+    const unsigned recovered = slot1_recovered, logged = log_recovered;
+    const unsigned refused = log_recovery_refused;
+    savestate_cb();
+    assert(guest_writes == writes && allocations == allocs);
+    assert(log_recovered - logged == slot1_recovered - recovered);
+    assert(log_lines == lines + (log_recovered - logged) + (log_recovery_refused - refused));
+    if (!GASO_CAUGHT_CLIP_PUBLISHED) assert(log_lines == lines && slot1_recovered == recovered);
+    return slot1_recovered - recovered;
+}
+
+/* A savestate taken while slot1 held the clip forgets the host binding. The
+ * load re-derives ownership read-only: the slot must hold this bank's exact
+ * clip and pass the contract against the native empty tuple, which FUN_8003
+ * 1d3c/800319fc/800326d4 derive from the motion DFS (raw[1] = motions+8+size0).
+ * The existing retirement then restores it. The shipped default never reads. */
+static void savestate_recovers_published_slot1(void) {
+    activate();
+    for (unsigned entered = 0; entered < 2; ++entered) {
+        assert(take_on_fresh_session() == GASO_CAUGHT_CLIP_PUBLISHED);
+        if (entered) set_slot_state(1, 1, 1);
+        const Slot1 before = slot1_of(1);
+        const unsigned accesses = guest_accesses;
+        assert(load() == GASO_CAUGHT_CLIP_PUBLISHED);
+        const Slot1 after = slot1_of(1);
+        assert(before.raw == after.raw && before.length == after.length && before.meta == after.meta);
+        assert(slot1_empty(0));
+        if (!GASO_CAUGHT_CLIP_PUBLISHED) {
+            assert(guest_accesses == accesses && slot1_empty(1));
+            continue;
+        }
+        assert(strstr(last_log, "slot1 recovered side=2"));
+        assert(bag2jp_gaso_caught_owns_slot1(1, actor_of[1]));
+        const unsigned writes = guest_writes, restored = slot1_restored;
+        if (entered) {
+            tick(2u * UNSTARTED_CALLS);               /* still decoding slot1 */
+            assert(guest_writes == writes && slot1_holds_clip(1, HEAT));
+            set_slot_state(1, 5, 5);
+            tick(1);
+        } else {
+            tick(UNSTARTED_CALLS - 1u);               /* a fresh publication's wait */
+            assert(guest_writes == writes && slot1_holds_clip(1, HEAT));
+            tick(1);
+        }
+        assert(slot1_restored == restored + 1u && guest_writes == writes + 3u);
+        assert(slot1_empty(1) && !bag2jp_gaso_caught_owns_slot1(1, actor_of[1]));
+    }
+    /* Both sides published (Gas-O mirror match): each is reclaimed and restored. */
+    memset(versions, 0, sizeof versions);
+    versions[GASO][0] = versions[GASO][1] = 1;
+    setup_ram(GASO, GASO);
+    assert(publish(0, 1) && enter(1, 1, HIT_SLOT) == expect_redirect(1));
+    assert(publish(1, 0) && enter(0, 1, HIT_SLOT) == expect_redirect(1));
+    assert(load() == (GASO_CAUGHT_CLIP_PUBLISHED ? 2u : 0u));
+    if (GASO_CAUGHT_CLIP_PUBLISHED) {
+        assert(bag2jp_gaso_caught_owns_slot1(0, actor_of[0]) &&
+               bag2jp_gaso_caught_owns_slot1(1, actor_of[1]));
+        const unsigned writes = guest_writes, restored = slot1_restored;
+        tick(UNSTARTED_CALLS);
+        assert(slot1_restored == restored + 2u && guest_writes == writes + 6u);
+    }
+    assert(slot1_empty(0) && slot1_empty(1));
+
+    /* Nothing published: the load recovers nothing on either side. */
+    setup_ram(GASO, HEAT);
+    assert(load() == 0 && slot1_empty(0) && slot1_empty(1));
+}
+
+/* Recovery fails closed: anything but this bank's exact clip is not claimed,
+ * and a claimed tuple whose native empty or contract does not hold is
+ * refused. Either way RAM stays untouched and nothing is restored later. */
+#define COMPANION 0x80104000u
+static void savestate_recovery_fails_closed(void) {
+    activate();
+    for (unsigned variant = 0; variant < 20; ++variant) {
+        assert(take_on_fresh_session() == GASO_CAUGHT_CLIP_PUBLISHED);
+        const uint32_t actor = actor_of[1], motions = motions_of(1);
+        const uint32_t clip = slot1_of(1).raw;
+        int claimed = 1;
+        switch (variant) {
+        case 0: put_word(table_of(1, RAW) + 4u, clip + 4u); claimed = 0; break;
+        case 1: ram[(table_of(1, LENGTH) + 2u) & RAM_MASK] = 3u; break;
+        case 2: put_word(table_of(1, META) + 4u, 0); break;
+        case 3: put_word(actor + MOTIONS, motions_of(0)); break;   /* valid DFS, raw[0] differs */
+        case 4:                                       /* zero size, entry1 still plausible */
+            put_word(motions, 0);
+            put_word(motions + 4u, MOTION1_BYTES);
+            break;
+        case 5: put_word(motions, MOTION0_BYTES + 1u); break;
+        case 6: put_word(motions + 4u + MOTION0_BYTES, 0); break;
+        case 7: put_word(empty_of(1), 7u); break;
+        case 8: put_byte(actor + 5u, 0); claimed = 0; break;
+        case 9:                                       /* companion shares tables */
+            put_word(ACTORS + 4u, COMPANION);
+            put_word(COMPANION + COUNT, SLOTS);
+            for (uint32_t field = RAW; field <= META; field += 4u)
+                put_word(COMPANION + field, table_of(1, field));
+            break;
+        case 10: put_word(actor + MOTIONS, 0x7ffffff0u); break;
+        case 11: put_word(motions, 0x7ffffff0u); break;
+        case 12: put_byte(actor + 4u, STRIKE); claimed = 0; break;
+        case 13:                                      /* size wraps below RAM */
+            put_word(actor + MOTIONS, RAM_BASE);
+            put_word(RAM_BASE, 0xfffffff8u);
+            put_word(table_of(1, RAW), RAM_BASE + 4u);
+            break;
+        case 14: put_word(actor + RAW, table_of(1, RAW) + 2u); claimed = 0; break;
+        case 15: put_word(actor + MOTIONS, motions + 2u); break;
+        case 16: put_word(motions + 4u + MOTION0_BYTES, MOTION1_BYTES + 1u); break;
+        case 17: put_word(motions + 4u + MOTION0_BYTES, 0x7ffffff0u); break;
+        case 18:                                      /* legal size0, entry1 past RAM end */
+            put_word(actor + MOTIONS, RAM_BASE + live_ram - 8u);
+            put_word(RAM_BASE + live_ram - 8u, MOTION0_BYTES);
+            put_word(table_of(1, RAW), RAM_BASE + live_ram - 4u);
+            break;
+        default:                                      /* odd actor with the right side */
+            put_word(ACTORS + 8u, actor + 2u);
+            put_byte(actor + 2u + 5u, 1u);
+            claimed = 0;
+            break;
+        }
+        const Slot1 before = slot1_of(1);
+        const unsigned refused = log_recovery_refused;
+        assert(load() == 0);
+        assert(log_recovery_refused == refused + (GASO_CAUGHT_CLIP_PUBLISHED && claimed ? 1u : 0u));
+        if (GASO_CAUGHT_CLIP_PUBLISHED && claimed) assert(strstr(last_log, "recovery refused side=2"));
+        assert(!bag2jp_gaso_caught_owns_slot1(1, actor));
+        const unsigned writes = guest_writes, restored = slot1_restored;
+        tick(2u * UNSTARTED_CALLS);
+        const Slot1 after = slot1_of(1);
+        assert(guest_writes == writes && slot1_restored == restored);
+        assert(before.raw == after.raw && before.length == after.length && before.meta == after.meta);
+        put_word(ACTORS + 4u, 0);
+    }
+}
+
+/* Publication never infers the empty tuple from a zero word: slot1 must hold
+ * the native empty derived from the motion DFS, and raw[0] must match it. */
+static void publication_requires_native_empty_slot(void) {
+    activate();
+    for (unsigned variant = 0; variant < 5; ++variant) {
+        memset(versions, 0, sizeof versions);
+        versions[GASO][0] = versions[HEAT][1] = 1;
+        setup_ram(GASO, HEAT);
+        const uint32_t zero_word = empty_of(1) + 0x20u;      /* zero, not native */
+        if (variant == 0) put_word(table_of(1, RAW) + 4u, zero_word);
+        else if (variant == 1) put_word(table_of(1, RAW), 0);
+        else if (variant == 2) put_word(actor_of[1] + MOTIONS, motions_of(0));
+        else if (variant == 3) put_word(actor_of[1] + RAW, table_of(1, RAW) + 2u);
+        else put_word(actor_of[1] + RAW, RAM_BASE - 4u);     /* raw table pointer below RAM */
+        assert(publish(0, 1) && recorded());
+        const unsigned writes = guest_writes, refused = log_publish_refused;
+        assert(!enter(1, 1, HIT_SLOT) && entry_taken > 0);
+        assert(guest_writes == writes);
+        assert(log_publish_refused == refused + (GASO_CAUGHT_CLIP_PUBLISHED ? 1u : 0u));
+    }
+}
+
 int main(int argc, char **argv) {
     assert(argc == 2 && entry && capture_cb);
     switch (atoi(argv[1])) {
@@ -1722,6 +1913,15 @@ int main(int argc, char **argv) {
         break;
     case 26:
         init_stack_geometry_and_two_pending_sides();
+        break;
+    case 27:
+        savestate_recovers_published_slot1();
+        break;
+    case 28:
+        savestate_recovery_fails_closed();
+        break;
+    case 29:
+        publication_requires_native_empty_slot();
         break;
     default:
         return 2;
