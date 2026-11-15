@@ -53,12 +53,13 @@ def _field_registry() -> Mapping[str, FieldSpec]:
     }
     path_roles = {"work_root": "work", "build_root": "build",
                   "experimental_install": "experimental", "stable_install": "stable",
-                  "tools_root": "tools"}
+                  "tools_root": "tools", "gaso_out_usa": "output", "gaso_out_jp": "output"}
     for name, role in path_roles.items():
         operations = ("payload-manifest",) if name in ("build_root", "experimental_install") else ()
         fields[f"paths.{name}"] = FieldSpec("path", "native path", True, role, operations)
     for name in ("bag1_usa_disc", "bag1_jp_disc", "bag1_usa_extraction", "bag1_jp_extraction",
-                 "bag1_reference_runtime"):
+                 "bag1_reference_runtime", "gaso_profile", "gaso_stock_bio", "gaso_stock_fever",
+                 "gaso_motions"):
         fields[f"inputs.{name}"] = FieldSpec("path", "native path", True, "input")
     for name in ("audio_probe", "python_report", "winshot_root", "build_script",
                   "ffmpeg_review", "ffmpeg_wgc", "ffmpeg_native", "ghidra_launcher",
@@ -112,6 +113,9 @@ def _field_registry() -> Mapping[str, FieldSpec]:
         "character-workspace": ("repo_root", "paths.work_root", "paths.stable_install"),
         "gaso-source-usa": ("inputs.bag1_usa_extraction",),
         "gaso-source-jp": ("inputs.bag1_jp_extraction",),
+        "gaso-build": ("inputs.gaso_profile", "inputs.gaso_stock_bio",
+                       "inputs.gaso_stock_fever", "inputs.gaso_motions",
+                       "paths.gaso_out_usa", "paths.gaso_out_jp"),
     }
     for operation, keys in requirements.items():
         for key in keys:

@@ -538,7 +538,7 @@ lecturas de packs/anunciador/modelos sobre fixtures propios (perfil real USA y J
 sin raíz USA; perfil sintético con directorios distintos y anunciador USA). La
 conversión se sustituye por stubs: no genera paquetes ni ejecuta juego. Runner
 vigente con logs, inventario AST y mutantes en copias:
-`_work/configuration/verify_gaso_sources_v8.py` (v7, v6 y v5..v2/base conservados).
+`_work/configuration/verify_gaso_sources_v10.py` (v9, v7, v6 y v5..v2/base conservados).
 Primer ensayo `_work/configuration/s5a-gaso-sources/`: suites host verdes, pero
 baseline en copia falló por faltar policy Heat importada y sus inputs hasheados;
 no se cuenta como kill. V2 añadió Heat pero faltaba policy Gas-O; v3 copia ambas
@@ -554,11 +554,10 @@ cuatro: pruebas que no llegaban al consumo de raíces, reutilización HUD sin to
 sus entradas, anunciador fijo/directorios literales que sobrevivían y raíz
 configurada inexistente aceptada. Corregidos RED→GREEN, **sin segunda revisión**.
 V6 (suites nuevas) dejó un mutante `snapshot` FAIL+ERROR por fixture: conservado,
-sin puntuar. V7 quedó verde, pero el diccionario (entrada de workflow) cambió
-después; v8 repitió todo sobre los bytes finales y es el ensayo de cierre:
+sin puntuar. V10 (`s5a-gaso-sources-v10/`) repitió todo sobre los bytes finales y es el ensayo de cierre:
 12 lectores + 120 workflow + 7 HUD ejecutados de nuevo, sin reutilizar logs;
 baseline de copia verde y 17 mutantes por aserción sin ERROR.
-Evidencia: `_work/configuration/s5a-gaso-sources-v8/`. La comparación AST contra
+Evidencia: `_work/configuration/s5a-gaso-sources-v10/`. La comparación AST contra
 `b1297cd` acota cambios a region_sources/build/main; no demuestra equivalencia de
 paquetes, que no se generaron. Revisión estática: no es ejecución independiente.
 

@@ -18,11 +18,24 @@ class GasoSourceConfigTests(ConfigFixture):
         super().setUp()
         self.profile = json.loads((ROOT / 'tools/bag1import/profiles/gaso.json').read_text(encoding='utf-8'))
         self.original = copy.deepcopy(self.profile)
-        self.write_local('[inputs]\nbag1_usa_extraction="relocated usa ñ"\n'
-                         'bag1_jp_extraction="relocated jp &"\n')
+        self.write_local('[inputs]\n'
+                         'bag1_usa_extraction="relocated usa ñ"\n'
+                         'bag1_jp_extraction="relocated jp &"\n'
+                         'gaso_profile="profile.json"\n'
+                         'gaso_stock_bio="stock"\n'
+                         'gaso_stock_fever="fever"\n'
+                         'gaso_motions="motions.bin"\n'
+                         '[paths]\n'
+                         'gaso_out_usa="owned-output"\n'
+                         'gaso_out_jp="owned-output"\n')
+        self.local_profile = self.root / 'profile.json'
+        self.local_profile.write_text(json.dumps(self.profile), encoding='utf-8')
         # 'changed'/'wrong' exist so that a reload yields a wrong path, not a ConfigError.
         for name in ('relocated usa ñ', 'relocated jp &', 'changed', 'wrong'):
             (self.root / name).mkdir()
+        self.root.joinpath('stock').mkdir()
+        self.root.joinpath('fever').mkdir()
+        self.root.joinpath('motions.bin').write_bytes(b'motions')
 
     def sources(self, region, **kwargs):
         self.assertIn('config', inspect.signature(builder.region_sources).parameters,
@@ -43,7 +56,11 @@ class GasoSourceConfigTests(ConfigFixture):
         self.assertEqual(self.profile, self.original)
 
     def test_only_the_used_region_is_required_and_no_profile_root_fallback_exists(self):
-        self.write_local('[inputs]\nbag1_usa_extraction="relocated usa ñ"\n')
+        self.write_local('[inputs]\nbag1_usa_extraction="relocated usa ñ"\n'
+                         'gaso_profile="profile.json"\n'
+                         'gaso_stock_bio="stock"\n'
+                         'gaso_stock_fever="fever"\n'
+                         'gaso_motions="motions.bin"\n')
         try:
             usa = self.sources('usa')[0]
         except pc.ConfigError as error:
@@ -54,26 +71,41 @@ class GasoSourceConfigTests(ConfigFixture):
 
     def test_snapshot_is_not_reloaded_after_overlay_changes(self):
         config = self.load()
-        self.write_local('[inputs]\nbag1_usa_extraction="wrong"\nbag1_jp_extraction="wrong"\n')
+        self.write_local('[inputs]\nbag1_usa_extraction="wrong"\nbag1_jp_extraction="wrong"\n'
+                         'gaso_profile="profile.json"\n'
+                         'gaso_stock_bio="stock"\n'
+                         'gaso_stock_fever="fever"\n'
+                         'gaso_motions="motions.bin"\n')
         self.assertEqual(self.sources('usa', config=config)[0], self.root / 'relocated usa ñ')
         self.assertEqual(self.sources('jp', config=config)[0], self.root / 'relocated jp &')
 
     def test_missing_announcer_root_fails_before_build_output_is_created(self):
-        self.write_local('[inputs]\nbag1_usa_extraction="relocated usa ñ"\n')
-        profile = self.root / 'profile.json'; profile.write_text(json.dumps(self.profile), encoding='utf-8')
+        self.write_local('[inputs]\nbag1_usa_extraction="relocated usa ñ"\n'
+                         'bag1_jp_extraction="absent jp"\n'
+                         'gaso_profile="profile.json"\n'
+                         'gaso_stock_bio="stock"\n'
+                         'gaso_stock_fever="fever"\n'
+                         'gaso_motions="motions.bin"\n')
+        with self.assertRaisesRegex(pc.ConfigError, 'absent jp'):
+            self.sources('jp')
         output = self.root / 'candidate'
-        stock = self.root / 'stock'; stock.mkdir()
-        (stock / 'pack_a_p1.dfs').write_bytes(b'owned sentinel, never decoded')
         self.assertIn('config', inspect.signature(builder.build).parameters)
-        with patch.object(builder, 'PROFILE', profile), patch.object(builder, 'STOCK_BIO_DIR', stock), \
-                patch.object(builder, 'read_members', side_effect=AssertionError('before conversion')):
+        with patch.object(builder, 'read_members', side_effect=AssertionError('before conversion')):
             with self.assertRaises(pc.ConfigError):
                 builder.build('usa', output, config=self.load())
         self.assertFalse(output.exists())
 
     def test_selected_overlay_reaches_build_without_generating_a_package(self):
         self.assertIn('argv', inspect.signature(builder.main).parameters)
-        self.write_local('[inputs]\nbag1_jp_extraction=' + json.dumps(str(self.root / 'relocated jp &')) + '\n')
+        self.write_local('[inputs]\n'
+                         'bag1_jp_extraction=' + json.dumps(str(self.root / 'relocated jp &')) + '\n'
+                         'gaso_profile="profile.json"\n'
+                         'gaso_stock_bio="stock"\n'
+                         'gaso_stock_fever="fever"\n'
+                         'gaso_motions="motions.bin"\n'
+                         '[paths]\n'
+                         'gaso_out_usa="owned-output"\n'
+                         'gaso_out_jp="owned-output"\n')
         output = self.root / 'candidate'
         with patch.object(builder, 'build') as build:
             builder.main(['--local-config', str(self.local), '--region', 'jp', '--out-dir', str(output)])
@@ -87,6 +119,12 @@ class GasoSourceConfigTests(ConfigFixture):
     def test_build_uses_one_snapshot_for_model_and_independent_announcer_region(self):
         profile_path = self.root / 'profile.json'
         profile_path.write_text(json.dumps(self.profile), encoding='utf-8')
+        self.write_local('[inputs]\nbag1_usa_extraction="relocated usa ñ"\n'
+                         'bag1_jp_extraction="relocated jp &"\n'
+                         'gaso_profile="profile.json"\n'
+                         'gaso_stock_bio="stock"\n'
+                         'gaso_stock_fever="fever"\n'
+                         'gaso_motions="motions.bin"\n')
         config = self.load()
         original = builder.region_sources
         calls = []
@@ -98,16 +136,15 @@ class GasoSourceConfigTests(ConfigFixture):
             return result
         class StopBeforeConversion(Exception):
             pass
-        output = self.root / 'owned-output'
-        stock = self.root / 'stock'; stock.mkdir()
+        output = self.root.parent / 'owned-output'
+        stock = self.root / 'stock'
         (stock / 'pack_a_p1.dfs').write_bytes(b'owned sentinel, never decoded')
-        with patch.object(builder, 'PROFILE', profile_path), patch.object(builder, 'region_sources', side_effect=sources), \
-                patch.object(builder, 'STOCK_BIO_DIR', stock), \
+        with patch.object(builder, 'region_sources', side_effect=sources), \
                 patch.object(builder, 'read_members', side_effect=StopBeforeConversion):
             with self.assertRaises(StopBeforeConversion):
                 builder.build('usa', output, config=config)
         self.assertEqual([call[:2] for call in calls], [('usa', self.root / 'relocated usa ñ'),
-                                                       ('jp', self.root / 'relocated jp &')])
+                                                        ('jp', self.root / 'relocated jp &')])
         self.assertTrue(all(call[2] is config and call[3] == self.original for call in calls))
         self.assertEqual(list(output.iterdir()), [])
 
@@ -124,15 +161,16 @@ class GasoSourceConfigTests(ConfigFixture):
                 self.sources(region)
 
     def test_configured_but_absent_root_fails_before_build_output_is_created(self):
-        self.write_local('[inputs]\nbag1_usa_extraction="relocated usa ñ"\nbag1_jp_extraction="absent jp"\n')
+        self.write_local('[inputs]\nbag1_usa_extraction="relocated usa ñ"\n'
+                         'bag1_jp_extraction="absent jp"\n'
+                         'gaso_profile="profile.json"\n'
+                         'gaso_stock_bio="stock"\n'
+                         'gaso_stock_fever="fever"\n'
+                         'gaso_motions="motions.bin"\n')
         with self.assertRaisesRegex(pc.ConfigError, 'absent jp'):
             self.sources('jp')
-        profile = self.root / 'profile.json'; profile.write_text(json.dumps(self.profile), encoding='utf-8')
-        stock = self.root / 'stock'; stock.mkdir()
-        (stock / 'pack_a_p1.dfs').write_bytes(b'owned sentinel, never decoded')
         output = self.root / 'candidate'
-        with patch.object(builder, 'PROFILE', profile), patch.object(builder, 'STOCK_BIO_DIR', stock), \
-                patch.object(builder, 'read_members', side_effect=AssertionError('before conversion')):
+        with patch.object(builder, 'read_members', side_effect=AssertionError('before conversion')):
             with self.assertRaises(pc.ConfigError):
                 builder.build('usa', output, config=self.load())
         self.assertFalse(output.exists())
@@ -144,20 +182,30 @@ class GasoSourceConfigTests(ConfigFixture):
         layout = profile['source_layout']
         directories = {d for r in layout['regions'].values() for d in r['pack_directories'].values()}
         directories |= {layout[costume]['model_directory'] for costume in ('costume_a', 'costume_b')}
-        files = ('P_GAS_A1.DFS', 'P_GAS_B1.DFS', 'P_GAS_A3.DFS', 'P_GAS_B3.DFS', 'P_GAS_A2.DFS', 'P_GAS_A4.DFS')
+        files = ('P_GAS_A1.DFS', 'P_GAS_B1.DFS', 'P_GAS_A3.DFS', 'P_GAS_B3.DFS',
+                 'P_GAS_A2.DFS', 'P_GAS_A4.DFS')
         # Decoys in both roots and every directory turn a wrong path into a wrong label.
-        for root in ('relocated usa ñ', 'relocated jp &'):
+        for root_name in ('relocated usa ñ', 'relocated jp &'):
             for directory in directories:
-                (self.root / root / directory).mkdir(exist_ok=True)
+                (self.root / root_name / directory).mkdir(exist_ok=True)
                 for name in files:
-                    (self.root / root / directory / name).write_bytes(f'{root}/{directory}/{name}'.encode())
-        stock = self.root / 'stock'; stock.mkdir()
+                    (self.root / root_name / directory / name).write_bytes(
+                        f'{root_name}/{directory}/{name}'.encode())
+        stock = self.root / 'stock'
         for name in ('pack_a_p1.dfs', 'pack_a_p2.dfs'):
             (stock / name).write_bytes(f'stock/{name}'.encode())
-        fever = self.root / 'fever'; fever.mkdir()
+        fever = self.root / 'fever'
         for name in ('000.bin', '001.bin'):
             (fever / name).write_bytes(name.encode())
-        motions = self.root / 'motions.bin'; motions.write_bytes(b'motions')
+        motions = self.root / 'motions.bin'
+        motions.write_bytes(b'motions')
+        self.write_local('[inputs]\n'
+                         'bag1_usa_extraction="relocated usa ñ"\n'
+                         'bag1_jp_extraction="relocated jp &"\n'
+                         'gaso_profile="profile.json"\n'
+                         'gaso_stock_bio="stock"\n'
+                         'gaso_stock_fever="fever"\n'
+                         'gaso_motions="motions.bin"\n')
         config = self.load()
         reads, cues, written = [], [], []
         def read_members(raw):
@@ -172,9 +220,8 @@ class GasoSourceConfigTests(ConfigFixture):
             cues.append(('voice', names.decode(), source, target)); return names
         def replace(bank, target, names, source):
             cues.append(('vs', names.decode(), source, target)); return bank
-        output = self.root / 'owned-output'
-        stubs = dict(PROFILE=profile_path, STOCK_BIO_DIR=stock, STOCK_FEVER_DIR=fever, MOTIONS=motions,
-                     read_members=read_members, rebase_sedt=rebase, rename_cue=rename, replace_cue=replace,
+        output = self.root.parent / 'owned-output'
+        stubs = dict(read_members=read_members, rebase_sedt=rebase, rename_cue=rename, replace_cue=replace,
                      patch_gaso_dbi=lambda raw: raw, cue_record=lambda bank, target: b'',
                      append_cue=lambda bank, clip, target: bank, Vab=MagicMock(),
                      fit_voice_budget=lambda bank, samples, budget: (bank, 0),
@@ -217,7 +264,11 @@ class GasoSourceConfigTests(ConfigFixture):
         self.assert_regional_reads(self.profile, 'usa', 'relocated jp &', reads, cues, written)
 
     def test_actual_profile_jp_build_does_not_require_usa_root(self):
-        self.write_local('[inputs]\nbag1_jp_extraction="relocated jp &"\n')
+        self.write_local('[inputs]\nbag1_jp_extraction="relocated jp &"\n'
+                         'gaso_profile="profile.json"\n'
+                         'gaso_stock_bio="stock"\n'
+                         'gaso_stock_fever="fever"\n'
+                         'gaso_motions="motions.bin"\n')
         reads, cues, written = self.full_build('jp', self.profile)
         self.assert_regional_reads(self.profile, 'jp', 'relocated jp &', reads, cues, written)
 

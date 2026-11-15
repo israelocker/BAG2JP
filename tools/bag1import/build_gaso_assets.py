@@ -50,16 +50,23 @@ from vab_budget import Vab, fit_voice_budget
 from anim_remap_gaso import build_fever
 from animlib import anim_list
 
-PROFILE = ROOT / "tools/bag1import/profiles/gaso.json"
-STOCK_BIO_DIR = ROOT / "_work/stage_import/gaso/stock_bio_entries"
-STOCK_FEVER_DIR = ROOT / "assets/archive/characters/bi_o/choreography_a"
-MOTIONS = ROOT / "_work/gaso/test_001.bin"
-DEFAULT_OUT = {
-    "usa": ROOT / "_work/character_import/gaso/candidate",
-    "jp": ROOT / "_work/character_import/gaso/candidate-jp",
-}
 VOICE_MEMBER = 6
 BODY_MEMBERS = (4, 5)
+
+
+def _guard_output(out_dir: Path, config: ProjectConfig, extraction: Path, names_root: Path,
+                  stock_bio: Path, stock_fever: Path, motions: Path) -> None:
+    """Rechaza una salida que colapse con entradas, instalación estable o configuración."""
+    forbidden = [extraction, names_root, stock_bio, stock_fever, motions.parent,
+                 config.values.get("paths.stable_install"),
+                 Path(__file__).resolve().parents[2] / "config"]
+    out = out_dir.resolve()
+    for base in forbidden:
+        if base is None:
+            continue
+        base = base.resolve()
+        if out == base or out.is_relative_to(base):
+            raise ConfigError(f"Gas-O output collides with a protected location: {out_dir} under {base}")
 
 
 def region_sources(region: str, *, config: ProjectConfig | None = None,
@@ -71,7 +78,10 @@ def region_sources(region: str, *, config: ProjectConfig | None = None,
     extraction, = require_paths(config, (f"inputs.bag1_{region}_extraction",))
     if not extraction.is_dir():
         raise ConfigError(f"Gas-O {region} extraction root is not a directory: {extraction}")
-    layout = (json.loads(PROFILE.read_text(encoding="utf-8")) if profile is None else profile)["source_layout"]
+    if profile is None:
+        profile_path, = require_paths(config, ("inputs.gaso_profile",))
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+    layout = profile["source_layout"]
     source = layout["regions"][region]
     models = {costume: layout[costume]["model_directory"] for costume in ("costume_a", "costume_b")}
     return extraction, source["pack_directories"], models
@@ -99,19 +109,31 @@ def build_hud_texture(source: bytes, reference: bytes, label: dict) -> bytes:
 
 
 def build(region: str, out_dir: Path, *, config: ProjectConfig | None = None) -> None:
-    """Build candidates; host extraction requirements are checked before output creation."""
+    """Build candidates; host requirements are checked before output creation."""
     config = load_config() if config is None else config
-    profile = json.loads(PROFILE.read_text(encoding="utf-8"))
+    profile_path, = require_paths(config, ("inputs.gaso_profile",))
+    stock_bio, stock_fever = require_paths(config, ("inputs.gaso_stock_bio", "inputs.gaso_stock_fever"))
+    motions, = require_paths(config, ("inputs.gaso_motions",))
+    if not profile_path.is_file():
+        raise ConfigError(f"Gas-O profile is not a file: {profile_path}")
+    if not stock_bio.is_dir():
+        raise ConfigError(f"Gas-O stock bio dir is not a directory: {stock_bio}")
+    if not stock_fever.is_dir():
+        raise ConfigError(f"Gas-O stock fever dir is not a directory: {stock_fever}")
+    if not motions.is_file():
+        raise ConfigError(f"Gas-O motions file is not a file: {motions}")
+    profile = json.loads(profile_path.read_text(encoding="utf-8"))
     extraction, pack_dirs, model_dirs = region_sources(region, config=config, profile=profile)
     announcer = profile["announcer"]
     names_root, names_dirs, _ = region_sources(announcer["source_region"], config=config, profile=profile)
+    _guard_output(out_dir, config, extraction, names_root, stock_bio, stock_fever, motions)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Bi-O reference members:
     # P1: [0] TIM portrait, [1] DBI, [2] TIM body1, [3] TIM body2, [4] SEDT voice, [5] SEDT sfx
     # P2: [0] DBI, [1] TIM body1, [2] TIM body2, [3] SEDT voice, [4] SEDT sfx
-    stock_p1, _ = read_members((STOCK_BIO_DIR / "pack_a_p1.dfs").read_bytes())
-    stock_p2, _ = read_members((STOCK_BIO_DIR / "pack_a_p2.dfs").read_bytes())
+    stock_p1, _ = read_members((stock_bio / "pack_a_p1.dfs").read_bytes())
+    stock_p2, _ = read_members((stock_bio / "pack_a_p2.dfs").read_bytes())
     bio_portrait, bio_dbi_p1, bio_body1_ref, bio_body2_ref, bio_voice_ref, bio_sfx_p1 = stock_p1[:6]
     bio_dbi_p2, bio_sfx_p2 = stock_p2[0], stock_p2[4]
     gaso_dbi_p1 = patch_gaso_dbi(bio_dbi_p1)
@@ -171,14 +193,14 @@ def build(region: str, out_dir: Path, *, config: ProjectConfig | None = None) ->
         print(f"[{region}] Model {label} converted: {len(data)} bytes, stats {stats}")
         converted[label] = data
 
-    motions = MOTIONS.read_bytes()
+    motions_data = motions.read_bytes()
     for entry, label, costume, side in ((89, "A", "a", "p1"), (90, "A", "a", "p2"),
                                         (161, "B", "b", "p1"), (162, "B", "b", "p2")):
         write_entry(out_dir, f"entry_{entry}_model_{costume}_{side}.dfs",
-                    [converted[label], motions, converted["accessory"]])
+                    [converted[label], motions_data, converted["accessory"]])
 
     # Solo fever: BAG1 Gas-O fever dances; member 1 (choreography data) stays stock.
-    stock_fever = [(STOCK_FEVER_DIR / name).read_bytes() for name in ("000.bin", "001.bin")]
+    stock_fever = [(stock_fever / name).read_bytes() for name in ("000.bin", "001.bin")]
     fever = build_fever(anim_list(model_a[1]), len(anim_list(stock_fever[0])))
     solo_entry = profile["target_entries"]["fever_choreography"][0]
     write_entry(out_dir, f"entry_{solo_entry}_choreography_a.dfs", [fever, stock_fever[1]])
@@ -194,7 +216,8 @@ def main(argv: Sequence[str] | None = None) -> None:
     args = parser.parse_args(argv)
     try:
         config = load_config(local_config=args.local_config)
-        build(args.region, args.out_dir or DEFAULT_OUT[args.region], config=config)
+        default_out = config.values[f"paths.gaso_out_{args.region}"]
+        build(args.region, args.out_dir or default_out, config=config)
     except ConfigError as error:
         parser.error(str(error))
 

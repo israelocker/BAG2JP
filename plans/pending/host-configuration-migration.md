@@ -132,10 +132,7 @@ consumidores aún no leídos ni resolver divergencias en silencio.
 - Blocked by: S3, S2a de esta familia.
 - S4a: `tools/test/bag2_record.py` — ENTREGADO (commit 1ed6f81): grabador consume
   el resolver único, settings inmutables, operaciones condicionales, 73 recording OK.
-- S4b: `tools/bag1native/run_match_and_attack.py` y lectores de referencia — en
-  verificación host: `run_match_and_attack.py` usa `tools.ffmpeg_native` desde el
-  resolver (sin literal de ruta de máquina); `bag1_mem.py`/`attack_bot.py` conservan
-  constantes de RAM nativa; tests de host pasan (mocked, sin juego).
+- S4b: `tools/bag1native/run_match_and_attack.py` y lectores de referencia — ENTREGADO (commit 18d0c51): `run_match_and_attack.py` usa `tools.ffmpeg_native` desde el resolver (sin literal de ruta de máquina); `bag1_mem.py`/`attack_bot.py` conservan constantes de RAM nativa; tests de host pasan (81 OK, mocked, sin juego). Inventario bag1native b60449f (8 tests).
 - Costura: resolución de FFmpeg/backends, overlays, metadatos y carpetas aisladas;
   conservar relojes/audio exacto, propiedad de PID/HWND y orden de cierre.
 - Comando: `py -3.13 -m unittest tools.test.test_bag2_record tools.test.test_bag2_record_config tools.test.test_recording_window tools.test.test_audio_clock_probe tools.test.test_process_audio_capture tools.test.test_bag1_native_ffmpeg`.
@@ -213,11 +210,13 @@ contrato o permisos vuelve al owner; no se resuelve con otro fallback.
 | Estándar explícito | Documentado; Goldfish de 2 revisores CON HALLAZGOS aplicado; no aprobación de la migración |
 | Inventario inicial | 471 versionados clasificados automáticamente; revisión semántica pendiente |
 | S1 workflow/report | Entregado: 101 pruebas dirigidas, 103 workflow discovery, 8 mutantes; Goldfish aplicado y prueba real de logs existentes |
-| S2a auditoría semántica | Familia harness: fuentes/3 lectores/3 tests leídos y disposición por hash; nav parcial y global 471 aún pendientes |
+| S2a auditoría semántica | Familia harness: fuentes/3 lectores/3 tests leídos y disposición por hash; nav parcial y global 471 aún pendientes; inventario bag1native b60449f (8 tests) |
 | S3a harness versus | Entregado: driver/batch/wrapper consumen resolver; 108 tests harness + 113 workflow OK; 31 mutantes; Goldfish 0 BLOCKER (hallazgos MENOR corregidos/refutados) |
 | S3b vistas PowerShell | Entregado host: endings/view/acceptance y Dance View consumen JSON; 19 tests PS7/5.1 + 113 workflow + 108 harness OK, 24 mutantes; Goldfish A/B CON HALLAZGOS corregidos por RED→GREEN (sin segunda revisión); sin juego/build/deploy |
 | S3 preparación de esquema | 7 campos preparados (presupuestos ≤ 86400 s), consumidos por S3a; Goldfish 0 BLOCKER, 6 SHOULD-FIX corregidos/registrados |
-| S4a preparación de esquema | Contrato preparado: 10 defaults host + 3 rutas sin operación activa; grabador intacto, S4a consumidor pendiente. 119 workflow + 55 recording OK; 37 mutantes; Goldfish A/B CON HALLAZGOS corregidos y probados, sin segunda revisión; sin partida/build/deploy de runtime |
-| S4a consumidor | En verificación host: settings inmutables, CLI/entorno con provenance, operaciones condicionales y guardas; 28 mutantes en copias; Goldfish pendiente. Sin grabación/partida ni build/deploy de runtime |
-| S2b y S3–S7 | Aprobados; pendientes de sus dependencias y ejecución |
+| S4a preparación de esquema | Contrato preparado: 10 defaults host + 3 rutas sin operación activa; grabador intacto, S4a consumidor ENTREGADO (1ed6f81: 73 recording OK + 119 workflow + 108 harness OK; 28 mutantes; Goldfish CON HALLAZGOS corregidos sin segunda revisión; sin partida/build/deploy de runtime) |
+| S4a consumidor | ENTREGADO (commit 1ed6f81): grabador consume resolver único, settings inmutables, operaciones condicionales y guardas; 73 recording OK + 119 workflow + 108 harness OK; 28 mutantes por aserción; Goldfish CON HALLAZGOS corregidos sin segunda revisión; sin grabación/partida ni build/deploy de runtime |
+| S4b lectores nativos | ENTREGADO (commit 18d0c51): run_match_and_attack usa tools.ffmpeg_native desde el resolver (sin literal de ruta de máquina); bag1_mem.py/attack_bot.py conservan constantes de RAM nativa; 81 tests OK (mocked, sin juego); inventario bag1native b60449f (8 tests) |
+| S2b y S3–S7 | Pendientes: S2b auditoría config, S5b perfiles/caché/init, S6 paquetes/instalador, S7 bootstrap/externos/cierre; bloqueados por sus dependencias (S2a, lotes previos) |
 | S5a piloto workspace | Cerrado solo este piloto: plan/prepare/state configurados; 38 tests lectores (37 OK, 1 omitido por privilegio file-symlink), 120 workflow OK, 17 mutantes por aserción. Goldfish A/B CON HALLAZGOS corregidos sin segunda revisión; límites en system_config.md. S5a Gas-O/Heat y S5b perfiles/caché/init pendientes; sin paquetes ni juego |
+| S5a Gas-O extracción | Cerrado solo este lector (commit d1d7c11): raíces USA/JP desde claves existentes inputs.bag1_*_extraction, perfil conserva layout/anunciador, is_dir antes de mkdir, 12 lectores + 120 workflow + 7 HUD (fresh, sin reuso), 17 mutantes por aserción, 0 ERROR; Goldfish A/B CON HALLAZGOS corregidos sin segunda revisión; sin paquetes ni juego. Siguiente: stock/motions/glyphs/perfil/salida y guardas del builder |

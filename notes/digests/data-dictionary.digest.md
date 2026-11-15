@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "docs/data-dictionary.md"
-source_sha256: "c87665af2e232200fb7a87bd9d8564ebf24d46f806258f2d9553709547c779e2"
+source_sha256: "ea6abb2887c039de2fea57dab3e47ef46b9bb76f34bdbfa47db9400d6c7894e0"
 ---
 
 # Diccionario: antes de consumir claves
