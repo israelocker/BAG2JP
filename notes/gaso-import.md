@@ -29,6 +29,28 @@ doc_kind: evidence
   `wider_initial_home_review` (homes ±700, 2026-11-14) es histórico: el Bloque 1 se
   aceptó después sobre la base ±870; no se pide revisarlo.
 
+### Bloque 5: inventario CAUGHT por rival (2026-11-15, host, sin partida)
+
+- Ghidra MCP `SLPM_862.19` (SHA `ea5a1668…`): `0x8005181c+123` = `0x4E`; en BAG2
+  la petición CAUGHT123 va al slot78 para todos. Hoy solo las versiones BAG1 de
+  Heat0/Strike1/Gas-O9 reciben CAUGHT del banco; las 18 versiones stock fallan cerrado.
+- Formato: las 18 librerías stock (A/B×P1/P2) decodifican con `motion_codec` como
+  movimientos de19 pistas, igual que los28 clip70 BAG1 (A/B). Pose media por pista
+  frente a Heat BAG1: identidad0.30–0.65rad vs barajado1.29–1.62 en17 personajes;
+  **Pander diverge** (1.20 vs1.94). Altura de raíz distinta por personaje
+  (1291..1712 vs1437 de Heat BAG1): el clip necesita ajustar la traslación Y.
+  Es una estadística de librería, **no** prueba de reproducción ni visual.
+- Clip70 BAG1: 12 poses distintas en14 packs A (HAM_=SHOP, PET_=SYOW idénticos),
+  2 frames estáticos salvo hueso5 de Strike. La similitud de librería entre personajes
+  (0.19–0.68) refleja estilo de baile y no sirve para elegir pose «más parecida».
+- Roster BAG2 (ID): con equivalente BAG1 Heat0, Strike1, Kelly4, Kitty-N7, Hiro8,
+  Capoeira10, Robo-Z Gold11 (Robo-Z); sin verificar Shorty5 y Columbo12 (abreviaturas
+  SYOW/PET_/SHOP). Solo BAG2: Comet2, Tsutomu3, Pander6, Bi-O9, Sushi Boy13,
+  Chichi/Sally14, Michael Doi15, McLoad16, Hustle Kong17. Parejas: 10 y14; Shorty
+  con compañero crea dos tanques.
+- Evidencia `_work/gaso/block5/{inventory.json,track-semantics-probe.json}`.
+  Siguiente: decisión del owner sobre la fuente de pose para los solo-BAG2.
+
 ### Bloque 4: guard1 desplegado; toma de recuperación en preparación (2026-11-15)
 
 - Autorización explícita del owner: «Opción 1: build guard1 + prueba

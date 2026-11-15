@@ -11,6 +11,15 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 20261115-ghidra-block5-inventory — ruta CAUGHT BAG2 por rival
+
+- get_program_info: SLPM_862.19, SHA ea5a1668…. read_memory(0x80051897,1)=4e:
+  tabla 0x8005181c manda request123 al slot78 (reconfirma nota F2). read_memory
+  (0x8005168f,1)=00 en este programa, distinto del 70 citado en la nota F2; no se
+  interpreta aquí (posible otro binario/contexto), queda por contrastar.
+- Útil: confirma que ningún rival stock tiene ruta CAUGHT nativa. El formato de 19
+  pistas se midió con motion_codec, no con Ghidra. Tiempo/ahorro no medidos.
+
 ## 20261115-ghidra-process-game — identidad original para la toma
 
 - get_program_info primero: SLPM_862.19 JP/main,PSXLE32,1324funciones,
