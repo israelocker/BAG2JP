@@ -2,18 +2,32 @@
 id: gaso-import-digest
 title: "Gas-O: Bloque 4, captura y ciclo de vida"
 tags: ["digest", "gaso", "bag1", "evidence"]
-summary: "Bloque4 bloqueado por readiness F7: load3 falló menú slot01 pese25ms;captura accepted solo diagnóstico,sin load/recuperación. EXE94922aba experimental/canónico0,cal2 aceptada,150saves/5configs protegidos. Próximo: señal de menú listo en host;no más tomas ciegas."
+summary: "Bloque4: handshake F7 funciona, trace completo save/load/recovered/retirada/fin/selector en recovery-ready315.4s. Captura REJECTED audio24.67ms; paso30.7ms en load. Sin aceptación visual. Plan pendiente savestate-recording-audio.md: offline primero,grabador existente,no relajar gates ni cambiar guardado/runtime."
 related: ["notes/gaso-import.md", "_work/current-state.json"]
 created: "2026-11-14"
 updated: "2026-11-15"
 doc_kind: digest
 source: "notes/gaso-import.md"
-source_sha256: "d2650319d9c116808c84ed676bad9d355380000defee4def260d70cb514848b4"
+source_sha256: "fcc41617c798ec6f328d8435b59af6d5e52940b13f00c21ea0ba04b415ed76f7"
 ---
 
 # Gas-O: lectura vigente
 
 Estado más reciente: sección «Bloque 4: guard1 desplegado; toma de recuperación».
+Actualización vigente «Continuación: handshake de readiness F7»: owner aclaró
+que no se crea otro sistema de guardado y confirmó continuar. Símbolos host
+open/slot/paused coinciden en COFF y llvm-nm del EXE94922aba; lector usa base ASLR
+real y handle solo lectura. Parte de open=paused=0, envía F7 y espera ambos1,
+luego Up/S o L; confirma ambos0 y slot11. Rechaza flags/RVA inválidos; timeout1s.
+16hostOK; sin cambio de runtime/formato/gates. block4-recovery-ready completó315.414s:
+save/load/recovered(side2gf8499)/retirada(gf8919)/fin/selector en trace.
+Captura REJECTED:audio ventana24.67ms>1frame. Replay localiza paso wall/audio30.704ms
+en loadgf8496..8502, exceso productor32.498ms; otros stalls sin paso comparable.
+Sin aceptación visual ni nueva repetición idéntica. Decisión del owner: propuesta
+plans/pending/savestate-recording-audio.md (viabilidad offline primero, luego soporte
+de pausas explícitas en grabador existente, Goldfish y toma nueva si viable; no
+relajar gates/inventarPCM/tocar guardado/runtime), o posponer y Bloque5 interno.
+Lo siguiente conserva la cronología:
 Owner autorizó opción1 build/prueba. WIP13d52f9; fuentes canónicas guard0,
 build guard1 con staging respaldado; EXE94922aba desplegado solo en experimental
 (backup anterior e709c2f8, configs/paquetes conservados). Build39.198s PASS.

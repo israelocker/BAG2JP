@@ -746,3 +746,41 @@ Skill: `bag2-game-recording` (`D:/Dev/Tools/agent-data/shared/agents/skills/bag2
   y EXE94922aba experimental sin cambios; no instancia activa.
 - No más repetición ciega. Siguiente interno: señal verificable de menú listo,
   host regression y evaluación de alcance si exige framework. Sin ahorro medido.
+
+## 20261115-bag2-record-native-menu-ready — ensayo de señal observable
+
+- Owner aclaró que no quería otro sistema de guardado; se conserva el F7 nativo
+  y confirmó continuar. Sin modificaciones del runtime, formatos ni grabador.
+  EXE94922aba y calibracióncal2 se reutilizan sin cambios.
+- Utilidades existentes: llvm-nm --defined-only del toolchain WSL registrado y
+  inspect_host_symbols.read_symbols. COFF RVA+ImageBase coincide con nm para
+  open141516238,slot1416566b0,paused15bdffcb0. Detalle en menu-readiness-symbols.txt
+  y menu-readiness-coff-check.json; live usa módulo ASLR, no VA fija.
+- main.cpp8787/freeze_heartbeat.c178: flag paused entra antes del pause-loop;
+  exigir simultáneamente open excluye otras pausas. Handle existente de
+  TaskRamCapture solo QUERY_INFORMATION|VM_READ, hash/PID/HWND fijados. Sin
+  WriteProcessMemory. Espera condición open=paused1, luego ambos0 y slot11;
+  timeout1s,poll1ms. Confirmación de guardado continúa por .pst+.thumb completa.
+- Host5RED(7fallos con subcasos)→6OK0.012s; wrapper10OK0.030s. Cubren flags
+  parciales/ajenos/corruptos, timeout y RVA duplicado/ausente/desalineado.
+  Dictamen interno útil para eliminar sleep25ms, fiabilidad live aún no probada.
+  Toma block4-recovery-ready iniciada, pendiente resultado/finalize/revisión;
+  ninguna aceptación anticipada. Preparación/consulta/ahorro no medidos.
+
+### Resultado: flujo completo, captura rechazada por paso de audio al load
+
+- recovery-ready completó315.414s,150saves/configs restaurados; trial complete.
+  Menúready tras7.480/8.075ms y closed19.437/19.017ms después(save/load).
+  SAVED/LOADEDslot11, recovered side2gf8499/t43.533, retirada gf8919/t50.549,
+  fin y selector root13. Es evidencia de trace, sin aceptación visual.
+- Finalize REJECTED:2099latidos/7tardíos,jitter11.67ms,3stalls;
+  audio12559pares/0descartes/rate44050/residuo29.86ms/ventana24.67ms>1frame.
+  Los rechazos se conservan. No se hizo revisión de gameplay como aceptado.
+- Replay read-only analyze_recovery_ready.py: exceso productor32.498ms y paso
+  wall/audio30.704ms localizado a gf8496..8502(load); native poll23.1ms.
+  Otros stalls no producen paso persistente comparable. Reloj global afín no
+  representa esa carga; no resolver repitiendo igual o ampliando umbral.
+- Plan propuesto pendiente plans/pending/savestate-recording-audio.md: demostrar
+  offline marcadores/semántica de pausa y negativos antes de integrar soporte;
+  sin inventar audio ni modificar runtime/guardados. Resultado de herramienta:
+  útil para detectar límite real, no captura aceptada ni ahorro demostrado.

@@ -2,7 +2,7 @@
 id: gaso-import
 title: "Gas-O: importación y aceptación"
 tags: ["bag1", "gaso", "import", "evidence"]
-summary: "Bloque4 abierto: guard1 autorizado/desplegado experimental94922aba,canónico0. Cal2 aceptada; tres tomas no alcanzan load por sincronización F7/acuse buffered. load3 accepted solo diagnóstico.150saves/5configs protegidos. Próximo interno: señal de menú listo, no más tomas ciegas. Host38/91,25mutantes,2Goldfish; suite482 conserva29FAIL/ERROR."
+summary: "Bloque4 abierto: handshake F7 funciona y trace recovery-ready completa save/load/recovered/retirada/fin/selector. Grabación REJECTED por ventana audio24.67ms; salto persistente30.7ms localizado a carga. No aceptación visual. Propuesta pendiente para soporte de pausas explícitas en grabador, sin tocar guardado/runtime ni relajar gates."
 related: ["plans/gaso-import.md", "IMPORT_STANDARD.md", "notes/character-pipeline.md", "HANDOFF.md"]
 created: "2026-11-06"
 updated: "2026-11-15"
@@ -96,6 +96,57 @@ doc_kind: evidence
   experimental sigue siendo el candidato autorizado; estable no tocado.
   No se repiten tests host del runtime ni Goldfish ya verificados sin cambios;
   no se requieren herramientas de extracción/disco ni funcmatch en esta fase.
+
+### Continuación: handshake de readiness F7 (2026-11-15, en prueba)
+
+- El owner aclaró si se estaba creando otro sistema de guardado. No: se usa el
+  F7/savestate existente del runtime, no el guardado de tarjeta PS1 ni un formato
+  nuevo. Confirmó «ah okay, continua». Se mantiene la autorización anterior.
+- Símbolos en EXE94922aba (llvm-nm --defined-only del toolchain WSL registrado):
+  savestate_menu_open VA141516238, savestate_menu_slot VA1416566b0,
+  s_wedge_classification_paused VA15bdffcb0. Parser COFF existente devuelve los
+  mismos RVA+ImageBase: `menu-readiness-{symbols.txt,coff-check.json}`. ASLR usa
+  la base del proceso real, no esas VA fijas. Ausencia/duplicidad/alineación mala
+  rechaza el protocolo. Ahorro/tiempo de consulta no medidos.
+- main.cpp8787 activa paused justo antes del pause-loop; otros menús también
+  activan paused, por eso se exige a la vez menu_open=1. Se parte de ambos0 y
+  slot0(save)/11(load), se envía solo F7, se espera open=paused=1 antes de Up/S
+  o L, luego ambos0 y slot11 antes de dar por cerrado el menú. Timeout1s,
+  poll1ms (no un sleep fijo de readiness), observaciones open bracketed.
+- `_work/gaso/block2/menu_readiness.py` reutiliza TaskRamCapture/COFF parser:
+  handle PROCESS_QUERY_INFORMATION|PROCESS_VM_READ, ninguna escritura de memoria.
+  Hash de runtime fijado y PID/HWND propios verificados; se conserva .pst+.thumb
+  como confirmación post-save. No cambio del gestor/formato/runtime/EXE/gates.
+- Host:5tests RED(7fallos con subcasos)→6OK0.012s tras añadir lector de RVA;
+  wrapper10OK0.030s. Tests cubren open sin paused, pausa ajena sin open,
+  salida incompleta, timeout, flags corruptos y RVA ausente/ambiguo/desalineado.
+  Logs `menu-readiness-{red,green}.log`, `savestate-ready-wrapper-green.log`.
+  No prueba live de fiabilidad todavía. Reutilizados runtime91tests/Goldfish,
+  calibración y preflight sin cambios en sus inputs relevantes.
+- `block4-recovery-ready` completó315.414s: trial complete, save(slot11)→retirada
+  gf8497/t43.478→load→recovered side2 actor80354144 clip9f000000
+  gf8499/t43.533→retirada gf8919/t50.549; publicación gf8076/t36.448.
+  Menú listo tras7.480ms(save)/8.075ms(load), cierra tras19.437/19.017ms más.
+  stderr SAVED11@8003DF5C y LOADED11; carga native read0/inflate14.6/apply1.5,
+  total17.1ms, frontend+poll23.1ms. .pst SHA256
+  2d03faec0fe9d99635f68b370447d818f56c087fc691dc859d6d87e29b6b7471.
+  Fin observado174.5s desde finish-loop y retorno root13. Son pruebas de trace,
+  no aceptación visual/sonora del comportamiento.
+- Grabación **REJECTED**:2099latidos/7tardíos,jitter11.67ms,3stalls;
+  audio12559pares/0descartes,rate44050,residuo29.86ms,ventana24.67ms>1frame.
+  No cambiar manifest/gates ni presentar video como prueba aceptada.
+- Análisis read-only `analyze_recovery_ready.py` / recovery-ready-clock-analysis.json:
+  alrededor del load gf8496..8502 hay exceso productor32.498ms y salto persistente
+  wall/audio30.704ms. Otros stalls gf7986/9330 dan pasos-1.837/+1.617ms;
+  no atribuir todas las pausas al load ni solo al observador. La alineación de
+  audio global afín en bag2_record.py no representa ese salto; el handshake ya
+  no bloquea el flujo. No repetir igual ni relajar límites para obtener verde.
+- Propuesta de siguiente alcance `plans/pending/savestate-recording-audio.md`:
+  primero demostrar offline soporte de pausas nativas explícitas con muestras
+  preservadas y negativos de drift/markers; solo si es viable integrar en
+  grabador existente, Goldfish y una toma nueva. Nunca otro sistema de guardado,
+  cambio de runtime, PCM inventado, muestras descartadas o gates relajados.
+  Pendiente decisión del owner sobre ese alcance frente a posponer y Bloque5.
 
 ## Bloque 4: recuperación de ownership slot1 tras load (2026-11-15, candidato host guard0)
 
