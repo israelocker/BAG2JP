@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "51e409206a41b065b4b5907820605308a0829dffe9e2a80a9e11e7ca21692cdb"
+source_sha256: "0591fcc94ab11f436ae123d071b965026b1a1888916b21fb3611a4c986012217"
 ---
 
 # Ampliación de configuración central
@@ -27,6 +27,9 @@ source_sha256: "51e409206a41b065b4b5907820605308a0829dffe9e2a80a9e11e7ca21692cdb
 - S2: auditoría semántica por familia y checker con baseline/excepciones justificadas;
   ningún archivo sin disposición y regresión causal ante nuevos hardcodes.
   Ambos autorizados; S2b espera disposiciones semánticas de S2a, no otro gate humano.
+- S2a en curso: primer mapa del harness encuentra tres lectores de producción que
+  capturan/leen globals y dos módulos de tests; migrar la API coherentemente, no
+  quitar globals sin trazar lectores. Faltan secciones de selección/finish y lectores.
 - S3: versus y PowerShell; S4: captura/FFmpeg/referencias; S5: importadores/perfiles;
   S6: herramientas de paquetes/instalador; S7: bootstrap/externos y cierre.
 - Lotes pequeños con tests/diccionario/operaciones/consumidores reales, Goldfish y

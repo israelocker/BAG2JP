@@ -22,7 +22,7 @@ instalaciones externas, partidas ni despliegues. Workflow/report ya estaba
 autorizado anteriormente con «si procede». Ejecución inline y secuencial.
 
 La base y el piloto de manifiestos están entregados (`7fefc07`, `28fc1e9`).
-S1 workflow/report entrega rutas/pins/WSL, metadatos, guardas y compatibilidad del
+S1 workflow/report (`46d528c`) entrega rutas/pins/WSL, metadatos, guardas y compatibilidad del
 script fijo: 101 pruebas dirigidas, 103 en discovery de workflow y Goldfish aplicado.
 No se certifican defaults numéricos legacy, otros consumidores, integración POSIX
 ni build/juego con esas cifras; permanecen en los lotes y evidencias correspondientes.
@@ -200,5 +200,5 @@ contrato o permisos vuelve al owner; no se resuelve con otro fallback.
 | Estándar explícito | Documentado; Goldfish de 2 revisores CON HALLAZGOS aplicado; no aprobación de la migración |
 | Inventario inicial | 471 versionados clasificados automáticamente; revisión semántica pendiente |
 | S1 workflow/report | Entregado: 101 pruebas dirigidas, 103 workflow discovery, 8 mutantes; Goldfish aplicado y prueba real de logs existentes |
-| S2a auditoría semántica | Autorizada; triaje inicial disponible, revisión contextual pendiente |
+| S2a auditoría semántica | En curso: primer mapa parcial del harness y 3 lectores; no clearance de 471 archivos |
 | S2b y S3–S7 | Aprobados; pendientes de sus dependencias y ejecución |

@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-15"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "84bac054b9d517485bf0b79c5116351c45ff7a7b20d97d45fc6f7b23855e5caf"
+source_sha256: "42032018c11cf00cb4567755c34381c945dd521dcc5c80036e6a5bd474025e42"
 ---
 
 # Configuración: estado mínimo
@@ -17,7 +17,7 @@ source_sha256: "84bac054b9d517485bf0b79c5116351c45ff7a7b20d97d45fc6f7b23855e5caf
   defaults/política, local ignorado para ubicaciones verificadas, diccionario con
   significado/tipo/unidad/origen/validación/permisos/operaciones/consumidores.
 - Base/piloto: `7fefc07` y `28fc1e9`; checker de manifiestos configurado, 4 copias.
-- S1: workflow/report migran rutas/pins/WSL y contrastan jobs. Usan work_root y
+- S1 (`46d528c`): workflow/report migran rutas/pins/WSL y contrastan jobs. Usan work_root y
   guardas de escritura para logs, sheets y destino build. Overlay absoluto al child,
   valores/orígenes/hashes en métricas; Python/probe opcionales según operación real.
 - Bash instalado sigue fijo. Adaptador estricto de seis líneas, paths literales,
@@ -30,6 +30,9 @@ source_sha256: "84bac054b9d517485bf0b79c5116351c45ff7a7b20d97d45fc6f7b23855e5caf
 - 471 archivos versionados inventariados automáticamente, con hashes/procedencia.
   No equivalen a análisis semántico ni ausencia de hardcodes. S2 y demás familias
   pendientes; plan ampliado aprobado. Defaults numéricos legacy siguen candidatos.
+- S2a parcial: GAME/WINSHOT/CATALOG del harness trazados; tres lectores de producción
+  y dos tests dependen de exports actuales. No retirar globals rompiendo lectores;
+  wrappers legacy no se borran por referencias obsoletas. No se ha ejecutado harness.
 - Nuevo/modificado host sigue el estándar central; runtime, hechos PSX y guards
   conservan su autoridad. No tocar historia, releases, settings, saves o terceros.
 - Límites: config no demuestra identidad de estable; TOCTOU no garantizado,

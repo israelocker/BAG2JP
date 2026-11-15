@@ -81,7 +81,7 @@ este barrido no concede por sí solo ninguna disposición semántica.
 | Consumidor/familia | Estado real |
 |---|---|
 | Resolutor y checker de manifiestos | Entregados en `7fefc07` / `28fc1e9` |
-| Workflow/report | S1 entregado: rutas/pins/WSL/jobs y guardas; 101 pruebas dirigidas OK, Goldfish aplicado |
+| Workflow/report | S1 entregado en `46d528c`: rutas/pins/WSL/jobs y guardas; 101 pruebas dirigidas OK, Goldfish aplicado |
 | Audio probe | Clave `tools.audio_probe` y ruta local verificada; requisito solo al buscar audio existente |
 | Harness/PowerShell/captura | Pendientes de análisis semántico y migración |
 | Importadores/perfiles/herramientas de paquetes/instalador | Pendientes por lotes |
@@ -145,6 +145,28 @@ integridad del inventario acreditan esta unidad, no el código workflow/report W
 Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
 El owner aprobó ejecutar el plan ampliado con «Si continúa» el 2026-11-15.
 Análisis/migración host siguen por lotes; no autoriza partidas ni cambios externos.
+
+### S2a: primer mapa de lectores del harness (parcial)
+
+Se trazaron GAME→`paths.experimental_install`, WINSHOT→`tools.winshot_root`,
+CATALOG y carpetas de runs→`paths.work_root`; repo_root sigue derivado. Además de
+`versus_session.py`, hay tres lectores de producción: `discover_strike_id.py`,
+`discover_strike_id_p1.py` y `strike_acceptance_batch.py`, más dos módulos de tests.
+Algunos capturan las rutas al importar: retirar globals sin migrar lectores rompería
+esa API. Los wrappers discover también citan SELECT_ROOTS, ausente del módulo
+actual; es indicio de API legacy, no prueba de desuso ni permiso para borrarlos.
+
+Evidencia por hash y secciones leídas: `_work/configuration/versus-semantic-audit.json`
+y `versus-reader-inventory.json` de la misma carpeta. Faltan las secciones de
+selección/finish y revisión completa de lectores/tests. No se ejecutó ni modificó
+el harness, ni se registraron claves numéricas aún. Sus direcciones/capacidad de
+watches/allowlist y gates de revisión no se vuelven knobs libres. El catálogo
+vigente comprueba runtime/grafo/imágenes/evidencia; no se inventa un gate automático
+de hashes de scripts donde hoy solo se reportan como procedencia.
+
+Omisión Goldfish de esta continuación S2a: solo análisis/evidencia y nota/digests,
+sin código ejecutable versionado ni política de la lista cerrada; auto-revisión
+documental declarada, no presentada como otra revisión en frío.
 
 
 ## Fuentes vigentes
