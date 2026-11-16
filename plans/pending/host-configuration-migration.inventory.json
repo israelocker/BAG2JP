@@ -9052,16 +9052,18 @@
       },
       "progress": {
         "primary_lot": "S3-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S3-remainder"
+        ],
         "current_sha256": "8bef899c75b61a4489953a155acce463710e99cfab1074cc0c2d3f904dc314e5",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "pending_change",
-        "review_scope": "historical_source_read",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Legacy readers still use old driver API; migration/exception needs a bounded decision.",
+        "remaining": "Scripts de interaccion con el juego (harness versus S3): no clave de config, no rutas de maquina, constantes nativas del juego. Sin arreglos masivos.",
         "evidence": [
-          "plans/pending/host-configuration-harness-audit.json"
+          "_work/configuration/s2a-analysis/analysis.json"
         ]
       }
     },
@@ -9077,16 +9079,18 @@
       },
       "progress": {
         "primary_lot": "S3-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S3-remainder"
+        ],
         "current_sha256": "05a132c305b6f3bbd72bca011bc16108a03b1aa9720a14f097230580903af3c3",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "pending_change",
-        "review_scope": "historical_source_read",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Legacy readers still use old driver API; migration/exception needs a bounded decision.",
+        "remaining": "Scripts de interaccion con el juego (harness versus S3): no clave de config, no rutas de maquina, constantes nativas del juego. Sin arreglos masivos.",
         "evidence": [
-          "plans/pending/host-configuration-harness-audit.json"
+          "_work/configuration/s2a-analysis/analysis.json"
         ]
       }
     },
@@ -11589,12 +11593,12 @@
         "current_sha256": "8ece69f9b46edc9fc3a967566697f5aa88dc4ccd9ee30903b738a69cf7f6ab7e",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "partial",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "only guard/dependency seams reviewed, not the full implementation",
+        "remaining": "Scripts de interaccion con el juego (harness versus S3): no clave de config, no rutas de maquina, constantes nativas del juego. Sin arreglos masivos.",
         "evidence": [
-          "plans/pending/host-configuration-harness-audit.json"
+          "_work/configuration/s2a-analysis/analysis.json"
         ]
       }
     },
@@ -13544,7 +13548,7 @@
       {
         "id": "S3-remainder",
         "title": "Lectores y valores legacy del harness",
-        "status": "pending_review",
+        "status": "reviewed_scoped",
         "commits": [],
         "acceptance_scope": "Discovery legacy requiere migración; navigation es parcial; decidir esperas/layouts pendientes sin borrar legacy.",
         "consumer_files": [
@@ -13566,15 +13570,14 @@
         "actual_hours": null,
         "rework_hours": null,
         "estimate_status": "requires_bounded_review",
-        "next_action": "Discovery legacy requiere migración; navigation es parcial; decidir esperas/layouts pendientes sin borrar legacy.",
+        "next_action": "S3-remainder review semántica completada; siguiente S6 o S7-native-boundary.",
         "inventory_files": [
           "tools/test/discover_strike_id.py",
           "tools/test/discover_strike_id_p1.py",
           "tools/test/versus_navigation.py"
         ],
         "file_status_counts": {
-          "pending_change": 2,
-          "partial": 1
+          "reviewed": 3
         }
       },
       {
