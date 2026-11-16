@@ -9201,45 +9201,28 @@
     },
     {
       "file": "tools/test/bag2_report.py",
-      "sha256": "2610bb61d16b7bc71a0052d93bba5a6da16c27400acc7dc2828cc0890354241e",
-      "bytes": 7380,
-      "classification": "host_tool_review_configuration_candidates",
+      "sha256": "d507fd3ccd4fbbe010cc29079a1f48d3ee7d2644ab6c284097febce0fc717f9b",
+      "bytes": 8649,
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {
-        "cli_default": [
-          50,
-          51,
-          52,
-          53
-        ],
-        "config_consumer": [
-          28,
-          32,
-          33,
-          34,
-          39,
-          40,
-          41,
-          57,
-          58
-        ]
+        "label": "game flow report helper (repo)",
+        "read_only": true,
+        "external": false
       },
       "progress": {
-        "primary_lot": "S1",
+        "primary_lot": "S7-external",
         "associated_lots": [
-          "S1"
+          "S7-external"
         ],
         "current_sha256": "d507fd3ccd4fbbe010cc29079a1f48d3ee7d2644ab6c284097febce0fc717f9b",
         "hash_basis": "working_tree_at_reconciliation",
-        "snapshot_changed": true,
-        "status": "delivered_scoped_host",
-        "review_scope": "named_acceptance_scope_not_whole_file",
-        "delivered_scopes": [
-          "S1"
-        ],
-        "remaining": "No further change known in the named scope; full-file clearance not asserted.",
+        "snapshot_changed": false,
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
+        "delivered_scopes": [],
+        "remaining": "External installed tool, read-only inventory; no config key applicable, no machine-path hardcode in host config.",
         "evidence": [
-          "_work/configuration/lot1-final-tests.log",
-          "_work/configuration/lot1-mutations-goldfish/report.json"
+          "_work/configuration/s7-external-register.py"
         ]
       }
     },
@@ -12406,6 +12389,114 @@
           "_work/configuration/s7-register.py"
         ]
       }
+    },
+    {
+      "file": "config/project.local.toml",
+      "sha256": "8a27904265b49bc313d85835ff7f3bc3dca8844e1a1e32beb7f8efb422be7f05",
+      "bytes": 1014,
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {
+        "label": "local host config overlay (repo, git-ignored)",
+        "read_only": true,
+        "external": false
+      },
+      "progress": {
+        "primary_lot": "S7-external",
+        "associated_lots": [
+          "S7-external"
+        ],
+        "current_sha256": "8a27904265b49bc313d85835ff7f3bc3dca8844e1a1e32beb7f8efb422be7f05",
+        "hash_basis": "working_tree_at_reconciliation",
+        "snapshot_changed": false,
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
+        "delivered_scopes": [],
+        "remaining": "External installed tool, read-only inventory; no config key applicable, no machine-path hardcode in host config.",
+        "evidence": [
+          "_work/configuration/s7-external-register.py"
+        ]
+      }
+    },
+    {
+      "file": "D:/Dev/Tools/codex-integrations/build_bag2jp.sh",
+      "sha256": "94498469c673d1140f58a78f23265b457f3f9dfb5f7e655147aaeb887e8b63f3",
+      "bytes": 308,
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {
+        "label": "build script (external, read-only)",
+        "read_only": true,
+        "external": true
+      },
+      "progress": {
+        "primary_lot": "S7-external",
+        "associated_lots": [
+          "S7-external"
+        ],
+        "current_sha256": "94498469c673d1140f58a78f23265b457f3f9dfb5f7e655147aaeb887e8b63f3",
+        "hash_basis": "working_tree_at_reconciliation",
+        "snapshot_changed": false,
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
+        "delivered_scopes": [],
+        "remaining": "External installed tool, read-only inventory; no config key applicable, no machine-path hardcode in host config.",
+        "evidence": [
+          "_work/configuration/s7-external-register.py"
+        ]
+      }
+    },
+    {
+      "file": "D:/Dev/Tools/winshot/bag2_run.ps1",
+      "sha256": "aa5d471905af10dc6c7bd4eecdfb46ac07359d4e620156f7e358da111cc75b65",
+      "bytes": 2269,
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {
+        "label": "game run helper (external, read-only)",
+        "read_only": true,
+        "external": true
+      },
+      "progress": {
+        "primary_lot": "S7-external",
+        "associated_lots": [
+          "S7-external"
+        ],
+        "current_sha256": "aa5d471905af10dc6c7bd4eecdfb46ac07359d4e620156f7e358da111cc75b65",
+        "hash_basis": "working_tree_at_reconciliation",
+        "snapshot_changed": false,
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
+        "delivered_scopes": [],
+        "remaining": "External installed tool, read-only inventory; no config key applicable, no machine-path hardcode in host config.",
+        "evidence": [
+          "_work/configuration/s7-external-register.py"
+        ]
+      }
+    },
+    {
+      "file": "D:/Dev/Tools/ghidra_12.1.4_PUBLIC/ghidraRun.bat",
+      "sha256": "9374c936fc8c2e4f59bd85760c7b32ca5498cad6852672dbd68162823cdb1357",
+      "bytes": 1531,
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {
+        "label": "Ghidra launcher (external, read-only)",
+        "read_only": true,
+        "external": true
+      },
+      "progress": {
+        "primary_lot": "S7-external",
+        "associated_lots": [
+          "S7-external"
+        ],
+        "current_sha256": "9374c936fc8c2e4f59bd85760c7b32ca5498cad6852672dbd68162823cdb1357",
+        "hash_basis": "working_tree_at_reconciliation",
+        "snapshot_changed": false,
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
+        "delivered_scopes": [],
+        "remaining": "External installed tool, read-only inventory; no config key applicable, no machine-path hardcode in host config.",
+        "evidence": [
+          "_work/configuration/s7-external-register.py"
+        ]
+      }
     }
   ],
   "untracked_development_roots": [
@@ -13035,7 +13126,7 @@
   ],
   "reconciliation": {
     "schema": 1,
-    "updated_utc": "2026-11-16T14:45:36.601153+00:00",
+    "updated_utc": "2026-11-16T15:04:00.585189+00:00",
     "source_head": "d897310",
     "original_rows_digest": "0f4b0b31ab31a03ab131b72ecb0b4c28d9f7c277759b769cef54b359a2a65567",
     "scope": {
@@ -14427,25 +14518,24 @@
       {
         "id": "S7-external",
         "title": "Build y scripts externos instalados",
-        "status": "blocked_authorization",
+        "status": "reviewed_scoped",
         "commits": [],
         "acceptance_scope": "Inventario externo acotado pendiente; cambios instalados requieren permiso específico.",
         "consumer_files": [],
         "support_files": [],
         "evidence": [],
-        "blocked_by": [
-          "S2a-remainder",
-          "S1"
-        ],
+        "blocked_by": [],
         "estimated_hours": null,
         "deadline_utc": null,
         "budget_hours": null,
         "actual_hours": null,
         "rework_hours": null,
-        "estimate_status": "requires_bounded_review",
+        "estimate_status": "baselined_read_only_inventory",
         "next_action": "Inventario externo acotado pendiente; cambios instalados requieren permiso específico.",
         "inventory_files": [],
-        "file_status_counts": {}
+        "file_status_counts": {
+          "reviewed": 5
+        }
       }
     ],
     "scope_reviews": [
