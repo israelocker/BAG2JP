@@ -12165,13 +12165,12 @@
       "No unreviewed file is marked no-change solely from its path/category/hash."
     ],
     "schedule": {
-      "agreed_deadline_utc": null,
+      "agreed_deadline_utc": "2026-11-17T17:00:00Z",
       "available_hours_per_day": null,
       "remaining_estimate_hours": null,
-      "reason": "Owner confirmed Tuesday 2026-11-17 in Lima, Peru. Cutoff time, available work budget and remaining effort baseline are unknown; date is not a feasibility guarantee.",
+      "reason": "Owner confirmed Monday work until 22:00 Lima and Tuesday deadline at noon. Tuesday start and remaining effort baseline are unknown; no overnight work assumed or feasibility guarantee.",
       "required_owner_inputs": [
-        "deadline cutoff time in Lima",
-        "available work budget through the deadline"
+        "Tuesday work start time in Lima"
       ],
       "control": "Freeze scope, estimate each reviewed execution sublot as a range, log actual duration/rework and announce forecast risk before starting added scope.",
       "weighted_delivery_formula": "100 * sum(baseline effort of accepted scopes) / sum(baseline effort of all committed scopes); unavailable until remaining scope and effort are baselined.",
@@ -12180,7 +12179,9 @@
       "agreed_deadline_date": "2026-11-17",
       "timezone": "America/Lima",
       "utc_offset": "-05:00",
-      "agreed_deadline_time": null
+      "agreed_deadline_time": "12:00:00",
+      "monday_work_end_local": "2026-11-16T22:00:00-05:00",
+      "tuesday_work_start_local": null
     },
     "reuse_policy": [
       "Select one primary lot and named acceptance seam before source reads/edits.",

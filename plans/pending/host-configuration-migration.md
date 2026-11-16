@@ -282,11 +282,12 @@ listos ni estimaciones de esfuerzo equivalentes.
   deriva compartida en varios manifiestos; exige análisis de impacto, no reruns
   globales. Heat V6 conserva 169 hashes. F0/S1/workspace solo se compararon contra
   commit; no se presenta como verificación completa de sus inputs de test.
-- Fecha límite confirmada por el propietario: **martes 17-11-2026, America/Lima
-  (UTC−5)**. Hora de corte y capacidad hasta entonces pendientes; no se supone fin
-  de día ni se garantiza todo el alcance sin estimarlo. Sin baseline de esfuerzo,
+- Fecha límite confirmada por el propietario: **martes 17-11-2026 a las 12:00 del
+  mediodía, America/Lima (UTC−5)**, equivalente a `2026-11-17T17:00:00Z`.
+  Trabajo del lunes 16 hasta las **22:00**; inicio del martes pendiente, sin suponer
+  jornada nocturna ni garantizar todo el alcance sin estimarlo. Sin baseline de esfuerzo,
   porcentaje global ponderado y pronóstico siguen **desconocidos**, no ~60 %.
-  Para contrastar el plazo: confirmar hora/capacidad, revisar y estimar cada sublote
+  Para contrastar el plazo: confirmar capacidad del martes, revisar y estimar cada sublote
   en intervalo, registrar tiempo real y retrabajo, y actualizar previsión al cerrar.
   Alcanzar presupuesto sin cerrar obliga a informar riesgo y recortar alcance
   opcional explícitamente, nunca a extenderlo o reducir aceptación en silencio.

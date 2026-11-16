@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "b54996f12ac45a3e468f67c4b84efd283fc619a52d5f6b2942944610ec93eb3a"
+source_sha256: "422d6700ed9d24b0993b96547d01e5fa3e9de499ef7a00a3ff88e7fd0bff8b3e"
 ---
 
 # Ampliación de configuración central
@@ -20,7 +20,8 @@ source_sha256: "b54996f12ac45a3e468f67c4b84efd283fc619a52d5f6b2942944610ec93eb3a
 - 22/471 consumidores con disposición acotada =4,67 %, no avance global;
   19 soporte y 430 sin revisión consolidada. 30 archivos cambiados no miden cierre.
   9/21=42,86 % tampoco pondera esfuerzo. ~60 % retirado. Fecha límite confirmada:
-  17-11-2026, America/Lima (UTC−5); faltan hora de corte, capacidad y estimaciones
+  17-11-2026 a las 12:00 del mediodía, America/Lima (UTC−5); lunes hasta las 22:00.
+  Faltan inicio del martes, capacidad total y estimaciones
   por sublote. Datos desconocidos quedan nulos; no se garantiza todo el alcance.
 - Deriva de dependencias exige análisis antes de elegir un check, no repetición
   automática. Conciliación documental sin suites nuevas ni implementación S5b.
