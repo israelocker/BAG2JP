@@ -296,6 +296,13 @@ doc_kind: evidence
   330°/503° vs ~55–60° típico, casi giro de180°); las demás dentro de la variación
   normal. Candidato: postura estándar con corrección de esas dos pistas a partir de
   su propia librería; sin prueba visual. `_work/gaso/block5/pander-tracks.json`.
+- **Regla FK descartada (host, 2026-11-16):** raíz CAUGHT tal que el vértice más bajo
+  iguale el suelo mediano del propio baile (cinemática con rotaciones, 1 unidad raíz =
+  16 de modelo, inferido de decompilación). MAE BAG1 59.5 (variantes 60–330), peor que
+  TIRED 35.4; HAM_/SHOP y PET_/SYOW comparten Y con pies distintos: BAG1 no ancla la
+  raíz a los pies. No se aplicó a BAG2. Shorty=5/Columbo=12 solo circunstancial.
+  `_work/gaso/block5/caught-root-fk.{py,json}`. Siguiente: Ghidra sobre cómo el juego
+  fija la Y de raíz en CAUGHT/slot78 (`FUN_80012a94`, `80013144`), sin partida.
 
 ### Bloque 4: guard1 desplegado; toma de recuperación en preparación (2026-11-15)
 
