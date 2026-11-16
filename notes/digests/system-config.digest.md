@@ -2,13 +2,13 @@
 id: system-config-digest
 title: "Configuración host: autoridades y estado"
 tags: ["digest", "config", "migration"]
-summary: "S5a parcial: workspace cerrado y lector de extracción Gas-O cerrado en host; restantes rutas Gas-O/Heat y perfiles/caches pendientes. Sin juego."
+summary: "S5a workspace, builder Gas-O y adaptadores Heat cerrados en host. Esquema de 56 campos; S5b perfiles/caches/init pendiente, sin juego."
 related: ["system_config.md", "docs/data-dictionary.md", "plans/pending/host-configuration-migration.md"]
 created: "2026-11-15"
-updated: "2026-11-15"
+updated: "2026-11-16"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "f822a928b44801a723a2a1f4ba34589957d428371ac9680e5990eb33034c7c8c"
+source_sha256: "ac62879612681b92efa5d35196331c5b9e8ef15973903ba727b98a4c2e3a4bf5"
 ---
 
 # Configuración: estado mínimo
@@ -58,17 +58,26 @@ source_sha256: "f822a928b44801a723a2a1f4ba34589957d428371ac9680e5990eb33034c7c8c
   POSIX no probado, locals alternativos no ignorados automáticamente.
 - S4a `1ed6f81` y S4b nativo `18d0c51` son checkpoints históricos; inventario
   bag1native `b60449f`. No equivalen a migrar todos los lectores de referencia.
-- Gas-O extracción: inputs.bag1_usa_extraction/jp_extraction sustituyen ubicación
+- Gas-O builder (b1b585c/1ca68e5): inputs.bag1_usa_extraction/jp_extraction sustituyen ubicación
   del perfil; perfil conserva directorios y región independiente del anunciador.
-  Un config/perfil por build y raíz existente antes de mkdir; v8: 12 lectores
+  Un config/perfil por build y raíz existente antes de mkdir; v10: 12 lectores
   +120 workflow +7 HUD sin reutilizar logs, 17 mutantes; Goldfish corregido sin
-  segunda revisión (detalle en fuente). Stock/motions/
-  glyphs/perfil/salida y guardas del builder aún pendientes; no hubo paquetes.
+  segunda revisión (detalle en fuente). Seis claves para perfil/stock/motions/salidas
+  con defaults TOML y guardas antes de mkdir; no hubo paquetes ni prueba nativa.
 - Piloto S5a: character_workflow plan/prepare/state consume work_root y protege
   estable, inputs conocidos y configuración antes de escribir. Snapshot por
   ejecución y provenance; API write_state requiere protected_inputs del llamador
    cuando el perfil no se conoce. 38 readers (37 OK, 1 file-symlink omitido por
    privilegio), 120 workflow OK y 17 mutantes por aserción. Goldfish A/B CON HALLAZGOS
    corregidos sin segunda revisión; comparación física de salidas y provenance fijadas
-   en tests. No es S5a completo: Gas-O/Heat,
-  rutas de perfiles, cache/init y dependencias externas siguen pendientes.
+    en tests. Es evidencia del piloto, no de todos los importadores.
+- Heat: adaptador host único para dos scripts legacy; cinco claves nuevas, 56 campos.
+  Plan JSON sin ejecución por defecto; preparar/empaquetar son pasos explícitos.
+  Stage reutiliza extracción USA con SCUS sin cabecera; selectores no son TOML.
+  Goldfish A/B confirmó enlaces copiados, inputs ausentes tardíos y scoring ERROR;
+  correcciones con junctions reales y fixtures, sin segunda revisión. V4 no prueba
+   22 kills por aserción; v5 con deriva/timeout no se puntúa. V6: 32 lectores,
+   120 workflow, 7 HUD y sintaxis Bash OK; 34 mutantes por aserción sin ERROR,
+   hashes de entrada iguales. Cierre host, no prueba de conversión ejecutada.
+  No sandbox concurrente/WSL ni validación de conversión/make-mod. S5b y externos
+  siguen pendientes; no adaptadores, paquetes, runtime ni juego ejecutados.

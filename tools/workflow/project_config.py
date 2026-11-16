@@ -53,17 +53,19 @@ def _field_registry() -> Mapping[str, FieldSpec]:
     }
     path_roles = {"work_root": "work", "build_root": "build",
                   "experimental_install": "experimental", "stable_install": "stable",
-                  "tools_root": "tools", "gaso_out_usa": "output", "gaso_out_jp": "output"}
+                  "tools_root": "tools", "gaso_out_usa": "output", "gaso_out_jp": "output",
+                  "heat_test_workspace": "output", "heat_stage_workspace": "output"}
     for name, role in path_roles.items():
         operations = ("payload-manifest",) if name in ("build_root", "experimental_install") else ()
         fields[f"paths.{name}"] = FieldSpec("path", "native path", True, role, operations)
     for name in ("bag1_usa_disc", "bag1_jp_disc", "bag1_usa_extraction", "bag1_jp_extraction",
                  "bag1_reference_runtime", "gaso_profile", "gaso_stock_bio", "gaso_stock_fever",
-                 "gaso_motions"):
+                 "gaso_motions", "heat_bag1_members", "bag2_cue"):
         fields[f"inputs.{name}"] = FieldSpec("path", "native path", True, "input")
     for name in ("audio_probe", "python_report", "winshot_root", "build_script",
                   "ffmpeg_review", "ffmpeg_wgc", "ffmpeg_native", "ghidra_launcher",
-                  "ghidra_project", "ffprobe_review", "ffmpeg_look", "recording_font"):
+                  "ghidra_project", "ffprobe_review", "ffmpeg_look", "recording_font",
+                  "psx_asset_tools"):
         fields[f"tools.{name}"] = FieldSpec("path", "native path", True, "tool")
     # Host capture budgets; native acceptance thresholds never enter this registry.
     for name in ("max_seconds", "poll_seconds", "alive_check_seconds", "window_wait_seconds",
@@ -116,6 +118,15 @@ def _field_registry() -> Mapping[str, FieldSpec]:
         "gaso-build": ("inputs.gaso_profile", "inputs.gaso_stock_bio",
                        "inputs.gaso_stock_fever", "inputs.gaso_motions",
                        "paths.gaso_out_usa", "paths.gaso_out_jp"),
+        # Legacy Heat test-mod adapters: preparation and the external make-mod step are separate.
+        "heat-character-prepare": ("repo_root", "paths.work_root", "paths.stable_install",
+                                   "inputs.heat_bag1_members", "paths.heat_test_workspace",
+                                   "wsl.distribution"),
+        "heat-stage-prepare": ("repo_root", "paths.work_root", "paths.stable_install",
+                               "inputs.bag1_usa_extraction", "paths.heat_stage_workspace",
+                               "wsl.distribution"),
+        "heat-test-package": ("paths.experimental_install", "paths.stable_install",
+                              "tools.psx_asset_tools", "inputs.bag2_cue", "wsl.distribution"),
     }
     for operation, keys in requirements.items():
         for key in keys:

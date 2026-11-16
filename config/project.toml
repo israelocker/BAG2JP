@@ -5,6 +5,9 @@ schema_version = 1
 work_root = "_work"
 gaso_out_usa = "_work/character_import/gaso/candidate"
 gaso_out_jp = "_work/character_import/gaso/candidate-jp"
+# Legacy Heat test-mod work copies; the adapter deletes and recreates their archive/.
+heat_test_workspace = "_work/heat_test/character"
+heat_stage_workspace = "_work/heat_test/stage"
 
 [wsl]
 distribution = "Ubuntu"
@@ -49,3 +52,4 @@ gaso_profile = "tools/bag1import/profiles/gaso.json"
 gaso_stock_bio = "_work/stage_import/gaso/stock_bio_entries"
 gaso_stock_fever = "assets/archive/characters/bi_o/choreography_a"
 gaso_motions = "_work/gaso/test_001.bin"
+heat_bag1_members = "_work/bag1_assets/heat"

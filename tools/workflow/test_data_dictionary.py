@@ -17,7 +17,7 @@ IMPLEMENTED_CONSUMERS = {"project_config.py", "check_payload_manifest.py",
                        "bag2_workflow.py", "bag2_report.py",
                          "versus_session.py", "strike_acceptance_batch.py", "view_config.py",
                            "bag2_record.py", "recording_config.py", "character_workflow.py",
-                            "build_gaso_assets.py"}
+                            "build_gaso_assets.py", "heat_test_launch.py"}
 MACHINE_PATH = r"(?<![\w:/])[A-Za-z]:[\\/]"
 
 

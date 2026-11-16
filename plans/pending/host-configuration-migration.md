@@ -185,11 +185,14 @@ consumidores aún no leídos ni resolver divergencias en silencio.
 
 ## Decisiones y límites
 
-Sublote S5a Gas-O: lector de extracción USA/JP cerrado solo en host; usa claves
-existentes y mantiene autoridad regional interna del perfil/anunciador. V8: 12
-lectores + 120 workflow + 7 HUD, 17 mutantes; Goldfish corregido sin segunda
-revisión. Siguiente: stock/motions/glyphs/perfil/salida/guardas del builder, luego
-Heat y S5b. No es migración completa del builder ni de S5a.
+Sublote S5a Gas-O cerrado en host (`d1d7c11`, `b1b585c`, `1ca68e5`): extracción
+USA/JP, perfil, stock, motions y salidas consumen configuración central; el perfil
+conserva layout y región independiente del anunciador. V10: 12 lectores + 120
+workflow + 7 HUD, 17 mutantes; Goldfish corregido sin segunda revisión. No demuestra
+equivalencia de paquetes ni aceptación nativa. Heat queda cerrado en su costura host
+(V6: 32 lectores + 120 workflow + 7 HUD, sintaxis Bash y 34 mutantes por aserción);
+sin ejecución de adaptadores. S5b
+perfiles/cache/init sigue pendiente. No repetir los lotes entregados.
 
 | Decisión propuesta | Motivo |
 |---|---|
@@ -218,5 +221,6 @@ contrato o permisos vuelve al owner; no se resuelve con otro fallback.
 | S4a consumidor | ENTREGADO (commit 1ed6f81): grabador consume resolver único, settings inmutables, operaciones condicionales y guardas; 73 recording OK + 119 workflow + 108 harness OK; 28 mutantes por aserción; Goldfish CON HALLAZGOS corregidos sin segunda revisión; sin grabación/partida ni build/deploy de runtime |
 | S4b lectores nativos | ENTREGADO (commit 18d0c51): run_match_and_attack usa tools.ffmpeg_native desde el resolver (sin literal de ruta de máquina); bag1_mem.py/attack_bot.py conservan constantes de RAM nativa; 81 tests OK (mocked, sin juego); inventario bag1native b60449f (8 tests) |
 | S2b y S3–S7 | Pendientes: S2b auditoría config, S5b perfiles/caché/init, S6 paquetes/instalador, S7 bootstrap/externos/cierre; bloqueados por sus dependencias (S2a, lotes previos) |
-| S5a piloto workspace | Cerrado solo este piloto: plan/prepare/state configurados; 38 tests lectores (37 OK, 1 omitido por privilegio file-symlink), 120 workflow OK, 17 mutantes por aserción. Goldfish A/B CON HALLAZGOS corregidos sin segunda revisión; límites en system_config.md. S5a Gas-O/Heat y S5b perfiles/caché/init pendientes; sin paquetes ni juego |
-| S5a Gas-O extracción | Cerrado solo este lector (commit d1d7c11): raíces USA/JP desde claves existentes inputs.bag1_*_extraction, perfil conserva layout/anunciador, is_dir antes de mkdir, 12 lectores + 120 workflow + 7 HUD (fresh, sin reuso), 17 mutantes por aserción, 0 ERROR; Goldfish A/B CON HALLAZGOS corregidos sin segunda revisión; sin paquetes ni juego. Siguiente: stock/motions/glyphs/perfil/salida y guardas del builder |
+| S5a piloto workspace | Cerrado solo este piloto: plan/prepare/state configurados; 38 tests lectores (37 OK, 1 omitido por privilegio file-symlink), 120 workflow OK, 17 mutantes por aserción. Goldfish A/B CON HALLAZGOS corregidos sin segunda revisión; límites en system_config.md. Evidencia histórica del piloto; Gas-O/Heat tienen cierre separado abajo. S5b perfiles/caché/init pendiente; sin paquetes ni juego |
+| S5a Gas-O builder | Cerrado en host (`d1d7c11`, `b1b585c`, `1ca68e5`): extracción regional y seis claves para perfil/stock/motions/salidas, guardas antes de mkdir; 51 campos en ese checkpoint. V10: 12 lectores + 120 workflow + 7 HUD fresh, 17 mutantes detectados; Goldfish A/B CON HALLAZGOS corregidos sin segunda revisión. Sin paquetes ni juego; Heat y S5b son lotes separados |
+| S5a Heat scripts | Cerrado host: launcher con resolver único, cinco claves nuevas (56 campos), preparación/empaquetado separados, entradas directas y links/reparse comprobados antes del runner. V6: 32 lectores (20 Heat + 12 Gas-O), 120 workflow, 7 HUD y bash -n de ambos scripts OK; baseline verde, 34 mutantes por aserción sin ERROR, hashes iguales. Goldfish A/B CON HALLAZGOS: tres corregidos RED→GREEN, sin segunda revisión. V4 scoring inválido y V5 timeout/deriva conservados sin puntuar. Sin adaptadores/conversiones/paquetes/build/deploy/juego; siguiente S5b |

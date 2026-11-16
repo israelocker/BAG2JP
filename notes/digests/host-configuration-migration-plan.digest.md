@@ -2,20 +2,20 @@
 id: host-configuration-migration-plan-digest
 title: "Configuración central: ampliación de auditoría y migración"
 tags: ["digest", "plan", "config"]
-summary: "S5a parcial: workspace cerrado; extracción Gas-O cerrada en host. Resto Gas-O/Heat, perfiles/caches y S6/S7/S2b pendientes; sin partida."
+summary: "S5a host cerrado: workspace, Gas-O y Heat; V6 Heat con 34 mutantes por aserción. S5b perfiles/caches/init y S6/S7/S2b pendientes; sin partida."
 related: ["plans/pending/host-configuration-migration.md", "system_config.md"]
 created: "2026-11-15"
-updated: "2026-11-15"
+updated: "2026-11-16"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "5a2b49e91b3ad46c6902a6fc4cc28aa24cf1e02a531531040cf200dd21dc119f"
+source_sha256: "2d5b4921616e1420b8a7403d96bb5c7c9241e9121fa933081c1f1b0a1483a1b3"
 ---
 
 # Ampliación de configuración central
 
-- Sublote Gas-O extracción: raíces USA/JP desde claves existentes, anunciador
-  independiente y snapshot compartido. V8: 12 lectores +120 workflow +7 HUD,
-  17 mutantes; Goldfish corregido sin segunda revisión. No cierra todo Gas-O ni S5a.
+- Sublote Gas-O builder cerrado en b1b585c/1ca68e5: extracción/config/perfil/stock/
+  motions/salidas, anunciador independiente y snapshot compartido. V10 histórico:
+  12 lectores +120 workflow +7 HUD, 17 mutantes; Goldfish sin segunda revisión.
 
 - Owner pidió abarcar todos los archivos de desarrollo y explicitar el estándar
   y significado de claves para reutilización. La regla documental aplica desde ahora.
@@ -50,10 +50,14 @@ source_sha256: "5a2b49e91b3ad46c6902a6fc4cc28aa24cf1e02a531531040cf200dd21dc119f
   + 108 harness OK, 28 mutantes en copias. Goldfish/estado final en fuente canónica;
    checkpoint consumidor posterior `1ed6f81`; S4b nativo `18d0c51` y auditoría
    bag1native `b60449f`, sin afirmar migración de todos los lectores pendientes.
-- S5a parcial: workspace plan/prepare/state, 38 readers (37 OK, 1 omitido por
+- S5a workspace: plan/prepare/state, 38 readers (37 OK, 1 omitido por
    privilegio file-symlink), 120 workflow y 17 mutantes por aserción. Reutiliza tres
    claves; preserva inputs/hashes nativos. Goldfish A/B CON HALLAZGOS corregidos,
-   sin segunda revisión; faltan Gas-O/Heat y rutas de perfil/cache/init de S5b.
+     sin segunda revisión; evidencia histórica del piloto. Heat cerrado host con
+     enlaces/inputs directos y scoring estricto tras Goldfish: V6 32 lectores,
+     120 workflow, 7 HUD, sintaxis Bash OK y 34 mutantes por aserción sin ERROR;
+     hashes iguales, sin segunda revisión. Rutas de perfil/cache/init de S5b siguen
+     pendientes. No adaptadores ni paquetes ejecutados.
 - S3: versus y PowerShell; S4: captura/FFmpeg/referencias; S5: importadores/perfiles;
   S6: herramientas de paquetes/instalador; S7: bootstrap/externos y cierre.
 - Lotes pequeños con tests/diccionario/operaciones/consumidores reales, Goldfish y

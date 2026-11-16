@@ -2,13 +2,13 @@
 id: data-dictionary-digest
 title: "Diccionario de configuración: uso y límites"
 tags: ["digest", "config", "dictionary"]
-summary: "45 campos; workspace y extracción Gas-O reutilizan claves. Perfil conserva layout/región del anunciador; resto S5 pendiente, sin permisos de juego."
+summary: "56 campos: workspace, builder Gas-O y adaptadores Heat host. Layouts/constantes conservan autoridad nativa; S5b y externos pendientes, sin permisos de juego."
 related: ["docs/data-dictionary.md", "system_config.md", "tools/workflow/project_config.py"]
 created: "2026-11-15"
-updated: "2026-11-15"
+updated: "2026-11-16"
 doc_kind: digest
 source: "docs/data-dictionary.md"
-source_sha256: "ea6abb2887c039de2fea57dab3e47ef46b9bb76f34bdbfa47db9400d6c7894e0"
+source_sha256: "1658e8ca746699f69d00d0ad800d48e8a4fdd15ee6fca152b4e00fc424b14041"
 ---
 
 # Diccionario: antes de consumir claves
@@ -17,10 +17,10 @@ source_sha256: "ea6abb2887c039de2fea57dab3e47ef46b9bb76f34bdbfa47db9400d6c7894e0
   directorio existente (sin validar identidad por hash);
   el build exige también la región independiente del anunciador del perfil.
   Directorios/IDs/cues siguen en perfil; no fallback a su ubicación extraction.
-  Solo lector migrado, no stock/motions/glyphs/salidas ni guardas del builder.
+  `gaso-build` añade perfil/stock/motions/salidas y guardas antes de mkdir.
 
 - `FIELDS` define esquema; TOML común/local define valores; la tabla canónica
-  describe los 45 campos y tests impiden divergencia de claves/tipos/unidades/
+  describe los 56 campos y tests impiden divergencia de claves/tipos/unidades/
   origen/permisos/operaciones. Reutilizar por significado; no duplicar defaults.
 - Política: build.jobs2 y pins no se pueden sobrescribir localmente; repo_root se
   deriva. Ubicaciones locales verificadas no se copian al común ni a consumidores.
@@ -57,5 +57,11 @@ source_sha256: "ea6abb2887c039de2fea57dab3e47ef46b9bb76f34bdbfa47db9400d6c7894e0
 - S4b registra tools.ffmpeg_native para native-capture, sin default de máquina.
 - Piloto character-workspace usa repo_root/work_root/stable_install: outputs
   plan/prepare/state bajo work/character-import, guardas y provenance. No migra
-  perfiles, caches, init-profile ni generadores Gas-O/Heat. write_state directo
-  exige que el llamador indique inputs protegidos ajenos a la configuración.
+  perfiles, caches ni init-profile. write_state directo
+   exige que el llamador indique inputs protegidos ajenos a la configuración.
+- Heat: `heat-character-prepare`/`heat-stage-prepare` separadas de
+  `heat-test-package`; workspaces y miembros con default relativo, CUE/herramientas
+  sin default de máquina. Diez entradas directas character; DFS+SCUS con header y
+  payload stage. Árboles copiados/escritos rechazan links/reparse; no garantía
+  contra carreras, automount distinto o internals de empaquetador. Helpers S5b/S7
+  no se declaran migrados ni se garantiza completar conversiones.

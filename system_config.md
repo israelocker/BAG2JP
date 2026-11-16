@@ -512,11 +512,11 @@ perfiles reales, runtime ni aceptación en juego. El siguiente lote es S5a Gas-O
 después scripts Heat; S5b conserva perfiles/caché/init pendientes.
 Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
 
-### S5a: extracción regional Gas-O (sublote parcial, 2026-11-15)
+### S5a: rutas del builder Gas-O (host, 2026-11-15)
 
 `build_gaso_assets.region_sources` resuelve las raíces mediante las claves
 existentes `inputs.bag1_usa_extraction` y `inputs.bag1_jp_extraction`; operaciones
-`gaso-source-usa/jp`, 45 campos sin nuevos valores TOML. Ya no toma ubicación del
+`gaso-source-usa/jp`. El lector inicial reutilizó el esquema de 45 campos. Ya no toma ubicación del
 campo `source_layout.regions.*.extraction`. El perfil conserva directorios internos,
 modelos compartidos y región independiente del anunciador (JP en el perfil actual,
 incluso si el modelo es USA). No altera cues, IDs, conversiones ni gates nativos.
@@ -526,10 +526,13 @@ ese objeto y un perfil leído una vez entre ambos lectores, antes de mkdir.
 Faltar la clave de la región del anunciador, o que su raíz configurada no sea un
 directorio existente, falla con `ConfigError` antes de crear salida. No se
 certifica la identidad de la extracción por hash ni la presencia de cada archivo.
-Solo es el lector de extracción: stock, motions, glyphs, perfil, salida y guardas
-de escritura del builder siguen pendientes, después Heat y S5b perfiles/caches.
-Las rutas restantes no son nuevos fallbacks de este lector; tampoco se presentan
-como conformidad completa del archivo con el estándar central.
+Los checkpoints locales `b1b585c` y `1ca68e5` migraron además perfil, stock Bi-O,
+stock fever, motions y salidas USA/JP: seis claves `gaso_*`, operación `gaso-build`
+y defaults relativos en el TOML común (51 campos en ese checkpoint). El builder
+comprueba archivos/directorios y protege extracción, anunciador, stock, motions,
+estable y configuración antes de mkdir. Es una migración host: ni la selección
+regional ni las guardas demuestran equivalencia de paquetes o aceptación nativa.
+Heat y S5b perfiles/caches son sublotes separados.
 
 Verificación: `py -3.13 -m unittest tools.test.test_gaso_source_config`; fixtures
 relocados, CWD ajeno, precedencia del overlay, perfil sin cambios, snapshot y
@@ -568,6 +571,67 @@ sin búsqueda de equivalencias, ni FFmpeg/runner sin medios/prueba de juego.
 Extracción, hashes y mutaciones son deterministas: no requieren modelo local.
 Sin generación de paquetes, grabación, build/deploy de runtime, settings/saves,
 overlay ignorado ni herramientas instaladas. S5a completo permanece pendiente.
+
+### S5a: adaptadores legacy Heat (host, 2026-11-16)
+
+`tools/bag1import/heat_test_launch.py` consume el JSON/contrato del resolver único
+para `build_heat_test.sh` y `build_heat_stage_test.sh`; no sustituye el build
+externo instalado ni lo reapunta. Siguen siendo adaptadores legacy de pruebas,
+no el build por defecto. Cinco claves nuevas completan **56 campos**:
+`paths.heat_test_workspace`, `paths.heat_stage_workspace`,
+`inputs.heat_bag1_members`, `inputs.bag2_cue` y `tools.psx_asset_tools`.
+Las tres primeras tienen defaults relativos en el TOML común; CUE y herramientas
+se resuelven en el archivo local, que no se ha editado.
+
+Operaciones `heat-character-prepare`, `heat-stage-prepare` y
+`heat-test-package`: se exige el contrato completo antes de formar argv. Por
+defecto solo se imprime un plan JSON; `--run` ejecuta la preparación y
+`--run --package` añade explícitamente `make-mod` en `mods/installed` de la
+instalación experimental. Los scripts Bash ya no empaquetan ni contienen rutas
+de máquina; reciben las ubicaciones resueltas como entorno, con heredocs citados.
+Los selectores `--omit model,tex,camera,sound` son experimentos de stage, no
+configuración host ni cambios de constantes nativas.
+
+Stage reutiliza `inputs.bag1_usa_extraction`: `STAGEE/ST_HEAT.DFS` y
+`SCUS_942.63` sin su cabecera de 0x800 bytes. La comparación determinista con las
+entradas anteriores confirmó los mismos bytes de DFS y payload de ejecutable;
+no es una prueba de conversión. Character conserva el layout de miembros Heat.
+Antes del runner se exigen sus diez archivos directos; stage exige DFS,
+ejecutable, magic `PS-X EXE` y payload. No se certifican todos los contenidos ni
+los lectores transitivos: perfiles/cachés/init siguen en S5b.
+
+El workspace debe estar dentro de `paths.work_root`, fuera de estable y sin
+solaparse con fuente, archive, config ni instalación experimental. Se rechazan
+enlaces y puntos de reanálisis en archive y workspace existentes, incluidos
+junctions colgantes: evita copiar enlaces que redirijan escrituras. Es una
+comprobación host puntual, no un sandbox frente a cambios concurrentes, un
+automount WSL distinto ni los internos de `make-mod`.
+
+Goldfish A/B, una sola revisión de las 21 entradas congeladas en
+`_work/goldfish/heat-launch-s5a/`: ambos **CON HALLAZGOS**. Confirmados y
+corregidos RED→GREEN: enlaces copiados, archivos directos ausentes detectados
+demasiado tarde y puntuación de mutantes que aceptaba ERROR. V4 queda como
+histórico: su afirmación de 22 kills por aserción era incorrecta (incluía ERROR).
+V5 cambió de entradas y alcanzó timeout externo de 300 s; no se puntúa.
+V6 (`_work/configuration/s5a-heat-launch-v6/`) cerró la verificación host:
+32 lectores (20 Heat + 12 Gas-O), 120 workflow y 7 HUD OK; sintaxis Bash de ambos
+scripts OK, baseline de copia verde y 34 mutantes por aserción, sin ERROR.
+Los hashes de entrada permanecieron iguales. Respuestas literales y triage en
+`_work/goldfish/heat-launch-s5a/`; correcciones verificadas sin segunda revisión.
+Es cierre de S5a en esta costura host, no aceptación de conversiones ni del juego.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Preflight reutilizado `20261116T112538626761Z-workflow`; Ghidra MCP verificó
+`SLPM_862.19` Japón y los ocho bytes de entrada (log de herramienta). No se usa
+funcmatch sin búsqueda de equivalencias ni FFmpeg/runner sin medios/partida.
+Fixtures, hashes y mutaciones deterministas no necesitan modelo local. No se
+ejecutan adaptadores, conversiones, paquetes, juego ni build/deploy de runtime;
+settings, saves, instalación estable y herramientas instaladas permanecen intactos.
+
+Comandos del lote: `py -3.13 -m unittest tools.test.test_heat_test_launch`;
+verificación final `py -3.13 _work/configuration/verify_heat_launch_v6.py`;
+cierre documental `py -3.13 _work/configuration/finalize_heat_launch.py _work/configuration/s5a-heat-launch-v6`.
+No repetir V6 con las mismas entradas ni reutilizar su directorio para otro ensayo.
 
 ## Fuentes vigentes
 

@@ -9,12 +9,14 @@ schema_version = 1
 [inputs]
 # bag1_usa_disc, bag1_jp_disc, bag1_usa_extraction, bag1_jp_extraction
 # bag1_reference_runtime
+# bag2_cue (BAG2 disc .cue; only for heat_test_launch.py --package)
 
 [tools]
 # audio_probe, python_report, winshot_root, build_script, ffmpeg_review, ffmpeg_wgc
 # ghidra_launcher, ghidra_project
 # ffprobe_review, ffmpeg_look, recording_font (recorder requires files when used)
 # ffmpeg_native (native BAG1 capture tool, pending machine location)
+# psx_asset_tools (psx-asset-tools checkout; only for heat_test_launch.py --package)
 
 [harness]
 # Optional wait-budget overrides after a consumer adopts this section:
