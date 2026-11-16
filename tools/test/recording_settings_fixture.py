@@ -16,7 +16,7 @@ def recorder_settings(root: Path, *, operation="record", environ=None):
     paths = {"work_root": str(root), "stable_install": str(root / "stable"),
              "experimental_install": str(root)}
     tools = {"ffmpeg_review": shutil.which("ffmpeg"), "ffprobe_review": shutil.which("ffprobe"),
-             "recording_font": "C:/Windows/Fonts/consola.ttf", "ffmpeg_wgc": str(root / "absent-wgc.exe")}
+             "recording_font": "fonts/consola.ttf", "ffmpeg_wgc": str(root / "absent-wgc.exe")}
     local = "[paths]\n" + "".join(f"{key}={json.dumps(value)}\n" for key, value in paths.items())
     local += "[tools]\n" + "".join(f"{key}={json.dumps(value)}\n" for key, value in tools.items() if value)
     (repo / "config/project.local.toml").write_text(local, encoding="utf-8", newline="\n")

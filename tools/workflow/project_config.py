@@ -59,8 +59,8 @@ def _field_registry() -> Mapping[str, FieldSpec]:
         operations = ("payload-manifest",) if name in ("build_root", "experimental_install") else ()
         fields[f"paths.{name}"] = FieldSpec("path", "native path", True, role, operations)
     for name in ("bag1_usa_disc", "bag1_jp_disc", "bag1_usa_extraction", "bag1_jp_extraction",
-                 "bag1_reference_runtime", "gaso_profile", "gaso_stock_bio", "gaso_stock_fever",
-                 "gaso_motions", "heat_bag1_members", "bag2_cue"):
+                 "bag1_reference_runtime", "bag1_main_exe", "gaso_profile", "gaso_stock_bio",
+                 "gaso_stock_fever", "gaso_motions", "heat_bag1_members", "bag2_cue"):
         fields[f"inputs.{name}"] = FieldSpec("path", "native path", True, "input")
     for name in ("audio_probe", "python_report", "winshot_root", "build_script",
                   "ffmpeg_review", "ffmpeg_wgc", "ffmpeg_native", "ghidra_launcher",
