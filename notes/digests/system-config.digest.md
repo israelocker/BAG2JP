@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "515c92a55152c50c1adb90d74511c7bab3a75a8245edf9428dcd59241db42b02"
+source_sha256: "f182466d6eab18070f9361ed1d4376177f853d29d032fe333937e1dd54ca49b2"
 ---
 
 # Configuración: estado mínimo
@@ -24,9 +24,10 @@ source_sha256: "515c92a55152c50c1adb90d74511c7bab3a75a8245edf9428dcd59241db42b02
 - Reusar evidencia por alcance/hashes; deriva exige análisis de impacto, no rerun
   global. Heat V6 conserva 169 inputs; otros manifiestos tienen deriva compartida.
   F0/S1/workspace aquí solo comparados contra commit. No se repitieron suites.
-- S5b: 19 JSON con revisión acotada registrada, sin migración; siguiente alcance
-  runtime de referencia en character_workflow con clave existente. Previsión
-  90–150 min, control a 90, no compromiso global ni reemplazo masivo de rutas.
+- S5b: 19 JSON preservados. S5b1 lector runtime implementado y verificado host:
+  snapshot central único, sin fallback, 68 tests (67 PASS/1 skip), 3 mutantes.
+  Goldfish limitado (segundo intento no utilizable; no dos conformes).
+  Siguiente revisión catálogo/assets; S5b entero no cerrado ni ETA global.
 - Se retira ~60 %. Avance ponderado/ETA quedan desconocidos hasta baselinar esfuerzo,
   capacidad. Fecha límite: 17-11-2026 a las 12:00 del mediodía, America/Lima (UTC−5);
   lunes hasta las 22:00, martes 09:00–12:00 (3 horas), sin suponer jornada nocturna;

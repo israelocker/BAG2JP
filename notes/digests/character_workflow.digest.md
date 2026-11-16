@@ -5,10 +5,10 @@ tags: ["digest", "workflow"]
 summary: "CLI contrastado, schema de inicio y gates de prepare; no importador automático."
 related: ["CHARACTER_IMPORT.md", "notes/character-pipeline.md"]
 created: "2026-11-02"
-updated: "2026-11-02"
+updated: "2026-11-16"
 doc_kind: digest
 source: "tools/bag1import/character_workflow.py"
-source_sha256: "b1ef179841f711e8e0167458ff6d898e7913570752c731ef8faac3aacbe96d34"
+source_sha256: "9d98356ff323522e3c8bb25d646b9ca3801cfa4e7dbaccb85b23ff0084feec04"
 ---
 
 Parser actual: `init-profile`, `validate-profile`, `plan`, `prepare`, `status`,
@@ -18,7 +18,16 @@ No existen acciones read-state/compact-status.
 `init-profile` genera schema 1 con IDs por investigar. `plan`/`prepare` requieren
 schema 2 y gaps resueltos, incluido `gameplay_evidence`. No inventar evidencia
 para forzar primer candidato. `prepare` crea workspace/manifest, no despliega.
-`status` puede guardar estado: no usarlo como probe read-only sobre el task ajeno.
+`status` no escribe estado; `plan` sí y `prepare` crea manifiesto/estado.
+
+S5b1: todos los lectores de perfiles/firma/cache/plan/prepare/CLI usan
+`inputs.bag1_reference_runtime` de un snapshot central único. El campo histórico
+del perfil no es operativo ni obligatorio aquí; init-profile conserva su argumento
+explícito. Operaciones puras solo exigen runtime, no workspace/stable.
+Hash/cache dependen de bytes, no ubicación equivalente; runtime real e inputs
+config protegidos. 68 tests host (67 PASS/1 skip), 3 mutantes AssertionError.
+Goldfish limitado: 2 intentos locales, segundo no utilizable; no dos conformes.
+No certifica otros lectores ni migra catálogo/assets/destinos cache/init.
 
 Cache valida inputs y evidencia por hash. Hit no significa aceptación del paquete
 ni sonido. No hay solver semántico/optimización de grafo implementado aquí.

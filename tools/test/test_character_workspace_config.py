@@ -18,14 +18,37 @@ class WorkspaceConfigTests(unittest.TestCase):
 
     def setUp(self):
         fixtures.CharacterPlanTests.setUp(self)
-        (self.root / "config").mkdir()
+        (self.root / "config").mkdir(exist_ok=True)
         source = Path(__file__).resolve().parents[2] / "config/project.toml"
-        (self.root / "config/project.toml").write_bytes(source.read_bytes())
+        (self.root / "config/project.toml").write_bytes(source.read_bytes().replace(b"[inputs]", b'[inputs]\nbag1_reference_runtime="runtime.bin"', 1))
         self.local = self.root / "config/project.local.toml"
         self.local.write_text('[paths]\nwork_root="evidence ñ &"\nstable_install="stable"\n', encoding="utf-8")
 
     def workspace(self):
         return self.root / "evidence ñ &/character-import/alpha"
+
+    def test_cli_prepare_loads_configuration_once(self):
+        real = fixtures.workflow.load_config
+        with patch.object(fixtures.workflow, "load_config", wraps=real) as resolver:
+            self.assertEqual(fixtures.workflow.main(["prepare", "--project", str(self.root),
+                "--profile", str(self.profile), "--local-config", str(self.local)]), 0)
+        self.assertEqual(resolver.call_count, 1)
+
+    def test_prepare_protects_configured_runtime_not_historical_path(self):
+        runtime = self.workspace() / "candidate/manifest.json"
+        runtime.parent.mkdir(parents=True)
+        runtime.write_bytes(b"selected runtime")
+        with self.local.open("a", encoding="utf-8") as stream:
+            stream.write('[inputs]\nbag1_reference_runtime="evidence ñ &/character-import/alpha/candidate/manifest.json"\n')
+        with self.assertRaises(pc.ConfigError):
+            fixtures.workflow.prepare_workspace(self.profile, self.root)
+        self.assertEqual(runtime.read_bytes(), b"selected runtime")
+
+    def test_missing_runtime_rejects_prepare_before_outputs(self):
+        (self.root / "runtime.bin").unlink()
+        with self.assertRaises(pc.ConfigError):
+            fixtures.workflow.prepare_workspace(self.profile, self.root)
+        self.assertFalse(self.workspace().exists())
 
     def test_prepare_and_state_use_selected_config_without_changing_inputs(self):
         # Use the CLI so an unmodified implementation goes red on the observable destination.
@@ -56,9 +79,9 @@ class WorkspaceConfigTests(unittest.TestCase):
         self.assertFalse((self.root / "wrong-default").exists())
         self.assertTrue(all(p.read_bytes() == raw for p, raw in inputs.items()))
 
-    def test_read_only_actions_need_no_machine_configuration(self):
+    def test_read_only_actions_need_only_runtime_configuration(self):
         self.local.unlink()
-        (self.root / "config/project.toml").unlink()
+        (self.root / "config/project.toml").write_text('schema_version=1\n[inputs]\nbag1_reference_runtime="runtime.bin"\n')
         self.assertTrue(fixtures.workflow.character_plan(self.profile, self.root)["prepare_ready"])
         source = Path(fixtures.workflow.__file__)
         for action in ("status", "acceptance-plan", "validate-profile"):

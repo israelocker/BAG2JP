@@ -8,10 +8,13 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "docs/data-dictionary.md"
-source_sha256: "1658e8ca746699f69d00d0ad800d48e8a4fdd15ee6fca152b4e00fc424b14041"
+source_sha256: "b8cb9a5eb2fef452d86d85adb8272da9e597cf55b3d565bc7bfa4826f8b3c989"
 ---
 
 # Diccionario: antes de consumir claves
+
+- `inputs.bag1_reference_runtime`: lector character_workflow S5b1 exige archivo
+  existente sin fallback al perfil, snapshot único; no init-profile ni otros lectores.
 
 - `gaso-source-usa/jp`: cada lector exige solo su clave, y que la raíz sea un
   directorio existente (sin validar identidad por hash);

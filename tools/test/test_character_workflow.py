@@ -10,10 +10,16 @@ def animation(event=0,motion=0):
     struct.pack_into("<I",data,28,4);data[8]=motion;data[32]=event
     return struct.pack("<I",len(data))+data+bytes(4)
 
+def configure_runtime(root):
+    config = root / "config"
+    config.mkdir(exist_ok=True)
+    (config / "project.toml").write_text('schema_version=1\n[inputs]\nbag1_reference_runtime="runtime.bin"\n')
+
 class ReferenceCacheTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name)
+        configure_runtime(self.root)
         (self.root/"source.bin").write_bytes(animation())
         (self.root/"runtime.bin").write_bytes(b"runtime")
         (self.root/"rom.bin").write_bytes(b"base game")
@@ -115,6 +121,7 @@ class CharacterPlanTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name)
+        configure_runtime(self.root)
         (self.root/"source.bin").write_bytes(animation())
         (self.root/"runtime.bin").write_bytes(b"runtime")
         (self.root/"rom.bin").write_bytes(b"base game")
@@ -165,8 +172,8 @@ class CharacterPlanTests(unittest.TestCase):
         self.assertLess(path.stat().st_size,8192)
 
     def configure_workspace(self):
-        config = self.root / "config"; config.mkdir()
-        (config / "project.toml").write_text('schema_version=1\n[paths]\nwork_root="_work"\nstable_install="stable"\n')
+        config = self.root / "config"; config.mkdir(exist_ok=True)
+        (config / "project.toml").write_text('schema_version=1\n[inputs]\nbag1_reference_runtime="runtime.bin"\n[paths]\nwork_root="_work"\nstable_install="stable"\n')
 
 if __name__=="__main__":
     unittest.main()

@@ -6484,19 +6484,22 @@
           "S5a-workspace",
           "S5b"
         ],
-        "current_sha256": "b2d73ac37fbd08c83df5e8e969203e6bd687ce21029bff426d719aa2f5277417",
+        "current_sha256": "9d98356ff323522e3c8bb25d646b9ca3801cfa4e7dbaccb85b23ff0084feec04",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": true,
         "status": "partial",
         "review_scope": "named_acceptance_scope_not_whole_file",
         "delivered_scopes": [
-          "S5a-workspace"
+          "S5a-workspace",
+          "S5b1-runtime"
         ],
-        "remaining": "profile locations, cache outputs, init-profile explicit paths and presentation defaults",
+        "remaining": "catalogue/assets/evidence host authority, cache output destinations, init-profile explicit paths; S5b1 Goldfish compliance limitation recorded",
         "evidence": [
           "_work/configuration/s5a-workspace-final/inventory.json",
-          "_work/configuration/s5a-workspace-final/closeout.json"
-        ]
+          "_work/configuration/s5a-workspace-final/closeout.json",
+          "_work/configuration/s5b1/verification.json"
+        ],
+        "s5b1_review_status": "two_attempts_not_two_fully_compliant_reviewers"
       }
     },
     {
@@ -12341,10 +12344,7 @@
       "Dependency drift triggers impact review, not blanket reruns.",
       "Persist scope changes and revised forecast; never silently enlarge a time-boxed lot."
     ],
-    "next_frontier": [
-      "S5b: inventory/profile-reader decisions, not implementation before that review",
-      "S2a-remainder: bounded source reviews prioritized by operational host candidates"
-    ],
+    "next_frontier": "S5b1 runtime reader implemented and host-verified: 68 tests (67 PASS, 1 symlink skip), 3 causal AssertionError mutants. Review limit: 2 cold local attempts but B summary not usable and A fixed line paraphrased; do not claim 2 compliant Goldfish reviews. See system_config.md and _work/goldfish/s5b1/verdict.json. Next bounded scope: inspect catalogue/assets authority in character_workflow without editing existing profiles/contracts/caches or generating packages; define acceptance before changes. S5b overall remains pending. Reuse evidence by hashes, no global reruns; no game/build/deploy/settings/saves/installed tools/push/snapshot.",
     "lots": [
       {
         "id": "F0",
@@ -13727,6 +13727,42 @@
         ],
         "budget_checkpoint_minutes": 90,
         "estimate_basis": "Planning hypothesis, not measured throughput or total project forecast."
+      },
+      {
+        "id": "S5b1-runtime-20261116",
+        "status": "delivered_scoped_host_review_limited",
+        "consumer_files": [
+          "tools/bag1import/character_workflow.py"
+        ],
+        "support_files": [
+          "tools/test/test_character_workflow.py",
+          "tools/test/test_character_workspace_config.py",
+          "tools/test/test_character_runtime_config.py"
+        ],
+        "acceptance_scope": "Only central runtime authority across profile readers/signature/cache/plan/prepare/CLI; one config snapshot; historical field non-operative; init unchanged",
+        "evidence": [
+          "_work/configuration/s5b1/verification.json",
+          "_work/goldfish/s5b1/verdict.json"
+        ],
+        "input_sha256": {
+          "tools/bag1import/character_workflow.py": "9d98356ff323522e3c8bb25d646b9ca3801cfa4e7dbaccb85b23ff0084feec04",
+          "tools/workflow/project_config.py": "3ed95bf2c73c477f18c5bb5afb9d8ad935114ce837c1e5645d9bebe683ea7959",
+          "tools/test/test_character_workflow.py": "52052a1ad901a00c74d33152a3c14c2d8342cabfcaba4c4d4b4cc294340d8851",
+          "tools/test/test_character_workspace_config.py": "fe3d46b33e78516bd237faf8c08429d2674b0b4f49828d38e71a0d1bf4703adc",
+          "tools/test/test_character_runtime_config.py": "efb3bf15444f98c746ab9a8bea8a92629f9fb67ef1b8da128eeb20445b5eea3c"
+        },
+        "tests": 68,
+        "passed": 67,
+        "skipped": 1,
+        "assertion_mutants": 3,
+        "goldfish": "2 local readonly attempts; B unusable summary, A fixed line paraphrased. Not two compliant reviews; self-review supplemental, no second round.",
+        "remaining": "S5b catalogue/assets/policies/cache destinations/init/package readers remain separate; existing JSON unchanged",
+        "metrics_scope": "Earlier reconciliation metrics/universe remain dated baseline; this bounded additional scope does not claim whole-file or global completion. New runtime test file is support of this scope, not an extra migrated consumer.",
+        "implementation_started_utc": "2026-11-16T13:08:26.404394+00:00",
+        "recorded_utc": "2026-11-16T13:18:06.809034+00:00",
+        "total_session_seconds": null,
+        "time_basis": "First task-owned test file creation to record is measurable implementation interval only; startup and rework not separately instrumented. No savings claim.",
+        "implementation_interval_seconds": 580.404644
       }
     ]
   }

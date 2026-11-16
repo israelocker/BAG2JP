@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "398fb14d9d64e9e8ebf05f8f802bdc830aa8bf36f5a373c04c72b4004eaa71ac"
+source_sha256: "4cd59271a9d7ad664afffac9df79cd047773493b5a8039955e373dca2490d898"
 ---
 
 # Ampliación de configuración central
@@ -26,8 +26,9 @@ source_sha256: "398fb14d9d64e9e8ebf05f8f802bdc830aa8bf36f5a373c04c72b4004eaa71ac
 - Deriva de dependencias exige análisis antes de elegir un check, no repetición
   automática. Conciliación documental sin suites nuevas ni implementación S5b.
 - S5b: revisión acotada de 19 JSON registrada por hash/clasificación, no migración.
-  Runtime de tres perfiles usa la clave existente como siguiente sublote S5b1;
-  previsión inicial 90–150 min, control a 90, no ETA global. Caché Heat legacy
+  S5b1 lector runtime implementado host: clave existente/snapshot único, 68 tests
+  (67 PASS/1 skip), 3 mutantes causales. Goldfish limitado: segundo intento no
+  utilizable, no dos revisores conformes. Siguiente catálogo/assets, no ETA global. Caché Heat legacy
   incompatible con key/evidence; contratos/hashes y lectores de paquetes separados.
 - Sublote Gas-O builder cerrado en b1b585c/1ca68e5: extracción/config/perfil/stock/
   motions/salidas, anunciador independiente y snapshot compartido. V10 histórico:

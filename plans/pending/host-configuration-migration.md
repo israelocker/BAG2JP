@@ -320,7 +320,7 @@ estado a entregado ni convierte esta lectura parcial en auditoría completa.
   perfiles de etapa Gas-O/Strike y `regional_variants.json` tienen lectores de
   paquetes: se tratan por separado, sin ejecutar conversiones ni generar paquetes.
 
-**Siguiente sublote S5b1 — autoridad del runtime de referencia:**
+**Sublote S5b1 — autoridad del runtime de referencia (implementado host 2026-11-16):**
 
 - Alcance: `character_workflow.py` y pruebas host de lectura/firma de perfiles;
   reutilizar `inputs.bag1_reference_runtime`, pasar un único snapshot resuelto y
@@ -337,6 +337,22 @@ estado a entregado ni convierte esta lectura parcial en auditoría completa.
   Control a los **90 minutos**: si no está cerrado, informar pendiente y previsión
   revisada antes de ampliar trabajo. Registrar duración real y causas de retrabajo.
   Esta estimación no cubre los otros grupos ni demuestra viabilidad del plazo total.
+
+Resultado acotado: `character_workflow.py` recibe config central en load_profile,
+signature/record_cache/check_cache/character_plan/prepare y todos los lectores CLI;
+un snapshot por invocación, runtime real protegido y validado antes de outputs.
+El campo histórico reference_runtime no es requerido ni operativo en estos lectores;
+init-profile sigue usando su argumento explícito. No se editó ningún perfil/cache.
+Fixtures reubicados Heat/Strike/Gas-O, identidad/región preservadas, mismo contenido
+conserva cache y distintos bytes invalidan. Host: 68 tests, 67 PASS/1 skip de symlink,
+3 mutantes causales (AssertionError, 0 errores). Evidencia y comando exacto en
+`_work/configuration/s5b1/verification.json`; revisión en `_work/goldfish/s5b1/`.
+Límite: dos revisores locales read-only, pero B fue resumen no utilizable y A
+parafraseó línea fija; no declarar dos Goldfish conformes. No se relanzó revisión.
+Auto-revisión suplementaria, no sustituto de ese límite. Registro canónico:
+[system_config.md](../../system_config.md#presupuesto-y-deadlines).
+S5b entero continúa pendiente: siguiente revisión catálogo/assets del lector;
+otros lectores, políticas, destinos cache, init y paquetes requieren sus sublotes.
 
 No se repitieron suites para esta revisión de fuentes. Evidencia:
 `_work/configuration/s5b-scope-review/extracted.json`; la extracción de cadenas

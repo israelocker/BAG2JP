@@ -19,13 +19,29 @@ def file_sha(path):
     with Path(path).open("rb") as stream:
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
-def load_profile(path, project):
+def _runtime_config(project: Path | str, config: ProjectConfig | None = None) -> ProjectConfig:
+    config = config if config is not None else load_config(repo_root=project)
+    if config.repo_root != Path(project).resolve():
+        raise ConfigError("Runtime configuration belongs to a different project")
+    runtime, = require_paths(config, ("inputs.bag1_reference_runtime",))
+    if not runtime.is_file():
+        raise ConfigError(f"Missing reference runtime: {runtime}")
+    return config
+
+
+def load_profile(path: Path | str, project: Path | str, *,
+                 config: ProjectConfig | None = None) -> tuple[dict, list[str]]:
+    """Validate a profile using central runtime authority; return data and pending IDs.
+
+    The historical reference_runtime field is preserved as data, never read as a path.
+    """
+    config = _runtime_config(project, config)
     path, project = Path(path), Path(project)
     profile = json.loads(path.read_text(encoding="utf-8"))
     schema = profile.get("schema")
     if schema not in (1, 2) or not re.fullmatch(r"[a-z0-9-]+", profile.get("character", "")):
         raise ValueError("Profile requires schema 1 and a character slug")
-    required = ("source_animation_list", "game_catalog", "reference_runtime")
+    required = ("source_animation_list", "game_catalog")
     if schema == 2:
         required += ("display_name", "capabilities", "assets")
     for key in required:
@@ -34,7 +50,7 @@ def load_profile(path, project):
     stages = ("inventory", "contract", "verified") if schema == 1 else ("inventory", "contract", "candidate", "verified")
     if profile.get("stage") not in stages:
         raise ValueError("Invalid workflow stage")
-    for key in ("source_animation_list", "game_catalog", "reference_runtime"):
+    for key in ("source_animation_list", "game_catalog"):
         if not (project / profile[key]).is_file():
             raise ValueError(f"Missing input: {key}")
     if schema == 2:
@@ -140,10 +156,12 @@ def _workspace_file(config: ProjectConfig, character: str, *parts: str,
     return path
 
 
-def _workspace_inputs(profile_path: Path | str, project: Path | str, profile: dict) -> tuple[Path, ...]:
+def _workspace_inputs(profile_path: Path | str, project: Path | str, profile: dict,
+                      config: ProjectConfig) -> tuple[Path, ...]:
     project = Path(project)
     inputs = [Path(profile_path)]
-    inputs += [project / profile[key] for key in ("source_animation_list", "game_catalog", "reference_runtime")]
+    inputs += [project / profile[key] for key in ("source_animation_list", "game_catalog")]
+    inputs += list(require_paths(config, ("inputs.bag1_reference_runtime",)))
     inputs += [project / item["file"] for item in profile.get("assets", {}).values()]
     catalog = json.loads((project / profile["game_catalog"]).read_text(encoding="utf-8"))
     inputs += [project / item["file"] for game in catalog["games"].values() for item in game["inputs"]]
@@ -207,8 +225,11 @@ def acceptance_cases(profile):
         cases.append({"id":"online-content-identity","category":"online","required":True})
     return cases
 
-def character_plan(profile_path, project):
-    profile, pending = load_profile(profile_path, project)
+def character_plan(profile_path: Path | str, project: Path | str, *,
+                   config: ProjectConfig | None = None) -> dict:
+    """Return capability-driven acceptance requirements for the selected profile."""
+    config = _runtime_config(project, config)
+    profile, pending = load_profile(profile_path, project, config=config)
     gaps = _missing_schema2_gaps(profile) if profile.get("schema") == 2 else []
     if profile.get("schema") != 2:
         gaps.append("schema_2_required_for_plan")
@@ -237,11 +258,12 @@ def prepare_workspace(profile_path: Path | str, project: Path | str, *,
                       config: ProjectConfig | None = None) -> dict:
     """Create only a candidate manifest, protecting validated inputs and host configuration."""
     config = _workspace_config(project, config)
-    profile, pending = load_profile(profile_path, project)
-    plan = character_plan(profile_path, project)
+    config = _runtime_config(project, config)
+    profile, pending = load_profile(profile_path, project, config=config)
+    plan = character_plan(profile_path, project, config=config)
     if plan["gaps"]:
         raise ValueError("Cannot prepare: "+", ".join(plan["gaps"]))
-    inputs = _workspace_inputs(profile_path, project, profile)
+    inputs = _workspace_inputs(profile_path, project, profile, config)
     path = _workspace_file(config, profile["character"], "candidate", "manifest.json", protected_inputs=inputs)
     manifest = {"schema":1,"character":profile["character"],"status":"candidate_only",
                 "profile_sha256":file_sha(profile_path),"assets":profile.get("assets",{}),
@@ -250,31 +272,36 @@ def prepare_workspace(profile_path: Path | str, project: Path | str, *,
     _atomic_write_json(path,manifest)
     return {"status":"candidate_created","character":profile["character"],"manifest":str(path),"deployed":False}
 
-def signature(profile_path, project):
-    profile, pending = load_profile(profile_path, project)
+def signature(profile_path: Path | str, project: Path | str, *,
+              config: ProjectConfig | None = None) -> dict:
+    """Return a content-based reference key, independent of runtime location."""
+    config = _runtime_config(project, config)
+    profile, pending = load_profile(profile_path, project, config=config)
+    return _profile_signature(profile, project, config)
+
+
+def _profile_signature(profile: dict, project: Path | str, config: ProjectConfig) -> dict:
+    runtime, = require_paths(config, ("inputs.bag1_reference_runtime",))
     digest, count = motion_fingerprint(Path(project) / profile["source_animation_list"])
     return {"schema": 1, "decoder": "metro-motion-prefix-v1", "character": profile["character"],
             "catalog_sha256": file_sha(Path(project) / profile["game_catalog"]),
-            "runtime_sha256": file_sha(Path(project) / profile["reference_runtime"]),
+            "runtime_sha256": file_sha(runtime),
             "motion_sha256": digest, "animation_count": count}
 
-def record_cache(profile_path, project, cache_path, evidence):
-    key = signature(profile_path, project)
+def record_cache(profile_path: Path | str, project: Path | str, cache_path: Path | str,
+                 evidence: Sequence[Path | str], *, config: ProjectConfig | None = None) -> dict:
+    """Record reference evidence without replacing any validated/configuration input."""
+    config = _runtime_config(project, config)
+    profile, _ = load_profile(profile_path, project, config=config)
+    key = _profile_signature(profile, project, config)
     if not evidence:
         raise ValueError("A reference cache requires evidence")
-    inputs = [Path(profile_path).resolve(),
-              (Path(project)/load_profile(profile_path, project)[0]["source_animation_list"]).resolve()]
-    profile = load_profile(profile_path, project)[0]
-    inputs += [(Path(project)/profile[k]).resolve() for k in ("game_catalog","reference_runtime")]
-    catalog = json.loads((Path(project)/profile["game_catalog"]).read_text(encoding="utf-8"))
-    inputs += [(Path(project)/item["file"]).resolve()
-               for game in catalog["games"].values() for item in game["inputs"]]
-    inputs += [(Path(project)/exception["evidence"]["file"]).resolve()
-               for exception in profile.get("exceptions", []) if exception.get("status") == "verified"]
-    inputs += [(Path(project)/item["file"]).resolve() for item in profile.get("validation_evidence", [])]
+    inputs = [path.resolve() for path in _workspace_inputs(profile_path, project, profile, config)]
+    inputs += [Path(path).resolve() for path in config.input_files.values() if path]
     inputs += [Path(path).resolve() for path in evidence]
     cache_path = Path(cache_path)
-    if cache_path.resolve() in inputs:
+    if cache_path.resolve() in inputs or (cache_path.exists() and any(
+            path.exists() and cache_path.samefile(path) for path in inputs)):
         raise ValueError("Cache output cannot overwrite an input")
     if cache_path.exists():
         previous = json.loads(cache_path.read_text(encoding="utf-8"))
@@ -295,8 +322,11 @@ def record_cache(profile_path, project, cache_path, evidence):
         raise
     return {"status": "recorded", **key}
 
-def check_cache(profile_path, project, cache_path):
-    expected = signature(profile_path, project)
+def check_cache(profile_path: Path | str, project: Path | str, cache_path: Path | str, *,
+                config: ProjectConfig | None = None) -> dict:
+    """Check content identity and evidence for the configured runtime."""
+    config = _runtime_config(project, config)
+    expected = signature(profile_path, project, config=config)
     path = Path(cache_path)
     if not path.is_file():
         return {"status": "miss", "reason": "no_record"}
@@ -375,11 +405,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     config = None
     protected_inputs = ()
+    if args.action != "init-profile":
+        try:
+            config = _runtime_config(args.project, load_config(repo_root=args.project, local_config=args.local_config))
+        except ConfigError as error:
+            parser.error(str(error))
     if args.action in ("plan", "prepare"):
         try:
-            config = _workspace_config(args.project, load_config(repo_root=args.project, local_config=args.local_config))
-            profile, _ = load_profile(args.profile, args.project)
-            protected_inputs = _workspace_inputs(args.profile, args.project, profile)
+            config = _workspace_config(args.project, config)
+            profile, _ = load_profile(args.profile, args.project, config=config)
+            protected_inputs = _workspace_inputs(args.profile, args.project, profile, config)
             state_path = _workspace_file(config, profile["character"], "state.json", protected_inputs=protected_inputs)
             if args.action == "prepare":
                 manifest_path = _workspace_file(config, profile["character"], "candidate", "manifest.json", protected_inputs=protected_inputs)
@@ -392,13 +427,13 @@ def main(argv: Sequence[str] | None = None) -> int:
             parser.error("init-profile needs --character --source-archive --source-list --runtime")
         result = init_profile(args.project,args.profile,args.character,args.source_archive,args.source_list,args.runtime,args.catalog)
     elif args.action == "validate-profile":
-        profile, pending = load_profile(args.profile, args.project)
+        profile, pending = load_profile(args.profile, args.project, config=config)
         digest, count = motion_fingerprint(args.project/profile["source_animation_list"])
         result = {"status": "valid_profile", "character": profile["character"], "animation_count": count,
                   "stage": profile["stage"], "pending_exceptions": pending,
                   "generation_ready": profile["stage"] == "verified" and not pending}
     elif args.action in ("plan","status","acceptance-plan"):
-        plan = character_plan(args.profile, args.project)
+        plan = character_plan(args.profile, args.project, config=config)
         if args.action == "acceptance-plan":
             result = {"status":"acceptance_plan","character":plan["character"],"cases":plan["acceptance"]}
         else:
@@ -407,12 +442,12 @@ def main(argv: Sequence[str] | None = None) -> int:
                 write_state(args.project, plan, "planned", config=config, protected_inputs=protected_inputs)
     elif args.action == "prepare":
         result = prepare_workspace(args.profile, args.project, config=config)
-        plan = character_plan(args.profile, args.project)
+        plan = character_plan(args.profile, args.project, config=config)
         write_state(args.project, plan, "candidate_created", config=config, protected_inputs=protected_inputs)
     else:
         if args.cache is None:
             parser.error("--cache is required for cache actions")
-        result = record_cache(args.profile, args.project, args.cache, args.evidence) if args.action == "cache-record" else check_cache(args.profile, args.project, args.cache)
+        result = record_cache(args.profile, args.project, args.cache, args.evidence, config=config) if args.action == "cache-record" else check_cache(args.profile, args.project, args.cache, config=config)
     print(json.dumps(result))
     return 2 if result.get("status") == "miss" else 0
 

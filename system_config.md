@@ -34,7 +34,7 @@ El 4,67 % mide trazabilidad de disposiciones de consumidores, **no** cumplimient
 total del estándar ni trabajo ejecutado: incluye pendientes y excluye soporte.
 El cociente 9/21 = 42,86 % solo cuenta grupos de reporte; no se usa como avance
 ponderado. Un alcance entregado no certifica todo el archivo: por ejemplo,
-`character_workflow.py` mantiene perfiles/cache/init pendientes; S1 conserva
+`character_workflow.py` mantiene catálogo/assets, destinos cache e init pendientes; S1 conserva
 candidatos numéricos legacy. Ningún archivo se declara exento por no haber cambiado.
 Se conservan intactas las 471 filas originales y su procedencia; las disposiciones
 añadidas distinguen revisión histórica, evidencia de tests y simple pertenencia a un commit.
@@ -65,6 +65,22 @@ presupuesto del siguiente sublote en el
 S5b1 se limita al runtime de referencia del lector de perfiles usando la clave ya
 registrada `inputs.bag1_reference_runtime`: previsión inicial 90–150 minutos,
 control de presupuesto a los 90, no promesa de duración ni ETA de todo el proyecto.
+Implementación host S5b1 verificada el 2026-11-16: lectura/firma/cache/plan/prepare
+y CLI usan exclusivamente esa clave con un snapshot por invocación, sin fallback
+al campo histórico del perfil. No se migraron otros lectores ni los JSON existentes.
+68 tests (67 PASS, 1 skip por privilegio de symlink), 3 mutantes causales con
+AssertionError y 0 errores: `_work/configuration/s5b1/verification.json`.
+Goldfish: dos intentos read-only sobre copias congeladas, en serie por GPU única;
+A devolvió hallazgos concretos y B solo resumen (`REVISIÓN NO UTILIZABLE`). A
+parafraseó la línea fija. No son dos revisiones plenamente conformes; auto-revisión
+suplementaria declarada, sin segunda ronda. La sugerencia de eliminar el campo
+histórico se refuta por estar fuera del alcance aprobado (se preservan perfiles/init).
+Spec, respuestas literales, hashes y triaje: `_work/goldfish/s5b1/`.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+Se reutilizaron baseline, preflight y Ghidra de la tarea; no juego/build/deploy,
+FFmpeg ni conversores, por ser una costura exclusivamente host. Sin reclamo de
+cierre de S5b ni de aceptación nativa. Siguiente: revisión acotada catálogo/assets
+del mismo lector, preservando hashes y sin generar paquetes; límite Goldfish visible.
 No se autoriza un reemplazo masivo seguido de pruebas: rutas equivocadas pueden
 seleccionar otros assets o escribir en otro destino sin producir una excepción.
 
