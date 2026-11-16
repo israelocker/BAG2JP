@@ -8,7 +8,7 @@ created: "2026-11-02"
 updated: "2026-11-16"
 doc_kind: digest
 source: "tools/bag1import/character_workflow.py"
-source_sha256: "dab2dc113e64b2657e4f3994dcec9791b811f75bc6b2993dddb6f63fb5549f89"
+source_sha256: "982e90ec1c918fe785d13ff96ea73edcb0132a5c1dc9bb5cbf295c38472d6819"
 ---
 
 Parser actual: `init-profile`, `validate-profile`, `plan`, `prepare`, `status`,

@@ -1,14 +1,36 @@
 """Shared data-driven role adaptations and native predecessor dispatch."""
-import json,struct,hashlib
+import json,struct,sys
 from pathlib import Path
 from animlib import info
 
-def load_policy(path,project=None):
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.workflow.project_config import ConfigError, load_config  # noqa: E402
+from character_workflow import file_sha, resolve_declared_input  # noqa: E402
+
+def load_policy(path,project=None,config=None):
+    """Load an animation policy; declared evidence resolves through configuration.
+
+    ``input_evidence`` entries name project-relative locations whose leading
+    ``_work`` component means the configured work root. The policy bytes, roles and
+    native mappings stay authoritative; only the host location comes from config.
+    Evidence is never skipped when a project is omitted: that is refused instead.
+    """
     policy=json.loads(Path(path).read_text(encoding='utf-8'))
     if policy.get('schema')!=1:raise ValueError('Unsupported animation policy')
-    if project is not None:
-        for item in policy.get("input_evidence",[]):
-            if hashlib.sha256((Path(project)/item["file"]).read_bytes()).hexdigest()!=item["sha256"]:
+    evidence=policy.get("input_evidence",[])
+    if project is None:
+        if config is not None:
+            raise ValueError('Policy configuration requires the project it belongs to')
+        if evidence:
+            raise ValueError('Policy input evidence requires a project and its configuration')
+    else:
+        project=Path(project)
+        config=config if config is not None else load_config(repo_root=project)
+        if config.repo_root!=project.resolve():
+            raise ConfigError('Policy configuration belongs to a different project')
+        for item in evidence:
+            target=resolve_declared_input(project,config,item["file"])
+            if file_sha(target)!=item["sha256"]:
                 raise ValueError("Animation policy input changed; re-verify original tables")
     seen=set()
     for row in policy['roles']:

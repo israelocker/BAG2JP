@@ -391,3 +391,50 @@ otros lectores, políticas, destinos cache, init y paquetes requieren sus sublot
 No se repitieron suites para esta revisión de fuentes. Evidencia:
 `_work/configuration/s5b-scope-review/extracted.json`; la extracción de cadenas
 sirve de ayuda, no demuestra por sí sola que cada cadena sea una ruta operativa.
+
+### S5b cerrado — alcance host acotado (implementado host 2026-11-16)
+
+S5b se cierra como alcance host acotado, no como cierre del proyecto ni aceptación
+nativa. Todos los lectores de la familia fueron migrados y verificados en host:
+
+- **S5b1 — runtime de referencia:** `character_workflow.py` lee el runtime solo de
+  `inputs.bag1_reference_runtime` (snapshot por invocación, sin fallback al perfil).
+  El campo histórico `reference_runtime` del perfil queda no operativo para estos
+  lectores. `init_profile` conserva su `--runtime` explícito (sublote separado).
+- **S5b2 — entradas declaradas de catálogo/assets:** `resolve_declared_input` resuelve
+  rutas declaradas con primer componente `_work` contra `paths.work_root`; el resto
+  sigue project-relative. Guardas de absoluta/anclada, `..`, alias de puntos/espacios
+  y contención física (symlink/junction). Aplicado en `load_profile`,
+  `_workspace_inputs`, `_profile_signature` y CLI `validate-profile`.
+- **S5b3 — política de animación:** `animation_policy.load_policy(path, project,
+  config)` resuelve `input_evidence.file` mediante `resolve_declared_input` y compara
+  `file_sha`; sin fail-open; `config` sin proyecto o `project=None` con evidencia
+  lanza error. Roles, `native_variant` y `adapt_events` intactos.
+- **S5b4 — init-profile y destinos de caché:** `init_profile` acepta `config`, valida
+  `config.repo_root == project.resolve()`, resuelve archive/source/runtime/catalog
+  mediante `_operator_input` (ruta absoluta verbatim si es absoluta fuera del repo).
+  `record_cache` rechaza sobrescribir JSON legacy no caché y protege inputs reales.
+- **S5b5 — lector de paquete de etapa:** `build_stage_package.package_paths` /
+  `main_exe_path` resuelven `source`/`common`/`exe`/`stock` y `_work/mainexe/slpm.bin`;
+  `build_from_project` carga config una vez, valida `config.repo_root`, CLI con
+  `--project`/`--local-config`.
+- **S5b6 — regional y caught:** `build_regional_variants` valida segmentos de ruta
+  con `_trusted_segment` (rechaza absoluto/ancla/vacío/`.`/`..`/alias puntos-espacios)
+  antes de construir; `build_caught_bank` ya usaba `resolve_declared_input`.
+
+**Evidencia y verificación:** suite S5b conjunta 133 tests, 132 PASS, 1 skip (OK);
+mutantes causales detectados y bytes restaurados (`_work/configuration/s5b{2..6}/`).
+Costura real Gas-O: `catalog_sha256 0d616c8b…`, `runtime_sha256 e7ed906a…`, 84
+animaciones, idénticos a la caché Strike existente.
+
+**Límites:** cachés NO migradas (`heat.cache.json` legacy sin contrato key/evidence;
+`strike.cache.json` evidencias absolutas por hash) preservadas sin editar; perfiles y
+hashes no editados; Heat y Strike detenidos por deriva de hashes **previa** al lote;
+sin paquetes, juego, runtime build/deploy, settings/saves, overlay local, herramientas
+instaladas, push, snapshot ni worktree. Goldfish S5b2/S5b3/S5b5/S5b6: revisión
+utilizable con línea fija literal, `CON HALLAZGOS`, correcciones RED→GREEN verificadas,
+sin segunda ronda. S5b1 Goldfish declarado no utilizable (revisores no conformes),
+con auto-revisión suplementaria registrada.
+
+Plazo global: martes 17-11-2026 12:00 mediodía Lima (UTC−5 = 17:00Z); lunes hasta
+22:00, martes 09:00–12:00. Viabilidad global no demostrada.

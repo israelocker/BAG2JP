@@ -211,6 +211,39 @@ trabajo. `load_profile`, `_workspace_inputs`, `_profile_signature` y el CLI
 `validate-profile` comparten esa resolución; `init_profile`, los perfiles, las cachés
 y los lectores de paquete siguen sin migrar.
 
+### S5b3: política de animación
+
+`animation_policy.load_policy(path, project, config)` resuelve cada entrada de
+`input_evidence.file` mediante `resolve_declared_input` contra `paths.work_root` y
+compara `file_sha` contra el sha256 declarado, con el mensaje intacto
+"Animation policy input changed; re-verify original tables". No hay fail-open:
+`project=None` con evidencia o `config` sin proyecto lanza error; una política sin
+evidencia sigue cargando sin proyecto. Roles, `native_variant` y `adapt_events`
+intactos. Consumidores: `anim_remap.py`, `anim_remap_strike.py`, `anim_remap_gaso.py`.
+
+### S5b4: init-profile y destinos de caché
+
+`character_workflow.init_profile` acepta `config`, exige
+`config.repo_root == project.resolve()` y resuelve archive/source/runtime/catalog
+mediante `_operator_input` (ruta absoluta verbatim si declara fuera del repo; lo
+resto vía `resolve_declared_input`). `record_cache` rechaza sobrescribir un JSON
+legacy que no sea caché y protege los inputs reales del lector, la configuración y
+detecta colisión por hardlink. Consumidor: CLI `init-profile`.
+
+### S5b5: lector de paquete de etapa
+
+`build_stage_package` añade `package_paths` (resuelve `source`/`common`/`exe`/`stock`
+del `profile['package']`) y `main_exe_path` (`_work/mainexe/slpm.bin`);
+`build_from_project` carga config una vez, valida `config.repo_root` y expone
+`--project`/`--local-config`. Ningún paquete se genera.
+
+### S5b6: regional y caught
+
+`build_regional_variants` valida cada segmento de ruta con `_trusted_segment` (rechaza
+absoluto/ancla/vacío/`.`/`..`/alias de puntos-espacios finales) antes de construir la
+ruta de origen por región. `build_caught_bank` ya usaba `resolve_declared_input` con
+`CONTRACT` y `OUTPUT` fijos.
+
 ### S5a: lector regional de Gas-O (parcial)
 
 `build_gaso_assets.py` toma las raíces USA/JP de las dos claves existentes;

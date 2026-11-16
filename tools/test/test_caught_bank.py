@@ -57,7 +57,7 @@ class CaughtBankSourceTest(unittest.TestCase):
             data = source.read_bytes()
             path.write_bytes(data[:-1] + bytes([data[-1] ^ 1]))
             contract = json.loads(build_caught_bank.CONTRACT.read_text(encoding='utf-8'))
-            contract['clips'][0]['source'] = str(path)
+            contract['clips'][0]['source'] = path.relative_to(ROOT).as_posix()
             temporary = Path(directory) / 'contract.json'
             temporary.write_text(json.dumps(contract), encoding='utf-8')
             with patch.object(build_caught_bank, 'CONTRACT', temporary):

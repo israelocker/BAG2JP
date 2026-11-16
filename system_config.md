@@ -83,20 +83,25 @@ cierre de S5b ni de aceptación nativa. Siguiente: revisión acotada catálogo/a
 del mismo lector, preservando hashes y sin generar paquetes; límite Goldfish visible.
 No se autoriza un reemplazo masivo seguido de pruebas: rutas equivocadas pueden
 seleccionar otros assets o escribir en otro destino sin producir una excepción.
-Implementación host S5b2 verificada el 2026-11-16: las rutas declaradas de catálogo y
-assets del lector se resuelven contra la clave ya registrada `paths.work_root`, sin
-clave nueva y con resolución byte-idéntica cuando la raíz es `_work`. Guardas de
-rutas absolutas, `..`, alias de puntos/espacios y contención física. 13 pruebas
-nuevas; suite acotada 81 tests (80 PASS, 1 skip de privilegio de symlink) y 5
-mutantes causales: `_work/configuration/s5b2/verification.json`.
-Goldfish S5b2: dos revisiones frías read-only con la línea fija literal →
-`CON HALLAZGOS` utilizable; confirmados y corregidos el CLI sin resolver, la ausencia
-de contención física, la comparación de caso de `_work` y el `KeyError` de evidencia
-no validada. Detalle en `_work/goldfish/s5b2/`. Veredicto de revisor: no es aprobación
-del propietario ni permiso de despliegue. Límite: Heat y Strike siguen detenidos por
-deriva de hashes previa al cambio; sin validación nativa ni en juego. S5b sigue
-abierto: políticas/contratos con lector propio, destinos de caché, `init-profile` y
-lectores de paquete.
+
+S5b cerrado como alcance host acotado (no cierre del proyecto ni aceptación nativa).
+Lectores entregados y verificados en host: S5b1 runtime de referencia
+(`inputs.bag1_reference_runtime`, snapshot por invocación, sin fallback al perfil);
+S5b2 entradas declaradas de catálogo/assets contra `paths.work_root` (guardas de
+absoluta, `..`, alias y contención física); S5b3 política de animación
+(`load_policy` con `config`, sin fail-open); S5b4 init-profile y destinos de caché
+(`_operator_input`, config cargada una vez, `record_cache` protege legacy); S5b5/S5b6
+lectores de paquete etapa/regional/caught (`package_paths`, `main_exe_path`,
+`_trusted_segment`, `config.repo_root` validado). Suite S5b: 133 tests, 132 PASS,
+1 skip (privilegio de symlink), OK; mutantes causales detectados y bytes
+restaurados. Cachés NO migradas: `heat.cache.json` (legacy sin contrato
+key/evidence) y `strike.cache.json` (evidencias absolutas por hash) preservadas
+sin editar; perfiles y hashes no editados. Heat y Strike detenidos por deriva de
+hashes previa al lote (`patch_heat_dbi.py`, `001_strike_converted.bin`). Sin
+paquetes, juego, runtime build/deploy, settings/saves, overlay local, herramientas
+instaladas, push, snapshot ni worktree. Goldfish S5b2/S5b3/S5b5/S5b6: revisión
+utilizable con la línea fija literal, veredictos `CON HALLAZGOS`, correcciones
+RED→GREEN verificadas, sin segunda ronda.
 
 El propietario confirmó el vencimiento el **martes 17 de noviembre de 2026 a las
 12:00 del mediodía**, **America/Lima (UTC−5)**: `2026-11-17T17:00:00Z`.

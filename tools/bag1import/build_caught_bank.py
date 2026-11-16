@@ -14,10 +14,21 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from tools.bag1import.animlib import anim_list, frames, info
 from tools.bag1import.rebuild_dfs_members import read_members
+from tools.bag1import.character_workflow import resolve_declared_input
+from tools.workflow.project_config import ConfigError, ProjectConfig, load_config
 
 CONTRACT = ROOT / 'tools/bag1import/contracts/caught-bank.json'
 OUTPUT = ROOT / 'mods-src/bag2jp.feature.bag1-content/bag2jp_caught_bank_data.inc'
 CLAMP_LAST_FRAME_OFFSET = 5  # FUN_8002d06c: nonzero clamps rather than wraps frame
+
+
+def source_paths(config: ProjectConfig | None = None) -> list[tuple[dict, Path]]:
+    """Resolve declared clip sources through the shared host configuration."""
+    config = config if config is not None else load_config(repo_root=ROOT)
+    if config.repo_root != ROOT.resolve():
+        raise ConfigError('CAUGHT bank configuration belongs to a different project')
+    rows = json.loads(CONTRACT.read_text(encoding='utf-8'))['clips']
+    return [(row, resolve_declared_input(ROOT, config, row['source'])) for row in rows]
 
 
 def pinned_bytes(path: Path, digest: str) -> bytes:
@@ -28,14 +39,14 @@ def pinned_bytes(path: Path, digest: str) -> bytes:
     return data
 
 
-def extract_clips() -> list[tuple[int, bytes]]:
+def extract_clips(config: ProjectConfig | None = None) -> list[tuple[int, bytes]]:
     """Extract the audited native role, keeping skeleton-specific clips distinct."""
-    rows = json.loads(CONTRACT.read_text(encoding='utf-8'))['clips']
-    if [row['character'] for row in rows] != [0, 1, 9]:
+    resolved = source_paths(config)
+    if [row['character'] for row, _path in resolved] != [0, 1, 9]:
         raise ValueError('Expected audited BAG1 rivals 0, 1, 9 in bank order')
     clips = []
-    for row in rows:
-        source = pinned_bytes(ROOT / row['source'], row['source_sha256'])
+    for row, path in resolved:
+        source = pinned_bytes(path, row['source_sha256'])
         members, _padding = read_members(source)
         clip = anim_list(members[1])[70]
         if len(clip) != row['clip_bytes'] or len(clip) % 4:
@@ -79,8 +90,11 @@ def main() -> None:
     """Generate, or fail if the checked-in bank no longer matches its sources."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--project', type=Path, default=ROOT)
+    parser.add_argument('--local-config', type=Path)
     args = parser.parse_args()
-    text = generated_text(extract_clips())
+    config = load_config(repo_root=args.project, local_config=args.local_config)
+    text = generated_text(extract_clips(config))
     if args.check:
         if OUTPUT.read_bytes() != text.encode('ascii'):
             raise ValueError('Generated bank is stale')

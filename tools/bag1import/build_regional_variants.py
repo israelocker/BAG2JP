@@ -18,11 +18,14 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "tools/bag1import"))
+sys.path.insert(0, str(REPO))
 
 from iso_extract import Disc  # noqa: E402
 from model_bag1_to_bag2 import convert  # noqa: E402
 from rebuild_dfs_members import build_container, read_members  # noqa: E402
 from tim_retarget import retarget  # noqa: E402
+from tools.workflow.project_config import ConfigError, ProjectConfig, load_config  # noqa: E402
+from character_workflow import resolve_declared_input  # noqa: E402
 
 ARCHIVE = "BUST2.BIN"
 SECTOR = 2048
@@ -68,9 +71,34 @@ def pack(members: list[bytes], padding: int) -> bytes:
     return build_container(members) + b"\x00" * padding
 
 
-def build(profile: dict, out_dir: Path) -> dict:
+def profile_locations(profile: dict, config: ProjectConfig) -> dict:
+    """Resolve declared regional locations; the disc stays an explicit operator path."""
+    if config.repo_root != REPO.resolve():
+        raise ConfigError("Regional profile configuration belongs to a different project")
+    roots = {region: resolve_declared_input(REPO, config, profile["regions"][region]["root"])
+             for region in REGIONS}
+    return {"candidate_directory": resolve_declared_input(REPO, config, profile["candidate_directory"]),
+            "region_roots": roots}
+
+
+def _trusted_segment(segment: str) -> str:
+    """Validate one audited profile segment; it must stay inside the resolved region root."""
+    if not isinstance(segment, str) or not segment.strip():
+        raise ValueError(f"Invalid regional segment: {segment!r}")
+    path = Path(segment)
+    if path.is_absolute() or path.anchor:
+        raise ValueError(f"Regional segment must not be absolute: {segment!r}")
+    for part in path.parts:
+        if part.rstrip(" .") in ("", ".", ".."):
+            raise ValueError(f"Regional segment must not escape the root: {segment!r}")
+    return segment
+
+
+def build(profile: dict, out_dir: Path, *, config: ProjectConfig | None = None) -> dict:
+    config = config if config is not None else load_config(repo_root=REPO)
+    locations = profile_locations(profile, config)
     stock = stock_entries(profile["bag2_disc"], [row["entry"] for row in profile["entries"]])
-    candidates = REPO / profile["candidate_directory"]
+    candidates = locations["candidate_directory"]
     report = {"profile_schema": profile["schema"], "entries": []}
     for row in profile["entries"]:
         name = f"entry_{row['entry']}_chr{row['chr']}_kind{row['kind']}.dfs"
@@ -80,7 +108,9 @@ def build(profile: dict, out_dir: Path) -> dict:
         sources = {}
         for region in REGIONS:
             spec = profile["regions"][region]
-            path = REPO / spec["root"] / spec["directories"][str(row["number"])] / row["source"]
+            directory = _trusted_segment(spec["directories"][str(row["number"])])
+            source = _trusted_segment(row["source"])
+            path = locations["region_roots"][region] / directory / source
             sources[region] = (path, read_members(path.read_bytes())[0])
         usa, jp = sources["international"][1], sources["japanese"][1]
         if len(usa) != len(jp):
@@ -104,7 +134,8 @@ def build(profile: dict, out_dir: Path) -> dict:
             target.write_bytes(data)
         report["entries"].append({
             "entry": row["entry"], "chr": row["chr"], "kind": row["kind"], "file": name,
-            "sources": {r: {"path": str(p.relative_to(REPO)), "sha256": sha256(p.read_bytes())}
+            "sources": {r: {"path": str(p.relative_to(REPO)) if p.is_relative_to(REPO) else str(p),
+                            "sha256": sha256(p.read_bytes())}
                         for r, (p, _) in sources.items()},
             "source_members_differing": differing,
             "international": {"size": len(candidate), "sha256": sha256(candidate)},
@@ -118,9 +149,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("profile", type=Path)
     parser.add_argument("out_dir", type=Path)
+    parser.add_argument("--project", type=Path, default=REPO)
+    parser.add_argument("--local-config", type=Path)
     args = parser.parse_args()
+    config = load_config(repo_root=args.project, local_config=args.local_config)
     args.out_dir.mkdir(parents=True, exist_ok=False)
-    report = build(json.loads(args.profile.read_text(encoding="utf-8")), args.out_dir)
+    report = build(json.loads(args.profile.read_text(encoding="utf-8")), args.out_dir, config=config)
     (args.out_dir / "report.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
     for row in report["entries"]:
         print(row["entry"], "changed", row["output_members_changed"],

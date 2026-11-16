@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import struct
+import sys
 
 from animlib import dfs_entries
 import model_bag1_to_bag2 as model
@@ -12,31 +13,54 @@ import port_bag1_stage as stage
 from rebuild_dfs_members import build_container
 import tim_retarget as tim
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.workflow.project_config import ConfigError, ProjectConfig, load_config  # noqa: E402
+from character_workflow import resolve_declared_input  # noqa: E402
 
-def build_from_project(root, name):
+MAIN_EXE = '_work/mainexe/slpm.bin'
+
+
+def package_paths(root, profile, config):
+    """Resolve declared package locations; the host work root comes from configuration."""
     root = Path(root)
+    declared = profile['package']
+    return {key: resolve_declared_input(root, config, declared[key])
+            for key in ('source', 'common', 'exe', 'stock')}
+
+
+def main_exe_path(root, config):
+    """Resolve the BAG1 main executable that stage call mapping consults."""
+    return resolve_declared_input(Path(root), config, MAIN_EXE)
+
+
+def build_from_project(root, name, *, config: ProjectConfig | None = None):
+    root = Path(root)
+    config = config if config is not None else load_config(repo_root=root)
+    if config.repo_root != root.resolve():
+        raise ConfigError('Stage package configuration belongs to a different project')
     profile = stage.load_profile(name)
-    config = profile['package']
-    source = dfs_entries((root / config['source']).read_bytes())
-    common = dfs_entries((root / config['common']).read_bytes())
-    stock = sorted(path for path in (root / config['stock']).glob('[0-9][0-9][0-9].*')
+    package = profile['package']
+    paths = package_paths(root, profile, config)
+    source = dfs_entries(paths['source'].read_bytes())
+    common = dfs_entries(paths['common'].read_bytes())
+    stock = sorted(path for path in paths['stock'].glob('[0-9][0-9][0-9].*')
                    if path.suffix in {'.dbi', '.sedt', '.tim', '.bin'})
     members = [path.read_bytes() for path in stock]
     if len(members) not in (13, 14):
         raise ValueError(f'Expected audited 13 or 14-member destination stage, got {len(members)}')
-    chart = stage.bag1_chart((root / config['exe']).read_bytes(), profile['stage_id'],
-                            table=config['chart_table'], header=0x800)
+    chart = stage.bag1_chart(paths['exe'].read_bytes(), profile['stage_id'],
+                            table=package['chart_table'], header=0x800)
     members[0], stats, _, unknown = stage.build(source[0], members[0], chart, profile,
-        main_exe=(root / '_work/mainexe/slpm.bin').read_bytes())
+        main_exe=main_exe_path(root, config).read_bytes())
     if unknown:
         raise ValueError(f'Unmapped stage calls: {unknown}')
-    if config.get('native_sfx_bank0'):
+    if package.get('native_sfx_bank0'):
         import preserve_announcer as pa
         native_banks = pa.banks(source[1])
         stock_banks = pa.banks(members[1])
         members[1] = pa.pack_banks([native_banks[0]] + stock_banks[1:])
-    textures = [source[index] for index in config['texture_entries']]
-    for item in config['common_textures']:
+    textures = [source[index] for index in package['texture_entries']]
+    for item in package['common_textures']:
         flags, clut, image = tim.parse(common[item['entry']])
         if 'image_xy' in item:
             image = dict(image, x=item['image_xy'][0], y=item['image_xy'][1])
@@ -44,20 +68,20 @@ def build_from_project(root, name):
         textures.append(tim.build(flags, clut, image))
     if len(textures) > 9:
         raise ValueError('Too many textures for destination descriptors')
-    textures += [source[config['padding_texture_entry']]] * (9 - len(textures))
+    textures += [source[package['padding_texture_entry']]] * (9 - len(textures))
     members[2:11] = textures
-    scale = tuple(config['model_scale']) if config.get('model_scale') else None
-    flatten_type2 = bool(config.get('flatten_type2', False))
-    members[11], model_stats, tail = model.convert(source[config['model_entry']],
+    scale = tuple(package['model_scale']) if package.get('model_scale') else None
+    flatten_type2 = bool(package.get('flatten_type2', False))
+    members[11], model_stats, tail = model.convert(source[package['model_entry']],
                                                   scale=scale,
                                                   flatten_type2=flatten_type2)
-    members[11] = stage_geometry.subdivide_ft4_meshes(members[11], config.get('ft4_subdivisions', []))
+    members[11] = stage_geometry.subdivide_ft4_meshes(members[11], package.get('ft4_subdivisions', []))
     if tail or model.check_bag2(members[11]):
         raise ValueError('Converted model failed structural validation')
-    camera = source[config['camera_entry']]
+    camera = source[package['camera_entry']]
     if camera[-4:] != bytes(4) or struct.unpack_from('<I', camera)[0] + 8 != len(camera):
         raise ValueError('Expected one native intro camera track')
-    cam_speed = float(config.get('camera_speed', 1.0))
+    cam_speed = float(package.get('camera_speed', 1.0))
     if cam_speed != 1.0:
         c_track_len, c_flags_keys = struct.unpack_from('<II', camera, 0)
         c_flags = c_flags_keys >> 16
@@ -85,7 +109,7 @@ def build_from_project(root, name):
             new_cam += struct.pack('<6h', *rk)
         new_cam += bytes(4)
         camera = new_cam
-    cam_scale = float(config.get('camera_scale', 1.0))
+    cam_scale = float(package.get('camera_scale', 1.0))
     if cam_scale != 1.0:
         # Keys are s16 eye xyz + target xyz: scale the eye-target distance, keep the target.
         c_track_len, c_flags_keys = struct.unpack_from('<II', camera, 0)
@@ -102,7 +126,7 @@ def build_from_project(root, name):
         camera = struct.pack('<II', c_track_len, c_flags_keys) + body + bytes(4)
     first_stock_track = struct.unpack_from('<I', members[12])[0]
     members[12] = camera[:-4] + members[12][4 + first_stock_track:]
-    if config.get('empty_animation_list') and len(members) > 13:
+    if package.get('empty_animation_list') and len(members) > 13:
         members[13] = bytes(4)
     result = build_container(members)
     if dfs_entries(result) != members:
@@ -116,11 +140,13 @@ def build_from_project(root, name):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument('--project', type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument('--local-config', type=Path)
     parser.add_argument('--profile', required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    data, report = build_from_project(args.root, args.profile)
+    config = load_config(repo_root=args.project, local_config=args.local_config)
+    data, report = build_from_project(args.project, args.profile, config=config)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(data)
     args.output.with_suffix('.json').write_text(json.dumps(report, indent=2) + '\n')

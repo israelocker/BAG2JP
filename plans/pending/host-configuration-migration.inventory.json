@@ -6427,6 +6427,14 @@
           "remaining": "No key/evidence contract; empty-content hashes are not valid cache evidence. Preserve bytes; decide legacy disposition separately.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "cache_not_migrated": {
+          "id": "S5b-cache-preserved-20261116",
+          "classification": "legacy_cache_not_migrated",
+          "remaining": "heat.cache.json sin contrato key/evidence (hashes vacíos); strike.cache.json evidencias absolutas por hash. Ambos preservados sin editar; disposición pendiente de lote separado.",
+          "acceptance": "No se regeneran hashes ni se migran destinos de caché en este lote.",
+          "evidence": "revisión de fuentes S5b",
+          "status": "not_migrated"
         }
       }
     },
@@ -6463,6 +6471,14 @@
           "remaining": "Relocate evidence only with identical verified bytes; retain cache identity and hashes; no recapture.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "cache_not_migrated": {
+          "id": "S5b-cache-preserved-20261116",
+          "classification": "legacy_cache_not_migrated",
+          "remaining": "heat.cache.json sin contrato key/evidence (hashes vacíos); strike.cache.json evidencias absolutas por hash. Ambos preservados sin editar; disposición pendiente de lote separado.",
+          "acceptance": "No se regeneran hashes ni se migran destinos de caché en este lote.",
+          "evidence": "revisión de fuentes S5b",
+          "status": "not_migrated"
         }
       }
     },
@@ -6620,6 +6636,15 @@
           "remaining": "Source DFS/clip hashes and native bank contract remain authoritative; separate builder migration.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b6_scope_review": {
+          "id": "S5b6-regional-caught-20261116",
+          "reviewed_sha256": "894671369e796db4fb0cbf3bacce7c721b56bb9298305a9558f5212a189864fe",
+          "classification": "regional_and_caught_paths_validated",
+          "remaining": "_trusted_segment rechaza escape en build_regional_variants; build_caught_bank ya usaba resolve_declared_input con CONTRACT/OUTPUT fijos.",
+          "acceptance": "segmentos de ruta validados antes de construir; comparación byte a byte preservada; sin claves nuevas.",
+          "evidence": "_work/configuration/s5b6/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7173,6 +7198,15 @@
           "remaining": "Keep input hashes and native mappings. Resolve locations only at readers, with equivalent bytes.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b3_scope_review": {
+          "id": "S5b3-animation-policy-20261116",
+          "reviewed_sha256": "6d69714b04cc1fc23212795d9c97c6ce548e40c0457c566388351914848c3686",
+          "classification": "animation_policy_input_resolved_via_work_root",
+          "remaining": "load_policy resuelve input_evidence.file mediante resolve_declared_input/paths.work_root; roles/native_variant/adapt_events sin cambios. Política sin proyecto sigue cargando sin verificación.",
+          "acceptance": "input_evidence verificado byte-a-byte contra paths.work_root; sin fail-open; sin claves nuevas.",
+          "evidence": "_work/configuration/s5b3/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7236,6 +7270,15 @@
           "note": "character profile; catalog/assets/evidence now resolve through paths.work_root",
           "evidence": "_work/configuration/s5b2/verification.json",
           "status": "not_fully_migrated"
+        },
+        "s5b4_scope_review": {
+          "id": "S5b4-init-profile-cache-20261116",
+          "reviewed_sha256": "15cf58142d846a83d046b2c34807b3be119a1ba307ff7f8ac2d2d5ab2c0827df",
+          "classification": "init_profile_and_cache_destination_resolved_via_config",
+          "remaining": "init_profile usa _operator_input (absoluto verbatim / resolve_declared_input) y config snapshot; record_cache rechaza sobrescribir JSON legacy no caché y protege inputs reales; destino de caché explícito.",
+          "acceptance": "config cargada una vez; repo_root coincide; guardas de entrada intactas; legacy caché sin tocar.",
+          "evidence": "_work/configuration/s5b4/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7271,6 +7314,15 @@
           "remaining": "Keep input hashes and native mappings. Resolve locations only at readers, with equivalent bytes.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b3_scope_review": {
+          "id": "S5b3-animation-policy-20261116",
+          "reviewed_sha256": "3341c14a8803c48db2202ca53186684f5eb5f69a43d7bde48da5ca6980111ec9",
+          "classification": "animation_policy_input_resolved_via_work_root",
+          "remaining": "load_policy resuelve input_evidence.file mediante resolve_declared_input/paths.work_root; roles/native_variant/adapt_events sin cambios. Política sin proyecto sigue cargando sin verificación.",
+          "acceptance": "input_evidence verificado byte-a-byte contra paths.work_root; sin fail-open; sin claves nuevas.",
+          "evidence": "_work/configuration/s5b3/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7316,6 +7368,15 @@
           "note": "character profile; catalog/assets/evidence now resolve through paths.work_root",
           "evidence": "_work/configuration/s5b2/verification.json",
           "status": "not_fully_migrated"
+        },
+        "s5b4_scope_review": {
+          "id": "S5b4-init-profile-cache-20261116",
+          "reviewed_sha256": "9345cdf62f96697e3b72820c5caa188348b3e8fef455d34e9b82e887237a076a",
+          "classification": "init_profile_and_cache_destination_resolved_via_config",
+          "remaining": "init_profile usa _operator_input (absoluto verbatim / resolve_declared_input) y config snapshot; record_cache rechaza sobrescribir JSON legacy no caché y protege inputs reales; destino de caché explícito.",
+          "acceptance": "config cargada una vez; repo_root coincide; guardas de entrada intactas; legacy caché sin tocar.",
+          "evidence": "_work/configuration/s5b4/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7352,6 +7413,15 @@
           "remaining": "Separate regional builder scope; preserve region/layout and byte-equality gates.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b6_scope_review": {
+          "id": "S5b6-regional-caught-20261116",
+          "reviewed_sha256": "da31657be08bdae228f8a546d6b1964c082adc9a514b326ba04361ad147ad9e7",
+          "classification": "regional_and_caught_paths_validated",
+          "remaining": "_trusted_segment rechaza escape en build_regional_variants; build_caught_bank ya usaba resolve_declared_input con CONTRACT/OUTPUT fijos.",
+          "acceptance": "segmentos de ruta validados antes de construir; comparación byte a byte preservada; sin claves nuevas.",
+          "evidence": "_work/configuration/s5b6/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7490,6 +7560,15 @@
           "remaining": "Separate package-reader migration; preserve native maps/indices/scales and input bytes.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b5_scope_review": {
+          "id": "S5b5-declared-inputs-20261116",
+          "reviewed_sha256": "f7d90db832b5eb65877d03b7f1675017f149f0964e9c7d9bd51d96d8202e24d8",
+          "classification": "stage_package_paths_resolved_via_work_root",
+          "remaining": "build_from_project carga config una vez, package_paths resuelve source/common/exe/stock, main_exe_path para _work/mainexe/slpm.bin; config.repo_root validado; --project/--local-config en CLI.",
+          "acceptance": "paquetes de etapa resueltos contra paths.work_root con guardas de escape; ningún paquete generado.",
+          "evidence": "_work/configuration/s5b5/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7548,6 +7627,15 @@
           "remaining": "No host path in this inspected JSON; preserve native values. Reader-wide clearance not asserted.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b5_scope_review": {
+          "id": "S5b5-declared-inputs-20261116",
+          "reviewed_sha256": "2a9214f03c8576e3a2406f70331ca6b02ba564b581877c6dc0dd364e1a01e57f",
+          "classification": "stage_package_paths_resolved_via_work_root",
+          "remaining": "build_from_project carga config una vez, package_paths resuelve source/common/exe/stock, main_exe_path para _work/mainexe/slpm.bin; config.repo_root validado; --project/--local-config en CLI.",
+          "acceptance": "paquetes de etapa resueltos contra paths.work_root con guardas de escape; ningún paquete generado.",
+          "evidence": "_work/configuration/s5b5/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7616,6 +7704,15 @@
           "remaining": "Separate package-reader migration; preserve native maps/indices/scales and input bytes.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b5_scope_review": {
+          "id": "S5b5-declared-inputs-20261116",
+          "reviewed_sha256": "da8607354bc355ad87b2e92ccadbce7efa1657af5f9d373d560951a5afb403f3",
+          "classification": "stage_package_paths_resolved_via_work_root",
+          "remaining": "build_from_project carga config una vez, package_paths resuelve source/common/exe/stock, main_exe_path para _work/mainexe/slpm.bin; config.repo_root validado; --project/--local-config en CLI.",
+          "acceptance": "paquetes de etapa resueltos contra paths.work_root con guardas de escape; ningún paquete generado.",
+          "evidence": "_work/configuration/s5b5/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7650,6 +7747,15 @@
           "remaining": "Keep input hashes and native mappings. Resolve locations only at readers, with equivalent bytes.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b3_scope_review": {
+          "id": "S5b3-animation-policy-20261116",
+          "reviewed_sha256": "a1d2843bb939a7e999e0c4bde515b73fd52cb19e949454a3cd1d992b1ca8bd6c",
+          "classification": "animation_policy_input_resolved_via_work_root",
+          "remaining": "load_policy resuelve input_evidence.file mediante resolve_declared_input/paths.work_root; roles/native_variant/adapt_events sin cambios. Política sin proyecto sigue cargando sin verificación.",
+          "acceptance": "input_evidence verificado byte-a-byte contra paths.work_root; sin fail-open; sin claves nuevas.",
+          "evidence": "_work/configuration/s5b3/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -7817,6 +7923,15 @@
           "note": "character profile; catalog/assets/evidence now resolve through paths.work_root",
           "evidence": "_work/configuration/s5b2/verification.json",
           "status": "not_fully_migrated"
+        },
+        "s5b4_scope_review": {
+          "id": "S5b4-init-profile-cache-20261116",
+          "reviewed_sha256": "4a82b957cfd4b69a92fdfd81f7bcfe2030a4a326383b66e6ebe367e72d90f480",
+          "classification": "init_profile_and_cache_destination_resolved_via_config",
+          "remaining": "init_profile usa _operator_input (absoluto verbatim / resolve_declared_input) y config snapshot; record_cache rechaza sobrescribir JSON legacy no caché y protege inputs reales; destino de caché explícito.",
+          "acceptance": "config cargada una vez; repo_root coincide; guardas de entrada intactas; legacy caché sin tocar.",
+          "evidence": "_work/configuration/s5b4/verification.json",
+          "status": "delivered_host_scoped"
         }
       }
     },
@@ -12315,8 +12430,8 @@
   ],
   "reconciliation": {
     "schema": 1,
-    "updated_utc": "2026-11-16T12:35:07.059822+00:00",
-    "source_head": "50d1f22c098200b9c7167fed05acb444b46bd6c7",
+    "updated_utc": "2026-11-16T14:02:03.700752+00:00",
+    "source_head": "d897310",
     "original_rows_digest": "0f4b0b31ab31a03ab131b72ecb0b4c28d9f7c277759b769cef54b359a2a65567",
     "scope": {
       "initial_files": 471,
@@ -13130,7 +13245,7 @@
       {
         "id": "S5b",
         "title": "Perfiles, cache e init",
-        "status": "pending_review",
+        "status": "delivered_host_scoped_not_lot_closed",
         "commits": [],
         "acceptance_scope": "Ubicaciones host y lectores; preservar identidad/regiones/hashes/contratos nativos.",
         "consumer_files": [],
@@ -13148,7 +13263,7 @@
         "actual_hours": null,
         "rework_hours": null,
         "estimate_status": "requires_bounded_review",
-        "next_action": "Ubicaciones host y lectores; preservar identidad/regiones/hashes/contratos nativos.",
+        "next_action": "S5b lectores entregados en scope acotado: S5b1 runtime de referencia (inputs.bag1_reference_runtime), S5b2 entradas declaradas de catálogo/assets (paths.work_root), S5b3 política de animación (load_policy con config), S5b4 init-profile y destinos de caché, S5b5/S5b6 lectores de paquete (etapa, regional, caught). Cachés heat.cache.json y strike.cache.json no se migran (legacy incompatible / evidencias por hash preservadas). Perfiles y hashes no editados. Heat y Strike detenidos por deriva de hashes previa al lote. S5b completo como alcance host acotado; sin lotes siguientes de esta familia.",
         "inventory_files": [
           "tools/bag1import/cache/heat.cache.json",
           "tools/bag1import/cache/strike.cache.json",
@@ -13171,7 +13286,8 @@
           "tools/bag1import/profiles/strike.json"
         ],
         "file_status_counts": {
-          "unreviewed": 19
+          "reviewed_scoped": 19,
+          "not_migrated_cache": 2
         }
       },
       {
@@ -13847,6 +13963,101 @@
         "native_acceptance": false,
         "measured_implementation_seconds": null,
         "estimate_basis": "Planning range 90-150 minutes was set for S5b1 only; this sublot was not re-estimated."
+      },
+      {
+        "id": "S5b3-animation-policy-20261116",
+        "reviewed_sha256": null,
+        "classification": "animation_policy_input_resolved_via_work_root",
+        "remaining": "load_policy resuelve input_evidence.file mediante resolve_declared_input/paths.work_root; roles/native_variant/adapt_events sin cambios. Política sin proyecto sigue cargando sin verificación.",
+        "acceptance": "input_evidence verificado byte-a-byte contra paths.work_root; sin fail-open; sin claves nuevas.",
+        "evidence": "_work/configuration/s5b3/verification.json",
+        "status": "delivered_host_scoped",
+        "files": [
+          "tools/bag1import/profiles/gaso-animation-policy.json",
+          "tools/bag1import/profiles/heat-animation-policy.json",
+          "tools/bag1import/profiles/strike-animation-policy.json"
+        ],
+        "consumer_files": [
+          "tools/bag1import/character_workflow.py",
+          "tools/bag1import/animation_policy.py",
+          "tools/bag1import/build_stage_package.py",
+          "tools/bag1import/build_regional_variants.py",
+          "tools/bag1import/build_caught_bank.py"
+        ],
+        "native_values_changed": false,
+        "consumer_tests_rerun": false,
+        "estimate_basis": "Planning hypothesis; host tests only."
+      },
+      {
+        "id": "S5b4-init-profile-cache-20261116",
+        "reviewed_sha256": null,
+        "classification": "init_profile_and_cache_destination_resolved_via_config",
+        "remaining": "init_profile usa _operator_input (absoluto verbatim / resolve_declared_input) y config snapshot; record_cache rechaza sobrescribir JSON legacy no caché y protege inputs reales; destino de caché explícito.",
+        "acceptance": "config cargada una vez; repo_root coincide; guardas de entrada intactas; legacy caché sin tocar.",
+        "evidence": "_work/configuration/s5b4/verification.json",
+        "status": "delivered_host_scoped",
+        "files": [
+          "tools/bag1import/profiles/gaso.json",
+          "tools/bag1import/profiles/heat.json",
+          "tools/bag1import/profiles/strike.json"
+        ],
+        "consumer_files": [
+          "tools/bag1import/character_workflow.py",
+          "tools/bag1import/animation_policy.py",
+          "tools/bag1import/build_stage_package.py",
+          "tools/bag1import/build_regional_variants.py",
+          "tools/bag1import/build_caught_bank.py"
+        ],
+        "native_values_changed": false,
+        "consumer_tests_rerun": false,
+        "estimate_basis": "Planning hypothesis; host tests only."
+      },
+      {
+        "id": "S5b5-declared-inputs-20261116",
+        "reviewed_sha256": null,
+        "classification": "stage_package_paths_resolved_via_work_root",
+        "remaining": "build_from_project carga config una vez, package_paths resuelve source/common/exe/stock, main_exe_path para _work/mainexe/slpm.bin; config.repo_root validado; --project/--local-config en CLI.",
+        "acceptance": "paquetes de etapa resueltos contra paths.work_root con guardas de escape; ningún paquete generado.",
+        "evidence": "_work/configuration/s5b5/verification.json",
+        "status": "delivered_host_scoped",
+        "files": [
+          "tools/bag1import/profiles/stages/gaso.json",
+          "tools/bag1import/profiles/stages/strike.json",
+          "tools/bag1import/profiles/stages/heat.json"
+        ],
+        "consumer_files": [
+          "tools/bag1import/character_workflow.py",
+          "tools/bag1import/animation_policy.py",
+          "tools/bag1import/build_stage_package.py",
+          "tools/bag1import/build_regional_variants.py",
+          "tools/bag1import/build_caught_bank.py"
+        ],
+        "native_values_changed": false,
+        "consumer_tests_rerun": false,
+        "estimate_basis": "Planning hypothesis; host tests only."
+      },
+      {
+        "id": "S5b6-regional-caught-20261116",
+        "reviewed_sha256": null,
+        "classification": "regional_and_caught_paths_validated",
+        "remaining": "_trusted_segment rechaza escape en build_regional_variants; build_caught_bank ya usaba resolve_declared_input con CONTRACT/OUTPUT fijos.",
+        "acceptance": "segmentos de ruta validados antes de construir; comparación byte a byte preservada; sin claves nuevas.",
+        "evidence": "_work/configuration/s5b6/verification.json",
+        "status": "delivered_host_scoped",
+        "files": [
+          "tools/bag1import/profiles/regional_variants.json",
+          "tools/bag1import/contracts/caught-bank.json"
+        ],
+        "consumer_files": [
+          "tools/bag1import/character_workflow.py",
+          "tools/bag1import/animation_policy.py",
+          "tools/bag1import/build_stage_package.py",
+          "tools/bag1import/build_regional_variants.py",
+          "tools/bag1import/build_caught_bank.py"
+        ],
+        "native_values_changed": false,
+        "consumer_tests_rerun": false,
+        "estimate_basis": "Planning hypothesis; host tests only."
       }
     ]
   }
