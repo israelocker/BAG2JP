@@ -6577,6 +6577,16 @@
           "remaining": "Catalog reader requires byte/hash equivalence, not bulk replacement of path text.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b2_scope_review": {
+          "id": "S5b2-declared-inputs-20261116",
+          "reviewed_sha256": "0d616c8b0061f7f6953b5d04e8cb520c8adc63ba7943c3f7b135540687cdcb78",
+          "classification": "declared_inputs_work_root_resolution",
+          "remaining": "Other readers/policies/cache destinations/init-profile/package builders remain separate scopes.",
+          "acceptance": "Declared _work inputs resolve through paths.work_root with byte identity by default and guards for absolute, traversal, alias and physical containment; host tests only.",
+          "note": "catalog inputs file+sha checked through paths.work_root before hashing",
+          "evidence": "_work/configuration/s5b2/verification.json",
+          "status": "not_fully_migrated"
         }
       }
     },
@@ -7216,6 +7226,16 @@
           "remaining": "S5b1 runtime reader uses inputs.bag1_reference_runtime. Other assets/catalog/evidence/layout authority require separate reader-specific work.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b2_scope_review": {
+          "id": "S5b2-declared-inputs-20261116",
+          "reviewed_sha256": "15cf58142d846a83d046b2c34807b3be119a1ba307ff7f8ac2d2d5ab2c0827df",
+          "classification": "declared_inputs_work_root_resolution",
+          "remaining": "Other readers/policies/cache destinations/init-profile/package builders remain separate scopes.",
+          "acceptance": "Declared _work inputs resolve through paths.work_root with byte identity by default and guards for absolute, traversal, alias and physical containment; host tests only.",
+          "note": "character profile; catalog/assets/evidence now resolve through paths.work_root",
+          "evidence": "_work/configuration/s5b2/verification.json",
+          "status": "not_fully_migrated"
         }
       }
     },
@@ -7286,6 +7306,16 @@
           "remaining": "S5b1 runtime reader uses inputs.bag1_reference_runtime. Other assets/catalog/evidence/layout authority require separate reader-specific work.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b2_scope_review": {
+          "id": "S5b2-declared-inputs-20261116",
+          "reviewed_sha256": "9345cdf62f96697e3b72820c5caa188348b3e8fef455d34e9b82e887237a076a",
+          "classification": "declared_inputs_work_root_resolution",
+          "remaining": "Other readers/policies/cache destinations/init-profile/package builders remain separate scopes.",
+          "acceptance": "Declared _work inputs resolve through paths.work_root with byte identity by default and guards for absolute, traversal, alias and physical containment; host tests only.",
+          "note": "character profile; catalog/assets/evidence now resolve through paths.work_root",
+          "evidence": "_work/configuration/s5b2/verification.json",
+          "status": "not_fully_migrated"
         }
       }
     },
@@ -7777,6 +7807,16 @@
           "remaining": "S5b1 runtime reader uses inputs.bag1_reference_runtime. Other assets/catalog/evidence/layout authority require separate reader-specific work.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        },
+        "s5b2_scope_review": {
+          "id": "S5b2-declared-inputs-20261116",
+          "reviewed_sha256": "4a82b957cfd4b69a92fdfd81f7bcfe2030a4a326383b66e6ebe367e72d90f480",
+          "classification": "declared_inputs_work_root_resolution",
+          "remaining": "Other readers/policies/cache destinations/init-profile/package builders remain separate scopes.",
+          "acceptance": "Declared _work inputs resolve through paths.work_root with byte identity by default and guards for absolute, traversal, alias and physical containment; host tests only.",
+          "note": "character profile; catalog/assets/evidence now resolve through paths.work_root",
+          "evidence": "_work/configuration/s5b2/verification.json",
+          "status": "not_fully_migrated"
         }
       }
     },
@@ -13763,6 +13803,50 @@
         "total_session_seconds": null,
         "time_basis": "First task-owned test file creation to record is measurable implementation interval only; startup and rework not separately instrumented. No savings claim.",
         "implementation_interval_seconds": 580.404644
+      },
+      {
+        "id": "S5b2-declared-inputs-20261116",
+        "status": "delivered_host_scoped_not_lot_closed",
+        "files": [
+          "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
+          "tools/bag1import/profiles/gaso.json",
+          "tools/bag1import/profiles/heat.json",
+          "tools/bag1import/profiles/strike.json"
+        ],
+        "product": [
+          "tools/bag1import/character_workflow.py"
+        ],
+        "tests": [
+          "tools/test/test_character_asset_config.py"
+        ],
+        "tests_run": 81,
+        "passed": 80,
+        "skipped": 1,
+        "mutants": 5,
+        "mutants_causal": 5,
+        "goldfish": {
+          "dir": "_work/goldfish/s5b2",
+          "usable": true,
+          "verdict": "with findings",
+          "confirmed_fixed": 4,
+          "refuted": 1,
+          "second_round": false
+        },
+        "key_decision": "reuse paths.work_root; no new configuration key",
+        "not_migrated": [
+          "init_profile",
+          "profiles bytes",
+          "existing caches",
+          "policies/contracts readers",
+          "package builders stage/regional"
+        ],
+        "preexisting_blockers": [
+          "heat: tools/bag1import/patch_heat_dbi.py hash drift",
+          "strike: _work/character-import/strike/candidate/001_strike_converted.bin hash drift"
+        ],
+        "native_acceptance": false,
+        "measured_implementation_seconds": null,
+        "estimate_basis": "Planning range 90-150 minutes was set for S5b1 only; this sublot was not re-estimated."
       }
     ]
   }

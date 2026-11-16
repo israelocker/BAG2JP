@@ -40,7 +40,7 @@ migrados se marcan explícitamente como pendientes.
 | `pins.psxrecomp` | Revisión fijada de PSXRecomp | revisión | Git hex prefix | común | no | 7–40 caracteres hexadecimales; override local prohibido | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `pins.recomp_ui` | Revisión fijada de Recomp UI | revisión | Git hex prefix | común | no | 7–40 caracteres hexadecimales; override local prohibido | workflow, workflow-report | `project_config.py`; `bag2_workflow.py` | base |
 | `wsl.distribution` | Distribución WSL para comandos envueltos | cadena | distribution name | común/local | sí | Cadena no vacía sin NUL; sin charset porque los nombres registrados varían | workflow, workflow-report, heat-character-prepare, heat-stage-prepare, heat-test-package | `project_config.py`; `bag2_workflow.py`; `heat_test_launch.py` | base |
-| `paths.work_root` | Raíz de evidencias, logs y fixtures locales | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo | workflow, workflow-report, report, report-audio, report-sheet, versus-session, endings-view, endings-acceptance, dance-capture, recording-record, recording-finalize, recording-frames, native-capture, character-workspace, heat-character-prepare, heat-stage-prepare | `project_config.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py`; `recording_config.py`; `character_workflow.py`; `heat_test_launch.py` | base |
+| `paths.work_root` | Raíz de evidencias, logs y fixtures locales; base de las rutas declaradas `_work/...` de perfiles/catálogo | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo | workflow, workflow-report, report, report-audio, report-sheet, versus-session, endings-view, endings-acceptance, dance-capture, recording-record, recording-finalize, recording-frames, native-capture, character-workspace, heat-character-prepare, heat-stage-prepare | `project_config.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py`; `recording_config.py`; `character_workflow.py`; `heat_test_launch.py` | base |
 | `paths.build_root` | Árbol de build del proyecto | ruta | native path | común/local | sí | Ruta no vacía sin NUL; relativa anclada al repo | payload-manifest, workflow, workflow-report | `project_config.py`; `check_payload_manifest.py`; `bag2_workflow.py` | base |
 | `paths.experimental_install` | Instalación experimental usada en pruebas | ruta | native path | común/local | sí | Ruta no vacía sin NUL; no puede solaparse con la estable al escribir | payload-manifest, workflow, workflow-report, report, report-audio, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance, heat-test-package | `project_config.py`; `check_payload_manifest.py`; `bag2_report.py`; `bag2_workflow.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py`; `recording_config.py`; `heat_test_launch.py` | base |
 | `paths.stable_install` | Instalación estable protegida | ruta | native path | común/local | sí | Ruta no vacía sin NUL; cualquier destino de escritura que la solape se rechaza | workflow, workflow-report, report-sheet, versus-inspect, versus-session, endings-view, endings-acceptance, dance-capture, recording-record, recording-finalize, recording-frames, native-capture, character-workspace, heat-character-prepare, heat-stage-prepare, heat-test-package | `project_config.py`; `bag2_workflow.py`; `bag2_report.py`; `versus_session.py`; `strike_acceptance_batch.py`; `view_config.py`; `recording_config.py`; `character_workflow.py`; `heat_test_launch.py` | base |
@@ -200,6 +200,16 @@ prepare y estado de character_workflow.py; settings resueltos una vez, salidas
 guardadas y provenance en estado/manifiesto. No migra lectores de perfiles,
 caché/init-profile ni builders Gas-O/Heat. El llamador directo de write_state
 debe aportar protected_inputs si desea proteger inputs de un perfil que no recibe.
+
+### S5b2: catálogo y assets declarados
+
+`character_workflow.py` resuelve las rutas declaradas de perfiles y catálogo cuyo
+primer componente es `_work` contra `paths.work_root`, sin clave nueva; el resto
+sigue relativo al repo. Rechaza rutas absolutas/ancladas, `..`, alias de puntos o
+espacios finales y toda resolución física que salga del proyecto o de la raíz de
+trabajo. `load_profile`, `_workspace_inputs`, `_profile_signature` y el CLI
+`validate-profile` comparten esa resolución; `init_profile`, los perfiles, las cachés
+y los lectores de paquete siguen sin migrar.
 
 ### S5a: lector regional de Gas-O (parcial)
 

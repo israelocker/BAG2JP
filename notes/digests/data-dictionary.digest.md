@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "docs/data-dictionary.md"
-source_sha256: "b8cb9a5eb2fef452d86d85adb8272da9e597cf55b3d565bc7bfa4826f8b3c989"
+source_sha256: "e4d769bb79ff129fd1a1e7eb5065a1b2cafb8c6974ad4f75976b25ac629453fb"
 ---
 
 # Diccionario: antes de consumir claves
@@ -68,3 +68,8 @@ source_sha256: "b8cb9a5eb2fef452d86d85adb8272da9e597cf55b3d565bc7bfa4826f8b3c989
   payload stage. Árboles copiados/escritos rechazan links/reparse; no garantía
   contra carreras, automount distinto o internals de empaquetador. Helpers S5b/S7
   no se declaran migrados ni se garantiza completar conversiones.
+- S5b2: `paths.work_root` es también base de las rutas declaradas `_work/...` de
+  perfiles y catálogo en character_workflow.py, sin clave nueva. Con la raíz por
+  defecto la resolución es byte-idéntica; guardas cubren absolutas, `..`, alias de
+  puntos/espacios y contención física. `init-profile`, perfiles, cachés y lectores
+  de paquete siguen fuera del alcance migrado.

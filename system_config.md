@@ -83,6 +83,20 @@ cierre de S5b ni de aceptación nativa. Siguiente: revisión acotada catálogo/a
 del mismo lector, preservando hashes y sin generar paquetes; límite Goldfish visible.
 No se autoriza un reemplazo masivo seguido de pruebas: rutas equivocadas pueden
 seleccionar otros assets o escribir en otro destino sin producir una excepción.
+Implementación host S5b2 verificada el 2026-11-16: las rutas declaradas de catálogo y
+assets del lector se resuelven contra la clave ya registrada `paths.work_root`, sin
+clave nueva y con resolución byte-idéntica cuando la raíz es `_work`. Guardas de
+rutas absolutas, `..`, alias de puntos/espacios y contención física. 13 pruebas
+nuevas; suite acotada 81 tests (80 PASS, 1 skip de privilegio de symlink) y 5
+mutantes causales: `_work/configuration/s5b2/verification.json`.
+Goldfish S5b2: dos revisiones frías read-only con la línea fija literal →
+`CON HALLAZGOS` utilizable; confirmados y corregidos el CLI sin resolver, la ausencia
+de contención física, la comparación de caso de `_work` y el `KeyError` de evidencia
+no validada. Detalle en `_work/goldfish/s5b2/`. Veredicto de revisor: no es aprobación
+del propietario ni permiso de despliegue. Límite: Heat y Strike siguen detenidos por
+deriva de hashes previa al cambio; sin validación nativa ni en juego. S5b sigue
+abierto: políticas/contratos con lector propio, destinos de caché, `init-profile` y
+lectores de paquete.
 
 El propietario confirmó el vencimiento el **martes 17 de noviembre de 2026 a las
 12:00 del mediodía**, **America/Lima (UTC−5)**: `2026-11-17T17:00:00Z`.

@@ -8,7 +8,7 @@ created: "2026-11-02"
 updated: "2026-11-16"
 doc_kind: digest
 source: "tools/bag1import/character_workflow.py"
-source_sha256: "9d98356ff323522e3c8bb25d646b9ca3801cfa4e7dbaccb85b23ff0084feec04"
+source_sha256: "dab2dc113e64b2657e4f3994dcec9791b811f75bc6b2993dddb6f63fb5549f89"
 ---
 
 Parser actual: `init-profile`, `validate-profile`, `plan`, `prepare`, `status`,
@@ -28,6 +28,14 @@ Hash/cache dependen de bytes, no ubicación equivalente; runtime real e inputs
 config protegidos. 68 tests host (67 PASS/1 skip), 3 mutantes AssertionError.
 Goldfish limitado: 2 intentos locales, segundo no utilizable; no dos conformes.
 No certifica otros lectores ni migra catálogo/assets/destinos cache/init.
+
+S5b2: rutas declaradas de perfil/catálogo/assets con primer componente `_work` se
+resuelven contra `paths.work_root`; el resto sigue relativo al repo. Rechaza
+absolutas/ancladas, `..`, alias de puntos/espacios y resolución física fuera del
+proyecto o de la raíz. `load_profile`, `_workspace_inputs`, `_profile_signature` y
+`validate-profile` comparten el helper; `init_profile`, perfiles, cachés y lectores de
+paquete sin migrar. 81 tests acotados (80 PASS, 1 skip), 5 mutantes causales.
+Goldfish S5b2 utilizable con hallazgos: 4 confirmados y corregidos, 1 refutado.
 
 Cache valida inputs y evidencia por hash. Hit no significa aceptación del paquete
 ni sonido. No hay solver semántico/optimización de grafo implementado aquí.

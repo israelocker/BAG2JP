@@ -354,6 +354,40 @@ Auto-revisión suplementaria, no sustituto de ese límite. Registro canónico:
 S5b entero continúa pendiente: siguiente revisión catálogo/assets del lector;
 otros lectores, políticas, destinos cache, init y paquetes requieren sus sublotes.
 
+**Sublote S5b2 — autoridad de catálogo/assets declarados (implementado host 2026-11-16):**
+
+- Decisión: las rutas declaradas en perfiles y catálogo cuyo primer componente es
+  `_work` se resuelven contra la clave ya registrada `paths.work_root`; el resto sigue
+  relativo al proyecto. No se añadió clave ni se duplicó valor alguno, y con
+  `work_root=_work` la resolución es byte-idéntica a la anterior.
+- Alcance: sólo las resoluciones declaradas de `character_workflow.py`
+  (`load_profile`, `_workspace_inputs`, `_profile_signature` y la acción CLI
+  `validate-profile`). `init_profile`, los perfiles, contratos, políticas, cachés,
+  datos nativos y los lectores de paquete etapa/regional quedan fuera.
+- Guardas: se rechazan rutas absolutas/ancladas, componentes con `..` o alias de
+  puntos/espacios finales, y toda ruta cuya resolución física (symlink/junction) salga
+  del proyecto o de la raíz de trabajo configurada.
+- Aceptación: con la raíz reubicada, perfil, catálogo, assets, evidencia de excepción
+  y `validation_evidence` se leen de la ubicación configurada, mantienen sus hashes y
+  disparan las mismas guardas al alterarse; la costura real de Gas-O devuelve
+  `catalog_sha256 0d616c8b…`, `runtime_sha256 e7ed906a…` y 84 animaciones, iguales a
+  la caché Strike existente.
+- Host: 13 pruebas nuevas en `tools/test/test_character_asset_config.py`; suite
+  acotada 81 tests, 80 PASS y 1 skip (workspace con privilegio de symlink).
+  5 mutantes causales (`work_root_ignored`, `work_root_case_sensitive`,
+  `absolute_allowed`, `traversal_alias_allowed`, `physical_containment_removed`).
+  Evidencia: `_work/configuration/s5b2/{verification.json,mutants.json,green.log}`.
+- Goldfish: dos revisiones frías read-only con línea fija literal → revisión
+  utilizable, `CON HALLAZGOS`. Confirmados y corregidos: CLI sin resolver, ausencia de
+  contención física, comparación de `_work` sensible a mayúsculas en Windows y
+  `KeyError` por evidencia no validada en etapas distintas de `verified`. Añadida la
+  prueba de identidad que faltaba. `..`/puntos finales queda como endurecimiento
+  conservador no verificable en el entorno. Sin segunda ronda.
+- Límites: Heat y Strike fallan aún en las guardas por deriva de hashes **previa** a
+  este cambio (`patch_heat_dbi.py`, `001_strike_converted.bin`), no por la resolución.
+  Sin validación nativa ni en juego. Siguiente frontera: políticas y contratos con
+  lector propio, destinos de caché, `init-profile` y lectores de paquete.
+
 No se repitieron suites para esta revisión de fuentes. Evidencia:
 `_work/configuration/s5b-scope-review/extracted.json`; la extracción de cadenas
 sirve de ayuda, no demuestra por sí sola que cada cadena sea una ruta operativa.

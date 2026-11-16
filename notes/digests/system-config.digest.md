@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "f182466d6eab18070f9361ed1d4376177f853d29d032fe333937e1dd54ca49b2"
+source_sha256: "fdee4285d9e014d9d723b94fb93138caa7d78beb1320ab0d998aacbc2e03dc7e"
 ---
 
 # Configuración: estado mínimo
@@ -28,6 +28,13 @@ source_sha256: "f182466d6eab18070f9361ed1d4376177f853d29d032fe333937e1dd54ca49b2
   snapshot central único, sin fallback, 68 tests (67 PASS/1 skip), 3 mutantes.
   Goldfish limitado (segundo intento no utilizable; no dos conformes).
   Siguiente revisión catálogo/assets; S5b entero no cerrado ni ETA global.
+- S5b2 catálogo/assets declarados: rutas `_work/...` de perfil/catálogo se resuelven
+  contra `paths.work_root` (sin clave nueva, byte-idéntico con la raíz por defecto),
+  con guardas de absolutas, `..`, alias de puntos/espacios y contención física.
+  81 tests acotados (80 PASS, 1 skip), 5 mutantes causales; Goldfish utilizable
+  `CON HALLAZGOS`, 4 confirmados/corregidos y 1 refutado, sin segunda ronda.
+  Heat/Strike siguen detenidos por deriva de hashes previa; `init-profile`,
+  perfiles, cachés y lectores de paquete sin migrar.
 - Se retira ~60 %. Avance ponderado/ETA quedan desconocidos hasta baselinar esfuerzo,
   capacidad. Fecha límite: 17-11-2026 a las 12:00 del mediodía, America/Lima (UTC−5);
   lunes hasta las 22:00, martes 09:00–12:00 (3 horas), sin suponer jornada nocturna;

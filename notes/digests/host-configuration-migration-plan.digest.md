@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "4cd59271a9d7ad664afffac9df79cd047773493b5a8039955e373dca2490d898"
+source_sha256: "589f720e1f7d7fadfaf0f1fd61d1d3653cf52abfcbe2738278a01fc5d4385bda"
 ---
 
 # Ampliación de configuración central
@@ -30,6 +30,11 @@ source_sha256: "4cd59271a9d7ad664afffac9df79cd047773493b5a8039955e373dca2490d898
   (67 PASS/1 skip), 3 mutantes causales. Goldfish limitado: segundo intento no
   utilizable, no dos revisores conformes. Siguiente catálogo/assets, no ETA global. Caché Heat legacy
   incompatible con key/evidence; contratos/hashes y lectores de paquetes separados.
+- S5b2 entregado host: rutas declaradas `_work/...` de perfil/catálogo contra
+  `paths.work_root` (sin clave nueva, byte-idéntico por defecto) con guardas de
+  absolutas, `..`, alias y contención física. 81 tests (80 PASS, 1 skip), 5 mutantes;
+  Goldfish utilizable `CON HALLAZGOS`, 4 corregidos y 1 refutado. Heat/Strike siguen
+  detenidos por deriva de hashes previa; `init-profile`, cachés y paquetes sin migrar.
 - Sublote Gas-O builder cerrado en b1b585c/1ca68e5: extracción/config/perfil/stock/
   motions/salidas, anunciador independiente y snapshot compartido. V10 histórico:
   12 lectores +120 workflow +7 HUD, 17 mutantes; Goldfish sin segunda revisión.

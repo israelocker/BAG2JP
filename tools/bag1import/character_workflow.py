@@ -2,6 +2,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import struct
@@ -29,6 +30,39 @@ def _runtime_config(project: Path | str, config: ProjectConfig | None = None) ->
     return config
 
 
+WORK_ROOT_MEMBER = "_work"
+
+
+def _declared_input(project: Path, config: ProjectConfig, declared: str) -> Path:
+    """Resolve a profile-declared location; the host work root comes from configuration.
+
+    A leading ``_work`` component (compared with the platform's case rules) names the
+    configured work root; other declared locations stay project-relative. Absolute
+    paths, traversal and physically escaping links are rejected so a profile cannot
+    silently select bytes outside the project or its work root.
+    """
+    if not isinstance(declared, str) or not declared.strip():
+        raise ValueError("Declared input must be a nonempty relative path")
+    path = Path(declared)
+    if path.is_absolute() or path.anchor:
+        raise ValueError(f"Declared input must be project-relative: {declared}")
+    for part in path.parts:
+        # Windows also strips trailing spaces/dots, so alias forms must not slip through.
+        if part.rstrip(" .") in ("", ".", ".."):
+            raise ValueError(f"Declared input must not escape the project: {declared}")
+    if path.parts and os.path.normcase(path.parts[0]) == os.path.normcase(WORK_ROOT_MEMBER):
+        work, = require_paths(config, ("paths.work_root",))
+        base, candidate = work, work.joinpath(*path.parts[1:])
+    else:
+        base, candidate = Path(project), Path(project) / path
+    resolved, resolved_base = candidate.resolve(), Path(base).resolve()
+    try:
+        resolved.relative_to(resolved_base)
+    except ValueError:
+        raise ValueError(f"Declared input must not escape the project: {declared}") from None
+    return resolved
+
+
 def load_profile(path: Path | str, project: Path | str, *,
                  config: ProjectConfig | None = None) -> tuple[dict, list[str]]:
     """Validate a profile using central runtime authority; return data and pending IDs.
@@ -51,7 +85,7 @@ def load_profile(path: Path | str, project: Path | str, *,
     if profile.get("stage") not in stages:
         raise ValueError("Invalid workflow stage")
     for key in ("source_animation_list", "game_catalog"):
-        if not (project / profile[key]).is_file():
+        if not _declared_input(project, config, profile[key]).is_file():
             raise ValueError(f"Missing input: {key}")
     if schema == 2:
         if not isinstance(profile.get("capabilities"), dict):
@@ -59,18 +93,19 @@ def load_profile(path: Path | str, project: Path | str, *,
         for asset in profile["assets"].values():
             if not isinstance(asset, dict) or not asset.get("file") or not asset.get("sha256"):
                 raise ValueError("Asset records require file and sha256")
-            if not (project / asset["file"]).is_file():
+            asset_path = _declared_input(project, config, asset["file"])
+            if not asset_path.is_file():
                 raise ValueError(f"Missing asset input: {asset['file']}")
-            if file_sha(project / asset["file"]) != asset["sha256"]:
+            if file_sha(asset_path) != asset["sha256"]:
                 raise ValueError(f"Asset input changed: {asset['file']}")
-    catalog = json.loads((project / profile["game_catalog"]).read_text(encoding="utf-8"))
+    catalog = json.loads(_declared_input(project, config, profile["game_catalog"]).read_text(encoding="utf-8"))
     if catalog.get("schema") != 1 or not catalog.get("games"):
         raise ValueError("Invalid shared game catalog")
     for game in catalog["games"].values():
         if not game.get("inputs"):
             raise ValueError("Game catalog requires hashed input evidence")
         for item in game["inputs"]:
-            if file_sha(project / item["file"]) != item["sha256"]:
+            if file_sha(_declared_input(project, config, item["file"])) != item["sha256"]:
                 raise ValueError("Game catalog input changed; re-verify base tables")
     pending = []
     ids = set()
@@ -84,7 +119,7 @@ def load_profile(path: Path | str, project: Path | str, *,
             pending.append(exception["id"])
         elif exception.get("status") == "verified":
             evidence = exception.get("evidence", {})
-            evidence_path = project / evidence.get("file", "")
+            evidence_path = _declared_input(project, config, evidence.get("file", ""))
             if not evidence_path.is_file() or file_sha(evidence_path) != evidence.get("sha256"):
                 raise ValueError("Verified exception requires unchanged evidence")
         else:
@@ -94,7 +129,7 @@ def load_profile(path: Path | str, project: Path | str, *,
         if not evidence or pending:
             raise ValueError("Verified stage needs gameplay evidence and resolved exceptions")
         for item in evidence:
-            if file_sha(project / item["file"]) != item["sha256"]:
+            if file_sha(_declared_input(project, config, item["file"])) != item["sha256"]:
                 raise ValueError("Gameplay evidence changed")
     return profile, pending
 
@@ -160,14 +195,14 @@ def _workspace_inputs(profile_path: Path | str, project: Path | str, profile: di
                       config: ProjectConfig) -> tuple[Path, ...]:
     project = Path(project)
     inputs = [Path(profile_path)]
-    inputs += [project / profile[key] for key in ("source_animation_list", "game_catalog")]
+    inputs += [_declared_input(project, config, profile[key]) for key in ("source_animation_list", "game_catalog")]
     inputs += list(require_paths(config, ("inputs.bag1_reference_runtime",)))
-    inputs += [project / item["file"] for item in profile.get("assets", {}).values()]
-    catalog = json.loads((project / profile["game_catalog"]).read_text(encoding="utf-8"))
-    inputs += [project / item["file"] for game in catalog["games"].values() for item in game["inputs"]]
-    inputs += [project / item["evidence"]["file"] for item in profile.get("exceptions", [])
+    inputs += [_declared_input(project, config, item["file"]) for item in profile.get("assets", {}).values()]
+    catalog = json.loads(_declared_input(project, config, profile["game_catalog"]).read_text(encoding="utf-8"))
+    inputs += [_declared_input(project, config, item["file"]) for game in catalog["games"].values() for item in game["inputs"]]
+    inputs += [_declared_input(project, config, item["evidence"].get("file", "")) for item in profile.get("exceptions", [])
                if item.get("status") == "verified"]
-    inputs += [project / item["file"] for item in profile.get("validation_evidence", [])]
+    inputs += [_declared_input(project, config, item.get("file", "")) for item in profile.get("validation_evidence", [])]
     return tuple(inputs)
 
 def _atomic_write_json(path, value):
@@ -282,9 +317,9 @@ def signature(profile_path: Path | str, project: Path | str, *,
 
 def _profile_signature(profile: dict, project: Path | str, config: ProjectConfig) -> dict:
     runtime, = require_paths(config, ("inputs.bag1_reference_runtime",))
-    digest, count = motion_fingerprint(Path(project) / profile["source_animation_list"])
+    digest, count = motion_fingerprint(_declared_input(Path(project), config, profile["source_animation_list"]))
     return {"schema": 1, "decoder": "metro-motion-prefix-v1", "character": profile["character"],
-            "catalog_sha256": file_sha(Path(project) / profile["game_catalog"]),
+            "catalog_sha256": file_sha(_declared_input(Path(project), config, profile["game_catalog"])),
             "runtime_sha256": file_sha(runtime),
             "motion_sha256": digest, "animation_count": count}
 
@@ -428,7 +463,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         result = init_profile(args.project,args.profile,args.character,args.source_archive,args.source_list,args.runtime,args.catalog)
     elif args.action == "validate-profile":
         profile, pending = load_profile(args.profile, args.project, config=config)
-        digest, count = motion_fingerprint(args.project/profile["source_animation_list"])
+        digest, count = motion_fingerprint(_declared_input(args.project, config, profile["source_animation_list"]))
         result = {"status": "valid_profile", "character": profile["character"], "animation_count": count,
                   "stage": profile["stage"], "pending_exceptions": pending,
                   "generation_ready": profile["stage"] == "verified" and not pending}
