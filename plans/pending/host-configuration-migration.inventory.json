@@ -12168,15 +12168,19 @@
       "agreed_deadline_utc": null,
       "available_hours_per_day": null,
       "remaining_estimate_hours": null,
-      "reason": "No agreed migration deadline, capacity or per-remaining-batch effort baseline found in the plan/evidence consulted.",
+      "reason": "Owner confirmed Tuesday 2026-11-17 in Lima, Peru. Cutoff time, available work budget and remaining effort baseline are unknown; date is not a feasibility guarantee.",
       "required_owner_inputs": [
-        "target deadline and timezone",
-        "available daily work budget"
+        "deadline cutoff time in Lima",
+        "available work budget through the deadline"
       ],
       "control": "Freeze scope, estimate each reviewed execution sublot as a range, log actual duration/rework and announce forecast risk before starting added scope.",
       "weighted_delivery_formula": "100 * sum(baseline effort of accepted scopes) / sum(baseline effort of all committed scopes); unavailable until remaining scope and effort are baselined.",
       "forecast_formula": "Remaining effort range / agreed daily capacity, respecting dependencies and non-working days; no forecast while inputs are unknown.",
-      "escalation": "At the agreed lot budget boundary, stop optional expansion, record variance and propose the smallest remaining deliverable; do not silently extend scope or reduce acceptance."
+      "escalation": "At the agreed lot budget boundary, stop optional expansion, record variance and propose the smallest remaining deliverable; do not silently extend scope or reduce acceptance.",
+      "agreed_deadline_date": "2026-11-17",
+      "timezone": "America/Lima",
+      "utc_offset": "-05:00",
+      "agreed_deadline_time": null
     },
     "reuse_policy": [
       "Select one primary lot and named acceptance seam before source reads/edits.",

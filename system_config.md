@@ -28,7 +28,7 @@ Los valores operativos siguen en `config/project.toml` y el local ignorado
 | Soporte y desconocidos iniciales | 19 cambios de soporte registrados, sin contarlos como consumidores entregados; 430 sin revisión semántica consolidada |
 | Total actual de 495 | 16 entregados en su costura, 5 parciales, 2 pendientes de cambio, 3 sin cambio host identificado, 37 de soporte y 432 sin revisión consolidada |
 | Cambio de bytes desde el inventario | 30/471; **no** es porcentaje completado ni significa que los otros 441 necesiten cambios |
-| Avance global por esfuerzo / fecha de fin | **No calculable todavía**: faltan revisión del resto, esfuerzo presupuestado y capacidad/fecha acordadas. Se retira la estimación anterior de ~60 % |
+| Avance global por esfuerzo / fecha de fin | **No calculable todavía**: faltan revisión del resto, esfuerzo presupuestado, hora de corte y capacidad. Fecha límite confirmada: 17-11-2026, Lima. Se retira la estimación anterior de ~60 % |
 
 El 4,67 % mide trazabilidad de disposiciones de consumidores, **no** cumplimiento
 total del estándar ni trabajo ejecutado: incluye pendientes y excluye soporte.
@@ -58,10 +58,12 @@ añadidas distinguen revisión histórica, evidencia de tests y simple pertenenc
 
 ### Presupuesto y deadlines
 
-No consta una fecha de entrega/capacidad acordada en las fuentes consultadas;
-`deadline`, `estimated_hours`, `actual_hours` y `rework_hours` quedan desconocidos,
-no en cero. Para fijar calendario hacen falta **fecha objetivo y zona horaria,
-horas disponibles al día** y estimación por sublote tras su revisión acotada.
+El propietario confirmó el **martes 17 de noviembre de 2026**, zona horaria
+**America/Lima (UTC−5)**. Falta confirmar la hora de corte; no se supone fin de día.
+La fecha está registrada, pero el instante UTC, las horas disponibles y el esfuerzo
+restante siguen desconocidos, no en cero. Para evaluar si el alcance cabe hacen falta
+**hora de corte y horas disponibles hasta entonces**, además de estimar los sublotes.
+La fecha solicitada no constituye una garantía de entrega de todo lo pendiente.
 
 - Antes de implementar: alcance/archivos, exclusiones, aceptación, dependencias,
   intervalo de esfuerzo y presupuesto del lote. La revisión pendiente también

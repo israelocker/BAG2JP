@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "67ea9ed187e4a2c5dd705bb33d695b4a451e056b37a5990d39385d1c8d0d50bc"
+source_sha256: "8fa1ab42fead85bd570454781033b121e5073c4611ac7839da8245404e0cfc9f"
 ---
 
 # Configuración: estado mínimo
@@ -25,7 +25,8 @@ source_sha256: "67ea9ed187e4a2c5dd705bb33d695b4a451e056b37a5990d39385d1c8d0d50bc
   global. Heat V6 conserva 169 inputs; otros manifiestos tienen deriva compartida.
   F0/S1/workspace aquí solo comparados contra commit. No se repitieron suites.
 - Se retira ~60 %. Avance ponderado/ETA quedan desconocidos hasta baselinar esfuerzo,
-  fecha y capacidad; cada sublote tendrá presupuesto, tiempo real/retrabajo y aviso
+  hora de corte y capacidad. Fecha límite: 17-11-2026, America/Lima (UTC−5);
+  cada sublote tendrá presupuesto, tiempo real/retrabajo y aviso
   de riesgo al consumir el presupuesto, sin ampliación silenciosa.
 - Autoridad: resolutor único `tools/workflow/project_config.py`, TOML común con
   defaults/política, local ignorado para ubicaciones verificadas, diccionario con

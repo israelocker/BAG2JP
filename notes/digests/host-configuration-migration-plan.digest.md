@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "88ba3598143688e3c31836a4cde89e9a0c60a21c73026de9ebd4bbdcd6cfc8a0"
+source_sha256: "b54996f12ac45a3e468f67c4b84efd283fc619a52d5f6b2942944610ec93eb3a"
 ---
 
 # Ampliación de configuración central
@@ -19,8 +19,9 @@ source_sha256: "88ba3598143688e3c31836a4cde89e9a0c60a21c73026de9ebd4bbdcd6cfc8a0
   archivos/estado/parciales/commit/evidencia/deriva. No reiniciar lotes cerrados.
 - 22/471 consumidores con disposición acotada =4,67 %, no avance global;
   19 soporte y 430 sin revisión consolidada. 30 archivos cambiados no miden cierre.
-  9/21=42,86 % tampoco pondera esfuerzo. ~60 % retirado; calendario requiere fecha,
-  capacidad y estimaciones por sublote; datos desconocidos quedan nulos.
+  9/21=42,86 % tampoco pondera esfuerzo. ~60 % retirado. Fecha límite confirmada:
+  17-11-2026, America/Lima (UTC−5); faltan hora de corte, capacidad y estimaciones
+  por sublote. Datos desconocidos quedan nulos; no se garantiza todo el alcance.
 - Deriva de dependencias exige análisis antes de elegir un check, no repetición
   automática. Conciliación documental sin suites nuevas ni implementación S5b.
 - Sublote Gas-O builder cerrado en b1b585c/1ca68e5: extracción/config/perfil/stock/
