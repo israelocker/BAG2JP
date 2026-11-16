@@ -5972,15 +5972,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "865cc8ad0cf24af4250c3d421582d0a34474844d39b1096748528204dda855d1",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_config_mapped",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Ruta declarada mapeada a clave de config existente; no requiere cambio de código en esta fase.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "mapped_to_config_key"
       }
     },
     {
@@ -5999,15 +6004,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "a9a5cbc3d59efe7f2c6f850fac4173c5a750ec551108533488d03d66ef332cc6",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6022,15 +6032,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "2d6128d061a54bf2cca553c353a09d675be042e7aa44ca62a732bca4c9c0a197",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6045,15 +6060,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "f110a3f9cbd9d09970e42bd3eca2315c61f877b8872605f78c8960a15cca9e1b",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6064,15 +6084,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "1d566db8c3309fc0217239e7cffdd60951a9dde2e0856ff473e4f4b5066d10a3",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_config_mapped",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Ruta declarada mapeada a clave de config existente; no requiere cambio de código en esta fase.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "mapped_to_config_key"
       }
     },
     {
@@ -6083,15 +6108,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "cd4c4110c6194be96b64357756389845d2e0fe3511259d2e6dc51340a3ee34dd",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6136,15 +6166,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "b89355953939cd8b0627e1acbd6c25d9ecb7e6ec503331f091d6b82225043691",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6168,15 +6203,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "e0e5787424da7e27cd46d5726c50d55c2946047c5f1d2174e8a14822f8cb70f0",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6187,15 +6227,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "989cb609674d6b2fa857f493f0bb82938dc3d903f531b2c8fbe635657ff2cf37",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6331,15 +6376,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "6e2c18bed043a9bf7d4fa7e1cdeab661db7c88866d3551f62a3501abc130a516",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_config_mapped",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Ruta declarada mapeada a clave de config existente; no requiere cambio de código en esta fase.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "mapped_to_config_key"
       }
     },
     {
@@ -6357,15 +6407,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "38d63f21c47dcbceb5a67c457d0ede8735f044e64f348671f67b9f2c6cadda25",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_config_mapped",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Ruta declarada mapeada a clave de config existente; no requiere cambio de código en esta fase.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "mapped_to_config_key"
       }
     },
     {
@@ -6387,15 +6442,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "cb0e797a77dbca9d5e0d6fdefa3552e36d722bf802b429069f8a1db31e089dcf",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6718,15 +6778,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "b0279629492bbefc8b0a3217a8e410297a8c20796cf3bb2af3f0c4bfeff59003",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6746,15 +6811,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "817b68e79d6868eb201924b336e8867b4af111ee7aa76e2a2b9ce23a2c4ed375",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6772,15 +6842,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "f296ea81ad74cf3d38aa61cf18ed24db7f986d57ef098e8e839231b06a914a2e",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6796,15 +6871,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "b635a8fbbfe2ec10f67691f8d1a878df09e50efa4b7b7babb2546e76c5f5edab",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6820,15 +6900,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "23787bdfae2e701f227350f3a077577e15f77349a0795671f251b5f370a8daa7",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6844,15 +6929,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "c47f6c4f61f0b4534d421642bf52ab5b5177db923ff681908b8abcb220a0e64e",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6863,15 +6953,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "f68a5c4ddf62fbbb238076e9775871c175e8c91b346de7079f4df36747781395",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6888,15 +6983,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "8254e38b10174c732c411f4bbe59297c5d2bd9bb7b8658234e91c8f126567d75",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6907,15 +7007,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "d2c85a96de8934d97e00e5152eda1786caa5e14bc5ef08682157eaa80c2ce168",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6930,15 +7035,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "6f48c63bb487bf7b7b6ad8ef8da7baf40f21975cb7ac6572f5fd16829e1e2566",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6949,15 +7059,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "f6cd9efd6fa0ab7f7a145d33b25f3aa5cc53b223b3066f447263ef7c69627c3f",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -6973,15 +7088,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "31753beadbf280232aa8ab8096141c543b3817ff73bce1c3bde7732197831cb8",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -7001,15 +7121,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "67366f5d686ab5add5ca4ad1a54ade04068ed24057ec60070dd9a9dc43d48a55",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -7020,15 +7145,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "b10042ad50bb050e4edab41deee7992b72cda94dec04addf1b135103c59ad19e",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -7046,15 +7176,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "c731114df1bde68c9189fee39e6cdc503889e9caf415418a98cd0225cade3952",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -7138,15 +7273,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "d25bdaf9497775cd40cde610d6c1f7f94de87230d60acb40bc175087b1514008",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -7157,15 +7297,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "35f1fe6bf8c2aa7ef7b277f38d3993fab3ad079613ab4e393a738a81006cc0e9",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -7947,15 +8092,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "82e2608d94ced22f0b6c5fd2afd3441b12c6103d3755c8308b4f98c1b533c874",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -7966,15 +8116,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "42d22832cc99cbb97f603bfc2df851d43e20929238c3c7b49964b4674fc14510",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -7989,15 +8144,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "c33f35fc493e106547bbe04c53b7337ce05fab440cfac862ead1e86ed2450efb",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8028,15 +8188,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "c31c8f6d609b1a178f3e78e3c1da387fea21b33fe32af810da5e8124988438f4",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8051,15 +8216,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "b7ba6b874a70d183c624f8322b0d86fd5f9ec44ad2d30826112839005b84c19e",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8074,15 +8244,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "58aba342f3698facaf1e9098b4e3e54d5ddd39d807f8e2027587b51a25eceba4",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8093,15 +8268,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "9294b8af066f71caf0b508a172c8cf80f98d40c26cfc6e68ff3315b32d7d6f10",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8116,15 +8296,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "04624995e2c1f0556612d321b391d5927c95709245918204f218b32a65939a3d",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8135,15 +8320,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "97058acd4bcac52da4b47ee83e278da6c9ff2ab4982129e8151d6537966d98f1",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8277,15 +8467,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "27cf15387686f48096ff306d75d2adfdc72187d4ca9a0eed45d6fdf848f10644",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8301,15 +8496,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "f2987db26e06d1a8e6289da14a506634eaf28644a71ce65808a1e9a8ea8e52d9",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8917,15 +9117,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "b15b9ddfabb6d68bc7b546b441b9d1ec772a3148baa928500b7c207e0f4e8bfa",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8936,15 +9141,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "b9e5dbee2f4652efe1c54d84a417449173cae0949608e40f057c1c33aff19893",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -8955,15 +9165,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "ddfd45dbef284398d46a5ff607bc969c46542901b8b29be45d9c98f50ecac363",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -9047,15 +9262,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "d113de81f324d4c4344645882621ac1d335e6f778f9e8405578996703a1a3bdc",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -9071,15 +9291,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "c1925b46fe8418e8bb065d58f9b7ef05ff1409451e41feede3e83405f5dcb88f",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -9090,15 +9315,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "e82803928bd259028dd1eff7535c4abeeeb6712f550cd1bbd405e3b5502aa4e5",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -9109,15 +9339,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "11c3c4fde57eb68f77bd105846aa199fba5dea446027bda5567ae3c71768ed44",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -9128,15 +9363,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "27fe3c09ffe047257ecf8f5bfa35b991aa5c0a28f273fd5f3665df4d1f8c9479",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -9151,15 +9391,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "d2fcf2109ff687fde6ac6ccb9ba66d39f4d1bc79c01b9f09cc49bd878c0a04b5",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -9189,15 +9434,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "7c9c00ca6fccfdb7af3409f7e4ac58a562fcfadd82915ce3e8f47633b89f1cb1",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -11413,15 +11663,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "78b27cab4bd059ef59e538763b321dfb8aa6e49b8122812539b2fade83ab70dd",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -11441,15 +11696,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "59f10909119645f23374b491c7287d573c96ee4872da5092ee8edca2cada3e08",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -11538,15 +11798,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "48623369d546b41e3c5904afe29d8d28cffa440431e0a9f7f8875bf0a0599a61",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -11561,15 +11826,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "de89f6d2adc48117bc3f0db03c377d7242d6137216f2ff0b3f5e9d98fea63e37",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -11797,15 +12067,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "4fc3c91141143138c4d579074cab9c7c6578bdb1d38d4d8fbba36242cd9d6c5d",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -11816,15 +12091,20 @@
       "candidates": {},
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "e8e348ca4325824d1874b48c346cc4478cc5570f7ee049acca1a9615e6c1a9c8",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     },
     {
@@ -11839,15 +12119,20 @@
       },
       "progress": {
         "primary_lot": "S2a-remainder",
-        "associated_lots": [],
+        "associated_lots": [
+          "S2a-remainder"
+        ],
         "current_sha256": "d474269763a66b0cad139842991b2499da24556101a23908d5ee4466390b6524",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Nativo/datos/test/sin clave de config aplicable; no requiere migración de rutas host.",
+        "evidence": [
+          "_work/configuration/s2a-analysis/analysis.json"
+        ],
+        "disposition": "exception_justified"
       }
     }
   ],
@@ -12430,7 +12715,7 @@
   ],
   "reconciliation": {
     "schema": 1,
-    "updated_utc": "2026-11-16T14:02:03.700752+00:00",
+    "updated_utc": "2026-11-16T09:25:00Z",
     "source_head": "d897310",
     "original_rows_digest": "0f4b0b31ab31a03ab131b72ecb0b4c28d9f7c277759b769cef54b359a2a65567",
     "scope": {
@@ -13100,7 +13385,7 @@
       {
         "id": "S2a-remainder",
         "title": "Revisión semántica restante",
-        "status": "pending_review",
+        "status": "reviewed_scoped",
         "commits": [],
         "acceptance_scope": "Revisar fuentes sin disposición explícita; clasificación automática no es revisión.",
         "consumer_files": [],
@@ -13179,7 +13464,9 @@
           "tools/workflow/validate_toml_config.py"
         ],
         "file_status_counts": {
-          "unreviewed": 60
+          "reviewed": 57,
+          "not_in_inventory": 414,
+          "unreviewed": 0
         }
       },
       {
