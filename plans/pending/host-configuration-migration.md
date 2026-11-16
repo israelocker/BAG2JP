@@ -298,3 +298,46 @@ La comprobación de esta actualización valida conservación de las filas origin
 asignaciones/conteos, commits/evidencia y documentación; no reejecuta consumidores.
 Resultado: `_work/configuration/progress-reconciliation/verification.json`.
 Procedimiento detallado de control en [system_config.md](../../system_config.md#control-de-avance-de-la-migración-2026-11-16).
+
+### S5b: revisión acotada de fuentes y siguiente sublote
+
+Revisión de los 19 JSON asignados a S5b y de sus lectores localizados, sin editar
+perfiles, cachés ni consumidores. El inventario conserva por archivo el hash leído,
+la clasificación y el trabajo restante en `progress.scope_review`; no cambia su
+estado a entregado ni convierte esta lectura parcial en auditoría completa.
+
+- Tres perfiles de personajes contienen `reference_runtime`. Su lector es
+  `character_workflow.py`; existe ya `inputs.bag1_reference_runtime`, por lo que no
+  se propone otra autoridad ni otra clave para esta ubicación host.
+- Catálogo, contratos, políticas y evidencias tienen referencias enlazadas a hashes.
+  Cambiar el texto sin seguir al lector puede invalidar cachés o elegir otros bytes.
+  Rutas internas, IDs, escalas, cues y mapas nativos no se sustituyen como rutas host.
+- La caché Heat no tiene el contrato `key/evidence` del lector actual y contiene
+  hashes vacíos de contenido; queda registrada como legacy incompatible, **no** como
+  evidencia válida. Strike conserva evidencias por hash: no se recapturan ni se
+  actualizan hashes para hacer pasar una comprobación.
+- `profiles/stages/heat.json` no presenta rutas host en el contenido leído. Los
+  perfiles de etapa Gas-O/Strike y `regional_variants.json` tienen lectores de
+  paquetes: se tratan por separado, sin ejecutar conversiones ni generar paquetes.
+
+**Siguiente sublote S5b1 — autoridad del runtime de referencia:**
+
+- Alcance: `character_workflow.py` y pruebas host de lectura/firma de perfiles;
+  reutilizar `inputs.bag1_reference_runtime`, pasar un único snapshot resuelto y
+  distinguir explícitamente el campo histórico del perfil de la ubicación operativa.
+  Determinar los llamadores afectados antes de editar; no declarar migrados otros lectores.
+- Aceptación: Heat/Strike/Gas-O en fixtures reubicados seleccionan el runtime de
+  config, mantienen hashes/identidad/región y fallan sin fallback ante config ausente;
+  caché detecta cambio real de bytes, no un simple cambio de ubicación equivalente.
+- Exclusiones: catálogo/assets, políticas y contratos nativos, cachés existentes,
+  init-profile y lectores de paquetes; necesitan sus propios sublotes. Ninguna prueba
+  en juego, build, deploy o cambio de herramientas instaladas.
+- Previsión inicial **90–150 minutos**, hipótesis de planificación, no tiempo medido
+  ni compromiso global; incluye regresiones host, Goldfish aplicable y cierre.
+  Control a los **90 minutos**: si no está cerrado, informar pendiente y previsión
+  revisada antes de ampliar trabajo. Registrar duración real y causas de retrabajo.
+  Esta estimación no cubre los otros grupos ni demuestra viabilidad del plazo total.
+
+No se repitieron suites para esta revisión de fuentes. Evidencia:
+`_work/configuration/s5b-scope-review/extracted.json`; la extracción de cadenas
+sirve de ayuda, no demuestra por sí sola que cada cadena sea una ruta operativa.

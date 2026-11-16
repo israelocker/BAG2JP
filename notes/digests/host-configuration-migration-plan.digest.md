@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "6e1793654b02f3151a20cb44cc86f3c75e728d7b6e63c7cff6dd810c6a72443e"
+source_sha256: "398fb14d9d64e9e8ebf05f8f802bdc830aa8bf36f5a373c04c72b4004eaa71ac"
 ---
 
 # Ampliación de configuración central
@@ -25,6 +25,10 @@ source_sha256: "6e1793654b02f3151a20cb44cc86f3c75e728d7b6e63c7cff6dd810c6a72443e
   viabilidad. Datos desconocidos quedan nulos; no se garantiza todo el alcance.
 - Deriva de dependencias exige análisis antes de elegir un check, no repetición
   automática. Conciliación documental sin suites nuevas ni implementación S5b.
+- S5b: revisión acotada de 19 JSON registrada por hash/clasificación, no migración.
+  Runtime de tres perfiles usa la clave existente como siguiente sublote S5b1;
+  previsión inicial 90–150 min, control a 90, no ETA global. Caché Heat legacy
+  incompatible con key/evidence; contratos/hashes y lectores de paquetes separados.
 - Sublote Gas-O builder cerrado en b1b585c/1ca68e5: extracción/config/perfil/stock/
   motions/salidas, anunciador independiente y snapshot compartido. V10 histórico:
   12 lectores +120 workflow +7 HUD, 17 mutantes; Goldfish sin segunda revisión.

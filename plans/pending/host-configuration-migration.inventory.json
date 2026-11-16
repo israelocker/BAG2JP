@@ -6419,7 +6419,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "245d78d6d48d29351ae1ca733fd0e24c2c53c015cf4e93ebe4c5d33185664f2e",
+          "classification": "legacy_cache_incompatible",
+          "remaining": "No key/evidence contract; empty-content hashes are not valid cache evidence. Preserve bytes; decide legacy disposition separately.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -6447,7 +6455,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "637b2a41b59c99d4969e901ac9b813b19572e5039003a81c97c8c0263022628b",
+          "classification": "hashed_cache_evidence",
+          "remaining": "Relocate evidence only with identical verified bytes; retain cache identity and hashes; no recapture.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -6550,7 +6566,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "0d616c8b0061f7f6953b5d04e8cb520c8adc63ba7943c3f7b135540687cdcb78",
+          "classification": "hashed_catalog_inputs",
+          "remaining": "Catalog reader requires byte/hash equivalence, not bulk replacement of path text.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -6575,7 +6599,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "894671369e796db4fb0cbf3bacce7c721b56bb9298305a9558f5212a189864fe",
+          "classification": "hashed_clip_source_contract",
+          "remaining": "Source DFS/clip hashes and native bank contract remain authoritative; separate builder migration.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -6598,7 +6630,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "c2384019e31ca1160d2f875221694ddd2b2e18eb5340d43b6e313e0db9427131",
+          "classification": "hashed_contract_or_evidence_native_data",
+          "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -6621,7 +6661,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "9dd0a41b52ffcdb48b5b3a4d5cf042abe55164bfd8cda2b28ac7f6fe62489818",
+          "classification": "hashed_contract_or_evidence_native_data",
+          "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7104,7 +7152,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "6d69714b04cc1fc23212795d9c97c6ce548e40c0457c566388351914848c3686",
+          "classification": "hashed_policy_inputs_and_native_mapping",
+          "remaining": "Keep input hashes and native mappings. Resolve locations only at readers, with equivalent bytes.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7149,7 +7205,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "15cf58142d846a83d046b2c34807b3be119a1ba307ff7f8ac2d2d5ab2c0827df",
+          "classification": "mixed_runtime_host_and_hashed_native_profile",
+          "remaining": "S5b1 runtime reader uses inputs.bag1_reference_runtime. Other assets/catalog/evidence/layout authority require separate reader-specific work.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7176,7 +7240,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "3341c14a8803c48db2202ca53186684f5eb5f69a43d7bde48da5ca6980111ec9",
+          "classification": "hashed_policy_inputs_and_native_mapping",
+          "remaining": "Keep input hashes and native mappings. Resolve locations only at readers, with equivalent bytes.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7203,7 +7275,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "9345cdf62f96697e3b72820c5caa188348b3e8fef455d34e9b82e887237a076a",
+          "classification": "mixed_runtime_host_and_hashed_native_profile",
+          "remaining": "S5b1 runtime reader uses inputs.bag1_reference_runtime. Other assets/catalog/evidence/layout authority require separate reader-specific work.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7231,7 +7311,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "da31657be08bdae228f8a546d6b1964c082adc9a514b326ba04361ad147ad9e7",
+          "classification": "regional_package_input_output_locations",
+          "remaining": "Separate regional builder scope; preserve region/layout and byte-equality gates.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7361,7 +7449,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "f7d90db832b5eb65877d03b7f1675017f149f0964e9c7d9bd51d96d8202e24d8",
+          "classification": "stage_package_input_locations",
+          "remaining": "Separate package-reader migration; preserve native maps/indices/scales and input bytes.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7411,7 +7507,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "2a9214f03c8576e3a2406f70331ca6b02ba564b581877c6dc0dd364e1a01e57f",
+          "classification": "native_data_no_host_path_observed",
+          "remaining": "No host path in this inspected JSON; preserve native values. Reader-wide clearance not asserted.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7471,7 +7575,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "da8607354bc355ad87b2e92ccadbce7efa1657af5f9d373d560951a5afb403f3",
+          "classification": "stage_package_input_locations",
+          "remaining": "Separate package-reader migration; preserve native maps/indices/scales and input bytes.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7497,7 +7609,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "a1d2843bb939a7e999e0c4bde515b73fd52cb19e949454a3cd1d992b1ca8bd6c",
+          "classification": "hashed_policy_inputs_and_native_mapping",
+          "remaining": "Keep input hashes and native mappings. Resolve locations only at readers, with equivalent bytes.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7527,7 +7647,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "f062ce7244f4c0df27d5e780827e294d19edfe0df874ed6bc1c9e206203160fc",
+          "classification": "hashed_contract_or_evidence_native_data",
+          "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7550,7 +7678,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "1845bc659410a3b29ee0dd781ef1ba907251b27d8ac8e14c5b58357fbe8bcfed",
+          "classification": "hashed_contract_or_evidence_native_data",
+          "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7573,7 +7709,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "3345d5be25a123ef96caf4eafe9883976003b9b37457081278448e2438dce786",
+          "classification": "hashed_contract_or_evidence_native_data",
+          "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -7622,7 +7766,15 @@
         "review_scope": "automatic_triage_only",
         "delivered_scopes": [],
         "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "evidence": [],
+        "scope_review": {
+          "id": "S5b-source-review-20261116",
+          "reviewed_sha256": "4a82b957cfd4b69a92fdfd81f7bcfe2030a4a326383b66e6ebe367e72d90f480",
+          "classification": "mixed_runtime_host_and_hashed_native_profile",
+          "remaining": "S5b1 runtime reader uses inputs.bag1_reference_runtime. Other assets/catalog/evidence/layout authority require separate reader-specific work.",
+          "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
+          "evidence": "_work/configuration/s5b-scope-review/extracted.json"
+        }
       }
     },
     {
@@ -13532,6 +13684,49 @@
         "next_action": "Inventario externo acotado pendiente; cambios instalados requieren permiso específico.",
         "inventory_files": [],
         "file_status_counts": {}
+      }
+    ],
+    "scope_reviews": [
+      {
+        "id": "S5b-source-review-20261116",
+        "status": "bounded_source_review_complete_not_migrated",
+        "files": [
+          "tools/bag1import/cache/heat.cache.json",
+          "tools/bag1import/cache/strike.cache.json",
+          "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
+          "tools/bag1import/contracts/caught-bank.json",
+          "tools/bag1import/contracts/gaso-animation-contract.json",
+          "tools/bag1import/contracts/strike-animation-contract.json",
+          "tools/bag1import/profiles/gaso-animation-policy.json",
+          "tools/bag1import/profiles/gaso.json",
+          "tools/bag1import/profiles/heat-animation-policy.json",
+          "tools/bag1import/profiles/heat.json",
+          "tools/bag1import/profiles/regional_variants.json",
+          "tools/bag1import/profiles/stages/gaso.json",
+          "tools/bag1import/profiles/stages/heat.json",
+          "tools/bag1import/profiles/stages/strike.json",
+          "tools/bag1import/profiles/strike-animation-policy.json",
+          "tools/bag1import/profiles/strike-lighting-profile.json",
+          "tools/bag1import/profiles/strike-skeleton-contract.json",
+          "tools/bag1import/profiles/strike-texture-contract.json",
+          "tools/bag1import/profiles/strike.json"
+        ],
+        "consumers_read": [
+          "tools/bag1import/character_workflow.py",
+          "tools/bag1import/animation_policy.py",
+          "tools/bag1import/port_bag1_stage.py",
+          "tools/bag1import/build_stage_package.py",
+          "tools/bag1import/build_regional_variants.py"
+        ],
+        "native_values_changed": false,
+        "consumer_tests_rerun": false,
+        "next_sublot": "S5b1 runtime reference reader, not catalogue/cache/init/package migration",
+        "initial_estimate_minutes": [
+          90,
+          150
+        ],
+        "budget_checkpoint_minutes": 90,
+        "estimate_basis": "Planning hypothesis, not measured throughput or total project forecast."
       }
     ]
   }

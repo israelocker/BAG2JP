@@ -58,6 +58,16 @@ añadidas distinguen revisión histórica, evidencia de tests y simple pertenenc
 
 ### Presupuesto y deadlines
 
+Revisión S5b realizada: 19 JSON clasificados por ubicación host, referencias con
+hash, datos nativos y caché legacy; **ninguno migrado por esta revisión**. Detalle y
+presupuesto del siguiente sublote en el
+[plan S5b1](plans/pending/host-configuration-migration.md#s5b-revisión-acotada-de-fuentes-y-siguiente-sublote).
+S5b1 se limita al runtime de referencia del lector de perfiles usando la clave ya
+registrada `inputs.bag1_reference_runtime`: previsión inicial 90–150 minutos,
+control de presupuesto a los 90, no promesa de duración ni ETA de todo el proyecto.
+No se autoriza un reemplazo masivo seguido de pruebas: rutas equivocadas pueden
+seleccionar otros assets o escribir en otro destino sin producir una excepción.
+
 El propietario confirmó el vencimiento el **martes 17 de noviembre de 2026 a las
 12:00 del mediodía**, **America/Lima (UTC−5)**: `2026-11-17T17:00:00Z`.
 El lunes 16 se puede trabajar hasta las **22:00 de Lima**; no se presupone trabajo
