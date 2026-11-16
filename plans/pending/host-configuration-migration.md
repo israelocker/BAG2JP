@@ -2,10 +2,10 @@
 id: host-configuration-migration
 title: "Configuración central: auditoría completa y migración por consumidores"
 tags: ["plan", "config", "standards", "migration"]
-summary: "Ampliación aprobada: inventariar todos los archivos de desarrollo, distinguir configuración de datos nativos y migrar consumidores con diccionario y pruebas de equivalencia; workflow/report en ejecución."
+summary: "Migración por consumidores: inventario conciliado de 495 archivos y 21 grupos con evidencia; 9 alcances host históricos entregados. Avance ponderado/calendario pendientes de baseline, no inferidos de archivos cambiados."
 related: ["system_config.md", "docs/coding-standards.md", "docs/data-dictionary.md", "AGENTS.md"]
 created: "2026-11-15"
-updated: "2026-11-15"
+updated: "2026-11-16"
 doc_kind: plan
 ---
 
@@ -224,3 +224,74 @@ contrato o permisos vuelve al owner; no se resuelve con otro fallback.
 | S5a piloto workspace | Cerrado solo este piloto: plan/prepare/state configurados; 38 tests lectores (37 OK, 1 omitido por privilegio file-symlink), 120 workflow OK, 17 mutantes por aserción. Goldfish A/B CON HALLAZGOS corregidos sin segunda revisión; límites en system_config.md. Evidencia histórica del piloto; Gas-O/Heat tienen cierre separado abajo. S5b perfiles/caché/init pendiente; sin paquetes ni juego |
 | S5a Gas-O builder | Cerrado en host (`d1d7c11`, `b1b585c`, `1ca68e5`): extracción regional y seis claves para perfil/stock/motions/salidas, guardas antes de mkdir; 51 campos en ese checkpoint. V10: 12 lectores + 120 workflow + 7 HUD fresh, 17 mutantes detectados; Goldfish A/B CON HALLAZGOS corregidos sin segunda revisión. Sin paquetes ni juego; Heat y S5b son lotes separados |
 | S5a Heat scripts | Cerrado host: launcher con resolver único, cinco claves nuevas (56 campos), preparación/empaquetado separados, entradas directas y links/reparse comprobados antes del runner. V6: 32 lectores (20 Heat + 12 Gas-O), 120 workflow, 7 HUD y bash -n de ambos scripts OK; baseline verde, 34 mutantes por aserción sin ERROR, hashes iguales. Goldfish A/B CON HALLAZGOS: tres corregidos RED→GREEN, sin segunda revisión. V4 scoring inválido y V5 timeout/deriva conservados sin puntuar. Sin adaptadores/conversiones/paquetes/build/deploy/juego; siguiente S5b |
+
+## Control conciliado por lote y archivo
+
+Actualizado el 2026-11-16 a petición del owner, sobre `50d1f22`. Fuente única de
+asignaciones: [inventario existente](host-configuration-migration.inventory.json),
+`reconciliation.lots[].inventory_files`. Conserva las 471 filas originales con
+sus hashes y añade 24 archivos versionados: **495 asignaciones únicas**, sin
+contar dos veces archivos compartidos. `associated_lots` conserva asociaciones
+adicionales. No rastreados e instalaciones externas no forman este denominador.
+
+La columna de archivos muestra consumidores/rutas principales; la lista completa,
+incluidos tests, esquema y documentación de soporte, está en el JSON. El número
+es asignación administrativa, no archivos totalmente migrados. Los grupos
+pendientes grandes se dividirán tras revisar sus lectores; no son lotes de ejecución
+listos ni estimaciones de esfuerzo equivalentes.
+
+| ID | Archivos asignados | Consumidores o familia principal | Estado y evidencia de entrega |
+|---|---:|---|---|
+| F0 | 6 | `tools/workflow/project_config.py`, `tools/bag1import/check_payload_manifest.py` | Base/piloto host: `7fefc07`, `28fc1e9` |
+| S1 | 5 | `tools/workflow/bag2_workflow.py`, `tools/test/bag2_report.py` | Rutas/pins/jobs/WSL: `46d528c`; valores numéricos legacy no cerrados |
+| S3a | 10 | `tools/test/versus_session.py`, `strike_acceptance_batch.py`, `bag2_versus.ps1` | Harness host: `949fdb2`, `e9236e7`; límites de Goldfish históricos en nota canónica |
+| S3b | 6 | `tools/test/view_config.py`, `view_config.ps1`, `bag2_endings_view.ps1`, `bag2_endings_acceptance.ps1`, `capture_dance_view.ps1` | Rutas/guardas host: `a0f3935`; tres wrappers siguen parciales por valores legacy |
+| S4a | 7 | `tools/test/bag2_record.py`, `recording_config.py` | Grabador host: `1058670`, `1ed6f81`; sin grabación real |
+| S4b | 6 | `tools/bag1native/run_match_and_attack.py` y revisión de familia | FFmpeg host: `18d0c51`, `b60449f`; RAM nativa no se migra a TOML |
+| S5a-workspace | 3 | `tools/bag1import/character_workflow.py` | Solo workspace: `b1297cd`; archivo parcial por S5b |
+| S5a-gaso | 3 | `tools/bag1import/build_gaso_assets.py` | Builder host: `d1d7c11`, `b1b585c`, `1ca68e5`; sin paquetes |
+| S5a-heat | 14 | `tools/bag1import/heat_test_launch.py`, `build_heat_test.sh`, `build_heat_stage_test.sh` | Costura host/contratos estáticos: `50d1f22`; no adaptadores ejecutados |
+| S2a-remainder | 60 | Otras fuentes host sin disposición explícita | Revisión pendiente; no inferir defectos ni exenciones del triaje |
+| S2b | 0 | Crear `audit_config.py` en `tools/workflow/`; aún inexistente | Checker pendiente; cero archivos existentes no significa cero trabajo |
+| S3-remainder | 3 | `tools/test/discover_strike_id.py`, `discover_strike_id_p1.py`, `versus_navigation.py` | Dos lectores pendientes de cambio y navigation parcial; asociación con wrappers legacy |
+| S5b | 19 | `tools/bag1import/profiles/`, `cache/`, `contracts/` | Revisión/migración pendiente; `character_workflow.py` asociado, no contado otra vez |
+| S6-localization | 24 | `mods-src/bag2jp.localization.regional/tools/` | Revisión pendiente, subdividir antes de ejecutar |
+| S6-textures | 5 | `mods-src/bag2jp.hd-texture-pack/tools/` | Revisión pendiente, sin regenerar assets |
+| S6-bag1-tools | 7 | `mods-src/bag2jp.feature.bag1-content/tools/` | Revisión pendiente, sin generar paquetes |
+| S6-installer | 4 | `installer/` | Revisión/generadores pendientes, sin publicación |
+| S7-bootstrap | 4 | `.opencode/`, `ghidra-scripts/`, `tools/workflow/generate_digests.py` | Contratos pendientes, sin instalar ni editar terceros |
+| S7-native-boundary | 84 | Runtime, recursos, parches y configuración del título | Determinar fronteras/excepciones/generadores; no convertir constantes por categoría |
+| S7-support | 225 | Documentos, pruebas y metadatos restantes | Separar fixtures/ejemplos/historia y dependencias reales; no implica 225 migraciones |
+| S7-external | 0 | Build/scripts instalados fuera de Git | Inventario externo pendiente; cambios sujetos a permiso específico |
+
+### Métricas, reutilización y calendario
+
+- **9 alcances host históricos entregados**, 12 grupos restantes. 9/21 =42,86 %
+  solo cuenta grupos, no esfuerzo ni avance global. No se da crédito dos veces por
+  preparar esquema y migrar el mismo consumidor.
+- En los 471 originales: 12 entregados en su costura, 5 parciales, 2 pendientes de
+  cambio, 3 sin cambio host identificado históricamente, 19 de soporte registrado
+  y 430 sin revisión consolidada. **22/471 =4,67 %** es cobertura de disposición
+  acotada de consumidores, no cumplimiento del proyecto. Los 30 archivos con bytes
+  cambiados no son un indicador de aceptación; 441 sin cambios no son 441 tareas.
+- Cada archivo registra `status`, `review_scope`, `delivered_scopes`, `remaining`,
+  `evidence` y hash actual. Cada lote registra commits, archivos, aceptación,
+  dependencias y vigencia de evidencia. Historial entregado no se borra por deriva.
+- Antes de repetir una validación: documentar qué consumidor/dependencia cambió,
+  contradicción o requisito nuevo y costura afectada. La conciliación encontró
+  deriva compartida en varios manifiestos; exige análisis de impacto, no reruns
+  globales. Heat V6 conserva 169 hashes. F0/S1/workspace solo se compararon contra
+  commit; no se presenta como verificación completa de sus inputs de test.
+- No hay baseline fiable de esfuerzo restante/fecha/capacidad: porcentaje global
+  ponderado y pronóstico quedan **desconocidos**, no ~60 %. Para comprometer fecha:
+  fijar objetivo/zona horaria y presupuesto diario, revisar y estimar cada sublote
+  en intervalo, registrar tiempo real y retrabajo, y actualizar previsión al cerrar.
+  Alcanzar presupuesto sin cerrar obliga a informar riesgo y recortar alcance
+  opcional explícitamente, nunca a extenderlo o reducir aceptación en silencio.
+- Próxima frontera: revisión acotada de S5b y candidatos host de S2a. Elegir alcance,
+  presupuesto y aceptación antes de implementar; no se ejecutan en esta conciliación.
+
+La comprobación de esta actualización valida conservación de las filas originales,
+asignaciones/conteos, commits/evidencia y documentación; no reejecuta consumidores.
+Resultado: `_work/configuration/progress-reconciliation/verification.json`.
+Procedimiento detallado de control en [system_config.md](../../system_config.md#control-de-avance-de-la-migración-2026-11-16).

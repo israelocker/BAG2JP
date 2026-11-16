@@ -2,17 +2,27 @@
 id: host-configuration-migration-plan-digest
 title: "Configuración central: ampliación de auditoría y migración"
 tags: ["digest", "plan", "config"]
-summary: "S5a host cerrado: workspace, Gas-O y Heat; V6 Heat con 34 mutantes por aserción. S5b perfiles/caches/init y S6/S7/S2b pendientes; sin partida."
+summary: "Inventario conciliado: 495 archivos, 21 grupos con archivos/alcances/evidencia; 9 entregas host históricas, no porcentaje de esfuerzo. Calendario pendiente de baseline y capacidad."
 related: ["plans/pending/host-configuration-migration.md", "system_config.md"]
 created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "2d5b4921616e1420b8a7403d96bb5c7c9241e9121fa933081c1f1b0a1483a1b3"
+source_sha256: "88ba3598143688e3c31836a4cde89e9a0c60a21c73026de9ebd4bbdcd6cfc8a0"
 ---
 
 # Ampliación de configuración central
 
+- Control conciliado en el mismo inventario: 471 originales conservados +24 nuevos,
+  495 asignaciones únicas; 9 alcances host entregados y 12 grupos restantes.
+  `files[].progress`, `added_files[].progress`, `reconciliation.lots` contienen
+  archivos/estado/parciales/commit/evidencia/deriva. No reiniciar lotes cerrados.
+- 22/471 consumidores con disposición acotada =4,67 %, no avance global;
+  19 soporte y 430 sin revisión consolidada. 30 archivos cambiados no miden cierre.
+  9/21=42,86 % tampoco pondera esfuerzo. ~60 % retirado; calendario requiere fecha,
+  capacidad y estimaciones por sublote; datos desconocidos quedan nulos.
+- Deriva de dependencias exige análisis antes de elegir un check, no repetición
+  automática. Conciliación documental sin suites nuevas ni implementación S5b.
 - Sublote Gas-O builder cerrado en b1b585c/1ca68e5: extracción/config/perfil/stock/
   motions/salidas, anunciador independiente y snapshot compartido. V10 histórico:
   12 lectores +120 workflow +7 HUD, 17 mutantes; Goldfish sin segunda revisión.
@@ -41,7 +51,7 @@ source_sha256: "2d5b4921616e1420b8a7403d96bb5c7c9241e9121fa933081c1f1b0a1483a1b3
    y parámetros conservados; helpers explícitos preceden al TOML, padre/hijo fijan
    inputs/archivos/destinos. Goldfish A/B con hallazgos corregidos; pruebas y mutantes
    posteriores: 19 vistas + 113 workflow + 108 harness OK, 24 mutantes en copias;
-   sin aceptación en juego ni segunda revisión. Siguiente S4a (solo host).
+   sin aceptación en juego ni segunda revisión. S4a se entregó después, solo host.
 - S4a-prep separa contrato (10 defaults + 3 rutas, sin operación activa) del consumidor
   aún intacto. 119 workflow + 55 recording OK, 37 mutantes; Goldfish A/B con hallazgos
   corregidos por pruebas, sin segunda revisión.

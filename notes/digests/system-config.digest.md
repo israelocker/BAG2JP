@@ -2,17 +2,31 @@
 id: system-config-digest
 title: "Configuración host: autoridades y estado"
 tags: ["digest", "config", "migration"]
-summary: "S5a workspace, builder Gas-O y adaptadores Heat cerrados en host. Esquema de 56 campos; S5b perfiles/caches/init pendiente, sin juego."
+summary: "Control conciliado: 495 archivos por lote, 9 alcances host históricos; 22/471 con disposición acotada (4,67 %, no avance global). Esfuerzo/ETA aún sin baseline."
 related: ["system_config.md", "docs/data-dictionary.md", "plans/pending/host-configuration-migration.md"]
 created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "system_config.md"
-source_sha256: "ac62879612681b92efa5d35196331c5b9e8ef15973903ba727b98a4c2e3a4bf5"
+source_sha256: "67ea9ed187e4a2c5dd705bb33d695b4a451e056b37a5990d39385d1c8d0d50bc"
 ---
 
 # Configuración: estado mínimo
 
+- Control actual en la primera sección de la fuente y en el inventario existente:
+  471 originales +24 incorporados =495, cada archivo con lote principal, estado,
+  alcance/restante y evidencia. Nueve alcances host entregados, doce grupos pendientes;
+  no equivalen a tareas de igual esfuerzo ni a 42,86 % de avance global.
+- Disposiciones acotadas de consumidores iniciales: 22/471 (4,67 %): 12 entregados,
+  5 parciales, 2 pendientes, 3 sin cambio host identificado históricamente.
+  Otros 19 son soporte registrado y 430 sin revisión consolidada. Treinta archivos
+  con bytes cambiados no equivalen a treinta archivos totalmente migrados.
+- Reusar evidencia por alcance/hashes; deriva exige análisis de impacto, no rerun
+  global. Heat V6 conserva 169 inputs; otros manifiestos tienen deriva compartida.
+  F0/S1/workspace aquí solo comparados contra commit. No se repitieron suites.
+- Se retira ~60 %. Avance ponderado/ETA quedan desconocidos hasta baselinar esfuerzo,
+  fecha y capacidad; cada sublote tendrá presupuesto, tiempo real/retrabajo y aviso
+  de riesgo al consumir el presupuesto, sin ampliación silenciosa.
 - Autoridad: resolutor único `tools/workflow/project_config.py`, TOML común con
   defaults/política, local ignorado para ubicaciones verificadas, diccionario con
   significado/tipo/unidad/origen/validación/permisos/operaciones/consumidores.
@@ -44,7 +58,7 @@ source_sha256: "ac62879612681b92efa5d35196331c5b9e8ef15973903ba727b98a4c2e3a4bf5
    Rutas literales, overrides relativos intactos y salida acceptance nueva.
    Goldfish A/B CON HALLAZGOS, corregidos sin segunda revisión; pruebas y mutantes
    posteriores: 19 vistas + 113 workflow + 108 harness OK, 24 mutantes en copias.
-   Snapshot original y respuestas preservados; siguiente S4a grabador (solo host).
+   Snapshot original y respuestas preservados; S4a posterior figura abajo.
    Sin partida/build/deploy ni edición de herramientas instaladas.
 - S4a-prep `1058670` registró diez defaults recording y tres rutas; no migró consumidor.
 - S4a consumidor usa settings inmutables, CLI/entorno con provenance y operaciones

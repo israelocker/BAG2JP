@@ -2550,3 +2550,23 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   Análisis y sesión preservados. Tiempo, ahorro y retrabajo desconocidos.
 - Siguiente: cerrar el sublote host. Funcmatch no pertinente (sin búsqueda de
   funciones); FFmpeg no pertinente (sin captura); sin autorización de partida.
+
+
+## 20261116-ghidra-progress-reconciliation - identidad durante control de avance
+
+- Propósito: cumplir la comprobación MCP al conciliar inventario/evidencia de
+  configuración host; no buscar equivalentes ni cambiar código nativo.
+- Versión/contexto: instancia existente Ghidra 12.1.4, programa principal JP
+  `SLPM_862.19`, PSX LE32, base `0x80000000`, entrada `0x80035d98`.
+  SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+- Consultas MCP: `get_program_info` primero; `read_memory(address="0x80035d98",
+  length=8)` después: `0680023c00cf4224`, sin huecos. Ambas respondieron;
+  sin overlay, escritura, reinicio ni instalación. Resultado retenido en el turno
+  de inicio de esta conciliación; identidad coincide con el ensayo previo.
+- Validación independiente: comparación con los bytes/identidad ya registrados,
+  no nueva prueba del juego. Inventario conciliado contra Git y hashes de evidencia,
+  no contra el resultado de una partida. Preflight separado:
+  `_work/workflow/20261116T122100411024Z-workflow/metrics.json`, exit 0, 0.589 s.
+- Resultado: parcial (identidad y acceso confirmados; no utilidad práctica nueva
+  de análisis nativo ni aceptación). Tiempo MCP, ahorro y retrabajo: desconocidos.
+  Siguiente: reutilizar esta comprobación en el mismo ciclo sin repetirla sin causa.

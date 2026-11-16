@@ -5,12 +5,83 @@ tags: ["config", "reference"]
 summary: "Distingue configuración del título, plantilla y ajustes efectivos sin copiar defaults personales."
 related: ["docs/paths.md", "notes/project.md", "notes/game-controls.md"]
 created: "2026-11-02"
-updated: "2026-11-15"
-edited: "2026-11-15"
+updated: "2026-11-16"
+edited: "2026-11-16"
 doc_kind: reference
 ---
 
 # Configuración
+
+## Control de avance de la migración (2026-11-16)
+
+Registro por lote y archivo: [inventario conciliado](plans/pending/host-configuration-migration.inventory.json),
+campos `reconciliation.lots`, `files[].progress` y `added_files[].progress`.
+Lista legible de lotes: [plan, control conciliado](plans/pending/host-configuration-migration.md#control-conciliado-por-lote-y-archivo).
+Los valores operativos siguen en `config/project.toml` y el local ignorado
+`config/project.local.toml`; esta nota no es otro archivo de configuración.
+
+| Medida | Resultado y significado |
+|---|---|
+| Universo versionado | 471 archivos del inventario inicial + 24 incorporados = 495, asignados una sola vez a un lote principal; asociaciones compartidas aparte |
+| Entregas registradas | 9 alcances host entregados históricamente; 12 grupos restantes de revisión/trabajo. No son 21 tareas del mismo tamaño |
+| Disposición de consumidores del universo inicial | 22/471 = **4,67 %** con disposición explícita acotada: 12 entregados en su costura, 5 parciales, 2 pendientes de cambio y 3 sin cambio host identificado por su revisión histórica |
+| Soporte y desconocidos iniciales | 19 cambios de soporte registrados, sin contarlos como consumidores entregados; 430 sin revisión semántica consolidada |
+| Total actual de 495 | 16 entregados en su costura, 5 parciales, 2 pendientes de cambio, 3 sin cambio host identificado, 37 de soporte y 432 sin revisión consolidada |
+| Cambio de bytes desde el inventario | 30/471; **no** es porcentaje completado ni significa que los otros 441 necesiten cambios |
+| Avance global por esfuerzo / fecha de fin | **No calculable todavía**: faltan revisión del resto, esfuerzo presupuestado y capacidad/fecha acordadas. Se retira la estimación anterior de ~60 % |
+
+El 4,67 % mide trazabilidad de disposiciones de consumidores, **no** cumplimiento
+total del estándar ni trabajo ejecutado: incluye pendientes y excluye soporte.
+El cociente 9/21 = 42,86 % solo cuenta grupos de reporte; no se usa como avance
+ponderado. Un alcance entregado no certifica todo el archivo: por ejemplo,
+`character_workflow.py` mantiene perfiles/cache/init pendientes; S1 conserva
+candidatos numéricos legacy. Ningún archivo se declara exento por no haber cambiado.
+Se conservan intactas las 471 filas originales y su procedencia; las disposiciones
+añadidas distinguen revisión histórica, evidencia de tests y simple pertenencia a un commit.
+
+### Selección y reutilización, antes de otro lote
+
+1. Consultar el estado del archivo, alcance entregado/restante, commit y evidencia
+   del inventario. Elegir un solo lote ejecutable y una comprobación de aceptación;
+   dividir los grupos grandes antes de implementarlos.
+2. Comparar hashes del consumidor **y de las entradas relevantes de la evidencia**.
+   Heat V6 mantiene sus 169 entradas; otros lotes tienen deriva registrada en
+   configuración/pruebas/docs compartidos, sin cambio de sus consumidores listados.
+   F0/S1/workspace solo tienen comparación contra commit en esta conciliación,
+   no validación completa de las entradas de sus tests.
+3. Deriva significa análisis de impacto, no pérdida automática de la entrega ni
+   repetición global. Antes de repetir un check registrar entrada cambiada,
+   contradicción nueva o requisito nuevo y qué costura obliga a comprobar.
+4. Tras cerrar el lote, actualizar la misma disposición y evidencia. Un cambio
+   de alcance se registra antes de trabajar, con impacto en tiempo; no abrir otro
+   frente para compensar esperas ni modificar entradas durante una verificación.
+
+### Presupuesto y deadlines
+
+No consta una fecha de entrega/capacidad acordada en las fuentes consultadas;
+`deadline`, `estimated_hours`, `actual_hours` y `rework_hours` quedan desconocidos,
+no en cero. Para fijar calendario hacen falta **fecha objetivo y zona horaria,
+horas disponibles al día** y estimación por sublote tras su revisión acotada.
+
+- Antes de implementar: alcance/archivos, exclusiones, aceptación, dependencias,
+  intervalo de esfuerzo y presupuesto del lote. La revisión pendiente también
+  consume presupuesto y debe medirse, no esconderse dentro de implementación.
+- Avance ponderado, cuando exista baseline: esfuerzo presupuestado de alcances
+  aceptados / esfuerzo presupuestado total. No inventar pesos retrospectivos para
+  conseguir un porcentaje; las ampliaciones modifican baseline de forma explícita.
+- Pronóstico: intervalo de esfuerzo restante / capacidad diaria, considerando
+  dependencias y días no laborables. Registrar tiempo real y retrabajo con causa.
+- Al alcanzar el presupuesto sin cerrar: informar desviación/riesgo y proponer
+  el menor entregable restante; no extender silenciosamente ni rebajar aceptación.
+
+Esta conciliación reutilizó evidencia existente; no repitió suites de consumidores
+ni continuó S5b. Verificación documental en
+`_work/configuration/progress-reconciliation/verification.json`.
+Goldfish no aplica: solo documentación e inventario de evidencia, no código
+ejecutable, payload/manifiesto operativo ni políticas de la lista de disparo.
+Python/Git se usan para extracción/hash; no corresponden modelos locales,
+funcmatch o FFmpeg al no haber clasificación masiva por modelo, búsqueda nativa
+ni medios que analizar. Ghidra se verificó por MCP; no es aceptación en juego.
 
 ## Configuración host: base y piloto entregados
 
@@ -83,8 +154,9 @@ este barrido no concede por sí solo ninguna disposición semántica.
 | Resolutor y checker de manifiestos | Entregados en `7fefc07` / `28fc1e9` |
 | Workflow/report | S1 entregado en `46d528c`: rutas/pins/WSL/jobs y guardas; 101 pruebas dirigidas OK, Goldfish aplicado |
 | Audio probe | Clave `tools.audio_probe` y ruta local verificada; requisito solo al buscar audio existente |
-| Harness/PowerShell/captura | S3a (`e9236e7`) y S3b entregados solo host; S4 pendiente. S3b: 19 vistas PS7/5.1 + 113 workflow + 108 harness, 24 mutantes; sin aceptación en juego |
-| Importadores/perfiles/herramientas de paquetes/instalador | Pendientes por lotes |
+| Harness/PowerShell/captura | S3a/S3b y S4a/S4b entregados en sus costuras host; valores legacy y otras referencias siguen pendientes, sin aceptación en juego |
+| Importadores | Workspace, builder Gas-O y adaptadores Heat cerrados solo host; perfiles/cache/init S5b pendientes |
+| Herramientas de paquetes/instalador | Revisión/migración S6 pendiente; no autorizadas generación ni publicación implícitas |
 | Bash instalado fijo / bootstrap del harness | Exigen contrato y verificación propios; no migrados |
 
 S1 prueba work_root/destinos protegidos, overlay absoluto en subprocess, dependencia
@@ -461,11 +533,11 @@ El CLI compara también ambos destinos físicos: estado y manifiesto deben difer
 Las APIs modificadas documentan su contrato y anotan parámetros/resultados.
 No hay garantía TOCTOU ni transacción entre manifiesto y estado.
 
-Inventario S2a de los cuatro fuentes en
-`_work/configuration/s5a-workspace-final/inventory.json`: Gas-O conserva PROFILE,
-stock/MOTIONS/defaults y glyph/extraction de perfiles; Heat conserva rutas VM,
-knobs STAGE y generación/deploy legacy. No se ejecutan esos scripts destructivos.
-Rutas de perfiles/caché/init-profile permanecen pendientes: **no es S5a completo**.
+Inventario histórico de cuatro fuentes en
+`_work/configuration/s5a-workspace-final/inventory.json`: sus pendientes Gas-O/Heat
+corresponden al checkpoint del piloto, no al estado actual. Ambos tienen cierres
+host posteriores documentados abajo. Rutas de perfiles/caché/init-profile siguen
+pendientes S5b; el piloto no certifica todo `character_workflow.py`.
 Validación nativa, regiones, hashes, acceptance y assets no cambian.
 
 Pruebas desde raíz: `py -3.13 -m unittest tools.test.test_character_workflow
