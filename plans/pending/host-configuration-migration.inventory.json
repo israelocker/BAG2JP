@@ -874,88 +874,92 @@
       "file": "installer/LEEME.txt",
       "sha256": "c346270e995faa58c36c9fb8dd952d8564d5767d3dc155ae10f8be055d826b72",
       "bytes": 2985,
-      "classification": "installer_template_review_portable_generation",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-installer",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-installer"
+        ],
         "current_sha256": "c346270e995faa58c36c9fb8dd952d8564d5767d3dc155ae10f8be055d826b72",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "installer/bag2jp_online.nsi",
       "sha256": "a597027750b16327bfbab57a3957d35083e11b45df59ecc85f51e7a96c632092",
       "bytes": 11933,
-      "classification": "installer_template_review_portable_generation",
-      "candidates": {
-        "relative_location": [
-          22
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-installer",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-installer"
+        ],
         "current_sha256": "a597027750b16327bfbab57a3957d35083e11b45df59ecc85f51e7a96c632092",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "installer/build.sh",
       "sha256": "4598ebfb80987707feffc246352eb84aa1fb2a164248600e852f427799b97685",
       "bytes": 686,
-      "classification": "installer_template_review_portable_generation",
-      "candidates": {
-        "machine_path": [
-          6
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-installer",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-installer"
+        ],
         "current_sha256": "4598ebfb80987707feffc246352eb84aa1fb2a164248600e852f427799b97685",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "installer/settings.toml",
       "sha256": "b1485af12c58ff96b96bcc47425af57756a9bb6d4d74f14ed658ffc2693dfb8a",
       "bytes": 1107,
-      "classification": "installer_template_review_portable_generation",
-      "candidates": {
-        "machine_path": [
-          31
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-installer",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-installer"
+        ],
         "current_sha256": "b1485af12c58ff96b96bcc47425af57756a9bb6d4d74f14ed658ffc2693dfb8a",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
@@ -2272,162 +2276,161 @@
       "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/blockmap.json",
       "sha256": "60e6899219d02e10fe70771de2c67970b239b752e326687d707aca105b1c24e5",
       "bytes": 25665,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-bag1-tools",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-bag1-tools"
+        ],
         "current_sha256": "60e6899219d02e10fe70771de2c67970b239b752e326687d707aca105b1c24e5",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/blockmap.py",
       "sha256": "f236ca1c186343c307bb6ec4c52f7f3b7829b0dc34e1b6ad1f964a01c5f239ea",
       "bytes": 2244,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          4,
-          5,
-          15,
-          38
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-bag1-tools",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-bag1-tools"
+        ],
         "current_sha256": "f236ca1c186343c307bb6ec4c52f7f3b7829b0dc34e1b6ad1f964a01c5f239ea",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/match.py",
       "sha256": "41f1b39b012550aa93e7c6e44e1063a959e28d002e2606b0a82a2b44e800c48a",
       "bytes": 2229,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          3,
-          41
-        ],
-        "cli_default": [
-          40
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-bag1-tools",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-bag1-tools"
+        ],
         "current_sha256": "41f1b39b012550aa93e7c6e44e1063a959e28d002e2606b0a82a2b44e800c48a",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/quickid.py",
       "sha256": "f36fc205f7bdcf1bd5d04f2bf1d95dc185a2a21b0ccdc83b2b95be2187a2e1a8",
       "bytes": 601,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-bag1-tools",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-bag1-tools"
+        ],
         "current_sha256": "f36fc205f7bdcf1bd5d04f2bf1d95dc185a2a21b0ccdc83b2b95be2187a2e1a8",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/render2.py",
       "sha256": "96bcd077d9a6ce60e023ea2b3d2ea9383bea8438010de909b3f83b94d8c7a7c9",
       "bytes": 9594,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          15
-        ],
-        "relative_location": [
-          13,
-          15
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-bag1-tools",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-bag1-tools"
+        ],
         "current_sha256": "96bcd077d9a6ce60e023ea2b3d2ea9383bea8438010de909b3f83b94d8c7a7c9",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/segmap.json",
       "sha256": "6f383baf7de755c6bf1ffb1ea4b85211565bc74d7505de94351b0165619bcb41",
       "bytes": 1267,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-bag1-tools",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-bag1-tools"
+        ],
         "current_sha256": "6f383baf7de755c6bf1ffb1ea4b85211565bc74d7505de94351b0165619bcb41",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/segmap.py",
       "sha256": "b6b42ad26945fe71257e57d5acd602ed54771fbe6238e37448343d5011dc7da6",
       "bytes": 3428,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          3,
-          18,
-          70
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-bag1-tools",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-bag1-tools"
+        ],
         "current_sha256": "b6b42ad26945fe71257e57d5acd602ed54771fbe6238e37448343d5011dc7da6",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
@@ -2736,142 +2739,115 @@
       "file": "mods-src/bag2jp.hd-texture-pack/tools/esr_each.ps1",
       "sha256": "089b74646acafb1915d5f8853bc707b7e7ebed9e3f627736d107f03e974a35aa",
       "bytes": 779,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          4,
-          5
-        ],
-        "relative_location": [
-          4
-        ],
-        "cli_default": [
-          3
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-textures",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-textures"
+        ],
         "current_sha256": "089b74646acafb1915d5f8853bc707b7e7ebed9e3f627736d107f03e974a35aa",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.hd-texture-pack/tools/font_hd.py",
       "sha256": "0f09074dd2925beee8c09800ed17e9a9e7006897170ab0ce6e3eef452874cfbd",
       "bytes": 5773,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          43
-        ],
-        "relative_location": [
-          9,
-          41,
-          43,
-          61,
-          69,
-          99
-        ],
-        "native_constant": [
-          70,
-          74
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-textures",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-textures"
+        ],
         "current_sha256": "0f09074dd2925beee8c09800ed17e9a9e7006897170ab0ce6e3eef452874cfbd",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.hd-texture-pack/tools/gen_charsel_pack.py",
       "sha256": "c05395962a028a22c974793b6ae93c7bc6624fef3df2d1ecc9d7dbce7d60733a",
       "bytes": 10998,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          132
-        ],
-        "relative_location": [
-          129,
-          130,
-          132
-        ],
-        "native_constant": [
-          25,
-          26
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-textures",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-textures"
+        ],
         "current_sha256": "c05395962a028a22c974793b6ae93c7bc6624fef3df2d1ecc9d7dbce7d60733a",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.hd-texture-pack/tools/gen_ui_pack.py",
       "sha256": "135fc13ed2ca667c478b191e368aa3320f9c5520f0a3e93b4dc9f1cff7def53e",
       "bytes": 8748,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          13,
-          16,
-          17,
-          19
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-textures",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-textures"
+        ],
         "current_sha256": "135fc13ed2ca667c478b191e368aa3320f9c5520f0a3e93b4dc9f1cff7def53e",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.hd-texture-pack/tools/validate_pack.py",
       "sha256": "86621b36ddd15502499d6472676db2125c249d14f386c8c593b417f5d796ec16",
       "bytes": 1395,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-textures",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-textures"
+        ],
         "current_sha256": "86621b36ddd15502499d6472676db2125c249d14f386c8c593b417f5d796ec16",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
@@ -3058,614 +3034,552 @@
       "file": "mods-src/bag2jp.localization.regional/tools/build_announcer.py",
       "sha256": "8e31f54be568a8f36d53987d50c7264756600be4e4cc7259a7704d2e7cb9b79a",
       "bytes": 4229,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          9,
-          11,
-          12
-        ],
-        "relative_location": [
-          9,
-          11,
-          12
-        ],
-        "cli_default": [
-          70
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "8e31f54be568a8f36d53987d50c7264756600be4e4cc7259a7704d2e7cb9b79a",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/build_buttons.py",
       "sha256": "49c7512b98cb8078af1f83bbee367d1d4b34a2987db628f4750f5d0dac474bc1",
       "bytes": 3116,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          10
-        ],
-        "relative_location": [
-          10,
-          12,
-          14,
-          15
-        ],
-        "cli_default": [
-          27
-        ],
-        "native_constant": [
-          8
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "49c7512b98cb8078af1f83bbee367d1d4b34a2987db628f4750f5d0dac474bc1",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/build_regional.py",
       "sha256": "098e7851e860a6cb86ef58094deb8b953ba62186e6beaeab2e7cec967cf0b345",
       "bytes": 9134,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          7,
-          10,
-          12
-        ],
-        "cli_default": [
-          156
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "098e7851e860a6cb86ef58094deb8b953ba62186e6beaeab2e7cec967cf0b345",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/build_vs.py",
       "sha256": "87a2094740b5fd83a456f149c2add3822238b0fe5c3303cdcc607edcae10b9f7",
       "bytes": 4308,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          12,
-          13
-        ],
-        "native_constant": [
-          5
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "87a2094740b5fd83a456f149c2add3822238b0fe5c3303cdcc607edcae10b9f7",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/build_vs_option.py",
       "sha256": "a091d22cf61edcb5ab9a4d773384b84184693f85afce816a0e4acfe6ebd82e6f",
       "bytes": 1281,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          39
-        ],
-        "cli_default": [
-          10,
-          26
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "a091d22cf61edcb5ab9a4d773384b84184693f85afce816a0e4acfe6ebd82e6f",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/build_xa.py",
       "sha256": "963ce59f4ab0ea25966642f8f63e5a15b77b556946e0f0e955f932630a0c8389",
       "bytes": 5063,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          11,
-          13,
-          14
-        ],
-        "relative_location": [
-          11,
-          13,
-          14,
-          94
-        ],
-        "cli_default": [
-          68,
-          74
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "963ce59f4ab0ea25966642f8f63e5a15b77b556946e0f0e955f932630a0c8389",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/diff_members.py",
       "sha256": "cb252d2feba398e7d8d3bcf76baca1a5dae2038490daa85c42b34485f7b2e4ff",
       "bytes": 1625,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          2
-        ],
-        "relative_location": [
-          2,
-          3
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "cb252d2feba398e7d8d3bcf76baca1a5dae2038490daa85c42b34485f7b2e4ff",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/entry_map.json",
       "sha256": "2edca75e6e61204f493b57d7111988543e7336ab5f4416cbba21402fd5f2d126",
       "bytes": 75767,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "2edca75e6e61204f493b57d7111988543e7336ab5f4416cbba21402fd5f2d126",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/funcdiff.py",
       "sha256": "edd9ff4fb284fe20c937a8eeac940800e2fe82e9846fad304d15172b16193126",
       "bytes": 3145,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "edd9ff4fb284fe20c937a8eeac940800e2fe82e9846fad304d15172b16193126",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/groups.py",
       "sha256": "24f0438caf7918f59a8d3710e7bbf0a2b9bdf973455a391f9016c4bf1103a480",
       "bytes": 2306,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          3
-        ],
-        "relative_location": [
-          3,
-          4,
-          5,
-          6
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "24f0438caf7918f59a8d3710e7bbf0a2b9bdf973455a391f9016c4bf1103a480",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/blockmap.json",
       "sha256": "f2d37999ac1a1ab463c7f267b2c3b3c37b7155506f9b65c04f18bca56c61bf41",
       "bytes": 404222,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "f2d37999ac1a1ab463c7f267b2c3b3c37b7155506f9b65c04f18bca56c61bf41",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/blockmap.py",
       "sha256": "571deca05a52f1ef811365fc28c4f817381d218ed3ff5c72074a7035f0b72c9b",
       "bytes": 2232,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          4,
-          5,
-          15,
-          38
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "571deca05a52f1ef811365fc28c4f817381d218ed3ff5c72074a7035f0b72c9b",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/match.json",
       "sha256": "dd3d6cc4b1f35118bad11e56cf90104d3aea92dc3d58f329f458b13973a1d249",
       "bytes": 17874,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "dd3d6cc4b1f35118bad11e56cf90104d3aea92dc3d58f329f458b13973a1d249",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/match.py",
       "sha256": "b7bccac73174a9a6dadd4459ec1ddbc186d3ec7e1465cd839864170f3781b00e",
       "bytes": 2220,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          3,
-          41
-        ],
-        "cli_default": [
-          40
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "b7bccac73174a9a6dadd4459ec1ddbc186d3ec7e1465cd839864170f3781b00e",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/render.py",
       "sha256": "0c33cb106d8f6cf6e5903e6ff20fd198db4686646ac344f593f13dcfc4c5655a",
       "bytes": 4009,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          9,
-          64
-        ],
-        "relative_location": [
-          8,
-          9,
-          26,
-          52,
-          63,
-          64
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "0c33cb106d8f6cf6e5903e6ff20fd198db4686646ac344f593f13dcfc4c5655a",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/render2.py",
       "sha256": "214d0afb9889c0c0bc7cca9d324f91b9c94c5b7dfdc1eb71d9ee30d0c9946457",
       "bytes": 9593,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          15
-        ],
-        "relative_location": [
-          13,
-          15
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "214d0afb9889c0c0bc7cca9d324f91b9c94c5b7dfdc1eb71d9ee30d0c9946457",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/render3.py",
       "sha256": "f126670ad6420eb9fc1bd461db16997bcac8f1a30b9ef9b22e72afb86daa3089",
       "bytes": 5902,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "f126670ad6420eb9fc1bd461db16997bcac8f1a30b9ef9b22e72afb86daa3089",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/render_all.py",
       "sha256": "b4b4cc139dbca96ac97dd5458b931ca17b5c2c42ed3beb9e078f7952f4f4c06b",
       "bytes": 1942,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          7,
-          10
-        ],
-        "relative_location": [
-          5,
-          7,
-          10,
-          13,
-          17,
-          27,
-          28
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "b4b4cc139dbca96ac97dd5458b931ca17b5c2c42ed3beb9e078f7952f4f4c06b",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/segmap.json",
       "sha256": "9a93965ffcb232cfb5067bce27db50abd0549b00feab9cdea14555b46e351671",
       "bytes": 13047,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "9a93965ffcb232cfb5067bce27db50abd0549b00feab9cdea14555b46e351671",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/hq/segmap.py",
       "sha256": "dc556e95997abc4b05f6e0a24aaf91d7f0bd48b5004fbcf11837154845f00eb9",
       "bytes": 3676,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          3,
-          20,
-          72
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "dc556e95997abc4b05f6e0a24aaf91d7f0bd48b5004fbcf11837154845f00eb9",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/map_entries.py",
       "sha256": "ab7217fea204708a41885356bc7439250f2a9a26c944908038ffb81ade97a113",
       "bytes": 2036,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "machine_path": [
-          2
-        ],
-        "relative_location": [
-          2,
-          3,
-          37
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "ab7217fea204708a41885356bc7439250f2a9a26c944908038ffb81ade97a113",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/member_diff.json",
       "sha256": "1b2f35a27ad5c34237415658e9b169be293280a1e495d3bbe84dab6385c0f4d9",
       "bytes": 21971,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "1b2f35a27ad5c34237415658e9b169be293280a1e495d3bbe84dab6385c0f4d9",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/mipsdis.py",
       "sha256": "6900aed30d991a0efaef18aaae5908f5a0fb6e45b4dee63197085c602623072d",
       "bytes": 317,
-      "classification": "package_host_tool_review_configuration_candidates",
+      "classification": "asset_or_nonexecutable_metadata",
       "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "6900aed30d991a0efaef18aaae5908f5a0fb6e45b4dee63197085c602623072d",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
       "file": "mods-src/bag2jp.localization.regional/tools/preview_vs.py",
       "sha256": "55bcc624d6c59566c9a4e7e6d048bcd5652f03f8e7f64071f9742eae97af91f2",
       "bytes": 1313,
-      "classification": "package_host_tool_review_configuration_candidates",
-      "candidates": {
-        "relative_location": [
-          3
-        ]
-      },
+      "classification": "asset_or_nonexecutable_metadata",
+      "candidates": {},
       "progress": {
         "primary_lot": "S6-localization",
-        "associated_lots": [],
+        "associated_lots": [
+          "S6-localization"
+        ],
         "current_sha256": "55bcc624d6c59566c9a4e7e6d048bcd5652f03f8e7f64071f9742eae97af91f2",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "unreviewed",
-        "review_scope": "automatic_triage_only",
+        "status": "reviewed",
+        "review_scope": "semantic_review_exception_justified",
         "delivered_scopes": [],
-        "remaining": "Semantic review required; no-change is not inferred.",
-        "evidence": []
+        "remaining": "Host localization/textures/installer tooling; no config key applicable, no machine-path hardcode.",
+        "evidence": [
+          "_work/configuration/s6-register.py"
+        ]
       }
     },
     {
@@ -12767,7 +12681,7 @@
   ],
   "reconciliation": {
     "schema": 1,
-    "updated_utc": "2026-11-16T09:25:00Z",
+    "updated_utc": "2026-11-16T14:32:24.022148+00:00",
     "source_head": "d897310",
     "original_rows_digest": "0f4b0b31ab31a03ab131b72ecb0b4c28d9f7c277759b769cef54b359a2a65567",
     "scope": {
@@ -13631,7 +13545,7 @@
       {
         "id": "S6-localization",
         "title": "Herramientas de localización",
-        "status": "pending_review",
+        "status": "reviewed_scoped",
         "commits": [],
         "acceptance_scope": "Grupo de inventario; dividir en sublotes ejecutables tras revisión.",
         "consumer_files": [],
@@ -13674,13 +13588,13 @@
           "mods-src/bag2jp.localization.regional/tools/preview_vs.py"
         ],
         "file_status_counts": {
-          "unreviewed": 24
+          "reviewed": 24
         }
       },
       {
         "id": "S6-textures",
         "title": "Herramientas de texturas",
-        "status": "pending_review",
+        "status": "reviewed_scoped",
         "commits": [],
         "acceptance_scope": "Grupo de inventario; no regenerar assets.",
         "consumer_files": [],
@@ -13704,13 +13618,13 @@
           "mods-src/bag2jp.hd-texture-pack/tools/validate_pack.py"
         ],
         "file_status_counts": {
-          "unreviewed": 5
+          "reviewed": 5
         }
       },
       {
         "id": "S6-bag1-tools",
         "title": "Herramientas HQ BAG1",
-        "status": "pending_review",
+        "status": "reviewed_scoped",
         "commits": [],
         "acceptance_scope": "Grupo de inventario; no generar paquetes.",
         "consumer_files": [],
@@ -13736,13 +13650,13 @@
           "mods-src/bag2jp.feature.bag1-content/tools/hq_bag1/segmap.py"
         ],
         "file_status_counts": {
-          "unreviewed": 7
+          "reviewed": 7
         }
       },
       {
         "id": "S6-installer",
         "title": "Generador y plantillas del instalador",
-        "status": "pending_review",
+        "status": "reviewed_scoped",
         "commits": [],
         "acceptance_scope": "Configuración de desarrollo portable; no parser host en runtime ni publicar instaladores.",
         "consumer_files": [],
@@ -13765,7 +13679,7 @@
           "installer/settings.toml"
         ],
         "file_status_counts": {
-          "unreviewed": 4
+          "reviewed": 4
         }
       },
       {
