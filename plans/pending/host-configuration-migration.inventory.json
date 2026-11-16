@@ -13444,6 +13444,54 @@
           "_work/configuration/audit_strict.json"
         ]
       }
+    },
+    {
+      "file": "tools/test/test_bag1import_host_inputs.py",
+      "sha256": "fc7ea951bc133d85622b841176a025faaf9f179c551b2fa737e2b63212d97714",
+      "bytes": 2578,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard: BAG1 host inputs helper follows config keys (no fixed locations). (2026-11-16).",
+        "current_sha256": "fc7ea951bc133d85622b841176a025faaf9f179c551b2fa737e2b63212d97714",
+        "evidence": [
+          "_work/configuration/audit_current.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_host_script_paths.py",
+      "sha256": "5a92bc10ed8a7acf22c644a62043de65523ff34a0e105977d856b678efe4875f",
+      "bytes": 1969,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard: mods-src scripts have no machine or home locations. (2026-11-16).",
+        "current_sha256": "5a92bc10ed8a7acf22c644a62043de65523ff34a0e105977d856b678efe4875f",
+        "evidence": [
+          "_work/configuration/audit_current.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_profile_host_paths.py",
+      "sha256": "2d849a4a317c78da9ee68c60182a33a7f2769039b064646940aa439cfb2b349e",
+      "bytes": 6180,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard: profile host paths resolve from config, no fixed locations. (2026-11-16).",
+        "current_sha256": "2d849a4a317c78da9ee68c60182a33a7f2769039b064646940aa439cfb2b349e",
+        "evidence": [
+          "_work/configuration/audit_current.json"
+        ]
+      }
     }
   ],
   "reconciliation": {

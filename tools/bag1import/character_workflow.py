@@ -30,7 +30,7 @@ def _runtime_config(project: Path | str, config: ProjectConfig | None = None) ->
     return config
 
 
-WORK_ROOT_MEMBER = "_work"  # config-audit: allow declared-location syntax token, resolved via paths.work_root
+WORK_ROOT_MEMBER = "_work"  # config-audit: allow declared syntax token resolved via work root
 
 
 def _operator_input(project: Path, config: ProjectConfig, declared: str) -> Path:

@@ -26,7 +26,7 @@ _INDIRECT = re.compile(r'["\']_work["\']'
 # Home-relative and absolute POSIX locations that bypass configured keys.
 _HOME_FORMS = re.compile(r'Path\.home\(\)|os\.environ\[|getenv\(|os\.path\.expanduser\(')
 _POSIX_ROOT = re.compile(r'["\'](/mnt/|/home/)[^"\'\n]*["\']')
-_ALLOW = re.compile(r"#\s*config-audit:\s*allow\s+([A-Za-z0-9][A-Za-z0-9 .-]{2,})$")
+_ALLOW = re.compile(r"#\s*config-audit:\s*allow\s+([A-Za-z0-9][A-Za-z0-9 .,()_-]{2,})$")
 # Host sources scanned even when absent from the inventory (Git-tracked only).
 _HOST_SOURCES = re.compile(r'^(tools/.+|mods-src/[^/]+/tools/.+)\.py$')
 
