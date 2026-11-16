@@ -2570,3 +2570,18 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Resultado: parcial (identidad y acceso confirmados; no utilidad práctica nueva
   de análisis nativo ni aceptación). Tiempo MCP, ahorro y retrabajo: desconocidos.
   Siguiente: reutilizar esta comprobación en el mismo ciclo sin repetirla sin causa.
+
+## 20261116-ghidra-bag2-main-exe-key - identidad de `inputs.bag2_main_exe`
+
+- Propósito: confirmar que `_work/mainexe/slpm.bin` es el ejecutable de BAG2 (JP) antes
+  de renombrar su clave a `inputs.bag2_main_exe` (migración de configuración host).
+- Versión/contexto: instancia existente Ghidra 12.1.4 con `SLPM_862.19`, PSX LE32, base
+  `0x80000000`. MCP vía HTTP `127.0.0.1:8080` (el catálogo `tools.ghidra.*` no estaba
+  disponible en esta sesión).
+- Consultas: `GET /program_info` (success, `SLPM_862.19`, PSX Executables Loader) y
+  `GET /read_memory?address=0x80010000&length=16` → `0010e00fc10fa30f850f680f4c0f300f`,
+  sin huecos. Sin escritura, overlay, reinicio ni instalación.
+- Validación independiente: los primeros 16 bytes de `_work/mainexe/slpm.bin` son
+  idénticos (lectura directa del archivo). Antes en la sesión: `slpm.bin == SLPM_862.19[0x800:]`.
+- Resultado: útil (decide el nombre de la clave: BAG2, no BAG1). Tiempo MCP < 1 min;
+  ahorro y retrabajo: desconocidos. Siguiente: reutilizar mientras el binario no cambie.

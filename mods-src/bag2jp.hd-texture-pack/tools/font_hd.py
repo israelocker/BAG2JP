@@ -4,9 +4,12 @@ binary mask after a light blur) and every HD pixel takes the index with the stro
 at 2x the target and box-downsampled for anti-aliased edges; then the palette row is applied.
 Index 0 = transparent (alpha 0)."""
 import numpy as np, struct, sys, os
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
 from PIL import Image
 from scipy import ndimage
-TIM = os.path.expanduser('~/work/jpbase/archive/system/000/000.tim')
+TIM = C.text('inputs.bag2jp_base_archive') + '/system/000/000.tim'
 def load_indices():
     d = open(TIM, 'rb').read(); ln = struct.unpack_from('<I', d, 8)[0]; q = 8 + ln
     _, x, y, w, h = struct.unpack_from('<IHHHH', d, q); pix = np.frombuffer(d[q + 12:q + 12 + w * 2 * h], np.uint8).reshape(h, w * 2)
@@ -38,9 +41,9 @@ if __name__ == '__main__':
     S = int(sys.argv[1]) if len(sys.argv) > 1 else 6
     idx = load_indices()
     crop = idx[128:158, 64:236]
-    rows, _ = clut_rows(os.path.expanduser('~/work/jpbase/archive/system/000/001.tim'))
+    rows, _ = clut_rows(C.text('inputs.bag2jp_base_archive') + '/system/000/001.tim')
     lab, ss = label_upscale(crop, S)
-    out = os.path.expanduser('~/mnt/Dev/Recomp/BAG2JP/_work/font_test')
+    out = C.text('paths.work_root') + '/font_test'
     colorize(lab, rows[6], ss).save(f'{out}/label_block_x{S}.png')
     pal = rows[6]
     near = Image.fromarray(crop).resize((crop.shape[1] * S, crop.shape[0] * S), Image.NEAREST)
@@ -58,7 +61,7 @@ def build_pack(out_dir, S=6, blur=0.2):
     lab, ss = label_upscale(idx, S, blur=blur)
     n = 0
     for f in ('000.tim', '001.tim'):
-        rows, raw = clut_rows(os.path.expanduser(f'~/work/jpbase/archive/system/000/{f}'))
+        rows, raw = clut_rows(C.text('inputs.bag2jp_base_archive') + f'/system/000/{f}')
         for r, row in enumerate(rows):
             ph = xxhash.xxh3_64(raw[20 + r * 32:20 + r * 32 + 32]).hexdigest().upper()
             name = f'texupload-P4-{tex}-{ph}-{w}x{h}-0-0-{w * 4}x{h}-P0-15.png'
@@ -66,7 +69,7 @@ def build_pack(out_dir, S=6, blur=0.2):
     return n
 
 # ---- v2: per-glyph cells (no bleeding between neighbouring glyphs) ----
-EXE = os.path.expanduser('~/work/vs/slpm.exe')
+EXE = C.text('paths.vs_work') + '/slpm.exe'
 FONT_TABLES = (0x80050D60, 0x80050F44, 0x80051128)   # 'SF' tables: +2 height, +4 3-byte u/v/w from ' '
 def glyph_cells():
     d = open(EXE, 'rb').read()[0x800:]; cells = set()
@@ -96,7 +99,7 @@ def build_pack_v2(out_dir, S=6, blur=0.2):
     lab, ss = label_upscale_cells(idx, S, blur=blur)
     names = {}
     for tag, f in (('a', '000.tim'), ('b', '001.tim')):
-        rows, raw = clut_rows(os.path.expanduser(f'~/work/jpbase/archive/system/000/{f}'))
+        rows, raw = clut_rows(C.text('inputs.bag2jp_base_archive') + f'/system/000/{f}')
         for r, row in enumerate(rows):
             ph = xxhash.xxh3_64(raw[20 + r * 32:20 + r * 32 + 32]).hexdigest().upper()
             name = f'texupload-P4-{tex}-{ph}-{w}x{h}-0-0-{w * 4}x{h}-P0-15.png'

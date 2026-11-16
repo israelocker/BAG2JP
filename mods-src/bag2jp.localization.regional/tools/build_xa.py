@@ -8,10 +8,13 @@ Channel swap rule: the n-th US sector of a channel goes into the n-th JP slot of
 JP slots left over get silent ADPCM. JP subheaders (incl. the EOF on the last JP slot) and JP
 MSF headers are kept, EDC is recomputed for every rewritten sector."""
 import hashlib, os, sys
-TOOLS = os.path.expanduser('~/mnt/Dev/Tools/psx-asset-tools'); sys.path.insert(0, TOOLS)
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
+TOOLS = C.text('tools.psx_asset_tools'); sys.path.insert(0, TOOLS)
 from psxassets import disc as D
-JCUE = os.path.expanduser('~/mnt/Bust A Groove 2 (Japan)/ISO/Bust A Move 2 - Dance Tengoku Mix (Japan).cue')
-UCUE = os.path.expanduser('~/mnt/Bust A Groove 2 (USA)/ISO/Bust A Groove 2 (USA).cue')
+JCUE = C.text('inputs.bag2_cue')
+UCUE = C.text('inputs.bag2us_cue')
 RAW, CHUNK = 2352, 2048
 
 _T = []
@@ -91,7 +94,7 @@ def append(pkg_dir):
     open(f'{pkg_dir}/manifest.toml', 'w').write(m)
     # bundle the pre-rendered songs
     import shutil
-    src = os.path.expanduser('~/work/hq/music_hq')
+    src = C.text('paths.hq_work') + '/music_hq'
     if os.path.isdir(src):
         shutil.copytree(src, f'{pkg_dir}/music_hq', dirs_exist_ok=True)
     return len(e)

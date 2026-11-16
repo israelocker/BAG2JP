@@ -4,9 +4,12 @@
 - other transitions (splices, unmapped<->mapped) switch source with a 5 ms crossfade;
 - unmapped blocks play the game's own audio."""
 import numpy as np, os, json, subprocess, sys
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[4]))
+from tools.workflow import configured as C  # noqa: E402
 OUT=44100
-bm=json.load(open(os.path.expanduser('~/work/hq/blockmap.json')))
-CDDIR=os.path.expanduser('~/mnt/Dev/Recomp/BAG2JP/assets/music_cd/Bust a Move 2')
+bm=json.load(open(C.text('paths.hq_work') + '/blockmap.json'))
+CDDIR=C.text('inputs.bag2jp_assets') + '/music_cd/Bust a Move 2'
 flacs=sorted(f for f in os.listdir(CDDIR) if f.endswith('.flac'))
 def load(cmd): return np.frombuffer(subprocess.run(cmd,capture_output=True).stdout,dtype=np.float32).reshape(-1,2)
 def plan(m):
@@ -23,7 +26,7 @@ def plan(m):
 def render(name, xa_override=None):
     m=bm[name]; trk=flacs[int(m['track'])-1]
     y=load(['ffmpeg','-v','error','-i',os.path.join(CDDIR,trk),'-f','f32le','-ac','2','-ar',str(OUT),'-'])
-    xa=xa_override if xa_override is not None else load(['ffmpeg','-v','error','-f','f32le','-ar','8000','-ac','1','-i',os.path.expanduser(f'~/work/hq/xa/{name}.f32'),'-f','f32le','-ac','2','-ar',str(OUT),'-'])
+    xa=xa_override if xa_override is not None else load(['ffmpeg','-v','error','-f','f32le','-ar','8000','-ac','1','-i',C.text('paths.hq_work') + f'/xa/{name}.f32','-f','f32le','-ac','2','-ar',str(OUT),'-'])
     P,med=plan(m); bs=int(0.1*OUT); n=min(len(xa),len(P)*bs); out=np.zeros((n,2),np.float32)
     X=5*OUT//1000
     for b,p in enumerate(P):
@@ -49,7 +52,7 @@ def render(name, xa_override=None):
                 out[s:s+X]=ext*(1-w)+out[s:s+X]*w
     return out
 def check(name,out):
-    x=np.fromfile(os.path.expanduser(f'~/work/hq/xa/{name}.f32'),dtype=np.float32)
+    x=np.fromfile(C.text('paths.hq_work') + f'/xa/{name}.f32',dtype=np.float32)
     r=subprocess.run(['ffmpeg','-v','error','-f','f32le','-ar','44100','-ac','2','-i','-','-ac','1','-ar','8000','-f','f32le','-'],input=out.tobytes(),capture_output=True).stdout
     z=np.frombuffer(r,dtype=np.float32); n=min(len(x),len(z)); sc=[]
     for k in range(0,n-8000,8000):
@@ -60,5 +63,5 @@ if __name__=='__main__':
     for name,label in (('BUST2_01_ch2','comet_magic_tower'),('BUST2_01_ch0','heat_the_heat_is_on')):
         out=render(name)
         print(name,'1-s windows vs game audio: median corr %.3f, 5th pct %.3f, bad %d/%d'%check(name,out),flush=True)
-        tmp=os.path.expanduser('~/work/hq/_render.f32'); out.tofile(tmp)
-        subprocess.run(['ffmpeg','-y','-v','error','-f','f32le','-ar',str(OUT),'-ac','2','-i',tmp,'-c:a','libmp3lame','-q:a','2',os.path.expanduser(f'~/mnt/Dev/Recomp/BAG2JP/_work/hq_preview_{label}.mp3')])
+        tmp=C.text('paths.hq_work') + '/_render.f32'; out.tofile(tmp)
+        subprocess.run(['ffmpeg','-y','-v','error','-f','f32le','-ar',str(OUT),'-ac','2','-i',tmp,'-c:a','libmp3lame','-q:a','2',C.text('paths.work_root') + f'/hq_preview_{label}.mp3'])

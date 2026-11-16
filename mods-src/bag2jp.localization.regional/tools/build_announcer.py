@@ -6,10 +6,13 @@ positions. _02 has the same interleave on both discs, so whole ranges are copied
 than 4-6 are identical anyway). _04 ch6: the 143 US sectors go into the first JP ch6 slots (JP
 subheader kept), the remaining 45 JP ch6 slots become silent ADPCM; other channels untouched."""
 import hashlib, os, sys
-TOOLS = os.path.expanduser('~/mnt/Dev/Tools/psx-asset-tools'); sys.path.insert(0, TOOLS)
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
+TOOLS = C.text('tools.psx_asset_tools'); sys.path.insert(0, TOOLS)
 from psxassets import disc as D
-JCUE = os.path.expanduser('~/mnt/Bust A Groove 2 (Japan)/ISO/Bust A Move 2 - Dance Tengoku Mix (Japan).cue')
-UCUE = os.path.expanduser('~/mnt/Bust A Groove 2 (USA)/ISO/Bust A Groove 2 (USA).cue')
+JCUE = C.text('inputs.bag2_cue')
+UCUE = C.text('inputs.bag2us_cue')
 RAW = 2352
 CHUNK = 2048   # sectors per overlay file
 

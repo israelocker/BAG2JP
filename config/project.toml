@@ -8,9 +8,19 @@ gaso_out_jp = "_work/character_import/gaso/candidate-jp"
 # Legacy Heat test-mod work copies; the adapter deletes and recreates their archive/.
 heat_test_workspace = "_work/heat_test/character"
 heat_stage_workspace = "_work/heat_test/stage"
+# Session state file named by the AGENTS.md startup order.
+current_state = "_work/current-state.json"
+# Scratch workspaces of the mods-src WSL tools (formerly ~/work/<name> on Claude's VM).
+regional_work = "_work/wsl/regional"
+hq_work = "_work/wsl/hq"
+hq_bag1_work = "_work/wsl/hq_b1"
+vs_work = "_work/wsl/vs"
+uipack_work = "_work/wsl/uipack"
 
 [wsl]
 distribution = "Ubuntu"
+# Where Windows drives appear inside WSL; drive-letter paths resolve under it on POSIX hosts.
+mount_root = "/mnt"
 
 [build]
 # Owner-approved parallelism, not a machine-local override.
@@ -48,7 +58,18 @@ ffmpeg_stop_poll_seconds = 0.1
 process_audio_extra_seconds = 60.0
 
 [inputs]
-bag1_main_exe = "_work/mainexe/slpm.bin"
+# Main executable bodies without the 2048-byte PS-X EXE header (load address 0x80010000).
+bag1_main_exe = "_work/bag1/scus.bin"
+# Full BAG1 PS-X EXE (with header); the native runtime RAM probe reads its text at 0x800.
+bag1_exe_image = "_work/bag1/SCUS_942.63"
+bag2_main_exe = "_work/mainexe/slpm.bin"
+# Loose BAG1 USA disc files (BIN1/, DFS1/) and per-character extracted inventories.
+bag1_disc_files = "_work/bag1_disc"
+character_inventory = "_work/character_inventory"
+# Project asset tree, the pristine JP archive copy and the extracted USA BAG2 assets.
+bag2jp_assets = "assets"
+bag2jp_base_archive = "_work/wsl/jpbase/archive"
+bag2us_assets = "_work/wsl/bag2us/assets"
 gaso_profile = "tools/bag1import/profiles/gaso.json"
 gaso_stock_bio = "_work/stage_import/gaso/stock_bio_entries"
 gaso_stock_fever = "assets/archive/characters/bi_o/choreography_a"

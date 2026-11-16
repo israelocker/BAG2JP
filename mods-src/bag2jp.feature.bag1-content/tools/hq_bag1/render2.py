@@ -9,10 +9,13 @@
    per 100 ms block, so no zipper noise or dips; game fades are still followed.
 Output: same timeline and length as the game XA channel (2352 frames per channel sector)."""
 import numpy as np, os, json, subprocess, sys
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[4]))
+from tools.workflow import configured as C  # noqa: E402
 OUT = 44100; BS = 4410
-HQ = os.path.expanduser('~/work/hq_b1')
+HQ = C.text('paths.hq_bag1_work')
 bm = json.load(open(f'{HQ}/blockmap.json'))
-CDDIR = os.path.expanduser('~/mnt/Dev/Recomp/BAG2JP/assets/music_cd/Bust a Move')
+CDDIR = C.text('inputs.bag2jp_assets') + '/music_cd/Bust a Move'
 flacs = sorted(f for f in os.listdir(CDDIR) if f.endswith('.flac'))
 TOL = 0.015; WIN = 12
 

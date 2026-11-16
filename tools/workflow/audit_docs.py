@@ -11,18 +11,37 @@ import hashlib
 import json
 import logging
 import os
+from functools import lru_cache
 from pathlib import Path
 import re
+import sys
 from urllib.parse import unquote, urlsplit
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.workflow.project_config import load_config, require_paths  # noqa: E402
+
 LOGGER = logging.getLogger(__name__)
-EXCLUDED = {".git", "_work", "assets", "releases", "ghidra", "node_modules",
+# The configured work root is excluded by location, not by name (see _work_location).
+EXCLUDED = {".git", "assets", "releases", "ghidra", "node_modules",
             "third_party", "__pycache__", ".venv", "psxrecomp", "recomp-ui"}
 REQUIRED_FIELDS = {"id", "title", "tags", "summary", "related", "created", "updated"}
+# The session state member comes from paths.current_state.
 CONTEXT_SETS = {
-    "startup": ["AGENTS.md", "NOTES.md", "_work/current-state.json"],
-    "import_start": ["AGENTS.md", "NOTES.md", "_work/current-state.json", "IMPORT_STANDARD.md"],
+    "startup": ["AGENTS.md", "NOTES.md", None],
+    "import_start": ["AGENTS.md", "NOTES.md", None, "IMPORT_STANDARD.md"],
 }
+
+
+@lru_cache(maxsize=None)
+def _configured(root: Path) -> tuple[Path, str, str]:
+    """Return the work root, its project-relative label and the state file label for ``root``."""
+    work, state = require_paths(load_config(repo_root=root), ("paths.work_root", "paths.current_state"))
+    def label(path: Path) -> str:
+        try:
+            return path.resolve().relative_to(root.resolve()).as_posix()
+        except ValueError:
+            return path.resolve().as_posix()
+    return work.resolve(), label(work), label(state)
 
 
 def inventory(root: Path) -> list[str]:
@@ -30,8 +49,10 @@ def inventory(root: Path) -> list[str]:
     if not root.is_dir():
         raise ValueError(f"Not a directory: {root}")
     paths = []
+    work = _configured(root)[0]
     for directory, folders, files in os.walk(root, followlinks=False):
         folders[:] = sorted(name for name in folders if name not in EXCLUDED
+                            and (Path(directory) / name).resolve() != work
                             and not name.startswith("build")
                             and not (Path(directory) / name).is_symlink())
         for name in files:
@@ -137,7 +158,7 @@ def inspect_document(root: Path, path: Path) -> dict:
         if target is not None:
             destination = root / target.lstrip("/") if target.startswith("/") else path.parent / target
             if not destination.exists():
-                issue("missing-link", target, "warning" if historical or target.startswith("_work/") else "error")
+                issue("missing-link", target, "warning" if historical or target.startswith(_configured(root)[1] + "/") else "error")
     for target in re.findall(r"(?<!`)`((?:tools|docs|notes|plans|agent-skills)/[^`\s]+\.(?:md|py|ps1|sh|json))`(?!`)", prose):
         target = local_target(target)
         if target is not None and not (root / target).exists():
@@ -177,7 +198,9 @@ def report(root: Path) -> dict:
             ids.setdefault(scalar(doc["fields"]["id"]), []).append(doc["path"])
     duplicates = {key: paths for key, paths in ids.items() if len(paths) > 1}
     contexts = {}
+    state = _configured(root)[2]
     for name, members in CONTEXT_SETS.items():
+        members = [state if member is None else member for member in members]
         contexts[name] = {"files": members,
                           "bytes": sum((root / p).stat().st_size for p in members if (root / p).is_file()),
                           "missing": [p for p in members if not (root / p).is_file()]}

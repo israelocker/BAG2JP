@@ -1,6 +1,9 @@
 import os,json,hashlib,csv,struct
-J=os.path.expanduser('~/mnt/Dev/Recomp/BAG2JP/assets')
-U=os.path.expanduser('~/work/bag2us/assets')
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
+J=C.text('inputs.bag2jp_assets')
+U=C.text('inputs.bag2us_assets')
 d=json.load(open('entry_map.json'))
 upaths={int(k):v for k,v in d['us_paths'].items()}
 def members(base,rel):

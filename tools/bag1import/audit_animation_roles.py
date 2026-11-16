@@ -22,6 +22,10 @@ from anim_remap import fix_events, mute_voices, build, EMPTY, POLICY
 from animation_policy import adapt_events
 policy_roles = {row["target"]: row for row in POLICY["roles"]}
 from rebase_cues import rebase_events, b1_cue_base
+from host_inputs import input_path, load_config
+config = load_config(repo_root=root)
+heat_members = input_path("inputs.heat_bag1_members", config=config)
+heat_primary = heat_members / "PLAYER2_P_HEATA2" / "001.bin"
 
 def sha(data):
     return hashlib.sha256(data).hexdigest()
@@ -75,14 +79,14 @@ def metadata(anim):
     beats = struct.unpack_from("<H", header, 2)[0]
     return {"frames": frames(anim), "beats": beats, "events": events, "empty": False, "motion_sha256": sha(anim[:info_offset])}
 
-b1exe = (root/"_work/bag1/scus.bin").read_bytes()
-b2exe = (root/"_work/mainexe/slpm.bin").read_bytes()
-b1view = (root/"_work/bag1_disc/BIN1/VIEW.DBI").read_bytes()[12:]
+b1exe = input_path("inputs.bag1_main_exe", config=config).read_bytes()
+b2exe = input_path("inputs.bag2_main_exe", config=config).read_bytes()
+b1view = (input_path("inputs.bag1_disc_files", config=config)/"BIN1/VIEW.DBI").read_bytes()[12:]
 b2view = (root/"assets/archive/system/008.dbi").read_bytes()[12:]
 b1labels = view_labels(b1view, 0x8009cc50, 0x8009f84c, 0x8009fd88, 66)
 b2pointer = b2view.index(struct.pack("<I", 0x8008faf8)) + 0x8008f890
 b2labels = view_labels(b2view, 0x8008f890, b2pointer, 0x80092484, 87)
-source = anim_list((root/"_work/bag1_assets/heat/PLAYER2_P_HEATA2/001.bin").read_bytes())
+source = anim_list(heat_primary.read_bytes())
 if len(source) != 84:
     raise ValueError("Unexpected BAG1 Heat animation count")
 source_names = defaultdict(list)
@@ -248,9 +252,9 @@ source_inventory = [{"index":i,"labels":source_names[i],"sha256":sha(anim),
 used = {i for row in slots+fever_rows for i in row["bag1_indices"]}
 source_variants = []
 for folder in ("PLAYER2_P_HEATA2","PLAYER2_P_HEATB2","PLAYER4_P_HEATA4","PLAYER4_P_HEATB4"):
-    data = (root/"_work/bag1_assets/heat"/folder/"001.bin").read_bytes()
+    data = (heat_members/folder/"001.bin").read_bytes()
     source_variants.append({"folder":folder,"sha256":sha(data),
-                            "equals_primary":data == (root/"_work/bag1_assets/heat/PLAYER2_P_HEATA2/001.bin").read_bytes()})
+                            "equals_primary":data == heat_primary.read_bytes()})
 regional = []
 if args.bag1_japan:
     from iso_extract import Disc
@@ -261,7 +265,7 @@ if args.bag1_japan:
                 continue
             data = dfs_entries(disc.read(lba,size))[1]
             folder = filename.replace("/","_").replace(".DFS","")
-            usa = (root/"_work/bag1_assets/heat"/folder/"001.bin").read_bytes()
+            usa = (heat_members/folder/"001.bin").read_bytes()
             regional.append({"file":filename,"sha256":sha(data),"animation_count":len(anim_list(data)),
                              "equals_usa":data == usa})
         if len(regional) != 4:

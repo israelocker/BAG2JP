@@ -11,7 +11,7 @@ LOCAL = ('schema_version = 1\n[paths]\nexperimental_install = "game"\nstable_ins
 
 def relocated_root(test) -> Path:
     """A different repository root per test, removed by the test's cleanup."""
-    parent = REPO / "_work"
+    parent, = project_config.require_paths(project_config.load_config(repo_root=REPO), ("paths.work_root",))
     parent.mkdir(exist_ok=True)
     temporary = tempfile.TemporaryDirectory(prefix="versus-config-", dir=parent)
     test.addCleanup(temporary.cleanup)
@@ -22,8 +22,9 @@ def build_config(root: Path, local: str = LOCAL) -> project_config.ProjectConfig
     """Copy the reviewed common TOML into a relocated root and select owned install roots."""
     (root / "config").mkdir()
     (root / "config/project.toml").write_bytes((REPO / "config/project.toml").read_bytes())
-    for name in ("game", "stable", "winshot", "_work"):
-        (root / name).mkdir(exist_ok=True)
+    work, = project_config.require_paths(project_config.load_config(repo_root=REPO), ("paths.work_root",))
+    for name in ("game", "stable", "winshot", work.relative_to(REPO)):
+        (root / name).mkdir(parents=True, exist_ok=True)
     (root / "config/project.local.toml").write_text(local, encoding="utf-8", newline="\n")
     return project_config.load_config(repo_root=root)
 

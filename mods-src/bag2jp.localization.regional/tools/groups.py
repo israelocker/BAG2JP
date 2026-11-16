@@ -1,9 +1,12 @@
 """JP -> US asset groups for bag2jp.localization.regional (one Launcher choice each)."""
 import json, os
-J = os.path.expanduser('~/mnt/Dev/Recomp/BAG2JP/assets/archive')
-U = os.path.expanduser('~/work/bag2us/assets/archive')
-rows = json.load(open(os.path.expanduser('~/work/regional/member_diff.json')))
-em = json.load(open(os.path.expanduser('~/work/regional/entry_map.json')))
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
+J = C.text('inputs.bag2jp_assets') + '/archive'
+U = C.text('inputs.bag2us_assets') + '/archive'
+rows = json.load(open(C.text('paths.regional_work') + '/member_diff.json'))
+em = json.load(open(C.text('paths.regional_work') + '/entry_map.json'))
 upath = {int(k): v for k, v in em['us_paths'].items()}
 
 def us(entry_idx, member):

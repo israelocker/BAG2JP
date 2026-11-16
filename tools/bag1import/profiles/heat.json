@@ -8,7 +8,6 @@
   "exception_assessment": "complete",
   "source_animation_list": "_work/bag1_assets/heat/PLAYER2_P_HEATA2/001.bin",
   "game_catalog": "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
-  "reference_runtime": "D:\\Dev\\Scratch\\bag1-native-reference\\BustAGroove_Recompiled.exe",
   "capabilities": {
     "costumes": ["a", "b"],
     "versions": ["bag1", "bag2"],

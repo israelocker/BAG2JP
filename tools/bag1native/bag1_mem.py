@@ -17,8 +17,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.workflow import configured  # noqa: E402
+
 PROCESS_NAME = "BustAGroove_Recompiled"
-SCUS = Path(__file__).resolve().parents[2] / "_work" / "bag1" / "SCUS_942.63"
+SCUS = configured.path("inputs.bag1_exe_image")
 RAM_SIZE = 0x200000
 PROBE_FILE_OFF = 0x800 + 0x100  # inside main exe text
 PROBE_PSX = 0x80010100

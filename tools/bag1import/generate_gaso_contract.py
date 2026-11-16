@@ -12,6 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from animlib import anim_list, frames, info
+from host_inputs import input_path, project_label
 import reqmap
 
 # Cargar catálogo de roles para nombres semánticos
@@ -25,7 +26,7 @@ for role in roles_catalog["games"]["bag1-usa"]["roles"]:
     request_to_role[role["request"]] = role["name"]
 
 # Leer 001.bin de Gas-O
-gaso_001 = Path("_work/character_inventory/gaso/001.bin")
+gaso_001 = input_path("inputs.character_inventory") / "gaso" / "001.bin"
 gaso_data = gaso_001.read_bytes()
 gaso_anims = anim_list(gaso_data)
 
@@ -52,7 +53,7 @@ contract = {
     "character": "gaso",
     "source_character_id": 9,
     "target_character_id": 9,
-    "source_animation_list": "_work/character_inventory/gaso/001.bin",
+    "source_animation_list": project_label(gaso_001),
     "generated_from": "reqmap.py + animlib.py + bag1-usa-bag2jp.roles.json",
     "notes": "Rol semántico determinado por request number. Slots BAG1 de reqmap.py (bag1). Slots BAG2 de reqmap.py (bag2). Estados: mapped (existe en ambos), unresolved (solo en uno), duplicate (mismo rol, múltiples requests), unused (slot vacío en BAG1).",
     "entries": []

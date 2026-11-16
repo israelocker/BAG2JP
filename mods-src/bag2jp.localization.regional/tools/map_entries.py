@@ -1,6 +1,9 @@
 import os, hashlib, json, sys
-J=os.path.expanduser('~/mnt/Dev/Recomp/BAG2JP/assets/archive')
-U=os.path.expanduser('~/work/bag2us/assets/archive')
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
+J=C.text('inputs.bag2jp_assets') + '/archive'
+U=C.text('inputs.bag2us_assets') + '/archive'
 def entries(root):
     # top-level archive entries = dirs/files with _container.json at depth matching catalog
     out={}
@@ -34,7 +37,7 @@ for ji,j in je.items():
         sc=len(js&us)/len(js|us)
         if best is None or sc>best[1]: best=(ui,sc,'partial')
     res.append(dict(jp=ji,jp_path=j['path'],us=best[0] if best else None,score=round(best[1],3) if best else 0,kind=best[2] if best else 'none'))
-json.dump(dict(map=res,us_paths={i:u['path'] for i,u in ue.items()}),open(os.path.expanduser('~/work/regional/entry_map.json'),'w'),indent=1)
+json.dump(dict(map=res,us_paths={i:u['path'] for i,u in ue.items()}),open(C.text('paths.regional_work') + '/entry_map.json','w'),indent=1)
 from collections import Counter
 print(Counter(r['kind'] for r in res))
 for r in res:

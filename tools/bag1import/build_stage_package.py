@@ -14,10 +14,8 @@ from rebuild_dfs_members import build_container
 import tim_retarget as tim
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from tools.workflow.project_config import ConfigError, ProjectConfig, load_config  # noqa: E402
+from tools.workflow.project_config import ConfigError, ProjectConfig, load_config, require_paths  # noqa: E402
 from character_workflow import resolve_declared_input  # noqa: E402
-
-MAIN_EXE = Path("_work") / "mainexe" / "slpm.bin"
 
 
 def package_paths(root, profile, config):
@@ -29,8 +27,9 @@ def package_paths(root, profile, config):
 
 
 def main_exe_path(root, config):
-    """Resolve the BAG1 main executable that stage call mapping consults."""
-    return resolve_declared_input(Path(root), config, str(MAIN_EXE))
+    """Resolve the BAG2 main executable body that stage call mapping consults."""
+    main_exe, = require_paths(config, ("inputs.bag2_main_exe",))
+    return main_exe
 
 
 def build_from_project(root, name, *, config: ProjectConfig | None = None):

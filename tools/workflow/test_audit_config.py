@@ -36,7 +36,7 @@ class AuditConfigComplianceTests(unittest.TestCase):
             {"file": "tools/bag1import/b.py", "progress": {"status": "unreviewed"}},
         ]
         self._write_inventory(files)
-        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json")
+        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json", tracked=[])
         report = checker.check()
         self.assertEqual(report["files_without_disposition"], 1)
         self.assertIn("tools/bag1import/b.py", report["pending_files"])
@@ -47,6 +47,42 @@ class AuditConfigComplianceTests(unittest.TestCase):
         )
         findings = hardcode_findings(self.root / "tools" / "workflow" / "sample.py")
         self.assertTrue(any("D:/" in f for f in findings))
+
+    def test_hardcode_detection_flags_indirect_forms(self):
+        sample = self.root / "tools" / "workflow" / "sample.py"
+        for source in ('W = Path("_work") / "x"\n', 'W = root / "_work/x.bin"\n',
+                       "d = open(f'{P}/_work/mainexe/slpm.bin')\n",
+                       'T = root.parents[1] / "Tools/psx-asset-tools"\n',
+                       "T = os.path.expanduser('~/work/hq')\n", "T = '~/mnt/Dev'\n"):
+            with self.subTest(source=source):
+                sample.write_text(source, encoding="utf-8")
+                self.assertNotEqual(hardcode_findings(sample), [])
+
+    def test_unregistered_host_source_fails_the_audit(self):
+        from audit_config import exit_code
+        self.assertEqual(exit_code({"hardcoded_files": 0, "unregistered_files": ["tools/x.py"]}), 1)
+        self.assertEqual(exit_code({"hardcoded_files": 0, "unregistered_files": []}), 0)
+
+    def test_line_pragma_with_reason_is_the_only_allowance(self):
+        sample = self.root / "tools" / "workflow" / "sample.py"
+        sample.write_text('TOKEN = "_work"  # config-audit: allow declared-syntax token\n', encoding="utf-8")
+        self.assertEqual(hardcode_findings(sample), [])
+        for source in ('TOKEN = "_work"  # config-audit: allow\n', 'TOKEN = "_work"  # allow declared\n'):
+            with self.subTest(source=source):
+                sample.write_text(source, encoding="utf-8")
+                self.assertNotEqual(hardcode_findings(sample), [])
+
+    def test_tracked_python_outside_inventory_is_scanned(self):
+        (self.root / "mods-src" / "pkg" / "tools").mkdir(parents=True)
+        (self.root / "mods-src" / "pkg" / "tools" / "stray.py").write_text(
+            "T = os.path.expanduser('~/work/x')\n", encoding="utf-8")
+        (self.root / "tools" / "workflow" / "listed.py").write_text("x = 1\n", encoding="utf-8")
+        self._write_inventory([{"file": "tools/workflow/listed.py", "progress": {"status": "reviewed"}}])
+        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json",
+                                     tracked=["mods-src/pkg/tools/stray.py", "tools/workflow/listed.py"])
+        report = checker.check()
+        self.assertEqual([d["file"] for d in report["hardcoded_details"]], ["mods-src/pkg/tools/stray.py"])
+        self.assertEqual(report["unregistered_files"], ["mods-src/pkg/tools/stray.py"])
 
     def test_no_hardcode_on_config_driven_file(self):
         (self.root / "tools" / "workflow" / "sample.py").write_text(
@@ -67,7 +103,7 @@ class AuditConfigComplianceTests(unittest.TestCase):
             {"file": "tools/workflow/good.py", "progress": {"status": "reviewed"}},
         ]
         self._write_inventory(files)
-        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json")
+        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json", tracked=[])
         report = checker.check()
         self.assertEqual(report["hardcoded_files"], 1)
         self.assertEqual(report["hardcoded_details"][0]["file"], "tools/workflow/bad.py")
@@ -80,7 +116,7 @@ class AuditConfigComplianceTests(unittest.TestCase):
             {"file": "tools/workflow/native.py", "progress": {"status": "exception_justified"}},
         ]
         self._write_inventory(files)
-        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json")
+        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json", tracked=[])
         report = checker.check()
         self.assertEqual(report["hardcoded_files"], 0)
 
@@ -92,7 +128,7 @@ class AuditConfigComplianceTests(unittest.TestCase):
             {"file": "tools/workflow/new_bad.py", "progress": {"status": "reviewed"}},
         ]
         self._write_inventory(files)
-        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json")
+        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json", tracked=[])
         report = checker.check()
         self.assertEqual(report["hardcoded_files"], 1)
 
@@ -110,7 +146,7 @@ class AuditConfigComplianceTests(unittest.TestCase):
              "progress": {"status": "reviewed"}},
         ]
         self._write_inventory(files)
-        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json")
+        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json", tracked=[])
         report_a = checker.check(lot_id="LOT-A")
         self.assertEqual(report_a["hardcoded_files"], 1)
         report_b = checker.check(lot_id="LOT-B")
@@ -124,7 +160,7 @@ class AuditConfigComplianceTests(unittest.TestCase):
             {"file": "tools/workflow/clean.py", "progress": {"status": "unreviewed"}},
         ]
         self._write_inventory(files)
-        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json")
+        checker = AuditConfigChecker(self.root, self.root / "plans" / "pending" / "host-configuration-migration.inventory.json", tracked=[])
         report = checker.check()
         self.assertEqual(report["files_without_disposition"], 1)
         self.assertEqual(report["hardcoded_files"], 0)

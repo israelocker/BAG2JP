@@ -15,14 +15,16 @@ SPEC.loader.exec_module(regional)
 
 PROFILE = {
     "schema": 1,
-    "bag2_disc": "disc.bin",
     "regions": {
-        "international": {"root": "_work/disc_usa", "directories": {"1": "PLAYER1E"}},
-        "japanese": {"root": "_work/disc_jp", "directories": {"1": "PLAYER1"}},
+        "international": {"directories": {"1": "PLAYER1E"}},
+        "japanese": {"directories": {"1": "PLAYER1"}},
     },
     "candidate_directory": "_work/candidates",
     "entries": [],
 }
+EXTRACTIONS = ("[inputs]\nbag1_usa_extraction = \"relocated_work/disc_usa\"\n"
+               "bag1_jp_extraction = \"relocated_work/disc_jp\"\n"
+               "bag2_disc = \"disc.bin\"\n")
 
 
 class RegionalVariantLocationTests(unittest.TestCase):
@@ -33,7 +35,7 @@ class RegionalVariantLocationTests(unittest.TestCase):
         self.previous = regional.REPO
         regional.REPO = self.root
         self.addCleanup(setattr, regional, "REPO", self.previous)
-        self.configure("[paths]\nwork_root = \"relocated_work\"\n")
+        self.configure("[paths]\nwork_root = \"relocated_work\"\n" + EXTRACTIONS)
         for name in ("disc_usa", "disc_jp", "candidates"):
             (self.root / "relocated_work" / name).mkdir(parents=True, exist_ok=True)
 
@@ -56,7 +58,7 @@ class RegionalVariantLocationTests(unittest.TestCase):
         self.assertFalse((self.root / "_work").exists())
 
     def test_default_work_root_is_unchanged(self):
-        self.configure("[paths]\nwork_root = \"_work\"\n")
+        self.configure("[paths]\nwork_root = \"_work\"\n" + EXTRACTIONS)
         self.assertEqual(self.locations()["candidate_directory"],
                          (self.root / "_work/candidates").resolve())
 
@@ -114,8 +116,7 @@ class RegionalVariantLocationTests(unittest.TestCase):
 
     def test_regional_directory_segment_must_not_escape(self):
         profile = dict(PROFILE,
-                       regions={"international": {"root": "_work/disc_usa",
-                                                  "directories": {"1": str(self.root / "outside")}},
+                       regions={"international": {"directories": {"1": str(self.root / "outside")}},
                                 "japanese": PROFILE["regions"]["japanese"]},
                        entries=[{"entry": 1, "chr": 0, "kind": 0, "class": "pack",
                                  "number": 1, "source": "P_A.DFS", "rules": []}])

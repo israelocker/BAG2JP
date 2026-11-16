@@ -8,9 +8,12 @@ centred at (112,204) / (400,204) with CLUT row = command difficulty, VS centred 
 extras (chars 11, 13) additive at (98,44)/(6,0) for P1 and mirrored at (300,44)/(304,0) for P2.
 Output: PNG layers scaled to a 2048x1536 (4:3) canvas: sx=4, sy=6.4."""
 import struct, os, sys, json
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
 from PIL import Image
-US = os.path.expanduser('~/work/bag2us/assets')
-OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser('~/work/vs/vs_hd')
+US = C.text('inputs.bag2us_assets')
+OUT = sys.argv[1] if len(sys.argv) > 1 else C.text('paths.vs_work') + '/vs_hd'
 SX, SY = 4.0, 6.4
 P1 = [61, 81, 59, 85, 65, 79, 75, 67, 63, 51, 53, 77, 57, 83, 55, 73, 71, 69]
 P2 = [62, 82, 60, 86, 66, 80, 76, 68, 64, 52, 54, 78, 58, 84, 56, 74, 72, 70]

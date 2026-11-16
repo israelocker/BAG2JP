@@ -7,12 +7,14 @@ JP has no such file, so the four US rows go into rows of system/010/005.tim (VRA
 are all-zero in both versions (7, 11, 12, 13); row 14 (Up/Left arrows) gets the US pink tint.
 Plugin bag2jp.command_buttons points the icon CLUT at those rows (005.dbi 0x80098398)."""
 import hashlib, os, struct, sys
-sys.path.insert(0, os.path.expanduser('~/mnt/Dev/Tools/psx-asset-tools'))
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
+sys.path.insert(0, C.text('tools.psx_asset_tools'))
 from psxassets import disc as D
-HOME = os.path.expanduser('~')
-JCUE = f'{HOME}/mnt/Bust A Groove 2 (Japan)/ISO/Bust A Move 2 - Dance Tengoku Mix (Japan).cue'
-US010 = f'{HOME}/work/bag2us/assets/archive/system/008/010.tim'
-US005 = f'{HOME}/work/bag2us/assets/archive/system/008/005.tim'
+JCUE = C.text('inputs.bag2_cue')
+US010 = C.text('inputs.bag2us_assets') + '/archive/system/008/010.tim'
+US005 = C.text('inputs.bag2us_assets') + '/archive/system/008/005.tim'
 BUST2_LBA = 179
 ENTRY_OFF = 573440          # archive/system/010 inside BUST2.BIN (catalog.csv)
 TIM_OFF = 67812             # 005.tim inside system/010 (_container.json)

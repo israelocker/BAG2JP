@@ -24,12 +24,13 @@ from iso_extract import Disc  # noqa: E402
 from model_bag1_to_bag2 import convert  # noqa: E402
 from rebuild_dfs_members import build_container, read_members  # noqa: E402
 from tim_retarget import retarget  # noqa: E402
-from tools.workflow.project_config import ConfigError, ProjectConfig, load_config  # noqa: E402
+from tools.workflow.project_config import ConfigError, ProjectConfig, load_config, require_paths  # noqa: E402
 from character_workflow import resolve_declared_input  # noqa: E402
 
 ARCHIVE = "BUST2.BIN"
 SECTOR = 2048
 REGIONS = ("international", "japanese")
+REGION_ROOT_KEYS = ("inputs.bag1_usa_extraction", "inputs.bag1_jp_extraction")
 
 
 def sha256(data: bytes) -> str:
@@ -72,11 +73,11 @@ def pack(members: list[bytes], padding: int) -> bytes:
 
 
 def profile_locations(profile: dict, config: ProjectConfig) -> dict:
-    """Resolve declared regional locations; the disc stays an explicit operator path."""
+    """Resolve regional locations: source roots from configuration, candidates from the profile."""
     if config.repo_root != REPO.resolve():
         raise ConfigError("Regional profile configuration belongs to a different project")
-    roots = {region: resolve_declared_input(REPO, config, profile["regions"][region]["root"])
-             for region in REGIONS}
+    usa, jp = require_paths(config, REGION_ROOT_KEYS)
+    roots = {"international": usa, "japanese": jp}
     return {"candidate_directory": resolve_declared_input(REPO, config, profile["candidate_directory"]),
             "region_roots": roots}
 
@@ -97,7 +98,8 @@ def _trusted_segment(segment: str) -> str:
 def build(profile: dict, out_dir: Path, *, config: ProjectConfig | None = None) -> dict:
     config = config if config is not None else load_config(repo_root=REPO)
     locations = profile_locations(profile, config)
-    stock = stock_entries(profile["bag2_disc"], [row["entry"] for row in profile["entries"]])
+    bag2_disc, = require_paths(config, ("inputs.bag2_disc",))
+    stock = stock_entries(str(bag2_disc), [row["entry"] for row in profile["entries"]])
     candidates = locations["candidate_directory"]
     report = {"profile_schema": profile["schema"], "entries": []}
     for row in profile["entries"]:

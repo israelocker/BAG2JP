@@ -15,6 +15,7 @@ from animlib import anim_list, frames, info
 
 # Importar reqmap para obtener el mapeo request -> slot
 sys.path.insert(0, str(Path(__file__).parent))
+from host_inputs import input_path, project_label
 import reqmap
 
 # Cargar catálogo de roles para nombres semánticos
@@ -28,7 +29,7 @@ for role in roles_catalog["games"]["bag1-usa"]["roles"]:
     request_to_role[role["request"]] = role["name"]
 
 # Leer 001.bin de Strike
-strike_001 = Path("_work/character_inventory/strike/001.bin")
+strike_001 = input_path("inputs.character_inventory") / "strike" / "001.bin"
 strike_data = strike_001.read_bytes()
 strike_anims = anim_list(strike_data)
 
@@ -57,7 +58,7 @@ contract = {
     "character": "strike",
     "source_character_id": 1,
     "target_character_id": 1,
-    "source_animation_list": "_work/character_inventory/strike/001.bin",
+    "source_animation_list": project_label(strike_001),
     "generated_from": "reqmap.py + animlib.py + bag1-usa-bag2jp.roles.json",
     "notes": "Rol semántico determinado por request number. Slots BAG1 de reqmap.py (bag1). Slots BAG2 de reqmap.py (bag2). Estados: mapped (existe en ambos), unresolved (solo en uno), duplicate (mismo rol, múltiples requests), unused (slot vacío en BAG1).",
     "entries": []

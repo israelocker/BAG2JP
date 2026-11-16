@@ -17,7 +17,8 @@ import versus_navigation as nav
 import versus_session as vs
 
 GAME = vs.GAME
-DISCOVERY_DIR = vs.REPO / "_work/versus-navigation/discovery-strike-id-p1"
+DISCOVERY_DIR = vs.project_config.assert_write_target(
+    vs.load_config(), vs.CATALOG_TARGET.parent / "discovery-strike-id-p1", role="work")
 
 
 class DiscoverySession:

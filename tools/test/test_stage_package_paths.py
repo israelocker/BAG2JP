@@ -37,7 +37,8 @@ class PackagePathTests(unittest.TestCase):
         (self.root / "config" / "project.toml").write_text(text, encoding="utf-8")
 
     def test_relocated_work_root_resolves_package_inputs(self):
-        self.configure('schema_version=1\n[paths]\nwork_root="relocated_work"\n')
+        self.configure('schema_version=1\n[paths]\nwork_root="relocated_work"\n'
+                       '[inputs]\nbag2_main_exe="relocated_work/mainexe/slpm.bin"\n')
         config = pc.load_config(repo_root=self.root)
         paths = builder.package_paths(self.root, PROFILE, config)
         self.assertEqual(paths["source"], (self.work / "stage" / "disc" / "ST_STRI.DFS").resolve())
@@ -53,12 +54,28 @@ class PackagePathTests(unittest.TestCase):
                         dirs_exist_ok=True)
         (self.root / "_work" / "mainexe").mkdir()
         shutil.copyfile(self.work / "mainexe" / "slpm.bin", self.root / "_work" / "mainexe" / "slpm.bin")
-        self.configure('schema_version=1\n[paths]\nwork_root="_work"\n')
+        self.configure('schema_version=1\n[paths]\nwork_root="_work"\n'
+                       '[inputs]\nbag2_main_exe="_work/mainexe/slpm.bin"\n')
         config = pc.load_config(repo_root=self.root)
         paths = builder.package_paths(self.root, PROFILE, config)
         self.assertEqual(paths["source"], (self.root / "_work" / "stage" / "disc" / "ST_STRI.DFS").resolve())
         self.assertEqual(builder.main_exe_path(self.root, config),
                          (self.root / "_work" / "mainexe" / "slpm.bin").resolve())
+
+    def test_main_exe_follows_its_configuration_key(self):
+        other = self.root / "elsewhere" / "main.bin"
+        other.parent.mkdir()
+        other.write_bytes(b"other exe")
+        self.configure('schema_version=1\n[paths]\nwork_root="relocated_work"\n'
+                       '[inputs]\nbag2_main_exe="elsewhere/main.bin"\n')
+        config = pc.load_config(repo_root=self.root)
+        self.assertEqual(builder.main_exe_path(self.root, config), other.resolve())
+
+    def test_missing_main_exe_key_is_not_silently_defaulted(self):
+        self.configure('schema_version=1\n[paths]\nwork_root="relocated_work"\n')
+        config = pc.load_config(repo_root=self.root)
+        with self.assertRaises(pc.ConfigError):
+            builder.main_exe_path(self.root, config)
 
     def test_missing_work_root_is_not_silently_defaulted(self):
         self.configure("schema_version=1\n")

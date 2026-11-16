@@ -1,6 +1,9 @@
 import numpy as np, os, glob, json
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[4]))
+from tools.workflow import configured as C  # noqa: E402
 SR=8000; HOP=80   # 100 Hz envelope
-xa_dir=os.path.expanduser('~/work/hq/xa'); cd_dir=os.path.expanduser('~/work/hq/cd')
+xa_dir=C.text('paths.hq_work') + '/xa'; cd_dir=C.text('paths.hq_work') + '/cd'
 def env(x):
     n=len(x)//HOP; f=x[:n*HOP].reshape(n,HOP)
     # high-passed energy (difference) -> onset-like envelope
@@ -38,4 +41,4 @@ if __name__=='__main__':
         good=[r for r in rows if r[3]>0.6]
         tr=sorted({r[1] for r in good}); dl=sorted({round(r[4]-r[0],2) for r in good})
         print(f"{name} {dur:6.1f}s tracks {tr} fine-min {min([r[3] for r in good],default=0):.2f} delta {dl[:5]}{'...' if len(dl)>5 else ''} ({len(good)}/{len(rows)})",flush=True)
-    json.dump(res,open(os.path.expanduser('~/work/hq/match.json'),'w'))
+    json.dump(res,open(C.text('paths.hq_work') + '/match.json','w'))

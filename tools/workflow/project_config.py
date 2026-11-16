@@ -50,17 +50,22 @@ def _field_registry() -> Mapping[str, FieldSpec]:
         "pins.psxrecomp": FieldSpec("revision", "Git hex prefix", False, "policy"),
         "pins.recomp_ui": FieldSpec("revision", "Git hex prefix", False, "policy"),
         "wsl.distribution": FieldSpec("string", "distribution name", True, "tool"),
+        "wsl.mount_root": FieldSpec("string", "POSIX directory", True, "tool"),
     }
     path_roles = {"work_root": "work", "build_root": "build",
                   "experimental_install": "experimental", "stable_install": "stable",
                   "tools_root": "tools", "gaso_out_usa": "output", "gaso_out_jp": "output",
-                  "heat_test_workspace": "output", "heat_stage_workspace": "output"}
+                  "heat_test_workspace": "output", "heat_stage_workspace": "output",
+                  "current_state": "output", "regional_work": "output", "hq_work": "output",
+                  "hq_bag1_work": "output", "vs_work": "output", "uipack_work": "output"}
     for name, role in path_roles.items():
         operations = ("payload-manifest",) if name in ("build_root", "experimental_install") else ()
         fields[f"paths.{name}"] = FieldSpec("path", "native path", True, role, operations)
     for name in ("bag1_usa_disc", "bag1_jp_disc", "bag1_usa_extraction", "bag1_jp_extraction",
-                 "bag1_reference_runtime", "bag1_main_exe", "gaso_profile", "gaso_stock_bio",
-                 "gaso_stock_fever", "gaso_motions", "heat_bag1_members", "bag2_cue"):
+                 "bag1_reference_runtime", "bag1_main_exe", "bag2_main_exe", "bag1_disc_files",
+                 "character_inventory", "gaso_profile", "gaso_stock_bio",
+                 "gaso_stock_fever", "gaso_motions", "heat_bag1_members", "bag2_cue", "bag2_disc",
+                 "bag2us_cue", "bag2us_assets", "bag2jp_base_archive", "bag2jp_assets", "bag1_exe_image"):
         fields[f"inputs.{name}"] = FieldSpec("path", "native path", True, "input")
     for name in ("audio_probe", "python_report", "winshot_root", "build_script",
                   "ffmpeg_review", "ffmpeg_wgc", "ffmpeg_native", "ghidra_launcher",
@@ -163,6 +168,16 @@ def _flatten(data: dict) -> dict[str, object]:
     return fields
 
 
+def _translate_drive(value: str, mount_root: str | None, *, posix: bool) -> str:
+    """Map ``X:/rest`` to ``<mount_root>/x/rest`` on POSIX (WSL) hosts; Windows values pass through."""
+    match = re.fullmatch(r"([A-Za-z]):[/\\](.*)", value, re.S)
+    if not posix or match is None:
+        return value
+    if not mount_root:
+        raise ConfigError(f"{value}: drive path on a POSIX host needs wsl.mount_root")
+    return f"{mount_root.rstrip('/')}/{match[1].lower()}/{match[2].replace(chr(92), '/')}"
+
+
 def _resolve_path(value: str, root: Path, key: str) -> Path:
     if not value.strip() or "\0" in value:
         raise ConfigError(f"{key}: expected a nonempty path without NUL")
@@ -175,7 +190,8 @@ def _resolve_path(value: str, root: Path, key: str) -> Path:
         raise ConfigError(f"{key}: cannot resolve path") from exc
 
 
-def _validate_layer(data: dict, root: Path, *, local: bool) -> dict[str, Path | str | int | float]:
+def _validate_layer(data: dict, root: Path, *, local: bool,
+                    mount_root: str | None = None) -> dict[str, Path | str | int | float]:
     fields = _flatten(data)
     if not local and "schema_version" not in fields:
         raise ConfigError("common: schema_version is required")
@@ -211,7 +227,7 @@ def _validate_layer(data: dict, root: Path, *, local: bool) -> dict[str, Path | 
         elif spec.kind == "revision" and not re.fullmatch(r"[0-9a-fA-F]{7,40}", value):
             raise ConfigError(f"{key}: expected a Git hex prefix")
         elif spec.kind == "path":
-            value = _resolve_path(value, root, key)
+            value = _resolve_path(_translate_drive(value, mount_root, posix=os.name != "nt"), root, key)
         result[key] = value
     return result
 
@@ -225,15 +241,22 @@ def load_config(*, repo_root: Path | None = None,
     """
     root = (Path(repo_root) if repo_root is not None else Path(__file__).resolve().parents[2]).resolve()
     common, common_hash = _read_toml(root / "config/project.toml", "common")
-    values = _validate_layer(common, root, local=False)
-    origins = dict.fromkeys(values, "common")
     local = root / "config/project.local.toml" if local_config is None else Path(local_config)
     if not local.is_absolute():
         local = root / local
-    local_hash = None
+    layer = local_hash = None
     if local_config is not None or local.exists() or local.is_symlink():
         layer, local_hash = _read_toml(local, "local")
-        overlay = _validate_layer(layer, root, local=True)
+    # The mount root must be known before any drive-letter path is resolved on a POSIX host.
+    mount_root = _flatten(layer or {}).get("wsl.mount_root", _flatten(common).get("wsl.mount_root"))
+    if mount_root is not None and not isinstance(mount_root, str):
+        raise ConfigError("wsl.mount_root must be a string (POSIX directory)")
+    if isinstance(mount_root, str) and not mount_root.startswith("/"):
+        raise ConfigError("wsl.mount_root must be an absolute POSIX path")
+    values = _validate_layer(common, root, local=False, mount_root=mount_root)
+    origins = dict.fromkeys(values, "common")
+    if layer is not None:
+        overlay = _validate_layer(layer, root, local=True, mount_root=mount_root)
         values.update(overlay)
         origins.update(dict.fromkeys(overlay, "local"))
     values["repo_root"] = root
@@ -373,8 +396,25 @@ def assert_write_target(config: ProjectConfig, target: Path, *, role: str) -> Pa
 _DRIVE_PATH = re.compile(r"([A-Za-z]):[\\/](.*)", re.DOTALL)
 
 
-def to_wsl_path(path: Path) -> str:
-    """Convert a verified local drive path to a WSL mount path; never guesses mounts."""
+_MOUNT_ROOT_CACHE: str | None = None
+
+
+def _configured_mount_root() -> str:
+    """The configured wsl.mount_root; never a hard-coded /mnt default."""
+    global _MOUNT_ROOT_CACHE
+    if _MOUNT_ROOT_CACHE is None:
+        _MOUNT_ROOT_CACHE = load_config().values.get("wsl.mount_root")
+    if not isinstance(_MOUNT_ROOT_CACHE, str) or not _MOUNT_ROOT_CACHE.strip():
+        raise ConfigError("wsl.mount_root must be a nonempty string to convert drive paths")
+    return _MOUNT_ROOT_CACHE
+
+
+def to_wsl_path(path: Path, *, mount_root: str | None = None) -> str:
+    """Convert a verified local drive path to a WSL mount path; never guesses mounts.
+
+    Uses the configured ``wsl.mount_root``; no ``/mnt`` literal is duplicated here.
+    """
+    root = (mount_root or _configured_mount_root()).rstrip("/")
     text = str(path)
     if not text or "\0" in text:
         raise ConfigError(f"{path}: unsupported path text")
@@ -387,7 +427,7 @@ def to_wsl_path(path: Path) -> str:
     parts = [part for part in remainder.replace("\\", "/").split("/") if part]
     if any(part in (".", "..") for part in parts):
         raise ConfigError(f"{path}: '.' or '..' segments are not convertible")
-    return "/mnt/" + drive + ("/" + "/".join(parts) if parts else "")
+    return root + "/" + drive + ("/" + "/".join(parts) if parts else "")
 
 
 def export_config(config: ProjectConfig, *, operation: str) -> dict[str, object]:

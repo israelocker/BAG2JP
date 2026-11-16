@@ -1,6 +1,9 @@
 """Piecewise map game-time -> CD-time for each in-game song (8 kHz mono analysis)."""
 import numpy as np, os, json, sys
-sys.path.insert(0, os.path.expanduser('~/work/hq_b1'))
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[4]))
+from tools.workflow import configured as C  # noqa: E402
+sys.path.insert(0, C.text('paths.hq_bag1_work'))
 SR=8000; HOP=80
 from match import env, ncc, cd, cde      # reuse (match.py guarded below)
 SONGS={'B1_HEAT_ch0':'02'}
@@ -15,7 +18,7 @@ def corr_all(seg,sig):
     cs=np.concatenate([[0],np.cumsum(sig**2)]); e=np.sqrt(cs[m:]-cs[:-m])+1e-9
     return c/(e*np.linalg.norm(seg)+1e-9)
 def song_map(name,trk):
-    x=np.fromfile(os.path.expanduser(f'~/work/hq_b1/xa/{name}.f32'),dtype=np.float32); y=cd[trk]; ye=cde[trk]; xe=env(x)
+    x=np.fromfile(C.text('paths.hq_bag1_work') + f'/xa/{name}.f32',dtype=np.float32); y=cd[trk]; ye=cde[trk]; xe=env(x)
     WIN,STEP=300,100      # 3 s windows, 1 s step (envelope units)
     cols=[]
     for t in range(0,len(xe)-WIN+1,STEP):
@@ -67,5 +70,5 @@ if __name__=='__main__':
     for n in sys.argv[1:] or SONGS:
         m=song_map(n,SONGS[n]); out[n]=m
         print(n,'track',m['track'],'coverage',m['coverage'],'segments',len(m['segments']),flush=True)
-    p=os.path.expanduser('~/work/hq_b1/segmap.json'); old=json.load(open(p)) if os.path.exists(p) else {}
+    p=C.text('paths.hq_bag1_work') + '/segmap.json'; old=json.load(open(p)) if os.path.exists(p) else {}
     old.update(out); json.dump(old,open(p,'w'),indent=1)

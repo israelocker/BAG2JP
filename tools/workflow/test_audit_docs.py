@@ -13,6 +13,8 @@ class DocumentationAuditTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
+        self.write("config/project.toml", 'schema_version = 1\n[paths]\nwork_root = "_work"\n'
+                   'current_state = "_work/current-state.json"\n')
         tool = Path(__file__).with_name("audit_docs.py")
         spec = importlib.util.spec_from_file_location("audit_docs", tool)
         self.audit = importlib.util.module_from_spec(spec)
@@ -29,6 +31,17 @@ class DocumentationAuditTests(unittest.TestCase):
                      "node_modules/lib/readme.md", ".git/info.md", "third_party/lib.md"):
             self.write(name, "# note\n")
         self.assertEqual(self.audit.inventory(self.root), ["notes/current.md"])
+
+    def test_configured_work_root_is_excluded_and_state_follows_its_key(self):
+        self.write("config/project.toml", 'schema_version = 1\n[paths]\nwork_root = "scratch"\n'
+                   'current_state = "scratch/state.json"\n')
+        for name in ("notes/current.md", "scratch/log.md", "_work/kept.md"):
+            self.write(name, "# note\n")
+        self.write("scratch/state.json", "{}")
+        self.assertEqual(self.audit.inventory(self.root), ["_work/kept.md", "notes/current.md"])
+        startup = self.audit.report(self.root)["contexts"]["startup"]
+        self.assertIn("scratch/state.json", startup["files"])
+        self.assertNotIn("scratch/state.json", startup["missing"])
 
     def test_hidden_owned_documents_are_not_silently_excluded(self):
         self.write(".opencode/commands/help.md", "# Help\n")

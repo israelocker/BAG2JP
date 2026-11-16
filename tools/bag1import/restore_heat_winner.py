@@ -7,13 +7,14 @@ import sys
 import tomllib
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from preserve_announcer import append_cue, banks, cue_records, single_cue
+from host_inputs import input_path
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--apply", action="store_true")
     a = p.parse_args()
     root = Path(__file__).resolve().parents[2]
-    sys.path.insert(0, str(root.parents[1] / "Tools/psx-asset-tools"))
+    sys.path.insert(0, str(input_path("tools.psx_asset_tools")))
     from psxassets import containers
     package = root / "mods-src/bag2jp.feature.bag1-content"
     manifest = package / "1.0.0/manifest.toml"

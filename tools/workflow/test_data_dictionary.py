@@ -17,7 +17,18 @@ IMPLEMENTED_CONSUMERS = {"project_config.py", "check_payload_manifest.py",
                        "bag2_workflow.py", "bag2_report.py",
                          "versus_session.py", "strike_acceptance_batch.py", "view_config.py",
                            "bag2_record.py", "recording_config.py", "character_workflow.py",
-                            "build_gaso_assets.py", "heat_test_launch.py"}
+                            "build_gaso_assets.py", "heat_test_launch.py", "build_stage_package.py",
+                            "host_inputs.py", "reqmap.py", "funcmatch.py", "fever_entries.py",
+                            "audit_animation_roles.py", "build_stage_previews.py",
+                            "generate_gaso_contract.py", "generate_strike_contract.py",
+                            "restore_heat_winner.py", "build_regional_variants.py",
+                            "audit_docs.py", "measure_context.py", "token-report.py",
+                            "configured.py", "build_buttons.py", "build_announcer.py", "build_xa.py",
+                            "build_vs.py", "build_vs_option.py", "build_regional.py",
+                            "diff_members.py", "groups.py", "map_entries.py", "preview_vs.py",
+                            "font_hd.py", "gen_ui_pack.py", "validate_pack.py", "gen_charsel_pack.py",
+                            "blockmap.py", "match.py", "render.py", "render2.py", "render_all.py",
+                            "segmap.py", "bag1_mem.py"}
 MACHINE_PATH = r"(?<![\w:/])[A-Za-z]:[\\/]"
 
 

@@ -1,7 +1,6 @@
 {
   "character": "heat",
   "catalog": {
-    "source": "D:/Games/Bust A Groove 2 (Japan)/ISO/SLPM-86219.cue",
     "entries": [
       {
         "id": "00000000",
@@ -10,7 +9,6 @@
     ]
   },
   "runtime": {
-    "exefile": "D:/Games/Bust A Groove 2 (Japan)/BAG2JP-exp-8mb/BAG2JP.exe",
     "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "entries": {

@@ -6976,15 +6976,17 @@
         "associated_lots": [
           "S5b"
         ],
-        "current_sha256": "245d78d6d48d29351ae1ca733fd0e24c2c53c015cf4e93ebe4c5d33185664f2e",
+        "current_sha256": "ea192f36465e903b3476db5a02aa77ce473be9f3be5fd957cca5aa8e2db6a43b",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Machine paths (catalog.source, runtime.exefile) removed 2026-11-16; legacy record, not read by check_cache.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -7001,7 +7003,8 @@
           "acceptance": "No se regeneran hashes ni se migran destinos de caché en este lote.",
           "evidence": "revisión de fuentes S5b",
           "status": "not_migrated"
-        }
+        },
+        "disposition": "migrated"
       }
     },
     {
@@ -7024,15 +7027,17 @@
         "associated_lots": [
           "S5b"
         ],
-        "current_sha256": "637b2a41b59c99d4969e901ac9b813b19572e5039003a81c97c8c0263022628b",
+        "current_sha256": "2211f8757d7b54c6fe203d4a8fb20d9e11099d1f83486fc8f337725b70150bca",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Evidence now _work/... resolved by check_cache via paths.work_root; hashes unchanged and verified.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -7049,7 +7054,8 @@
           "acceptance": "No se regeneran hashes ni se migran destinos de caché en este lote.",
           "evidence": "revisión de fuentes S5b",
           "status": "not_migrated"
-        }
+        },
+        "disposition": "migrated"
       }
     },
     {
@@ -7153,12 +7159,14 @@
         "current_sha256": "0d616c8b0061f7f6953b5d04e8cb520c8adc63ba7943c3f7b135540687cdcb78",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "status": "partial",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Residual duplication: declared _work/... location restates a value owned by an inputs.* key (inputs.bag1_main_exe, inputs.bag2_main_exe, inputs.bag1_disc_files); diverges if that key is relocated. Follow-up: read through the key.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -7177,7 +7185,8 @@
           "note": "catalog inputs file+sha checked through paths.work_root before hashing",
           "evidence": "_work/configuration/s5b2/verification.json",
           "status": "not_fully_migrated"
-        }
+        },
+        "disposition": "residual_duplication"
       }
     },
     {
@@ -7200,12 +7209,14 @@
         "current_sha256": "894671369e796db4fb0cbf3bacce7c721b56bb9298305a9558f5212a189864fe",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "status": "partial",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Residual duplication: declared _work/... location restates a value owned by an inputs.* key (inputs.bag1_usa_extraction); diverges if that key is relocated. Follow-up: read through the key.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -7223,7 +7234,8 @@
           "acceptance": "segmentos de ruta validados antes de construir; comparación byte a byte preservada; sin claves nuevas.",
           "evidence": "_work/configuration/s5b6/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "residual_duplication"
       }
     },
     {
@@ -7245,11 +7257,13 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "source_animation_list is generated provenance (project_label of inputs.character_inventory).",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -7258,7 +7272,8 @@
           "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
-        }
+        },
+        "disposition": "generated_provenance"
       }
     },
     {
@@ -7280,11 +7295,13 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "source_animation_list is generated provenance (project_label of inputs.character_inventory).",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -7293,7 +7310,8 @@
           "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
-        }
+        },
+        "disposition": "generated_provenance"
       }
     },
     {
@@ -7859,12 +7877,14 @@
         "current_sha256": "6d69714b04cc1fc23212795d9c97c6ce548e40c0457c566388351914848c3686",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "status": "partial",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Residual duplication: declared _work/... location restates a value owned by an inputs.* key (inputs.bag1_main_exe, inputs.bag2_main_exe, inputs.character_inventory); diverges if that key is relocated. Follow-up: read through the key.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -7882,7 +7902,8 @@
           "acceptance": "input_evidence verificado byte-a-byte contra paths.work_root; sin fail-open; sin claves nuevas.",
           "evidence": "_work/configuration/s5b3/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "residual_duplication"
       }
     },
     {
@@ -7922,15 +7943,17 @@
         "associated_lots": [
           "S5b"
         ],
-        "current_sha256": "15cf58142d846a83d046b2c34807b3be119a1ba307ff7f8ac2d2d5ab2c0827df",
+        "current_sha256": "3a7bcd71e7a6764836c5253dbf83981001a07ae73f831f9b9da063f18680b7c1",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "status": "partial",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "disc/extraction/reference_runtime removed 2026-11-16 (TOML owns them). Residual duplication: declared _work/... location restates a value owned by an inputs.* key (inputs.character_inventory); diverges if that key is relocated. Follow-up: read through the key.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -7958,7 +7981,8 @@
           "acceptance": "config cargada una vez; repo_root coincide; guardas de entrada intactas; legacy caché sin tocar.",
           "evidence": "_work/configuration/s5b4/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "migrated_with_residual"
       }
     },
     {
@@ -7983,12 +8007,14 @@
         "current_sha256": "3341c14a8803c48db2202ca53186684f5eb5f69a43d7bde48da5ca6980111ec9",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "status": "partial",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Residual duplication: declared _work/... location restates a value owned by an inputs.* key (inputs.bag1_main_exe, inputs.bag2_main_exe, inputs.heat_bag1_members); diverges if that key is relocated. Follow-up: read through the key.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8006,7 +8032,8 @@
           "acceptance": "input_evidence verificado byte-a-byte contra paths.work_root; sin fail-open; sin claves nuevas.",
           "evidence": "_work/configuration/s5b3/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "residual_duplication"
       }
     },
     {
@@ -8028,15 +8055,17 @@
         "associated_lots": [
           "S5b"
         ],
-        "current_sha256": "9345cdf62f96697e3b72820c5caa188348b3e8fef455d34e9b82e887237a076a",
+        "current_sha256": "3f24af0300632c6ebad90067beca617d5fe4eeec65d9ac81c572016d2c929ab5",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "status": "partial",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "reference_runtime removed 2026-11-16. Residual duplication: declared _work/... location restates a value owned by an inputs.* key (inputs.heat_bag1_members); diverges if that key is relocated. Follow-up: read through the key.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8064,7 +8093,8 @@
           "acceptance": "config cargada una vez; repo_root coincide; guardas de entrada intactas; legacy caché sin tocar.",
           "evidence": "_work/configuration/s5b4/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "migrated_with_residual"
       }
     },
     {
@@ -8087,15 +8117,17 @@
         "associated_lots": [
           "S5b"
         ],
-        "current_sha256": "da31657be08bdae228f8a546d6b1964c082adc9a514b326ba04361ad147ad9e7",
+        "current_sha256": "03acffbea107e9dd5e1f8a97f9efabe33dfd731ff25e5a14a059094472ce69c8",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "bag2_disc and region roots removed 2026-11-16; build_regional_variants reads inputs.bag2_disc and inputs.bag1_*_extraction. candidate_directory: Declared _work/... locations resolve through paths.work_root (character_workflow.resolve_declared_input); no machine path.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8113,7 +8145,8 @@
           "acceptance": "segmentos de ruta validados antes de construir; comparación byte a byte preservada; sin claves nuevas.",
           "evidence": "_work/configuration/s5b6/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "migrated"
       }
     },
     {
@@ -8241,12 +8274,14 @@
         "current_sha256": "f7d90db832b5eb65877d03b7f1675017f149f0964e9c7d9bd51d96d8202e24d8",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "status": "partial",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Residual duplication: declared _work/... location restates a value owned by an inputs.* key (inputs.bag1_usa_extraction); diverges if that key is relocated. Follow-up: read through the key.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8264,7 +8299,8 @@
           "acceptance": "paquetes de etapa resueltos contra paths.work_root con guardas de escape; ningún paquete generado.",
           "evidence": "_work/configuration/s5b5/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "residual_duplication"
       }
     },
     {
@@ -8313,11 +8349,13 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "No location strings.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8335,7 +8373,8 @@
           "acceptance": "paquetes de etapa resueltos contra paths.work_root con guardas de escape; ningún paquete generado.",
           "evidence": "_work/configuration/s5b5/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "no_locations"
       }
     },
     {
@@ -8394,11 +8433,13 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Declared _work/... locations resolve through paths.work_root (character_workflow.resolve_declared_input); no machine path.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8416,7 +8457,8 @@
           "acceptance": "paquetes de etapa resueltos contra paths.work_root con guardas de escape; ningún paquete generado.",
           "evidence": "_work/configuration/s5b5/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "config_relative"
       }
     },
     {
@@ -8440,12 +8482,14 @@
         "current_sha256": "a1d2843bb939a7e999e0c4bde515b73fd52cb19e949454a3cd1d992b1ca8bd6c",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "status": "partial",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Residual duplication: declared _work/... location restates a value owned by an inputs.* key (inputs.bag1_main_exe, inputs.bag2_main_exe, inputs.character_inventory); diverges if that key is relocated. Follow-up: read through the key.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8463,7 +8507,8 @@
           "acceptance": "input_evidence verificado byte-a-byte contra paths.work_root; sin fail-open; sin claves nuevas.",
           "evidence": "_work/configuration/s5b3/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "residual_duplication"
       }
     },
     {
@@ -8492,11 +8537,13 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "_work/... strings are evidence references, not read as inputs.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8505,7 +8552,8 @@
           "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
-        }
+        },
+        "disposition": "evidence_record"
       }
     },
     {
@@ -8527,11 +8575,13 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "_work/... string is an evidence reference, not read as an input.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8540,7 +8590,8 @@
           "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
-        }
+        },
+        "disposition": "evidence_record"
       }
     },
     {
@@ -8562,11 +8613,13 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "_work/... string is an evidence reference, not read as an input.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8575,7 +8628,8 @@
           "remaining": "Bounded classification only; finish tracing production readers/generators before a location change.",
           "acceptance": "Source/layout classification only; no migration, cache validation or full-file clearance.",
           "evidence": "_work/configuration/s5b-scope-review/extracted.json"
-        }
+        },
+        "disposition": "evidence_record"
       }
     },
     {
@@ -8619,15 +8673,17 @@
         "associated_lots": [
           "S5b"
         ],
-        "current_sha256": "4a82b957cfd4b69a92fdfd81f7bcfe2030a4a326383b66e6ebe367e72d90f480",
+        "current_sha256": "430296cce10bec36adeff986e94940d415846cb2a27c832a4097c6ac6d26bee2",
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
-        "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "status": "partial",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "reference_runtime removed 2026-11-16. Declared _work/... locations resolve through paths.work_root (character_workflow.resolve_declared_input); no machine path. Residual duplication: declared _work/... location restates a value owned by an inputs.* key (inputs.character_inventory); diverges if that key is relocated. Follow-up: read through the key.",
         "evidence": [
-          "_work/configuration/check_pending.py"
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
         ],
         "scope_review": {
           "id": "S5b-source-review-20261116",
@@ -8655,7 +8711,8 @@
           "acceptance": "config cargada una vez; repo_root coincide; guardas de entrada intactas; legacy caché sin tocar.",
           "evidence": "_work/configuration/s5b4/verification.json",
           "status": "delivered_host_scoped"
-        }
+        },
+        "disposition": "migrated_with_residual"
       }
     },
     {
@@ -9628,12 +9685,15 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Target executable comes from the --exe argument; no fixed location.",
         "evidence": [
-          "_work/configuration/check_pending.py"
-        ]
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
+        ],
+        "disposition": "no_locations"
       }
     },
     {
@@ -9705,12 +9765,15 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Header stub; no locations.",
         "evidence": [
-          "_work/configuration/check_pending.py"
-        ]
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
+        ],
+        "disposition": "no_locations"
       }
     },
     {
@@ -10027,12 +10090,15 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": false,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "Native data / contract / policy / test file; no host config key applicable, no machine-path hardcode in operational reader.",
+        "remaining": "Header stub; no locations.",
         "evidence": [
-          "_work/configuration/check_pending.py"
-        ]
+          "_work/configuration/check_pending.py",
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
+        ],
+        "disposition": "no_locations"
       }
     },
     {
@@ -12602,10 +12668,14 @@
         "hash_basis": "working_tree_at_reconciliation",
         "snapshot_changed": null,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "No hardcoded operational values; supports configuration host documentation or inventory itself.",
-        "evidence": []
+        "remaining": "Documentation digest; no location strings.",
+        "evidence": [
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
+        ],
+        "disposition": "no_locations"
       }
     },
     {
@@ -12752,14 +12822,18 @@
       "progress": {
         "primary_lot": "S7-support",
         "associated_lots": [],
-        "current_sha256": null,
+        "current_sha256": "3f460abdae46485a1b6572c4b038f06c1858368a2a2d4dcb611d403b5f4f7b94",
         "hash_basis": "self_inventory_not_hashed",
         "snapshot_changed": null,
         "status": "reviewed",
-        "review_scope": "semantic_review_exception_justified",
+        "review_scope": "semantic_review_per_file_2026-11-16",
         "delivered_scopes": [],
-        "remaining": "No hardcoded operational values; supports configuration host documentation or inventory itself.",
-        "evidence": []
+        "remaining": "Inventory itself; D:/Dev/Tools entries record external installed tools (S7-external), not configuration.",
+        "evidence": [
+          "_work/configuration/inv_diff.txt",
+          "_work/configuration/review_entries.txt"
+        ],
+        "disposition": "evidence_record"
       }
     },
     {
@@ -13208,6 +13282,166 @@
         "evidence": [
           "tools/workflow/audit_config.py",
           "tools/workflow/test_audit_config.py"
+        ]
+      }
+    },
+    {
+      "file": "tools/bag1import/host_inputs.py",
+      "sha256": "1da7006d1ee71d1a748bb0a218883135cb613115dfa259d4f4d663463ca86767",
+      "bytes": 1023,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Shared configured-input helper for BAG1 import scripts (2026-11-16).",
+        "current_sha256": "1da7006d1ee71d1a748bb0a218883135cb613115dfa259d4f4d663463ca86767",
+        "evidence": [
+          "_work/configuration/recheck_migration.txt"
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/configured.py",
+      "sha256": "727744f3ea3f7fd75874ed72ab5299d493a50004ee52f2b10e87138dfdff772a",
+      "bytes": 920,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Shared configured-location helper for standalone/WSL scripts. (2026-11-16).",
+        "current_sha256": "727744f3ea3f7fd75874ed72ab5299d493a50004ee52f2b10e87138dfdff772a",
+        "evidence": [
+          "_work/configuration/audit_strict.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/test_wsl_config.py",
+      "sha256": "00ffef7b556da51fc458bc9c2333da829856e28603f70afe7586227ba05b5258",
+      "bytes": 1476,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard: drive paths resolve under wsl.mount_root on POSIX hosts. (2026-11-16).",
+        "current_sha256": "00ffef7b556da51fc458bc9c2333da829856e28603f70afe7586227ba05b5258",
+        "evidence": [
+          "_work/configuration/audit_strict.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_animation_policy_inputs.py",
+      "sha256": "b32ce0ccbb5b81571ba0a66fb7676f596dd49dd9ea157b86cd962325d8e135b1",
+      "bytes": 5687,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard test for configured host inputs (no fixed locations). (2026-11-16).",
+        "current_sha256": "b32ce0ccbb5b81571ba0a66fb7676f596dd49dd9ea157b86cd962325d8e135b1",
+        "evidence": [
+          "_work/configuration/audit_strict.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_caught_bank_paths.py",
+      "sha256": "71ae0bb65a0843c84d12eb32f0090d34a2c996f1a8b82e03e5f670880ac96784",
+      "bytes": 3278,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard test for configured host inputs (no fixed locations). (2026-11-16).",
+        "current_sha256": "71ae0bb65a0843c84d12eb32f0090d34a2c996f1a8b82e03e5f670880ac96784",
+        "evidence": [
+          "_work/configuration/audit_strict.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_character_asset_config.py",
+      "sha256": "158ff3de6f3acef8d6a8d443b49a21da090d1ccae5a283e995b2dbaf1c771fe1",
+      "bytes": 8039,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard test for configured host inputs (no fixed locations). (2026-11-16).",
+        "current_sha256": "158ff3de6f3acef8d6a8d443b49a21da090d1ccae5a283e995b2dbaf1c771fe1",
+        "evidence": [
+          "_work/configuration/audit_strict.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_character_init_config.py",
+      "sha256": "c9ef14378fe413979a00a43553282e00e2ebc5a53c45c2f566aca36f85eeaee8",
+      "bytes": 7884,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard test for configured host inputs (no fixed locations). (2026-11-16).",
+        "current_sha256": "c9ef14378fe413979a00a43553282e00e2ebc5a53c45c2f566aca36f85eeaee8",
+        "evidence": [
+          "_work/configuration/audit_strict.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_character_runtime_config.py",
+      "sha256": "efb3bf15444f98c746ab9a8bea8a92629f9fb67ef1b8da128eeb20445b5eea3c",
+      "bytes": 5493,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard test for configured host inputs (no fixed locations). (2026-11-16).",
+        "current_sha256": "efb3bf15444f98c746ab9a8bea8a92629f9fb67ef1b8da128eeb20445b5eea3c",
+        "evidence": [
+          "_work/configuration/audit_strict.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_regional_variants_paths.py",
+      "sha256": "92a8c1892a4d49dcfcd8f5deeac593eaa7e0d29f4566ab67a14ef02004441228",
+      "bytes": 6882,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard test for configured host inputs (no fixed locations). (2026-11-16).",
+        "current_sha256": "92a8c1892a4d49dcfcd8f5deeac593eaa7e0d29f4566ab67a14ef02004441228",
+        "evidence": [
+          "_work/configuration/audit_strict.json"
+        ]
+      }
+    },
+    {
+      "file": "tools/test/test_stage_package_paths.py",
+      "sha256": "bc533a502ad5853c87257517f56329309e08d14b05cfd91b626520e8e9c98735",
+      "bytes": 5132,
+      "classification": "added_since_initial_inventory",
+      "candidates": {},
+      "progress": {
+        "status": "registered",
+        "review_scope": "registration_2026-11-16",
+        "remaining": "Guard test for configured host inputs (no fixed locations). (2026-11-16).",
+        "current_sha256": "bc533a502ad5853c87257517f56329309e08d14b05cfd91b626520e8e9c98735",
+        "evidence": [
+          "_work/configuration/audit_strict.json"
         ]
       }
     }

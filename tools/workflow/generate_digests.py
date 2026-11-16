@@ -13,10 +13,36 @@ import hashlib
 import json
 import logging
 import re
+import sys
 from pathlib import Path
 from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from tools.workflow.project_config import load_config  # noqa: E402
+
+
+def location_patterns(config) -> list[re.Pattern[str]]:
+    """Skip lines naming configured machine locations, the user home or work-root run outputs."""
+    roots = {Path.home()}
+    for key, value in config.values.items():
+        if isinstance(value, Path) and key != "repo_root" and not value.resolve().is_relative_to(ROOT):
+            roots.add(value.parent if value.suffix else value)
+    texts = set()
+    for root in roots:
+        for form in (str(root), root.as_posix(), str(root).replace("\\", "\\\\")):
+            texts.add(re.escape(form))
+    # Install folders are also named bare in notes; other folder names are too generic to skip.
+    for key in ("paths.experimental_install", "paths.stable_install"):
+        if isinstance(config.values.get(key), Path):
+            texts.add(re.escape(config.values[key].name))
+    work = config.values.get("paths.work_root")
+    if isinstance(work, Path):
+        label = work.resolve().relative_to(ROOT).as_posix() if work.resolve().is_relative_to(ROOT) else work.as_posix()
+        texts.update(re.escape(f"{label}/{name}") for name in ("outputs", "shots"))
+    return [re.compile(text, re.IGNORECASE) for text in sorted(texts) if text]
+
+
 DIGESTS_DIR = ROOT / "notes" / "digests"
 
 # Mapping: source_file -> digest_file
@@ -30,15 +56,8 @@ SOURCE_TO_DIGEST: dict[str, str] = {
 }
 
 # Patterns to skip (test details, personal paths, debug output)
-SKIP_PATTERNS: list[re.Pattern[str]] = [
+SKIP_PATTERNS: list[re.Pattern[str]] = location_patterns(load_config(repo_root=ROOT)) + [
     re.compile(p, re.IGNORECASE) for p in [
-        r"D:\\\\Dev\\\\Tools",
-        r"C:\\\\Users\\\\israe",
-        r"D:\\\\Games",
-        r"BAG2JP-exp-8mb",
-        r"BAG2JP-win",
-        r"_work/outputs",
-        r"_work/shots",
         r"frame",
         r"f\d+",
         r"screenshot",

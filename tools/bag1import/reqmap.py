@@ -1,8 +1,9 @@
 """Dancer motion request code -> model anim index, read from both main exes.
 BAG2 FUN_8002a090, BAG1 FUN_80030090."""
 import struct
-B2 = open('_work/mainexe/slpm.bin', 'rb').read()
-B1 = open('_work/bag1/scus.bin', 'rb').read()
+from host_inputs import input_path
+B2 = input_path('inputs.bag2_main_exe').read_bytes()
+B1 = input_path('inputs.bag1_main_exe').read_bytes()
 def rb(b, a): return b[a - 0x80010000]
 def bag2(r):
     if r < 0x2b: return rb(B2, 0x8005180c + r)

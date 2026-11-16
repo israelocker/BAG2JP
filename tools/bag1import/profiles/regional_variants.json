@@ -1,10 +1,9 @@
 {
   "schema": 1,
   "description": "Region-dependent members of existing BAG1 alternate entries. Each rule recomputes one output member from a regional BAG1 source; the International result must reproduce the accepted candidate byte for byte before a Japanese variant is written. Every source member that differs between regions must be consumed by a rule or listed in ignored_source_members with a reason.",
-  "bag2_disc": "D:/Games/Bust A Groove 2 (Japan)/ISO/Bust A Move 2 - Dance Tengoku Mix (Japan).bin",
   "regions": {
-    "international": {"root": "_work/bag1_disc_full", "directories": {"1": "PLAYER1E", "2": "PLAYER2", "3": "PLAYER3E", "4": "PLAYER4"}},
-    "japanese": {"root": "_work/bag1jp_disc_full", "directories": {"1": "PLAYER1", "2": "PLAYER2", "3": "PLAYER3", "4": "PLAYER4"}}
+    "international": {"directories": {"1": "PLAYER1E", "2": "PLAYER2", "3": "PLAYER3E", "4": "PLAYER4"}},
+    "japanese": {"directories": {"1": "PLAYER1", "2": "PLAYER2", "3": "PLAYER3", "4": "PLAYER4"}}
   },
   "candidate_directory": "_work/stage_import/gaso/preserved_payload_entries",
   "ignored_source_members": {

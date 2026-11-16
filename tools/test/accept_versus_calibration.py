@@ -18,8 +18,9 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import versus_navigation as nav  # noqa: E402
+import versus_session as vs  # noqa: E402
 
-CATALOG = REPO / "_work/versus-navigation/catalog.json"
+CATALOG = vs.project_config.assert_write_target(vs.load_config(), vs.CATALOG_TARGET, role="work")
 REVIEWED_IMAGES = (
     "selector.png",
     "probe-0-right-2.png", "probe-2-left-0.png",

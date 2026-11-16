@@ -12,12 +12,16 @@ root = Path(__file__).resolve().parents[2]
 # name -> (BAG1 ST_SEL entry, BAG2 015.bpe preview index); verified visually.
 STAGES = {"heat": (23, 29), "strike": (25, 30)}
 p = argparse.ArgumentParser()
-p.add_argument("--asset-tools", type=Path, default=root.parents[1] / "Tools/psx-asset-tools")
-p.add_argument("--bag1", type=Path, default=root / "_work/bag1_disc/DFS1/ST_SEL.BPE")
+p.add_argument("--asset-tools", type=Path, help="default: tools.psx_asset_tools")
+p.add_argument("--bag1", type=Path, help="default: inputs.bag1_disc_files/DFS1/ST_SEL.BPE")
 p.add_argument("--bag2", type=Path, default=root / "assets/archive/system/015.bpe/content")
 p.add_argument("--out", type=Path, default=root / "mods-src/bag2jp.feature.bag1-content/1.0.0/popup_assets")
 p.add_argument("--stage", choices=sorted(STAGES), action="append")
 a = p.parse_args()
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from host_inputs import input_path
+a.asset_tools = a.asset_tools or input_path("tools.psx_asset_tools")
+a.bag1 = a.bag1 or input_path("inputs.bag1_disc_files") / "DFS1" / "ST_SEL.BPE"
 sys.path.insert(0, str(a.asset_tools))
 from psxassets import bpe, containers, tim
 raw = bpe.decode(a.bag1.read_bytes())

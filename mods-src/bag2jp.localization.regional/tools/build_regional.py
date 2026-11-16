@@ -4,15 +4,17 @@ Each run applies a set of groups to a pristine copy of the JP asset tree, calls 
 make-mod, and the resulting disc_user overlays are split per BUST2.BIN entry. Entries touched
 by several groups get one overlay per non-japanese combination (when = {...} on every group)."""
 import csv, hashlib, itertools, json, os, shutil, struct, subprocess, sys
-sys.path.insert(0, os.path.expanduser('~/work/regional'))
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
+sys.path.insert(0, C.text('paths.regional_work'))
 import groups as G
 
-HOME = os.path.expanduser('~')
-TREE = f'{HOME}/work/regional/tree'
-JSRC = f'{HOME}/mnt/Dev/Recomp/BAG2JP/assets/archive'
-TOOLS = f'{HOME}/mnt/Dev/Tools/psx-asset-tools'
-CUE = f'{HOME}/mnt/Bust A Groove 2 (Japan)/ISO/Bust A Move 2 - Dance Tengoku Mix (Japan).cue'
-OUT = f'{HOME}/work/regional/out'
+TREE = C.text('paths.regional_work') + '/tree'
+JSRC = C.text('inputs.bag2jp_assets') + '/archive'
+TOOLS = C.text('tools.psx_asset_tools')
+CUE = C.text('inputs.bag2_cue')
+OUT = C.text('paths.regional_work') + '/out'
 BUST2_LBA = 179
 GROUPS = ['title_screen', 'boot_logos', 'hiro_icon', 'stage_signs', 'songs']
 LABELS = {

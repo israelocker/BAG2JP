@@ -1,6 +1,9 @@
 import sys,os,json
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
 from PIL import Image, ImageChops
-D=os.path.expanduser('~/work/vs/vs_hd'); M=json.load(open(f'{D}/layout.json'))
+D=C.text('paths.vs_work') + '/vs_hd'; M=json.load(open(f'{D}/layout.json'))
 SX,SY=M['sx'],M['sy']
 def L(n): return Image.open(f'{D}/{n}.png').convert('RGBA')
 def put(cv,im,x,y): cv.alpha_composite(im,(round(x*SX),round(y*SY)))

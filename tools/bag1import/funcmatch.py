@@ -1,7 +1,8 @@
 """Find BAG2 main-exe equivalents of BAG1 main-exe functions by masked byte matching.
 usage: funcmatch.py addr [addr...]  (BAG1 addresses, hex)"""
 import struct, sys
-B1 = open('_work/bag1/scus.bin', 'rb').read(); B2 = open('_work/mainexe/slpm.bin', 'rb').read()
+from host_inputs import input_path
+B1 = input_path('inputs.bag1_main_exe').read_bytes(); B2 = input_path('inputs.bag2_main_exe').read_bytes()
 BASE = 0x80010000
 def words(b): return struct.unpack('<%dI' % (len(b) // 4), b[:len(b) // 4 * 4])
 W1, W2 = words(B1), words(B2)

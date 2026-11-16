@@ -1,8 +1,11 @@
 """Block-level (100 ms) map game->CD: absolute CD time per block + gain; fine local search."""
 import numpy as np, os, json, sys
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[4]))
+from tools.workflow import configured as C  # noqa: E402
 SR=8000; B=800; L=48
-cd_dir=os.path.expanduser('~/work/hq_b1/cd')
-seg=json.load(open(os.path.expanduser('~/work/hq_b1/segmap.json')))
+cd_dir=C.text('paths.hq_bag1_work') + '/cd'
+seg=json.load(open(C.text('paths.hq_bag1_work') + '/segmap.json'))
 def local(g,y,center):
     lo=center-L; hi=center+L+B
     if lo<0 or hi>len(y): return -2,None,0
@@ -12,7 +15,7 @@ def local(g,y,center):
     hh=y[pos:pos+B]; gain=float(np.dot(g,hh)/(np.dot(hh,hh)+1e-9))
     return float(n[i]),pos,gain
 def blockmap(name):
-    m=seg[name]; x=np.fromfile(os.path.expanduser(f'~/work/hq_b1/xa/{name}.f32'),dtype=np.float32)
+    m=seg[name]; x=np.fromfile(C.text('paths.hq_bag1_work') + f'/xa/{name}.f32',dtype=np.float32)
     y=np.fromfile(f"{cd_dir}/{m['track']}.f32",dtype=np.float32)
     deltas=sorted({s[2] for s in m['segments'] if s[2] is not None})
     nb=len(x)//B; out=[]; prev=None   # prev = CD sample index mapped to previous block start
@@ -35,7 +38,7 @@ def blockmap(name):
 if __name__=='__main__':
     res={}
     names=sys.argv[1:] or list(seg)
-    p=os.path.expanduser('~/work/hq_b1/blockmap.json'); res=json.load(open(p)) if os.path.exists(p) and sys.argv[1:] else {}
+    p=C.text('paths.hq_bag1_work') + '/blockmap.json'; res=json.load(open(p)) if os.path.exists(p) and sys.argv[1:] else {}
     for n in names:
         trk,dur,out=blockmap(n)
         mapped=sum(1 for t,_ in out if t is not None)

@@ -12,12 +12,16 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from tools.workflow.project_config import load_config, require_paths  # noqa: E402
 
-# Minimal startup files (optimized protocol)
+STATE_FILE, = require_paths(load_config(repo_root=ROOT), ("paths.current_state",))
+
+# Minimal startup files (optimized protocol); ROOT / absolute keeps the configured state path.
 MINIMAL_FILES: list[str] = [
     "AGENTS.md",
     "NOTES.md",
-    "_work/current-state.json",
+    str(STATE_FILE),
     "IMPORT_STANDARD.md",
 ]
 

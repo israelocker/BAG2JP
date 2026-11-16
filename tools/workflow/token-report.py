@@ -20,6 +20,10 @@ from pathlib import Path
 from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT))
+from tools.workflow.project_config import load_config, require_paths  # noqa: E402
+
+STATE_FILE, = require_paths(load_config(repo_root=ROOT), ("paths.current_state",))
 
 # Tokens por carácter aproximado (varía por modelo, pero ~4 chars/token es estándar)
 CHARS_PER_TOKEN = 4
@@ -30,7 +34,7 @@ logger = logging.getLogger("token-report")
 ESSENTIAL_FILES = [
     "AGENTS.md",
     "NOTES.md",
-    "_work/current-state.json",
+    str(STATE_FILE),  # ROOT / absolute keeps the configured state path
     "IMPORT_STANDARD.md",
 ]
 

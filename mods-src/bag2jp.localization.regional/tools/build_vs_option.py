@@ -1,6 +1,9 @@
 """Add the international 2P VS screen (option vs_screen, plugin bag2jp.vs_screen, resource vs_hd)
-to bag2jp.localization.regional. Layers come from ~/work/vs/vs_hd (tools/build_vs.py)."""
+to bag2jp.localization.regional. Layers come from <paths.vs_work>/vs_hd (tools/build_vs.py)."""
 import os, shutil, sys
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
 BLOCK = '''[[option]]
 feature = "regional"
 id = "vs_screen"
@@ -36,7 +39,7 @@ def append(pkg):
         i = m.index('[[plugin]]')
         m = m[:i] + BLOCK + '\n' + m[i:]
         open(f'{pkg}/manifest.toml', 'w').write(m)
-    shutil.copytree(os.path.expanduser('~/work/vs/vs_hd'), f'{pkg}/vs_hd', dirs_exist_ok=True)
+    shutil.copytree(C.text('paths.vs_work') + '/vs_hd', f'{pkg}/vs_hd', dirs_exist_ok=True)
     return 1
 if __name__ == '__main__':
     print(append(sys.argv[1]))

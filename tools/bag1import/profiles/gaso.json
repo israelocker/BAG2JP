@@ -10,8 +10,8 @@
     "costume_b": {"pack_directory": "PLAYER3E", "pack_number": 3, "model_directory": "PLAYER4", "model_number": 4},
     "side_suffixes": {"p1": "A", "p2": "B"},
     "regions": {
-      "usa": {"disc": "D:/Games/Bust A Groove (USA)/ISO/Bust A Groove (USA).bin", "extraction": "_work/bag1_disc_full", "pack_directories": {"costume_a": "PLAYER1E", "costume_b": "PLAYER3E"}},
-      "jp": {"disc": "D:/Games/Bust A Groove (Japan)/Bust A Move - Dance & Rhythm Action (Japan).bin", "extraction": "_work/bag1jp_disc_full", "pack_directories": {"costume_a": "PLAYER1", "costume_b": "PLAYER3"}}
+      "usa": {"pack_directories": {"costume_a": "PLAYER1E", "costume_b": "PLAYER3E"}},
+      "jp": {"pack_directories": {"costume_a": "PLAYER1", "costume_b": "PLAYER3"}}
     },
     "evidence": "BAG1 SCUS model table 0x80059918 + side*14*4 + (costume*28 + character)*4 lists P_GAS_A4/B4; files verified in both full disc extractions (dumpsxiso-002/003)"
   },
@@ -25,7 +25,6 @@
   "exception_assessment": "pending",
   "source_animation_list": "_work/character_inventory/gaso/001.bin",
   "game_catalog": "tools/bag1import/contracts/bag1-usa-bag2jp.roles.json",
-  "reference_runtime": "D:\\Dev\\Scratch\\bag1-native-reference\\BustAGroove_Recompiled.exe",
   "capabilities": {
     "costumes": true,
     "versions": ["bag2", "bag1-usa", "bag1-jp"],

@@ -8,15 +8,18 @@ Palettes: the TIM's own rows plus the rows of palette-only TIMs in the same fold
 drawn with external palettes). system/000/000.tim (font atlas) is handled by font_hd.py.
 usage: gen_ui_pack.py plan|build4|prep8|finish8"""
 import os, sys, struct, json, hashlib
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
 import numpy as np
 from PIL import Image
-sys.path.insert(0, os.path.expanduser('~/work/vs'))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import font_hd as F
 import xxhash
-HOME = os.path.expanduser('~')
-SRC = [f'{HOME}/work/jpbase/archive/system', f'{HOME}/work/bag2us/assets/archive/system']
-OUT = f'{HOME}/work/uipack/out'
-ESR = f'{HOME}/mnt/Dev/Recomp/BAG2JP/_work/uipack'
+SRC = [C.text('inputs.bag2jp_base_archive') + '/system', C.text('inputs.bag2us_assets') + '/archive/system']
+UIPACK = C.text('paths.uipack_work')
+OUT = f'{UIPACK}/out'
+ESR = C.text('paths.work_root') + '/uipack'
 S = 4
 
 def read_tim(p):
@@ -56,7 +59,7 @@ def plan():
                     name = f"texupload-P{4 if n == 16 else 8}-{tex}-{ph}-{t['w']}x{t['h']}-0-0-{W}x{t['h']}-P0-{n - 1}.png"
                     if name in jobs: continue
                     jobs[name] = {'src': os.path.join(dp, f), 'mode': t['mode'], 'pal': pal.hex()}
-    json.dump(jobs, open(f'{HOME}/work/uipack/jobs.json', 'w'))
+    json.dump(jobs, open(f'{UIPACK}/jobs.json', 'w'))
     from collections import Counter
     print(len(jobs), Counter(j['mode'] for j in jobs.values()), len({j['src'] for j in jobs.values()}), 'images')
 
@@ -70,7 +73,7 @@ def pal_list(hexs):
     raw = bytes.fromhex(hexs); return [struct.unpack_from('<H', raw, 2 * i)[0] for i in range(len(raw) // 2)]
 
 def build4():
-    jobs = json.load(open(f'{HOME}/work/uipack/jobs.json')); os.makedirs(OUT, exist_ok=True)
+    jobs = json.load(open(f'{UIPACK}/jobs.json')); os.makedirs(OUT, exist_ok=True)
     by_src = {}
     for n, j in jobs.items():
         if j['mode'] == 0: by_src.setdefault(j['src'], []).append(n)
@@ -88,7 +91,7 @@ def colour8(t, pal):
     return idx, P[idx], np.array([c == 0 for c in pal])[idx]
 
 def prep8(all_modes=False):
-    jobs = json.load(open(f'{HOME}/work/uipack/jobs.json'))
+    jobs = json.load(open(f'{UIPACK}/jobs.json'))
     os.makedirs(f'{ESR}/in', exist_ok=True); os.makedirs(f'{ESR}/out', exist_ok=True)
     m = {}
     for n, j in jobs.items():
@@ -108,7 +111,7 @@ def esr_error(up, rgb, transp):
     k = H // h; small = up.astype(np.float32).reshape(h, k, w, k, 3).mean((1, 3)); op = ~transp
     return float(np.abs(small - rgb)[op].mean()) if op.any() else 0.0
 def finish8():
-    jobs = json.load(open(f'{HOME}/work/uipack/jobs.json')); m = json.load(open(f'{ESR}/map.json')); n_ok = 0
+    jobs = json.load(open(f'{UIPACK}/jobs.json')); m = json.load(open(f'{ESR}/map.json')); n_ok = 0
     for key, n in m.items():
         p = f'{ESR}/out/{key}'
         if not os.path.exists(p) or os.path.exists(os.path.join(OUT, n)) and os.path.getmtime(os.path.join(OUT, n)) > os.path.getmtime(p): continue
@@ -128,7 +131,7 @@ def finish8():
 def finishall():
     """Write every job: Real-ESRGAN result (out_retry first, then out) unless it is missing or
     black (failed GPU run), else the palette-index label upscale."""
-    jobs = json.load(open(f'{HOME}/work/uipack/jobs.json')); m = json.load(open(f'{ESR}/map.json'))
+    jobs = json.load(open(f'{UIPACK}/jobs.json')); m = json.load(open(f'{ESR}/map.json'))
     inv = {v: k for k, v in m.items()}; os.makedirs(OUT, exist_ok=True)
     stats = {'esrgan': 0, 'label': 0}; lab_cache = {}
     names = sorted(jobs); a0, a1 = (int(sys.argv[2]), int(sys.argv[3])) if len(sys.argv) > 3 else (0, len(names))

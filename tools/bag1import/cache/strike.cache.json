@@ -10,11 +10,11 @@
   },
   "evidence": [
     {
-      "file": "D:\\Dev\\Recomp\\BAG2JP\\_work\\character-import\\strike\\evidence\\strike-discovery.mp4",
+      "file": "_work/character-import/strike/evidence/strike-discovery.mp4",
       "sha256": "2f14028ec6a88e2cf13587247d5c0e8f0025490397ecf501487cb76d53215a0c"
     },
     {
-      "file": "D:\\Dev\\Recomp\\BAG2JP\\_work\\character-import\\strike\\evidence\\timeline.json",
+      "file": "_work/character-import/strike/evidence/timeline.json",
       "sha256": "6f852fccdb864ab5da595111a0cee2beb158d0e58022811ac0125296c220c5d1"
     }
   ]

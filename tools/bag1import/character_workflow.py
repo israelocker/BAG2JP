@@ -30,7 +30,7 @@ def _runtime_config(project: Path | str, config: ProjectConfig | None = None) ->
     return config
 
 
-WORK_ROOT_MEMBER = "_work"
+WORK_ROOT_MEMBER = "_work"  # config-audit: allow declared-location syntax token, resolved via paths.work_root
 
 
 def _operator_input(project: Path, config: ProjectConfig, declared: str) -> Path:
@@ -43,6 +43,22 @@ def _operator_input(project: Path, config: ProjectConfig, declared: str) -> Path
     if path.is_absolute():
         return path.resolve()
     return resolve_declared_input(project, config, declared)
+
+
+def declared_location(project: Path | str, config: ProjectConfig, path: Path | str) -> str:
+    """Inverse of resolve_declared_input: ``_work/...`` inside the work root, else project-relative."""
+    resolved = Path(path).resolve()
+    bases = []
+    if config.values.get("paths.work_root") is not None:
+        work, = require_paths(config, ("paths.work_root",))
+        bases.append((work.resolve(), (WORK_ROOT_MEMBER,)))
+    bases.append((Path(project).resolve(), ()))
+    for base, prefix in bases:
+        try:
+            return Path(*prefix, resolved.relative_to(base)).as_posix()
+        except ValueError:
+            continue
+    raise ValueError(f"Location is outside the project and its work root: {resolved}")
 
 
 def resolve_declared_input(project: Path, config: ProjectConfig, declared: str) -> Path:
@@ -354,7 +370,8 @@ def record_cache(profile_path: Path | str, project: Path | str, cache_path: Path
         previous = json.loads(cache_path.read_text(encoding="utf-8"))
         if previous.get("key", {}).get("decoder") != "metro-motion-prefix-v1" or "evidence" not in previous:
             raise ValueError("Refusing to overwrite a non-cache JSON file")
-    record = {"key": key, "evidence": [{"file": str(Path(p).resolve()), "sha256": file_sha(p)} for p in evidence]}
+    record = {"key": key, "evidence": [{"file": declared_location(project, config, p), "sha256": file_sha(p)}
+                                       for p in evidence]}
     temporary = None
     try:
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", newline="\n",
@@ -381,7 +398,12 @@ def check_cache(profile_path: Path | str, project: Path | str, cache_path: Path 
     if record.get("key") != expected:
         return {"status": "miss", "reason": "inputs_changed"}
     evidence = record.get("evidence", [])
-    if not evidence or any(not Path(item["file"]).is_file() or file_sha(item["file"]) != item["sha256"] for item in evidence):
+    try:
+        files = [resolve_declared_input(Path(project), config, item["file"]) for item in evidence]
+    except ValueError:
+        return {"status": "miss", "reason": "evidence_changed"}
+    if not evidence or any(not path.is_file() or file_sha(path) != item["sha256"]
+                           for path, item in zip(files, evidence)):
         return {"status": "miss", "reason": "evidence_changed"}
     return {"status": "hit", "animation_count": expected["animation_count"]}
 

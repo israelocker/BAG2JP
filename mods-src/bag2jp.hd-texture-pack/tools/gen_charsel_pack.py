@@ -10,6 +10,9 @@ Builds:
 from __future__ import annotations
 
 import shutil
+import sys as _sys, pathlib as _pathlib  # configured locations: tools/workflow/configured.py
+_sys.path.insert(0, str(_pathlib.Path(__file__).resolve().parents[3]))
+from tools.workflow import configured as C  # noqa: E402
 import struct
 from pathlib import Path
 
@@ -126,10 +129,10 @@ def xxh3_64(data: bytes) -> int:
     return _mix_acc(acc, 11, (n * P64_1) & M64)
 
 ROOT = Path(__file__).resolve().parents[3]
-TIM_DIR = ROOT / "assets/archive/system/015.bpe/content"
-HD_ART_DIR = ROOT / "_work/gaso/hd_art"
+TIM_DIR = C.path("inputs.bag2jp_assets") / "archive/system/015.bpe/content"
+HD_ART_DIR = C.path("paths.work_root") / "gaso/hd_art"
 OUT_MOD_SRC = ROOT / "mods-src/bag2jp.hd-texture-pack/SLPM-86219/replacements/bag2jp_charsel_hd"
-OUT_EXP = Path("D:/Games/Bust A Groove 2 (Japan)/BAG2JP-exp-8mb/mods/texture-packs/SLPM-86219/replacements/bag2jp_charsel_hd")
+OUT_EXP = C.path("paths.experimental_install") / "mods/texture-packs/SLPM-86219/replacements/bag2jp_charsel_hd"
 
 PORTRAIT_MAP = {
     11: "portrait_heat.png",
