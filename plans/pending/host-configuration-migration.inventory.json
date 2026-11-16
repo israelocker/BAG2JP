@@ -12168,10 +12168,8 @@
       "agreed_deadline_utc": "2026-11-17T17:00:00Z",
       "available_hours_per_day": null,
       "remaining_estimate_hours": null,
-      "reason": "Owner confirmed Monday work until 22:00 Lima and Tuesday deadline at noon. Tuesday start and remaining effort baseline are unknown; no overnight work assumed or feasibility guarantee.",
-      "required_owner_inputs": [
-        "Tuesday work start time in Lima"
-      ],
+      "reason": "Owner confirmed Monday work until 22:00 Lima and Tuesday work 09:00-12:00 (3 hours). Remaining effort baseline unknown; no overnight work assumed or feasibility guarantee.",
+      "required_owner_inputs": [],
       "control": "Freeze scope, estimate each reviewed execution sublot as a range, log actual duration/rework and announce forecast risk before starting added scope.",
       "weighted_delivery_formula": "100 * sum(baseline effort of accepted scopes) / sum(baseline effort of all committed scopes); unavailable until remaining scope and effort are baselined.",
       "forecast_formula": "Remaining effort range / agreed daily capacity, respecting dependencies and non-working days; no forecast while inputs are unknown.",
@@ -12181,7 +12179,8 @@
       "utc_offset": "-05:00",
       "agreed_deadline_time": "12:00:00",
       "monday_work_end_local": "2026-11-16T22:00:00-05:00",
-      "tuesday_work_start_local": null
+      "tuesday_work_start_local": "2026-11-17T09:00:00-05:00",
+      "tuesday_available_hours": 3
     },
     "reuse_policy": [
       "Select one primary lot and named acceptance seam before source reads/edits.",

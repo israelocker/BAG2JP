@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "422d6700ed9d24b0993b96547d01e5fa3e9de499ef7a00a3ff88e7fd0bff8b3e"
+source_sha256: "6e1793654b02f3151a20cb44cc86f3c75e728d7b6e63c7cff6dd810c6a72443e"
 ---
 
 # Ampliación de configuración central
@@ -21,8 +21,8 @@ source_sha256: "422d6700ed9d24b0993b96547d01e5fa3e9de499ef7a00a3ff88e7fd0bff8b3e
   19 soporte y 430 sin revisión consolidada. 30 archivos cambiados no miden cierre.
   9/21=42,86 % tampoco pondera esfuerzo. ~60 % retirado. Fecha límite confirmada:
   17-11-2026 a las 12:00 del mediodía, America/Lima (UTC−5); lunes hasta las 22:00.
-  Faltan inicio del martes, capacidad total y estimaciones
-  por sublote. Datos desconocidos quedan nulos; no se garantiza todo el alcance.
+  Martes 09:00–12:00 (3 horas). Faltan estimaciones por sublote para contrastar
+  viabilidad. Datos desconocidos quedan nulos; no se garantiza todo el alcance.
 - Deriva de dependencias exige análisis antes de elegir un check, no repetición
   automática. Conciliación documental sin suites nuevas ni implementación S5b.
 - Sublote Gas-O builder cerrado en b1b585c/1ca68e5: extracción/config/perfil/stock/

@@ -284,10 +284,10 @@ listos ni estimaciones de esfuerzo equivalentes.
   commit; no se presenta como verificación completa de sus inputs de test.
 - Fecha límite confirmada por el propietario: **martes 17-11-2026 a las 12:00 del
   mediodía, America/Lima (UTC−5)**, equivalente a `2026-11-17T17:00:00Z`.
-  Trabajo del lunes 16 hasta las **22:00**; inicio del martes pendiente, sin suponer
+  Trabajo del lunes 16 hasta las **22:00**; martes **09:00–12:00 (3 horas)**, sin suponer
   jornada nocturna ni garantizar todo el alcance sin estimarlo. Sin baseline de esfuerzo,
   porcentaje global ponderado y pronóstico siguen **desconocidos**, no ~60 %.
-  Para contrastar el plazo: confirmar capacidad del martes, revisar y estimar cada sublote
+  Para contrastar el plazo: revisar y estimar cada sublote dentro de la ventana confirmada
   en intervalo, registrar tiempo real y retrabajo, y actualizar previsión al cerrar.
   Alcanzar presupuesto sin cerrar obliga a informar riesgo y recortar alcance
   opcional explícitamente, nunca a extenderlo o reducir aceptación en silencio.

@@ -61,8 +61,9 @@ añadidas distinguen revisión histórica, evidencia de tests y simple pertenenc
 El propietario confirmó el vencimiento el **martes 17 de noviembre de 2026 a las
 12:00 del mediodía**, **America/Lima (UTC−5)**: `2026-11-17T17:00:00Z`.
 El lunes 16 se puede trabajar hasta las **22:00 de Lima**; no se presupone trabajo
-durante la noche. Falta confirmar el inicio disponible del martes y estimar los
-sublotes; el esfuerzo y las horas totales restantes siguen desconocidos, no en cero.
+durante la noche. El martes se trabaja de **09:00 a 12:00 de Lima: 3 horas**.
+La ventana está confirmada; falta estimar el esfuerzo de los sublotes para evaluar
+la viabilidad, sin confundir horas de calendario con horas productivas garantizadas.
 La fecha solicitada no constituye una garantía de entrega de todo lo pendiente.
 
 - Antes de implementar: alcance/archivos, exclusiones, aceptación, dependencias,
