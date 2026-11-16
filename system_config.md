@@ -103,6 +103,20 @@ instaladas, push, snapshot ni worktree. Goldfish S5b2/S5b3/S5b5/S5b6: revisión
 utilizable con la línea fija literal, veredictos `CON HALLAZGOS`, correcciones
 RED→GREEN verificadas, sin segunda ronda.
 
+S2b (Checker de cumplimiento) entregado como alcance host acotado:
+`tools/workflow/audit_config.py` lee el inventario conciliado y reporta archivos
+sin disposición registrada y hardcodes de rutas de máquina no aprobados en
+Python del inventario (excluye `test_*.py` y excepciones justificadas);
+`test_audit_config.py` cubre 8 casos (disposición, detección hardcode,
+config-driven, excepción justificada, nuevo hardcode falla, filtro por lote,
+exit code por hardcodes). Suite conjunta con `test_data_dictionary`: 15 tests,
+15 PASS, OK. Goldfish: dos revisores fríos read-only, línea fija literal,
+veredictos `APROBADO` sin hallazgos, sin segunda ronda.
+Inventario: `audit_config.py` y `test_audit_config.py` registrados con
+`primary_lot S2b`, `status reviewed`,
+`review_scope semantic_review_config_mapped`; lote S2b marcado
+`delivered_host_scoped_not_lot_closed`. Sin arreglos masivos.
+
 El propietario confirmó el vencimiento el **martes 17 de noviembre de 2026 a las
 12:00 del mediodía**, **America/Lima (UTC−5)**: `2026-11-17T17:00:00Z`.
 El lunes 16 se puede trabajar hasta las **22:00 de Lima**; no se presupone trabajo

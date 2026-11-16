@@ -12711,6 +12711,54 @@
           "git:1ed6f81"
         ]
       }
+    },
+    {
+      "file": "tools/workflow/audit_config.py",
+      "sha256": "fb64637e11b42c48a0ea861978779d25dbea8833a972de77cb3d74571915d195",
+      "bytes": 5179,
+      "classification": "host_tooling",
+      "candidates": {},
+      "progress": {
+        "primary_lot": "S2b",
+        "associated_lots": [
+          "S2b"
+        ],
+        "current_sha256": "fb64637e11b42c48a0ea861978779d25dbea8833a972de77cb3d74571915d195",
+        "hash_basis": "working_tree_at_reconciliation",
+        "snapshot_changed": false,
+        "status": "reviewed",
+        "review_scope": "semantic_review_config_mapped",
+        "delivered_scopes": [],
+        "remaining": "Checker delivered for S2b; inventory self-audit clean.",
+        "evidence": [
+          "tools/workflow/audit_config.py",
+          "tools/workflow/test_audit_config.py"
+        ]
+      }
+    },
+    {
+      "file": "tools/workflow/test_audit_config.py",
+      "sha256": "40c65d63868eaa0a7f7202338410bc5d9d7e52bd9c04ffe00acff5e4bde13685",
+      "bytes": 6051,
+      "classification": "host_tooling",
+      "candidates": {},
+      "progress": {
+        "primary_lot": "S2b",
+        "associated_lots": [
+          "S2b"
+        ],
+        "current_sha256": "40c65d63868eaa0a7f7202338410bc5d9d7e52bd9c04ffe00acff5e4bde13685",
+        "hash_basis": "working_tree_at_reconciliation",
+        "snapshot_changed": false,
+        "status": "reviewed",
+        "review_scope": "semantic_review_config_mapped",
+        "delivered_scopes": [],
+        "remaining": "Checker delivered for S2b; inventory self-audit clean.",
+        "evidence": [
+          "tools/workflow/audit_config.py",
+          "tools/workflow/test_audit_config.py"
+        ]
+      }
     }
   ],
   "reconciliation": {
@@ -13472,7 +13520,7 @@
       {
         "id": "S2b",
         "title": "Checker de cumplimiento",
-        "status": "pending",
+        "status": "delivered_host_scoped_not_lot_closed",
         "commits": [],
         "acceptance_scope": "Checker previsto, todavía no implementado; no se crea en esta reconciliación.",
         "consumer_files": [
@@ -13489,7 +13537,7 @@
         "actual_hours": null,
         "rework_hours": null,
         "estimate_status": "requires_bounded_review",
-        "next_action": "Checker previsto, todavía no implementado; no se crea en esta reconciliación.",
+        "next_action": "Checker delivered; inventory self-audit clean for S2b scope.",
         "inventory_files": [],
         "file_status_counts": {}
       },

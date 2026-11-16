@@ -8,7 +8,7 @@ created: "2026-11-15"
 updated: "2026-11-16"
 doc_kind: digest
 source: "plans/pending/host-configuration-migration.md"
-source_sha256: "997bf55bcc6d7bf9a747fbff7f50ddc2d6ffd979cd9c51c7c2d9cf3ed09b64c5"
+source_sha256: "b508d0d156a8084a931e144dee6e431ab3850bea60f991f3b2a9b117c40ab63e"
 ---
 
 # Ampliación de configuración central

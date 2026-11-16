@@ -103,17 +103,23 @@ consumidores aún no leídos ni resolver divergencias en silencio.
 
 ### S2 — Completar auditoría semántica e instrumentar guardia (M, dividido)
 - S2a Blocked by: ninguno; es análisis interno ya autorizado por el owner.
-- S2b Blocked by: disposiciones semánticas de S2a; aprobación del plan obtenida.
 - S2a: revisar asignaciones, defaults, entorno y lectores de cada archivo host,
   tests y generadores de la lista; registrar clave destino o excepción justificada.
-- S2b: crear `audit_config.py` y `test_audit_config.py` en `tools/workflow/`,
-  convirtiendo el inventario en comprobador reproducible, después de fijar con
-  casos reales qué patrones son defectos. Baseline explícita de deuda y excepciones
-  revisables; no usar un regex que obligue a mover todos los números.
-- Aceptación: ningún archivo del alcance sin disposición; deuda/excepciones con
+  Completado: 57 archivos revisados, 4 mapped_to_config_key, 55 exception_justified,
+  lote marcado `reviewed_scoped`.
+- S2b Blocked by: disposiciones semánticas de S2a (resuelto al completar S2a).
+  S2b entregado como alcance host acotado (no cierre del lote completo):
+  `audit_config.py` lee el inventario conciliado y reporta archivos sin disposición
+  registrada y hardcodes de rutas de máquina no aprobados en Python del inventario
+  (excluye `test_*.py` y excepciones justificadas); `test_audit_config.py` cubre 8
+  casos (disposición, detección hardcode, config-driven, excepción justificada,
+  nuevo hardcode falla, filtro por lote, exit code por hardcodes no aprobación).
+  Aceptación: ningún archivo del alcance sin disposición; deuda/excepciones con
   motivo, autoridad y consumidor; prueba que un nuevo hardcode no aprobado falla.
-- Comando: `py -3.13 -m unittest tools.workflow.test_audit_config` (a crear en S2b).
-- Archivos: inventario, checker/tests; no arreglos masivos en la fase de análisis.
+  Comando: `py -3.13 -m unittest tools.workflow.test_audit_config` → 8 OK.
+  Archivos: inventario, checker/tests; no arreglos masivos en la fase de análisis.
+  Goldfish: dos revisores fríos read-only, línea fija literal, `APROBADO` sin
+  hallazgos, sin segunda ronda.
 
 ### S3 — Harness versus y PowerShell (sub-lotes S/M)
 - Blocked by: S1, S2a de esta familia.
