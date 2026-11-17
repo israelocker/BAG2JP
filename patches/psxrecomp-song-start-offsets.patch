@@ -1,5 +1,5 @@
 diff --git a/recompiler/src/config_loader.cpp b/recompiler/src/config_loader.cpp
-index d0153ccc..60a1d2bb 100644
+index d0153ccc..2db73725 100644
 --- a/recompiler/src/config_loader.cpp
 +++ b/recompiler/src/config_loader.cpp
 @@ -3415,6 +3415,22 @@ UserSettings load_user_settings(const fs::path& path) {
@@ -10,7 +10,7 @@ index d0153ccc..60a1d2bb 100644
 +        const toml::value& ss = toml::find(doc, "song_sync");
 +        if (ss.contains("start_offset_ms")) try_get([&]{
 +            const auto n = toml::find<int64_t>(ss, "start_offset_ms");
-+            if (n >= -1000 && n <= 1000) {
++            if (n >= -10000 && n <= 10000) {
 +                s.song_start_offset_ms = (int)n;
 +                s.has_song_start_offset_ms = true;
 +            }
@@ -18,7 +18,7 @@ index d0153ccc..60a1d2bb 100644
 +        if (ss.is_table()) for (const auto& kv : ss.as_table()) {
 +            if (kv.first == "start_offset_ms" || !kv.second.is_integer()) continue;
 +            const auto n = kv.second.as_integer();
-+            if (n >= -1000 && n <= 1000)
++            if (n >= -10000 && n <= 10000)
 +                s.song_offsets_ms.emplace_back(kv.first, (int)n);
 +        }
 +    }
@@ -40,7 +40,7 @@ index d0153ccc..60a1d2bb 100644
      return f.good();
  }
 diff --git a/recompiler/src/config_loader.h b/recompiler/src/config_loader.h
-index 4ae0afc6..530fd725 100644
+index 4ae0afc6..39acaff0 100644
 --- a/recompiler/src/config_loader.h
 +++ b/recompiler/src/config_loader.h
 @@ -1703,6 +1703,13 @@ struct UserSettings {
@@ -49,7 +49,7 @@ index 4ae0afc6..530fd725 100644
      bool has_parappa_timing_extra_late = false; int parappa_timing_extra_late = 0;
 +
 +    // settings.toml [song_sync] start_offset_ms: ms added to the modelled far
-+    // XA seek before a song starts (-1000..1000; 0 = native model).
++    // XA seek before a song starts (-10000..10000; 0 = native model).
 +    bool has_song_start_offset_ms = false; int song_start_offset_ms = 0;
 +    // Other [song_sync] keys: per-song ms by song name (e.g. heat = 120),
 +    // added on top of start_offset_ms; same range, file order kept.
@@ -58,7 +58,7 @@ index 4ae0afc6..530fd725 100644
  
  // GameOptions — the game's OWN native OPTION-screen settings, declared in a
 diff --git a/recompiler/tests/video_enhancement_settings_test.cpp b/recompiler/tests/video_enhancement_settings_test.cpp
-index 90d43a1d..4bedb89f 100644
+index 90d43a1d..4ea1ae5e 100644
 --- a/recompiler/tests/video_enhancement_settings_test.cpp
 +++ b/recompiler/tests/video_enhancement_settings_test.cpp
 @@ -264,6 +264,47 @@ static void test_user_settings_fov_scale() {
@@ -66,13 +66,13 @@ index 90d43a1d..4bedb89f 100644
  }
  
 +/* settings.toml [song_sync] start_offset_ms: negative read, out of range
-+ * (-1000..1000) ignored, and a launcher save round-trips it. */
++ * (-10000..10000) ignored, and a launcher save round-trips it. */
 +static void test_user_settings_song_start_offset() {
 +    fs::path p = write_temp("psxrecomp_song_sync.toml", "[song_sync]\nstart_offset_ms = -120\n");
 +    auto us = PSXRecompV4::load_user_settings(p);
 +    check(us.has_song_start_offset_ms && us.song_start_offset_ms == -120, "start_offset_ms read");
 +    fs::remove(p);
-+    p = write_temp("psxrecomp_song_sync_r.toml", "[song_sync]\nstart_offset_ms = 5000\n");
++    p = write_temp("psxrecomp_song_sync_r.toml", "[song_sync]\nstart_offset_ms = 20000\n");
 +    us = PSXRecompV4::load_user_settings(p);
 +    check(!us.has_song_start_offset_ms, "out-of-range start_offset_ms ignored");
 +    fs::remove(p);
@@ -85,7 +85,7 @@ index 90d43a1d..4bedb89f 100644
 +          "start_offset_ms survives a save/load round trip");
 +    fs::remove(p);
 +    p = write_temp("psxrecomp_song_sync_n.toml",
-+                   "[song_sync]\nheat = 120\nbag1_gaso = -40\ncomet = 9999\n");
++                   "[song_sync]\nheat = 120\nbag1_gaso = -40\ncomet = 99999\n");
 +    us = PSXRecompV4::load_user_settings(p);
 +    /* toml11 tables are unordered: compare as a set. */
 +    auto has = [&](const char *n, int v) {
@@ -145,7 +145,7 @@ index 9b7eb879..d106513a 100644
   * sector rather than summarising thousands. */
  typedef struct CdTimingPub {
 diff --git a/runtime/src/cdrom.c b/runtime/src/cdrom.c
-index 81fa3736..130e77e6 100644
+index 81fa3736..bcd460d3 100644
 --- a/runtime/src/cdrom.c
 +++ b/runtime/src/cdrom.c
 @@ -23,6 +23,7 @@
@@ -175,7 +175,7 @@ index 81fa3736..130e77e6 100644
  int cdrom_fmv_stream_pending(void)
  {
      if (xa_stream_active)
-@@ -660,6 +666,56 @@ static int sector_delay_cycles(void) {
+@@ -660,6 +666,96 @@ static int sector_delay_cycles(void) {
      return apply_read_speed(base);
  }
  
@@ -209,6 +209,46 @@ index 81fa3736..130e77e6 100644
 +    return 0;
 +}
 +
++/* Audio-only song offset (44.1 kHz stereo frames). Positive ms: a delay line
++ * plays silence first and keeps the music that many ms late. Negative ms: the
++ * first frames are dropped. Armed on every far XA start; 0 disables. */
++#define XA_AUDIO_DELAY_MAX (44100 * 10)
++static int16_t s_xa_delay_line[XA_AUDIO_DELAY_MAX * 2];
++static int s_xa_delay_len, s_xa_delay_pos, s_xa_skip_frames;
++
++static void xa_audio_offset_arm(int ms) {
++    int frames = (int)((int64_t)ms * 44100 / 1000);
++    s_xa_delay_len = 0; s_xa_delay_pos = 0; s_xa_skip_frames = 0;
++    if (frames > 0) {
++        if (frames > XA_AUDIO_DELAY_MAX) frames = XA_AUDIO_DELAY_MAX;
++        memset(s_xa_delay_line, 0, (size_t)frames * 2 * sizeof(int16_t));
++        s_xa_delay_len = frames;
++    } else if (frames < 0) {
++        s_xa_skip_frames = -frames;
++    }
++}
++
++/* Returns the frame count left in pcm (stereo, in place). */
++static int xa_audio_offset_apply(int16_t *pcm, int frames) {
++    int i;
++    if (s_xa_skip_frames > 0) {
++        int n = s_xa_skip_frames < frames ? s_xa_skip_frames : frames;
++        s_xa_skip_frames -= n;
++        memmove(pcm, pcm + n * 2, (size_t)(frames - n) * 2 * sizeof(int16_t));
++        frames -= n;
++    }
++    if (s_xa_delay_len > 0) {
++        for (i = 0; i < frames * 2; i += 2) {
++            int16_t *d = &s_xa_delay_line[s_xa_delay_pos * 2];
++            int16_t l = d[0], r = d[1];
++            d[0] = pcm[i]; d[1] = pcm[i + 1];
++            pcm[i] = l; pcm[i + 1] = r;
++            if (++s_xa_delay_pos == s_xa_delay_len) s_xa_delay_pos = 0;
++        }
++    }
++    return frames;
++}
++
 +/* Seek time model from DuckStation CDROM::GetTicksForSeek (2N and sled
 + * cases); matches its logged BAG2 song seeks (305-375 ms). */
 +static int xa_seek_model_cycles(int from_lba, int to_lba) {
@@ -232,7 +272,7 @@ index 81fa3736..130e77e6 100644
  static int initial_read_delay_cycles(void) {
      /* Beetle/PCSX model an additional read-start latency after ReadN/ReadS.
       * In double-speed mode the first sector still waits one 1x sector period;
-@@ -1422,6 +1478,11 @@ static int maybe_deliver_xa_audio(const uint8_t* raw_data, int lba,
+@@ -1422,11 +1518,18 @@ static int maybe_deliver_xa_audio(const uint8_t* raw_data, int lba,
      xa_zero_scan(native, native_frames, lba, 0);
      int out_frames = xa_resample_to_44100(native, native_frames, sample_rate,
                                            pcm_44100, XA_MAX_44100_FRAMES);
@@ -244,7 +284,15 @@ index 81fa3736..130e77e6 100644
      /* Volume is applied after resampling, per PS1 hardware tests (Beetle
       * cdc.cpp GetCDAudio comment). */
      cd_apply_decode_volume(pcm_44100, out_frames);
-@@ -1651,6 +1712,8 @@ static void start_read_stream(uint8_t cmd) {
+     xa_zero_scan(pcm_44100, out_frames, lba, 1);
+-    spu_cd_audio_push(pcm_44100, out_frames);
++    out_frames = xa_audio_offset_apply(pcm_44100, out_frames);
++    if (out_frames > 0)
++        spu_cd_audio_push(pcm_44100, out_frames);
+     trace_cdrom('A', 0,
+                 ((uint32_t)file << 24) | ((uint32_t)channel << 16) |
+                 ((uint32_t)coding << 8) | ((uint32_t)(out_frames / 32) & 0xFFu),
+@@ -1651,6 +1754,8 @@ static void start_read_stream(uint8_t cmd) {
       * read_* at the next sector; a later ReadN/ReadS without Setloc resumes
       * there. Reusing seek_* unconditionally restarts XA dialogue at its first
       * sector while the game's subtitle clock resumes where it paused. */
@@ -253,7 +301,7 @@ index 81fa3736..130e77e6 100644
      if (setloc_pending) {
          read_min = seek_min;
          read_sec = seek_sec;
-@@ -1659,6 +1722,34 @@ static void start_read_stream(uint8_t cmd) {
+@@ -1659,6 +1764,35 @@ static void start_read_stream(uint8_t cmd) {
      setloc_pending = 0;
      read_cmd = cmd;
      read_delay = initial_read_delay_cycles();
@@ -273,22 +321,23 @@ index 81fa3736..130e77e6 100644
 +        }
 +        const char *song = (xa_far_seek && s_xa_song_namer)
 +            ? s_xa_song_namer(xa_seek_to, filter_file, filter_channel) : 0;
-+        if (xa_far_seek && s_xa_seek_ms < 0) {
-+            int cycles = xa_seek_model_cycles(xa_seek_from, xa_seek_to)
-+                       + (g_cd_song_start_offset_ms + song_offset_ms(song)) * 33869;
-+            read_delay += cycles > 0 ? cycles : 0;
-+        }
++        if (xa_far_seek && s_xa_seek_ms < 0)
++            read_delay += xa_seek_model_cycles(xa_seek_from, xa_seek_to);
++        /* [song_sync] offsets shift only the music, never the game clock. */
++        if (xa_far_seek)
++            xa_audio_offset_arm(g_cd_song_start_offset_ms + song_offset_ms(song));
 +        /* PSX_CD_XA_SEEK_LOG=1: one line per far XA start for native comparison. */
 +        if (xa_far_seek && getenv("PSX_CD_XA_SEEK_LOG")) {
-+            fprintf(stderr, "psxrecomp: xa-seek from=%d to=%d song=%s delay_ms=%.1f\n",
-+                    xa_seek_from, xa_seek_to, song ? song : "?", read_delay / 33868.8);
++            fprintf(stderr, "psxrecomp: xa-seek from=%d to=%d song=%s delay_ms=%.1f audio_offset_ms=%d\n",
++                    xa_seek_from, xa_seek_to, song ? song : "?", read_delay / 33868.8,
++                    g_cd_song_start_offset_ms + song_offset_ms(song));
 +            fflush(stderr);
 +        }
 +    }
      s_cd_probe_read_start_count++;
      s_cd_probe_read_start_cycles += (uint64_t)read_delay;
      s_cd_timing_next_due = psx_cycle_count + (uint64_t)read_delay;
-@@ -2160,6 +2251,7 @@ static void exec_command(uint8_t cmd) {
+@@ -2160,6 +2294,7 @@ static void exec_command(uint8_t cmd) {
              s_setloc_lba = msf_to_lba(seek_min, seek_sec, seek_sect);
              setloc_pending = 1;
              setloc_seek_far = (abs(current_lba - s_setloc_lba) > 16) ? 1 : 0;
