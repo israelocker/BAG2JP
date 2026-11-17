@@ -726,3 +726,11 @@ tengamos todos los personajes importados». No se trabaja en ellas hasta entonce
 
 - 2026-11-17 ROOT CAUSE FIXED (supersedes the "Next offline step" above; the index was correct and the root `bag1_alt.bin` read earlier is a stale unused copy). The preserved 200/209 stage files used by specs combined-ae / combined-scale32-hud had 32 KB of garbage before 'DFS_' (209 also truncated). Rebuilt payload with good copies `_work/stage_import/gaso/preserved_payload_entries/entry_200_chr0_kind3.dfs` / `entry_209_chr1_kind3.dfs` via `make_alt_entries_exact.py` (spec `_work/stage-fix-200-209/spec.json`): payload sha b14e0fe0..., 4891 sectors, index tag 0xB14E0FE0; manifests updated, check_payload_manifest 4/4. Probes reverted. Exe A7A4A0D9 (includes the `%15` stage-select fix, not specifically tested).
 - Recorded validation, all ACCEPTED: `fix-vs-heat1` (VS HEAT BAG1 loads, draws, 'B1ST' resident, song heat_2bad, returns to select), `fix-vs-strike5` (same for STRIKE BAG1), `fix-camp-bio` (above), `fix-stale3` (scenario 3: VS HEAT BAG1 played to end, back to menu root 7, campaign Heat vs Comet loads Comet's stock stage: no new `entry 200 -> BAG1` line, 0x801E0100 != 'B1ST', stage ptr 800B467C vs 800AA88C in VS; `_work/stale3-row1-s.png`, `_work/stale3-camp-s.png`, `_work/fix-stale3-*.log`). Pending: owner conformity.
+
+## Practice mode BAG1 stage music (2026-11-17)
+
+- Cause: with the fixed payload practice (mode 3, root 0x17) already loaded the Heat BAG1 stage (entry 200, B1ST resident; recording practice-diag ACCEPTED), but b1m_stage_profile only accepted root 0x13 / 0x19 mode 4, so the BAG2 song played.
+- Fix: bag2jp_bag1_stage.c also accepts root 0x17 with mode 3 (music only; b1s_vblank stage beat/score windows still gameplay root 0x13 only).
+- Evidence: exe 7A950CEC, recording _work/recordings/practice-fix ACCEPTED; content log song heat_2bad + heat_2bad_japanese.flac (_work/practice-fix-content.log); frame _work/pf-inmatch-s.png. Song end in practice not observed.
+- Release2 installer predates this fix; rebuild needed.
+

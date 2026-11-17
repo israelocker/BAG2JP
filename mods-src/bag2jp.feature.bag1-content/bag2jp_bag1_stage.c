@@ -154,10 +154,11 @@ static const B1MusicProfile* b1m_loaded;
 
 static const B1MusicProfile* b1m_stage_profile(void) {
     const uint32_t root = psx_mod_read_word(0x8005D3D4u);
-    /* Dance View uses root 0x19, not the match root 0x13. Retain all
-     * imported-stage guards so native Strike/Heat music is not replaced. */
-    if (root != B1S_ROOT_GAMEPLAY &&
-        !(root == 0x19u && psx_mod_read_word(0x8005D2C4u) == 4u)) return NULL;
+    /* Dance View uses root 0x19 (mode 4) and Practice root 0x17 (mode 3), not the
+     * match root 0x13. Retain all imported-stage guards so native music is not replaced. */
+    const uint32_t mode = psx_mod_read_word(0x8005D2C4u);
+    if (root != B1S_ROOT_GAMEPLAY && !(root == 0x19u && mode == 4u) &&
+        !(root == 0x17u && mode == 3u)) return NULL;
 
     const uint32_t stage = psx_mod_read_word(0x80089200u);
     if (stage < 0x80000000u || stage >= 0x80800000u) return NULL;
