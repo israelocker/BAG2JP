@@ -302,7 +302,31 @@ static void b1m_song_length(void) {
     }
 }
 
+/* Song names for settings.toml [song_sync] per-song offsets. The seek happens before the
+ * game stores the song index, so the index is derived from the XA file holding the target
+ * LBA (BUST2_01/02.XA) and the Setfilter channel: song = file * 8 + channel. While an
+ * imported BAG1 stage owns that song slot the name is bag1_<character>. */
+static const char* const b1n_bag2[] = {
+    "heat", "strike", "comet", "tsutomu", "kelly", "shorty", "pander", "kitty_n",
+    "hiro", "bi_o", "capoeira", "robo_z", "columbo", "sushi_boy", "chichi_sally", "michael_doi",
+};
+static const char* b1n_song(int lba, int file, int channel) {
+    (void)file;
+    if (lba < 0 || channel < 0 || channel >= (int)B1M_XA_CHANNELS) return NULL;
+    for (unsigned i = 0; i < B1M_XA_FILES; ++i) {
+        if ((uint32_t)lba < b1m_lba[i] || (uint32_t)lba >= b1m_end[i]) continue;
+        const unsigned song = i * B1M_XA_CHANNELS + (unsigned)channel;
+        const B1MusicProfile* profile = b1m_stage_profile();
+        if (profile && profile->stage / B1M_XA_CHANNELS == i && profile->channel == (unsigned)channel)
+            return profile->stage == 0 ? "bag1_heat" : profile->stage == 1 ? "bag1_strike" : "bag1_gaso";
+        return song < sizeof b1n_bag2 / sizeof b1n_bag2[0] ? b1n_bag2[song] : NULL;
+    }
+    return NULL;
+}
+
 static void b1s_vblank_all(void) {
+    static int named;
+    if (!named) { cdrom_set_xa_song_namer(b1n_song); named = 1; }
     b1s_vblank();
     b1m_song_length();
     b1sv_experiment();

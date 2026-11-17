@@ -94,3 +94,11 @@ Pending: confirm in a recorded port run (`PSX_RB_CD_BISECT=1` logs ReadS arm), t
 ## Conclusion (2026-11-17)
 - Technical validation shows song-start timing is now accurate: music vs dance gate within 8 ms (FLAC xcorr) for BAG1 Heat/Strike/Gas-O and BAG2 songs; music locked to frame clock (<4 ms drift over 3 min); seek wait +33..44 ms vs native DuckStation (affects only wait before the song, not sync).
 - Shipped installer installer2/BAG2JP-Installer.exe (exe B4F503DF) contains the fix. Pending: subjective feel by testers; payload cleanup before next installer.
+
+## Per-song start offsets (2026-11-17, WIP experimental)
+- settings.toml `[song_sync]`: `start_offset_ms` (all songs) plus named keys (`heat`, `strike`, `comet`, `tsutomu`, `kelly`, `shorty`, `pander`, `kitty_n`, `hiro`, `bi_o`, `capoeira`, `robo_z`, `columbo`, `sushi_boy`, `chichi_sally`, `michael_doi`, `bag1_heat`, `bag1_strike`, `bag1_gaso`), ms in -1000..1000 (out of range ignored). Added to the seek model only; `PSX_CD_XA_FAR_SEEK_MS` still overrides.
+- Name comes from the bag1-content mod namer (`b1n_song` in bag2jp_bag1_stage.c): XA file index * 8 + channel; `bag1_*` when the BAG1 stage profile matches. Menu/title music resolves to `columbo`/`sushi_boy` (idx 12/13), so those keys also shift menu music.
+- Framework patch: patches/psxrecomp-song-start-offsets.patch (cumulative over the 6 files, includes the seek model; reverse-apply check OK). Host test video_enhancement_settings_test PASS (g++ WSL; fixed order-dependent check: toml11 tables are unordered).
+- exe 2592776449A85FD4 deployed to exp-8mb (prev kept as BAG2JP.exe.bak-offset521a). Installer unchanged (B4F503DF).
+- Takes ACCEPTED: sync_named_heat (heat=200, comet=-100): song=heat 558.1 ms (358+200), menu seeks unchanged 459 ms. sync_named_b1heat (heat=200, bag1_heat=-100, entry 200 BAG1 JP): song=bag1_heat 258.1 ms. settings.toml restored after each.
+- Not checked: other characters' names in game; music/dance gate with offsets (offset deliberately desyncs if set).
