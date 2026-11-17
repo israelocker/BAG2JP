@@ -40,6 +40,10 @@
 #define B1V_DANCERS  0x8005F808u   /* dancer pointer per side, stride 8 */
 #define B1V_CHARS    18
 #define B1V_SELECTED 0x80089250u   /* byte per side read by the loader: char | costume << 5, 0xFF none */
+#define B1V_GAME_MODE 0x8005D2C4u  /* u16: 0 demo, 2 two players; 1/3/4 human vs CPU (FUN_80033c10) */
+#define B1V_ROOT      0x8005D3D4u
+#define B1V_ROOT_MENU 7u   /* live title/menu root state (notes/archive/endings-view-before-audit.md) */
+#define B1V_HUMAN_SIDE 0x8005E6C8u /* side the human plays in one-player mode */
 #define B1V_CHAR_MASK 0x1Fu
 #define B1V_NO_CHAR  0xFFu
 
@@ -96,7 +100,15 @@ static int b1v_wanted(const B1AltEntry* e) {
         if (b1v_stage_choice_chr == (int)c && b1v_stage_choice_version >= 0)
             return b1v_stage_choice_version;
         if (c == 0 && b1v_stage_version >= 0) return b1v_stage_version;
-        /* Story mode has no stage picker: retain its character-based default. */
+        /* Story mode has no stage picker: the stage is the rival's. A mirror match (BAG1 Gas-O
+         * vs BAG2 Bi-O share chr 9) takes the CPU side's version in 1P mode (FUN_8001e0f4: stage
+         * = side human^1); otherwise mixed versions keep the stock stage and its stock song. */
+        if (psx_mod_read_word(B1V_CHAR_P1) == c && psx_mod_read_word(B1V_CHAR_P1 + 4u) == c) {
+            const uint32_t mode = psx_mod_read_byte(B1V_GAME_MODE) | psx_mod_read_byte(B1V_GAME_MODE + 1u) << 8;
+            if (mode == 1 || mode == 3 || mode == 4)   /* human vs CPU (FUN_80033c10) */
+                return b1v_version[c][(psx_mod_read_byte(B1V_HUMAN_SIDE) & 1u) ^ 1u];
+            return b1v_version[c][0] && b1v_version[c][1];
+        }
         /* fall through */
     default: { const int s = b1v_side_of(c); return b1v_version[c][s < 0 ? 0 : s]; }
     }
@@ -230,6 +242,13 @@ static void b1v_vblank(void) {
     bag2jp_strike_bag1_tick(b1v_frame);
     bag2jp_heat_flame_tick(b1v_frame);
     bag2jp_gaso_tank_tick(b1v_frame);
+    /* Returning to the title/main menu (root 7) forgets the VS stage pick so a later story
+     * match does not inherit it. */
+    if (psx_mod_read_word(B1V_ROOT) == B1V_ROOT_MENU && b1v_stage_choice_chr >= 0) {
+        b1v_stage_choice_chr = -1;
+        b1v_stage_choice_version = -1;
+        b1v_stage_version = -1;
+    }
     if (psx_mod_read_word(B1V_TABLE) != B1V_MAGIC) return;
     const uint32_t count = psx_mod_read_word(B1V_TABLE + 4u);
     const int models_jp = b1v_region_japanese("models");

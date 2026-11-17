@@ -202,6 +202,22 @@ static void at_vblank(void) {
         psx_mod_write_byte(0x8004E2F7u + (uint32_t)view_char, 1);
     if (s_skill == -1) { const char* k = getenv("BAG2JP_CPU_SKILL"); s_skill = (k && *k) ? atoi(k) : -2; }
     if (s_skill >= 0 && psx_mod_read_byte(0x8005E661u) != (uint32_t)s_skill) psx_mod_write_byte(0x8005E661u, (uint8_t)s_skill);
+    /* Test-only first campaign rival: jp005 FUN_800962a0 takes the rival (and the stage,
+     * 0x8005E666) from 0x80051334[route * 0x11 + progress]; progress 0 is the first match.
+     * Rewrites slot 0 of the four routes only while it still holds the stock opponent. */
+    static int first_rival = -2;
+    if (first_rival == -2) {
+        const char* value = getenv("BAG2JP_TEST_CAMPAIGN_RIVAL"); char* end = NULL;
+        long parsed = value && *value ? strtol(value, &end, 10) : -1;
+        first_rival = (value && *value && end && !*end && parsed >= 0 && parsed < 12) ? (int)parsed : -1;
+    }
+    if (first_rival >= 0) {
+        static const uint8_t stock[4] = {0x02, 0x07, 0x08, 0x01};
+        for (uint32_t r = 0; r < 4; ++r) {
+            const uint32_t a = 0x80051334u + r * 0x11u;
+            if (psx_mod_read_byte(a) == stock[r]) psx_mod_write_byte(a, (uint8_t)first_rival);
+        }
+    }
     if (s_dump_at == -1) { const char* k = getenv("BAG2JP_RAM_DUMP"); s_dump_at = (k && *k) ? atol(k) : -2; }
     if (s_nwatch < 0) {
         s_nwatch = 0; const char* w = getenv("BAG2JP_WATCH");

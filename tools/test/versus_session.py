@@ -34,7 +34,8 @@ DEBUG_ENV_ALLOWLIST = ("BAG2JP_TEST_HEAT_ATTACK", "BAG2JP_TEST_STRIKE_ATTACK", "
                        "BAG2JP_TEST_ORDERED_DUEL", "BAG2JP_TEST_B1M_TIMING", "BAG2JP_TEST_P1_DUET")
 # A runner may declare these per Session; inherited environment still obeys DEBUG_ENV_ALLOWLIST.
 # HEAT_STRIKE_DUEL is the Strike batch side-2 fixture read by bag2jp_anim_trace.c.
-DECLARED_FIXTURE_ALLOWLIST = DEBUG_ENV_ALLOWLIST + ("BAG2JP_TEST_HEAT_STRIKE_DUEL",)
+DECLARED_FIXTURE_ALLOWLIST = DEBUG_ENV_ALLOWLIST + ("BAG2JP_TEST_HEAT_STRIKE_DUEL", "BAG2JP_TEST_CAMPAIGN_RIVAL",
+                                                     "BAG2JP_TEST_EPC_PROBE")
 CATALOG_TARGET = Path("versus-navigation/catalog.json")
 RUNS_TARGET = Path("versus-runs")
 
