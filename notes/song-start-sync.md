@@ -65,3 +65,8 @@ Pending: confirm in a recorded port run (`PSX_RB_CD_BISECT=1` logs ReadS arm), t
 - 2026-11-17 owner: conforme con el arranque en sync_pr_full5 (escucha).
 - sync_pr_quit6 (ACCEPTED): RESULT -> K,S selects RETRY (cursor is horizontal); song restarts with music, no hang. sync_pr_quit7 (ACCEPTED, exe B4F503DF, model default): RESULT -> Right,S = QUIT -> title menu (1player/2player/practice...) reached and stable for 12 s. _work/sync/rec_take.ps1 gained -PostKeys/-PostWait.
 - VS/campaign not recorded in the port: 2P pick and 1P campaign are not automated in the harness. Native evidence: all modes (demo, campaign, practice, RETRY) start the song from the same call site (ra 800986f4) with the same far seek, so the same port path applies; unverified in game.
+- 2026-11-17 VS and campaign automated (D:/Dev/Tools/winshot/bag2_2p_pick.ps1: -Downs 1 adds 3 x P2 circle M = pick, popup, difficulty; -Downs 0 = 1player campaign). exe B4F503DF, model default, all ACCEPTED:
+  - sync_vs_try10 (2player, Heat vs Heat, Heat stage): request f3763, gate f3785 (+22 f); audio rms>300 at 413 ms, rms>3000 852 ms. Match in progress.
+  - sync_camp11 (1player campaign, Heat vs Strike, song idx 1, stage 1): request f2701, gate f2725 (+24 f); audio 388/508 ms. Match in progress, scoring works.
+  - Native DuckStation references: campaign 374.8 ms, practice 372.1 ms. Port now within ~15-40 ms of native in practice, VS and campaign.
+- Not verified: BAG1 songs, FMV/XA dialogue in game (code path analysis only), song end/return in VS/campaign.
