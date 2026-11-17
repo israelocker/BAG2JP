@@ -70,3 +70,7 @@ Pending: confirm in a recorded port run (`PSX_RB_CD_BISECT=1` logs ReadS arm), t
   - sync_camp11 (1player campaign, Heat vs Strike, song idx 1, stage 1): request f2701, gate f2725 (+24 f); audio 388/508 ms. Match in progress, scoring works.
   - Native DuckStation references: campaign 374.8 ms, practice 372.1 ms. Port now within ~15-40 ms of native in practice, VS and campaign.
 - Not verified: BAG1 songs, FMV/XA dialogue in game (code path analysis only), song end/return in VS/campaign.
+- 2026-11-17 more takes (exe B4F503DF, model default, ACCEPTED):
+  - sync_vs_full12: VS Heat vs Heat full song (f3765..f14410, 177 s), back to Character Select; audio 413/852 ms (same as try10).
+  - sync_vs_bag1_14: VS stage HEAT BAG1 (stage select is horizontal; bag2_2p_pick/bag2_run/rec_take got -StageDowns n = Right presses). Log 'entry 200 -> BAG1 JP', content log heat_2bad_japanese.flac. Request f3875, gate f3897 (+22 f), audio rms>300 at 363 ms: the BAG1 song follows the same delayed start.
+- Still not verified in game: FMV / XA dialogue (code path only), BAG1 song end in VS with this exe.
