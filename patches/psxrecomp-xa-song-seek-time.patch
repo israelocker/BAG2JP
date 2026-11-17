@@ -1,0 +1,76 @@
+diff --git a/runtime/src/cdrom.c b/runtime/src/cdrom.c
+index 81fa3736..f457ef26 100644
+--- a/runtime/src/cdrom.c
++++ b/runtime/src/cdrom.c
+@@ -24,4 +24,5 @@
+ #include <stdio.h>
+ #include <string.h>
++#include <math.h>
+ #include <stdlib.h>
+ #ifndef _WIN32
+@@ -211,4 +212,5 @@ static uint8_t seek_min, seek_sec, seek_sect;
+ static int     s_setloc_lba = -1;  /* LBA captured at SetLoc time */
+ static int     setloc_seek_far;
++static int     s_setloc_from_lba; /* head position when Setloc was issued */
+ static int     setloc_pending;   /* a Setloc has been issued and not consumed */
+ 
+@@ -661,4 +667,24 @@ static int sector_delay_cycles(void) {
+ }
+ 
++/* Seek time model from DuckStation CDROM::GetTicksForSeek (2N and sled
++ * cases); matches its logged BAG2 song seeks (305-375 ms). */
++static int xa_seek_model_cycles(int from_lba, int to_lba) {
++    const double clock = 33868800.0;
++    int diff = abs(to_lba - from_lba);
++    double seconds;
++    if (from_lba < 0 || to_lba < 0) return 0;
++    if (diff < 7200) {
++        double minutes = (double)from_lba / 4500.0;
++        if (minutes < 1.0) minutes = 1.0;
++        if (minutes > 72.0) minutes = 72.0;
++        seconds = (diff < (int)(330.0 - 63.1333 * log(minutes))) ? 0.05 : 0.1;
++    } else {
++        const double max_lba = 72.0 * 4500.0, variable = 0.85;
++        seconds = 0.05 + variable * (log((double)diff) / log(max_lba)) * 0.4
++                + variable * ((double)diff / max_lba) * 0.6;
++    }
++    return (int)(seconds * clock);
++}
++
+ static int initial_read_delay_cycles(void) {
+     /* Beetle/PCSX model an additional read-start latency after ReadN/ReadS.
+@@ -1652,4 +1683,6 @@ static void start_read_stream(uint8_t cmd) {
+      * there. Reusing seek_* unconditionally restarts XA dialogue at its first
+      * sector while the game's subtitle clock resumes where it paused. */
++    int xa_far_seek = setloc_pending && setloc_seek_far && (mode_reg & 0x40u);
++    int xa_seek_to = s_setloc_lba, xa_seek_from = s_setloc_from_lba;
+     if (setloc_pending) {
+         read_min = seek_min;
+@@ -1660,4 +1693,21 @@ static void start_read_stream(uint8_t cmd) {
+     read_cmd = cmd;
+     read_delay = initial_read_delay_cycles();
++    {
++        /* song-start-sync: native hardware spends the far seek before the
++         * first XA sector and BAG2 gates song and chart on it (GetlocL).
++         * PSX_CD_XA_FAR_SEEK_MS: unset = seek model, 0 = off, N = fixed ms. */
++        static int s_xa_seek_ms = -2;
++        if (s_xa_seek_ms == -2) {
++            const char *e = getenv("PSX_CD_XA_FAR_SEEK_MS");
++            s_xa_seek_ms = e ? atoi(e) : -1;
++            if (s_xa_seek_ms < -1) s_xa_seek_ms = 0;
++            if (s_xa_seek_ms > 2000) s_xa_seek_ms = 2000;
++        }
++        if (xa_far_seek && s_xa_seek_ms > 0) {
++            read_delay += (int)((int64_t)s_xa_seek_ms * 33869);
++        } else if (xa_far_seek && s_xa_seek_ms < 0) {
++            read_delay += xa_seek_model_cycles(xa_seek_from, xa_seek_to);
++        }
++    }
+     s_cd_probe_read_start_count++;
+     s_cd_probe_read_start_cycles += (uint64_t)read_delay;
+@@ -2161,4 +2210,5 @@ static void exec_command(uint8_t cmd) {
+             setloc_pending = 1;
+             setloc_seek_far = (abs(current_lba - s_setloc_lba) > 16) ? 1 : 0;
++            s_setloc_from_lba = current_lba;
+             warm_route_on_setloc(s_setloc_lba);
+         }
