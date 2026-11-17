@@ -102,3 +102,4 @@ Pending: confirm in a recorded port run (`PSX_RB_CD_BISECT=1` logs ReadS arm), t
 - exe 2592776449A85FD4 deployed to exp-8mb (prev kept as BAG2JP.exe.bak-offset521a). Installer unchanged (B4F503DF).
 - Takes ACCEPTED: sync_named_heat (heat=200, comet=-100): song=heat 558.1 ms (358+200), menu seeks unchanged 459 ms. sync_named_b1heat (heat=200, bag1_heat=-100, entry 200 BAG1 JP): song=bag1_heat 258.1 ms. settings.toml restored after each.
 - Not checked: other characters' names in game; music/dance gate with offsets (offset deliberately desyncs if set).
+- Goldfish (cold review of 0efdb41): CON HALLAZGOS, no blocker. Open: names >31 chars never match; save writes keys unquoted; fixed-ms env ignores offsets (by design); namer may report a stale `bag1_*` if the stage word is not yet updated at seek time (e.g. BAG1 match followed by BAG2 match) - verify in game; patch file also carries unrelated hunks (XA host filter, hud present) from the build tree.
