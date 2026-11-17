@@ -90,3 +90,7 @@ Pending: confirm in a recorded port run (`PSX_RB_CD_BISECT=1` logs ReadS arm), t
   Conclusion: in the port BAG1 FLAC start follows BAG2's XA seek of the stage's BAG2 slot (358-424 ms), within ~30-70 ms of BAG1 native seeks (313-390 ms). Not a per-song BAG1 reproduction.
 - 2026-11-17 follow-up: _work/sync/xcorr.py (cross-correlates the shipped FLAC with the recorded audio; replaces the rms threshold). Song sample 0 vs dance gate: Heat BAG1 -7.9 ms, Strike BAG1 -1.3 ms (the +63 ms was a threshold artifact), Gas-O BAG1 -1.7 ms. All within half a frame.
   Native Gas-O BAG1 practice re-run with cursor verified on GAS-O (n_gaso2.png): ReadS 08:56:08, 36045 LBA, 389.7 ms (so the earlier 'Kelly' run was also Gas-O). Port Gas-O seek 424.4 ms -> +35 ms; Heat/Strike port 358 vs native 314-325 -> +33-44 ms. Absolute start ~35-45 ms later than BAG1 native for all three; music-vs-dance aligned.
+
+## Conclusion (2026-11-17)
+- Technical validation shows song-start timing is now accurate: music vs dance gate within 8 ms (FLAC xcorr) for BAG1 Heat/Strike/Gas-O and BAG2 songs; music locked to frame clock (<4 ms drift over 3 min); seek wait +33..44 ms vs native DuckStation (affects only wait before the song, not sync).
+- Shipped installer installer2/BAG2JP-Installer.exe (exe B4F503DF) contains the fix. Pending: subjective feel by testers; payload cleanup before next installer.
