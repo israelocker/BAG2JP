@@ -62,3 +62,6 @@ Pending: confirm in a recorded port run (`PSX_RB_CD_BISECT=1` logs ReadS arm), t
 - Patch: patches/psxrecomp-xa-song-seek-time.patch (`git apply --check --reverse --recount` OK on build tree).
 - Goldfish (spec _work/goldfish/spec-xa-song-seek.md): CON HALLAZGOS, non-blocking. Fixed: int overflow for large N (clamp). Open: model omits motor spin-up/short seek; FMV/voice XA after far Setloc untested in game; getenv read once.
 - Next: owner listening of _work/recordings/sync_pr_full5/owner.mp4 and tester feedback; then QUIT/return-to-select and a VS/campaign take before acceptance.
+- 2026-11-17 owner: conforme con el arranque en sync_pr_full5 (escucha).
+- sync_pr_quit6 (ACCEPTED): RESULT -> K,S selects RETRY (cursor is horizontal); song restarts with music, no hang. sync_pr_quit7 (ACCEPTED, exe B4F503DF, model default): RESULT -> Right,S = QUIT -> title menu (1player/2player/practice...) reached and stable for 12 s. _work/sync/rec_take.ps1 gained -PostKeys/-PostWait.
+- VS/campaign not recorded in the port: 2P pick and 1P campaign are not automated in the harness. Native evidence: all modes (demo, campaign, practice, RETRY) start the song from the same call site (ra 800986f4) with the same far seek, so the same port path applies; unverified in game.
