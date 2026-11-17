@@ -145,7 +145,7 @@ index 9b7eb879..d106513a 100644
   * sector rather than summarising thousands. */
  typedef struct CdTimingPub {
 diff --git a/runtime/src/cdrom.c b/runtime/src/cdrom.c
-index 81fa3736..13f9c324 100644
+index 81fa3736..4f1af980 100644
 --- a/runtime/src/cdrom.c
 +++ b/runtime/src/cdrom.c
 @@ -23,6 +23,7 @@
@@ -295,7 +295,7 @@ index 81fa3736..13f9c324 100644
      if (setloc_pending) {
          read_min = seek_min;
          read_sec = seek_sec;
-@@ -1659,6 +1758,35 @@ static void start_read_stream(uint8_t cmd) {
+@@ -1659,6 +1758,37 @@ static void start_read_stream(uint8_t cmd) {
      setloc_pending = 0;
      read_cmd = cmd;
      read_delay = initial_read_delay_cycles();
@@ -317,21 +317,23 @@ index 81fa3736..13f9c324 100644
 +            ? s_xa_song_namer(xa_seek_to, filter_file, filter_channel) : 0;
 +        if (xa_far_seek && s_xa_seek_ms < 0)
 +            read_delay += xa_seek_model_cycles(xa_seek_from, xa_seek_to);
-+        /* [song_sync] offsets shift only the music, never the game clock. */
++        /* [song_sync] offsets shift only the music, never the game clock. Only named
++         * (dance) songs get one; the namer returns NULL for menu/demo music. */
++        const int audio_offset = song ? g_cd_song_start_offset_ms + song_offset_ms(song) : 0;
 +        if (xa_far_seek)
-+            xa_audio_offset_arm(g_cd_song_start_offset_ms + song_offset_ms(song));
++            xa_audio_offset_arm(audio_offset);
 +        /* PSX_CD_XA_SEEK_LOG=1: one line per far XA start for native comparison. */
 +        if (xa_far_seek && getenv("PSX_CD_XA_SEEK_LOG")) {
 +            fprintf(stderr, "psxrecomp: xa-seek from=%d to=%d song=%s delay_ms=%.1f audio_offset_ms=%d\n",
 +                    xa_seek_from, xa_seek_to, song ? song : "?", read_delay / 33868.8,
-+                    g_cd_song_start_offset_ms + song_offset_ms(song));
++                    audio_offset);
 +            fflush(stderr);
 +        }
 +    }
      s_cd_probe_read_start_count++;
      s_cd_probe_read_start_cycles += (uint64_t)read_delay;
      s_cd_timing_next_due = psx_cycle_count + (uint64_t)read_delay;
-@@ -2160,6 +2288,7 @@ static void exec_command(uint8_t cmd) {
+@@ -2160,6 +2290,7 @@ static void exec_command(uint8_t cmd) {
              s_setloc_lba = msf_to_lba(seek_min, seek_sec, seek_sect);
              setloc_pending = 1;
              setloc_seek_far = (abs(current_lba - s_setloc_lba) > 16) ? 1 : 0;

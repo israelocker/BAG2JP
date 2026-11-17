@@ -310,9 +310,17 @@ static const char* const b1n_bag2[] = {
     "heat", "strike", "comet", "tsutomu", "kelly", "shorty", "pander", "kitty_n",
     "hiro", "bi_o", "capoeira", "robo_z", "columbo", "sushi_boy", "chichi_sally", "michael_doi",
 };
+/* Offsets apply only to dance songs: match (0x13), Practice (0x17, mode 3) and Dance View
+ * (0x19, mode 4). Menu/demo music shares XA slots (columbo, sushi_boy) and gets no name. */
+static int b1n_in_dance(void) {
+    const uint32_t root = psx_mod_read_word(0x8005D3D4u);
+    const uint32_t mode = psx_mod_read_word(0x8005D2C4u);
+    return root == B1S_ROOT_GAMEPLAY || (root == 0x19u && mode == 4u) ||
+           (root == 0x17u && mode == 3u);
+}
 static const char* b1n_song(int lba, int file, int channel) {
     (void)file;
-    if (lba < 0 || channel < 0 || channel >= (int)B1M_XA_CHANNELS) return NULL;
+    if (lba < 0 || channel < 0 || channel >= (int)B1M_XA_CHANNELS || !b1n_in_dance()) return NULL;
     for (unsigned i = 0; i < B1M_XA_FILES; ++i) {
         if ((uint32_t)lba < b1m_lba[i] || (uint32_t)lba >= b1m_end[i]) continue;
         const unsigned song = i * B1M_XA_CHANNELS + (unsigned)channel;
