@@ -898,3 +898,11 @@ Skill: `bag2-game-recording` (`D:/Dev/Tools/agent-data/shared/agents/skills/bag2
   alcance en plan: opt-in audio porPID, preservarfloat/QPC, host señales/pausas,
   Goldfish y una toma si todo pasa; no otro sistema de guardado.
 - Tiempos incluyen compilación de cada probe; preparación/revisión/ahorro no medidos.
+
+## 2026-11-19 — prioridad de ffmpeg en vivo y jitter en combate
+- Propósito: tomas de combate rechazadas (p99 21,1 / 26,8 ms; tomas d, e).
+- Evidencia: bag2jp_perf.log de exp-8mb: 16 s de combate bajo 57 vbl/s grabando y 3 sin grabar (perf-base); con PSX_RENDER_THREAD/PSX_PRESENT_THREAD=1, 1 s sin grabar.
+- Cambio: tools/test/bag2_record.py lanza ffmpeg en vivo con BELOW_NORMAL_PRIORITY_CLASS.
+- Validación: toma s0-heat-rec-20261119f (hilos activos + cambio) accepted=true, jitter_p99 12,16 ms, 0 s lentos; hoja de 12 fotogramas revisada sin fallos visibles.
+- Tests: test_bag2_record 28 tests, 6 errores (consola.ttf), idénticos en HEAD sin el cambio.
+- Resultado: útil. Tiempo: ~1 h con 3 partidas. Siguiente: corregir los 6 errores previos de los tests.

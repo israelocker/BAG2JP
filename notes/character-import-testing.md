@@ -193,6 +193,17 @@ con el harness existente y su política de cierre; no reconstruir un runner ad h
 Evidencia de las correcciones: [Gas-O](gaso-import.md#retrospectiva-incorporada-al-estándar-2026-11-15),
 [grabador](tool-evidence/bag2-record.md) y [FFmpeg](tool-evidence/ffmpeg-skill.md).
 
+Combate grabado y jitter (2026-11-19): las tomas de combate se rechazaban por p99
+21–27 ms; `bag2jp_perf.log` mostró que la grabación quitaba CPU al hilo del juego
+(16 s <57 vbl/s grabando frente a 3 sin grabar). Correcciones: ffmpeg en vivo con
+`BELOW_NORMAL_PRIORITY_CLASS` y `render_thread`/`present_thread = true` en el
+`settings.toml` de exp-8mb (copia `settings.toml.bak-20261119-prethreads`). Toma
+`s0-heat-rec-20261119f` (Heat vs Strike) aceptada: p99 12,2 ms, 0 s lentos.
+Arrancar el grabador al aparecer `stage-selected.png` y crear `STOP` al aparecer
+`song-end.png` del run de versus; si el harness cierra antes, el grabador aborta
+por cambio de ventana. Pendiente: `test_bag2_record` tiene 6 errores previos
+(`consola.ttf` no encontrada en la configuración temporal de los tests).
+
 ## 5. Evidencia y señales de diagnóstico
 
 | Archivo | Qué demuestra / qué no |

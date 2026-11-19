@@ -777,8 +777,11 @@ def _record_capture(tag: str, fps: int, max_seconds: float, game_dir: Path, pid:
                                                     max_seconds + settings.value("process_audio_extra_seconds"), window.key)
                 session["process_audio"] = {"identity": process_audio.target.identity, "token": window.key}
                 _write_session(out / "session.json", session)
+            # Below-normal priority: the live encoder must not preempt the game's emulation thread
+            # (perf logs 2026-11-19: 16 slow match seconds while recording vs 3 without).
             ffmpeg = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
-                                      stderr=ffmpeg_log)
+                                      stderr=ffmpeg_log,
+                                      creationflags=getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0))
             beats, events = csv.writer(beats_file), csv.writer(events_file)
             last_frame = None
             stop_at = started + max_seconds
