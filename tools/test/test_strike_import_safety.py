@@ -48,7 +48,7 @@ class StrikeImportSafetyTests(unittest.TestCase):
             expected_beats = 8 if 46 <= slot <= 53 or 57 <= slot <= 62 else 16 if 63 <= slot <= 66 else 4
             self.assertEqual(beats, expected_beats, f"slot {slot} beat mismatch")
             self.assertNotIn(used[slot], (82, 83), f"slot {slot} mapped to fever animation")
-        self.assertEqual(used[6], 21)
+        self.assertEqual(used[6], 1)  # request 1 opens on BAG1 cell A, the clap (owner 2026-11-20)
         self.assertEqual(used[11], 31)
         self.assertEqual(used[16], 16)
         self.assertEqual(used[18], 18)

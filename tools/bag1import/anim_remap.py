@@ -65,7 +65,12 @@ B2_ALT = {19: 20, 17: 18, 15: 16, 13: 14, 34: 35, 32: 33, 30: 31, 28: 29, 43: 44
 B1_LEVEL = {0: 0, 1: 1, 2: 2, 3: 3, 4: 0, 5: 4, 6: 5, 7: 6}
 def b1_path(L):
     s0, row = B2_ROWS[L]; k = 7 - (s0 + len(row) - 1)
-    return [(s + k, min(B1_LEVEL[L], s + k)) for s in range(s0, s0 + len(row))]
+    path = [(s + k, min(B1_LEVEL[L], s + k)) for s in range(s0, s0 + len(row))]
+    if L == 0:
+        # BAG2 starts every combo (request 1) on row 0; BAG1 starts it on cell A, the clap
+        # (owner 2026-11-20, verified in BAG1 via PCSX-Redux). Skips one intermediate cell.
+        path[0] = (0, 0)
+    return path
 B1_PATHS = {L: b1_path(L) for L in B2_ROWS}
 B1_REQ_ANIM = [None, 1, 2, 3, 4, 5, 7, 8, 9, 11, 13, 14, 15, 17, 19, 21, 22, 23, 25, 27, 29, 31, 32, 33,
                35, 37, 39, 41, 43, 44, 45, 46, 47, 48, 49, 50]     # BAG1 table 0x80055830
