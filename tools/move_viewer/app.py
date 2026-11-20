@@ -17,8 +17,11 @@ from PySide6.QtWidgets import (QApplication, QFormLayout, QLabel, QMainWindow, Q
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from tools.move_viewer import move_tables  # noqa: E402
-from tools.move_viewer.anim_view import AnimationView  # noqa: E402
-from tools.workflow.project_config import load_config, require_paths  # noqa: E402
+from tools.move_viewer import swap_mod  # noqa: E402
+from tools.move_viewer.anim_view import AnimationView, asset_folder  # noqa: E402
+from tools.move_viewer.assign_panel import AssignPanel  # noqa: E402
+from tools.workflow.project_config import (assert_write_target, load_config,  # noqa: E402
+                                           require_paths)
 
 MOVE_ROLE = Qt.ItemDataRole.UserRole
 DETAIL_FIELDS = ("character", "role", "label", "request", "slot", "frames_a", "frames_b")
@@ -55,7 +58,10 @@ class MoveViewer(QMainWindow):
         splitter = QSplitter()
         splitter.addWidget(self.tree)
         splitter.addWidget(details)
-        splitter.setSizes([420, 580])
+        self.assign = AssignPanel(self.preview_motion, generate_mod)
+        splitter.addWidget(self.assign)
+        splitter.setSizes([380, 420, 380])
+        self._character = ""
         self.setCentralWidget(splitter)
         self.populate(tables)
 
@@ -83,9 +89,38 @@ class MoveViewer(QMainWindow):
         move = item.data(0, MOVE_ROLE) if item is not None else None
         for name, label in self.fields.items():
             label.setText(str(move.get(name)) if move else "-")
+        if move:
+            self._character = move["character"]
+            self.assign.set_character(character_bank(move["character"]))
+        self.assign.set_slot(move["slot"] if move else None, move["label"] if move else "")
         if isinstance(self.view_widget, AnimationView):
             self.view_widget.show_motion(move["character"] if move else "",
                                          move["slot"] if move else None)
+
+    def preview_motion(self, index: int) -> None:
+        if isinstance(self.view_widget, AnimationView) and self._character:
+            self.view_widget.show_motion(self._character, index)
+
+
+def character_bank(name: str) -> Path | None:
+    config = load_config(repo_root=ROOT)
+    assets, = require_paths(config, ("inputs.bag2jp_assets",))
+    path = assets / "archive/characters" / asset_folder(name) / "model_a_p1/001.bin"
+    return path if path.is_file() else None
+
+
+def generate_mod(bank: Path, pairs: list[tuple[int, int]]) -> str:
+    """Write a disabled swap package for every disc entry holding `bank`; returns a summary."""
+    config = load_config(repo_root=ROOT)
+    disc, work = require_paths(config, ("inputs.bag2_disc", "paths.move_viewer_work"))
+    swap_mod.check_disc(disc)
+    folder = bank.parents[1].name
+    package_id = f"bag2jp.test.move-assign-{folder.replace('_', '-')}"
+    out = assert_write_target(config, (work / "f2/pkg" / package_id / "1.0.0").resolve(), role="work")
+    entries = swap_mod.find_entries(disc, bank.read_bytes())
+    name = f"Move assign {folder}: " + ", ".join(f"{a}<->{b}" for a, b in pairs)
+    swap_mod.generate(disc, entries, pairs, package_id, name, out)
+    return f"Mod generado (desactivado) en {out} — entradas BUST2.BIN {entries}"
 
 
 def animation_view() -> AnimationView:
