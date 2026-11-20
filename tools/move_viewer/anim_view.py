@@ -59,8 +59,12 @@ class AnimationView(QWidget):
             self._characters[folder] = (model, bank, tims, slot_map)
         return self._characters[folder]
 
-    def show_motion(self, character: str, slot: int | None) -> None:
-        """Start looping motion `slot` of `character`; shows a message when unavailable."""
+    def show_motion(self, character: str, slot: int | None, bank: bytes | None = None) -> None:
+        """Start looping motion `slot` of `character`; shows a message when unavailable.
+
+        `bank` previews that motion of another bank on the character's own model and slot map
+        (what copying it into the character's bank produces); default: the character's bank.
+        """
         self.timer.stop()
         self._frames, self._keys, self._index = [], [], 0
         if slot is None:
@@ -69,7 +73,7 @@ class AnimationView(QWidget):
             return
         try:
             self._character = self._load(asset_folder(character))
-            motion = decode_motion(self._character[1], slot)
+            motion = decode_motion(self._character[1] if bank is None else bank, slot)
         except (OSError, IndexError, ValueError, SystemExit) as error:
             self.image.clear()
             self.status.setText(f'{character} slot {slot}: no render ({error})')

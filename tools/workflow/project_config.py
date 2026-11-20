@@ -67,7 +67,7 @@ def _field_registry() -> Mapping[str, FieldSpec]:
                  "character_inventory", "gaso_profile", "gaso_stock_bio",
                  "gaso_stock_fever", "gaso_motions", "heat_bag1_members", "bag2_cue", "bag2_disc",
                  "bag2us_cue", "bag2us_assets", "bag2jp_base_archive", "bag2jp_assets", "bag1_exe_image",
-                 "bag2_match_overlay"):
+                 "bag2_match_overlay", "bag1_alt_payload"):
         fields[f"inputs.{name}"] = FieldSpec("path", "native path", True, "input")
     for name in ("audio_probe", "python_report", "winshot_root", "build_script",
                   "ffmpeg_review", "ffmpeg_wgc", "ffmpeg_native", "ghidra_launcher",

@@ -16,7 +16,9 @@ import hashlib
 import logging
 import struct
 import sys
+from dataclasses import dataclass
 from pathlib import Path
+from typing import NamedTuple
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -103,33 +105,159 @@ def swap_motions(bank: bytes, pairs: list[tuple[int, int]]) -> bytes:
     return b''.join(motions) + tail
 
 
-def copy_motions(bank: bytes, assigns: list[tuple[int, int]], max_growth: int = 0) -> bytes:
-    """Slot <- copy of an original motion, other slots untouched.
+UNMAPPED_TRACK = 0xFF        # slot map value: node keeps its rest pose (see pose.py)
+
+
+@dataclass(frozen=True)
+class Skeleton:
+    """What decides whether a motion drives the right nodes of a model.
+
+    links: per node (parent, previous, child, sibling) from the model header.
+    slot_map: node -> motion track (player+0x7CC), None when it could not be derived.
+    """
+    links: tuple[tuple[int, int, int, int], ...]
+    slot_map: tuple[int, ...] | None
+
+
+@dataclass(frozen=True)
+class BankSource:
+    """A motion bank with the skeleton it was authored for; `label` is shown in the UI."""
+    label: str
+    bank: bytes
+    skeleton: Skeleton
+
+
+class CrossBank(NamedTuple):
+    """Copy motions of `source` into the bank of `target` (checked before any write)."""
+    target: BankSource
+    source: BankSource
+
+
+def skeleton_of(model: bytes, slot_map: list[int] | None) -> Skeleton:
+    """Skeleton from a 000.bin model header (node count + 16-byte link records)."""
+    count = struct.unpack_from('<I', model, 0)[0]
+    if 4 + 16 * count > len(model):
+        raise ValueError('model header exceeds the file')
+    links = tuple(struct.unpack_from('<4i', model, 4 + 16 * i) for i in range(count))
+    return Skeleton(links, None if slot_map is None else tuple(slot_map))
+
+
+def motion_header(motion: bytes) -> tuple[int, int, tuple[int, ...]]:
+    """(frames, frames per keyframe, bone index of each rotation track) of a sized motion."""
+    body = motion[4:]
+    if len(body) < 8:
+        raise ValueError('empty motion')
+    offset, frames, step, tracks = struct.unpack_from('<IHBB', body, 0)
+    if 8 + tracks > len(body) or offset + 4 > len(body):
+        raise ValueError('malformed motion header')
+    return frames, step, tuple(body[8:8 + tracks])
+
+
+def incompatibilities(target: BankSource, source: BankSource) -> list[str]:
+    """Reasons why motions of `source` would drive the wrong nodes of `target`'s model."""
+    t, s = target.skeleton, source.skeleton
+    reasons = []
+    if len(t.links) != len(s.links):
+        reasons.append(f'skeleton node count differs: {source.label} has {len(s.links)}, '
+                       f'{target.label} has {len(t.links)}')
+    elif t.links != s.links:
+        bad = [i for i, (a, b) in enumerate(zip(t.links, s.links)) if a != b]
+        reasons.append(f'skeleton hierarchy differs at {len(bad)} nodes (first {bad[:6]})')
+    if t.slot_map is None or s.slot_map is None:
+        side = target.label if t.slot_map is None else source.label
+        reasons.append(f'node->track map of {side} could not be derived')
+    elif t.slot_map != s.slot_map:
+        bad = [i for i, (a, b) in enumerate(zip(t.slot_map, s.slot_map)) if a != b]
+        reasons.append(f'node->track map differs at nodes {bad[:8]}')
+    return reasons
+
+
+def motion_incompatibility(target: BankSource, source: BankSource, index: int) -> str | None:
+    """Why motion `index` of `source` cannot drive `target`'s tracks (None when it can)."""
+    motions, _ = split_bank(source.bank)
+    if not 0 <= index < len(motions):
+        return f'motion {index} is not in {source.label} ({len(motions)} motions)'
+    try:
+        _, _, bones = motion_header(motions[index])
+    except ValueError as error:
+        return f'motion 0x{index:02X} of {source.label}: {error}'
+    if target.skeleton.slot_map is None:
+        return f'{target.label} has no node->track map'
+    expected = sorted({v for v in target.skeleton.slot_map if v != UNMAPPED_TRACK})
+    if sorted(bones) != expected:
+        return (f'motion 0x{index:02X} of {source.label} has {len(bones)} tracks '
+                f'(bones {sorted(bones)}), {target.label} needs {len(expected)} (bones {expected})')
+    return None
+
+
+def require_compatible(cross: CrossBank, assigns: list[tuple[int, int]]) -> None:
+    """Raise ValueError unless every slot <- source copy is safe at the format/skeleton level."""
+    reasons = incompatibilities(cross.target, cross.source)
+    for slot, index in assigns:
+        problem = motion_incompatibility(cross.target, cross.source, index)
+        if problem:
+            reasons.append(problem)
+    if reasons:
+        raise ValueError(f'incompatible bank {cross.source.label} -> {cross.target.label}: '
+                         + '; '.join(reasons))
+
+
+def copy_warnings(cross: CrossBank, slot: int, index: int) -> list[str]:
+    """Non-blocking differences for slot <- cross.source motion `index`."""
+    notes = []
+    want_motions, _ = split_bank(cross.target.bank)
+    got_motions, _ = split_bank(cross.source.bank)
+    try:
+        want, got = motion_header(want_motions[slot])[0], motion_header(got_motions[index])[0]
+        if want != got:
+            notes.append(f'duration {got} frames vs {want} in the slot')
+    except (IndexError, ValueError):
+        pass
+    notes.append('bone proportions, root translation and the event table (hits, sounds) '
+                 'come from the source bank and are unverified in game')
+    return notes
+
+
+def _copy(motions: list[bytes], sources: list[bytes], assigns: list[tuple[int, int]]) -> list[bytes]:
+    result = list(motions)
+    for slot, source in assigns:
+        if not (0 <= slot < len(motions) and 0 <= source < len(sources)):
+            raise ValueError(f'invalid assignment {slot}<-{source} for {len(motions)} slots '
+                             f'and {len(sources)} source motions')
+        result[slot] = sources[source]
+    return result
+
+
+def copy_motions(bank: bytes, assigns: list[tuple[int, int]], max_growth: int = 0,
+                 cross: CrossBank | None = None) -> bytes:
+    """Slot <- copy of a motion, other slots untouched.
 
     The bank may grow by at most `max_growth` bytes (0 by default: growth is only
     allowed where the disc slack and the player RAM region were measured, see
     GROWTH_BUDGET). A smaller result is zero-padded after the 0 terminator.
+    With `cross`, sources index into cross.source.bank instead and the pair is first
+    checked with require_compatible (raises ValueError); `bank` must be cross.target.bank.
     """
     motions, tail = split_bank(bank)
-    result = list(motions)
-    for slot, source in assigns:
-        if not (0 <= slot < len(motions) and 0 <= source < len(motions)):
-            raise ValueError(f'invalid assignment {slot}<-{source} for {len(motions)} motions')
-        result[slot] = motions[source]
-    body = b''.join(result)
+    if cross is None:
+        sources = motions
+    else:
+        if cross.target.bank != bank:
+            raise ValueError('cross-bank copy: target bank differs from the bank being patched')
+        require_compatible(cross, assigns)
+        sources, _ = split_bank(cross.source.bank)
+    body = b''.join(_copy(motions, sources, assigns))
     growth = len(body) + 4 - len(bank)
     if growth > max_growth:
         raise ValueError(f'does not fit: bank grows by {growth} bytes (allowed {max_growth})')
     return body + bytes(4) + bytes(max(0, -growth))
 
 
-def copy_growth(bank: bytes, assigns: list[tuple[int, int]]) -> int:
-    """Bytes the bank would grow with these copies (<= 0 fits)."""
+def copy_growth(bank: bytes, assigns: list[tuple[int, int]], source_bank: bytes | None = None) -> int:
+    """Bytes the bank would grow with these copies (<= 0 fits); sources index `source_bank`."""
     motions, _ = split_bank(bank)
-    sizes = [len(m) for m in motions]
-    for slot, source in assigns:
-        sizes[slot] = len(motions[source])
-    return sum(sizes) + 4 - len(bank)
+    sources = motions if source_bank is None else split_bank(source_bank)[0]
+    return sum(len(m) for m in _copy(motions, sources, assigns)) + 4 - len(bank)
 
 
 def patch_entry(container: bytes, member: int, data: bytes) -> bytes:
@@ -166,13 +294,15 @@ def grow_entry(container: bytes, bank: bytes) -> bytes:
 
 
 def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
-          copy: bool = False, max_growth: int = 0) -> list[tuple[int, bytes, bytes]]:
+          copy: bool = False, max_growth: int = 0,
+          cross: CrossBank | None = None) -> list[tuple[int, bytes, bytes]]:
     """Overlays (disc user offset, original bytes, patched bytes) for the entry.
 
-    pairs are swaps a:b, or slot<-source copies when `copy` is set. A grown entry also
+    pairs are swaps a:b, or slot<-source copies when `copy` is set; with `cross` the
+    source indexes cross.source's bank (copies only, incompatible banks raise). A grown entry also
     needs its 4-byte BUST2.BIN header size field patched (second overlay; composes with
     other mods that only own other header bytes) and must end before the next entry;
-    growth past `max_growth` (measured RAM budget) is refused.
+X
     """
     offset, size = entry_extent(disc, entry)
     first = offset // SECTOR
@@ -181,7 +311,9 @@ def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
     container = read_user(disc, ARCHIVE_LBA + first, count)[start:start + size]
     member_offset, member_size = struct.unpack_from('<II', container, 8 + 8 * BANK_MEMBER)
     bank = container[member_offset:member_offset + member_size]
-    new_bank = copy_motions(bank, pairs, max_growth) if copy else swap_motions(bank, pairs)
+    if cross is not None and not copy:
+        raise ValueError('cross-bank assignments are copies, not swaps')
+    new_bank = copy_motions(bank, pairs, max_growth, cross) if copy else swap_motions(bank, pairs)
     if len(new_bank) == len(bank):
         patched = patch_entry(container, BANK_MEMBER, new_bank)
     else:
@@ -297,12 +429,12 @@ def check_disc(disc: Path) -> None:
 
 def generate(disc: Path, entries: list[int], pairs: list[tuple[int, int]], package_id: str,
              name: str, out: Path, copy: bool = False,
-             max_growth: int = 0) -> list[tuple[int, bytes, bytes]]:
+             max_growth: int = 0, cross: CrossBank | None = None) -> list[tuple[int, bytes, bytes]]:
     """Build the overlays of every entry and write the verified package to `out`."""
     if not entries:
         raise ValueError('no BUST2.BIN entry to patch')
     overlays = [o for entry in entries
-                for o in build(disc, entry, pairs, copy, max_growth)]
+                for o in build(disc, entry, pairs, copy, max_growth, cross)]
     write_package(out, package_id, name, overlays)
     return overlays
 

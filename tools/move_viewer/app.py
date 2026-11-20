@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -18,7 +19,7 @@ from PySide6.QtWidgets import (QApplication, QFormLayout, QLabel, QMainWindow, Q
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from tools.move_viewer import move_tables  # noqa: E402
-from tools.move_viewer import swap_mod  # noqa: E402
+from tools.move_viewer import bank_source, swap_mod  # noqa: E402
 from tools.move_viewer.anim_view import AnimationView, asset_folder  # noqa: E402
 from tools.move_viewer.assign_panel import AssignPanel  # noqa: E402
 from tools.move_viewer.combo_view import ComboView  # noqa: E402
@@ -98,7 +99,7 @@ class MoveViewer(QMainWindow):
             label.setText(str(move.get(name)) if move else "-")
         self.fields["character"].setText(character)
         self.fields["slot"].setText(str(slot))
-        self.assign.set_character(character_bank(character))
+        self.assign.set_character(character_bank(character), character_sources(character))
         self.assign.set_slot(slot, move["label"] if move else "")
         self.preview_motion(slot)
 
@@ -125,15 +126,16 @@ class MoveViewer(QMainWindow):
         if move:
             self._character = move["character"]
             self.combos.set_character(move["character"])
-            self.assign.set_character(character_bank(move["character"]))
+            self.assign.set_character(character_bank(move["character"]),
+                                      character_sources(move["character"]))
         self.assign.set_slot(move["slot"] if move else None, move["label"] if move else "")
         if isinstance(self.view_widget, AnimationView):
             self.view_widget.show_motion(move["character"] if move else "",
                                          move["slot"] if move else None)
 
-    def preview_motion(self, index: int) -> None:
+    def preview_motion(self, index: int, bank: bytes | None = None) -> None:
         if isinstance(self.view_widget, AnimationView) and self._character:
-            self.view_widget.show_motion(self._character, index)
+            self.view_widget.show_motion(self._character, index, bank)
 
 
 def character_bank(name: str) -> Path | None:
@@ -143,22 +145,37 @@ def character_bank(name: str) -> Path | None:
     return path if path.is_file() else None
 
 
-def generate_mod(bank: Path, pairs: list[tuple[int, int]]) -> str:
-    """Write a disabled copy package (slot <- source) for every disc entry holding `bank`."""
+def character_sources(name: str) -> list[swap_mod.BankSource]:
+    """Source banks of the Assign panel: own bank, BAG1 variant, compatible other characters."""
+    config = load_config(repo_root=ROOT)
+    assets, payload = require_paths(config, ("inputs.bag2jp_assets", "inputs.bag1_alt_payload"))
+    return bank_source.sources_for(assets / "archive/characters", payload, asset_folder(name))
+
+
+def generate_mod(bank: Path, pairs: list[tuple[int, int]],
+                 cross: swap_mod.CrossBank | None = None) -> str:
+    """Write a disabled copy package (slot <- source) for every disc entry holding `bank`.
+
+    With `cross` the sources are motions of cross.source (BAG1 variant / other character).
+    """
     config = load_config(repo_root=ROOT)
     disc, work = require_paths(config, ("inputs.bag2_disc", "paths.move_viewer_work"))
     swap_mod.check_disc(disc)
     folder = bank.parents[1].name
     package_id = f"bag2jp.test.move-assign-{folder.replace('_', '-')}"
+    if cross:       # a distinct id keeps it from overwriting the own-bank package
+        package_id += "-from-" + re.sub(r"[^a-z0-9]+", "-", cross.source.label.lower()).strip("-")
     out = assert_write_target(config, (work / "f2/pkg" / package_id / "1.0.0").resolve(), role="work")
     data = bank.read_bytes()
     entries = swap_mod.find_entries(disc, data)
     max_growth = 0
-    if swap_mod.copy_growth(data, pairs) > 0:
+    if swap_mod.copy_growth(data, pairs, cross.source.bank if cross else None) > 0:
         entries, max_growth = swap_mod.GROWTH_BUDGET[folder]
         entries = list(entries)
-    name = f"Move assign {folder}: " + ", ".join(f"{a}<-{b}" for a, b in pairs)
-    swap_mod.generate(disc, entries, pairs, package_id, name, out, copy=True, max_growth=max_growth)
+    origin = f" from {cross.source.label}" if cross else ""
+    name = f"Move assign {folder}{origin}: " + ", ".join(f"{a}<-{b}" for a, b in pairs)
+    swap_mod.generate(disc, entries, pairs, package_id, name, out, copy=True,
+                      max_growth=max_growth, cross=cross)
     note = " (crece: jugador 1 y 2, traje A; traje 4 queda stock)" if max_growth else ""
     return f"Mod generado (desactivado) en {out} — entradas BUST2.BIN {entries}{note}"
 
