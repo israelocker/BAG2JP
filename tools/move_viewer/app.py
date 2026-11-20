@@ -117,10 +117,16 @@ def generate_mod(bank: Path, pairs: list[tuple[int, int]]) -> str:
     folder = bank.parents[1].name
     package_id = f"bag2jp.test.move-assign-{folder.replace('_', '-')}"
     out = assert_write_target(config, (work / "f2/pkg" / package_id / "1.0.0").resolve(), role="work")
-    entries = swap_mod.find_entries(disc, bank.read_bytes())
+    data = bank.read_bytes()
+    entries = swap_mod.find_entries(disc, data)
+    max_growth = 0
+    if swap_mod.copy_growth(data, pairs) > 0:
+        entries, max_growth = swap_mod.GROWTH_BUDGET[folder]
+        entries = list(entries)
     name = f"Move assign {folder}: " + ", ".join(f"{a}<-{b}" for a, b in pairs)
-    swap_mod.generate(disc, entries, pairs, package_id, name, out, copy=True)
-    return f"Mod generado (desactivado) en {out} — entradas BUST2.BIN {entries}"
+    swap_mod.generate(disc, entries, pairs, package_id, name, out, copy=True, max_growth=max_growth)
+    note = " (crece: solo jugador 1)" if max_growth else ""
+    return f"Mod generado (desactivado) en {out} — entradas BUST2.BIN {entries}{note}"
 
 
 def animation_view() -> AnimationView:

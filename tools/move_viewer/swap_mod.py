@@ -28,6 +28,12 @@ ARCHIVE_LBA = 179            # BUST2.BIN (see tools/bag1import/make_alt_entries.
 BANK_MEMBER = 1
 GAME_ID = 'SLPM-86219'
 DISC_SHA256 = 'fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268'
+# Measured bank growth budgets: character folder -> (entries allowed to grow, bytes).
+# Heat P1: RAM dump run 20261120T023117463572Z-heat-ramdump-20261119 left 912 B free in the
+# player region (0x8005F818 end vs P2 base); disc slack after entry 95 is 1200 B.
+# Only entry 95 (P1) is grown; other copies keep the stock bank. See
+# _work/move-viewer/f2/buffer/growth-budget.md.
+GROWTH_BUDGET = {'heat': ((95,), 912)}
 
 
 def read_user(disc: Path, lba: int, count: int) -> bytes:
@@ -70,12 +76,12 @@ def swap_motions(bank: bytes, pairs: list[tuple[int, int]]) -> bytes:
     return b''.join(motions) + tail
 
 
-def copy_motions(bank: bytes, assigns: list[tuple[int, int]]) -> bytes:
-    """Slot <- copy of an original motion, other slots untouched; same bank size.
+def copy_motions(bank: bytes, assigns: list[tuple[int, int]], max_growth: int = 0) -> bytes:
+    """Slot <- copy of an original motion, other slots untouched.
 
-    The bank may not grow: the entry has to fit its stock disc extent and the in-RAM
-    motion buffer size is not verified yet. A smaller result is zero-padded after the
-    0 terminator.
+    The bank may grow by at most `max_growth` bytes (0 by default: growth is only
+    allowed where the disc slack and the player RAM region were measured, see
+    GROWTH_BUDGET). A smaller result is zero-padded after the 0 terminator.
     """
     motions, tail = split_bank(bank)
     result = list(motions)
@@ -84,9 +90,10 @@ def copy_motions(bank: bytes, assigns: list[tuple[int, int]]) -> bytes:
             raise ValueError(f'invalid assignment {slot}<-{source} for {len(motions)} motions')
         result[slot] = motions[source]
     body = b''.join(result)
-    if len(body) + 4 > len(bank):
-        raise ValueError(f'does not fit: bank grows by {len(body) + 4 - len(bank)} bytes')
-    return body + tail[:4] + bytes(len(bank) - len(body) - 4)
+    growth = len(body) + 4 - len(bank)
+    if growth > max_growth:
+        raise ValueError(f'does not fit: bank grows by {growth} bytes (allowed {max_growth})')
+    return body + bytes(4) + bytes(max(0, -growth))
 
 
 def copy_growth(bank: bytes, assigns: list[tuple[int, int]]) -> int:
@@ -107,23 +114,62 @@ def patch_entry(container: bytes, member: int, data: bytes) -> bytes:
     return container[:offset] + data + container[offset + size:]
 
 
-def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
-          copy: bool = False) -> tuple[int, bytes, bytes]:
-    """(disc user offset, original sectors, patched sectors) for the entry.
+def next_entry_offset(disc: Path, entry: int) -> int:
+    """Archive offset of the first entry that starts after `entry` (its disc slack ends there)."""
+    header = read_user(disc, ARCHIVE_LBA, 2)
+    count = struct.unpack_from('<I', header, 4)[0]
+    if 8 + 8 * count > len(header):
+        header = read_user(disc, ARCHIVE_LBA, (8 + 8 * count + SECTOR - 1) // SECTOR)
+    offset = struct.unpack_from('<I', header, 8 + 8 * entry)[0]
+    later = [o for o, _ in struct.iter_unpack('<II', header[8:8 + 8 * count]) if o > offset]
+    if not later:
+        raise ValueError(f'entry {entry} is the last one: slack unknown')
+    return min(later)
 
-    pairs are swaps a:b, or slot<-source copies when `copy` is set.
+
+def grow_entry(container: bytes, bank: bytes) -> bytes:
+    """Container with a larger motion bank; the bank must be the last member."""
+    count = struct.unpack_from('<I', container, 4)[0]
+    member_offset, member_size = struct.unpack_from('<II', container, 8 + 8 * BANK_MEMBER)
+    if count != BANK_MEMBER + 1 or member_offset + member_size != len(container):
+        raise ValueError('motion bank is not the last member: cannot grow the entry')
+    head = bytearray(container[:member_offset])
+    struct.pack_into('<I', head, 8 + 8 * BANK_MEMBER + 4, len(bank))
+    return bytes(head) + bank
+
+
+def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
+          copy: bool = False, max_growth: int = 0) -> list[tuple[int, bytes, bytes]]:
+    """Overlays (disc user offset, original bytes, patched bytes) for the entry.
+
+    pairs are swaps a:b, or slot<-source copies when `copy` is set. A grown entry also
+    needs its BUST2.BIN header size patched (second overlay) and must end before the next
+    entry; growth past `max_growth` (measured RAM budget) is refused.
     """
     offset, size = entry_extent(disc, entry)
     first = offset // SECTOR
-    count = (offset % SECTOR + size + SECTOR - 1) // SECTOR
-    stock = read_user(disc, ARCHIVE_LBA + first, count)
     start = offset % SECTOR
-    container = stock[start:start + size]
+    count = (start + size + SECTOR - 1) // SECTOR
+    container = read_user(disc, ARCHIVE_LBA + first, count)[start:start + size]
     member_offset, member_size = struct.unpack_from('<II', container, 8 + 8 * BANK_MEMBER)
     bank = container[member_offset:member_offset + member_size]
-    patched = patch_entry(container, BANK_MEMBER,
-                          copy_motions(bank, pairs) if copy else swap_motions(bank, pairs))
-    return (ARCHIVE_LBA + first) * SECTOR, stock, stock[:start] + patched + stock[start + size:]
+    new_bank = copy_motions(bank, pairs, max_growth) if copy else swap_motions(bank, pairs)
+    if len(new_bank) == len(bank):
+        patched = patch_entry(container, BANK_MEMBER, new_bank)
+    else:
+        patched = grow_entry(container, new_bank)
+        if offset + len(patched) > next_entry_offset(disc, entry):
+            raise ValueError(f'entry {entry} would overrun the next BUST2.BIN entry')
+    base = (ARCHIVE_LBA + first) * SECTOR + start
+    # expected_sha256 guards the stock bytes of the payload's own length (slack included).
+    stock = read_user(disc, ARCHIVE_LBA + first,
+                      (start + len(patched) + SECTOR - 1) // SECTOR)[start:start + len(patched)]
+    overlays = [(base, stock, patched)]
+    if len(patched) != size:
+        field = 8 + 8 * entry + 4
+        overlays.append((ARCHIVE_LBA * SECTOR + field, struct.pack('<I', size),
+                         struct.pack('<I', len(patched))))
+    return overlays
 
 
 def find_entries(disc: Path, bank: bytes) -> list[int]:
@@ -222,11 +268,12 @@ def check_disc(disc: Path) -> None:
 
 
 def generate(disc: Path, entries: list[int], pairs: list[tuple[int, int]], package_id: str,
-             name: str, out: Path, copy: bool = False) -> list[tuple[int, bytes, bytes]]:
-    """Build one overlay per entry and write the verified package to `out`."""
+             name: str, out: Path, copy: bool = False,
+             max_growth: int = 0) -> list[tuple[int, bytes, bytes]]:
+    """Build the overlays of every entry and write the verified package to `out`."""
     if not entries:
         raise ValueError('no BUST2.BIN entry to patch')
-    overlays = [build(disc, entry, pairs, copy) for entry in entries]
+    overlays = [o for entry in entries for o in build(disc, entry, pairs, copy, max_growth)]
     write_package(out, package_id, name, overlays)
     return overlays
 
@@ -238,6 +285,8 @@ def main(argv: list[str] | None = None) -> None:
     where.add_argument('--bank', type=Path, help='001.bin motion bank: patch every entry that holds it')
     ap.add_argument('--swap', type=parse_pair, action='append', required=True, help='a:b motion indices')
     ap.add_argument('--copy', action='store_true', help='treat a:b as slot a <- copy of motion b')
+    ap.add_argument('--max-growth', type=int, default=0,
+                    help='allowed bank growth in bytes (only a measured GROWTH_BUDGET value)')
     ap.add_argument('--id', required=True, help='package id')
     ap.add_argument('--out', type=Path, required=True, help='package version dir to write')
     args = ap.parse_args(argv)
@@ -249,10 +298,9 @@ def main(argv: list[str] | None = None) -> None:
     entries = args.entry or find_entries(disc, args.bank.read_bytes())
     sep = '<-' if args.copy else '<->'
     name = ('Move assign ' if args.copy else 'Move swap ') + ', '.join(f'{a}{sep}{b}' for a, b in args.swap)
-    overlays = generate(disc, entries, args.swap, args.id, name, out, args.copy)
-    for entry, (offset, stock, patched) in zip(entries, overlays):
-        logger.info('%s: entry %d offset %d, %d sectors, %d bytes changed', out, entry, offset,
-                    len(stock) // SECTOR, sum(x != y for x, y in zip(stock, patched, strict=True)))
+    overlays = generate(disc, entries, args.swap, args.id, name, out, args.copy, args.max_growth)
+    for offset, stock, patched in overlays:
+        logger.info('%s: overlay at %d, %d -> %d bytes', out, offset, len(stock), len(patched))
 
 
 if __name__ == '__main__':

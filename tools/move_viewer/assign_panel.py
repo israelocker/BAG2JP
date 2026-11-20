@@ -9,6 +9,7 @@ motion buffer size is not verified. Slots >= the bank length (fever/duet) are re
 from __future__ import annotations
 
 import hashlib
+import struct
 from pathlib import Path
 from typing import Callable
 
@@ -17,7 +18,7 @@ from PySide6.QtWidgets import (QHBoxLayout, QLabel, QListWidget, QListWidgetItem
                                QVBoxLayout, QWidget)
 
 from .pose import decode_motion
-from .swap_mod import copy_growth, split_bank
+from .swap_mod import GROWTH_BUDGET, copy_growth, split_bank
 
 MOTION_ROLE = Qt.ItemDataRole.UserRole
 
@@ -40,22 +41,29 @@ def apply_copies(order: list[int], pairs: list[tuple[int, int]]) -> list[int]:
 def motion_frames(bank: bytes, index: int) -> int | None:
     try:
         return decode_motion(bank, index)['frames']
-    except (IndexError, ValueError, KeyError):
+    except (IndexError, ValueError, KeyError, struct.error):
         return None
 
 
 def assignment_check(bank: bytes, pairs: list[tuple[int, int]], slot: int,
-                     source: int) -> tuple[bool, str]:
-    """(allowed, message) for adding slot <- source to the queued pairs."""
+                     source: int, max_growth: int = 0) -> tuple[bool, str]:
+    """(allowed, message) for adding slot <- source to the queued pairs.
+
+    max_growth is the character's measured budget (swap_mod.GROWTH_BUDGET), 0 if none.
+    """
     growth = copy_growth(bank, [*pairs, (slot, source)])
+    if growth > max_growth:
+        return False, (f'No cabe: el banco crecería {growth} bytes (permitido {max_growth}) y '
+                       f'se escribiría sobre memoria o datos del disco. Bloqueado.')
+    notes = []
     if growth > 0:
-        return False, (f'No cabe: el banco crecería {growth} bytes y se escribiría sobre los '
-                       f'datos siguientes del disco. Bloqueado.')
+        notes.append(f'Crece {growth} de {max_growth} bytes medidos: solo jugador 1, '
+                     f'jugador 2 conserva el original.')
     want, got = motion_frames(bank, slot), motion_frames(bank, source)
     if want is not None and got is not None and want != got:
-        return True, (f'Aviso: 0x{source:02X} dura {got} fotogramas y la casilla original '
-                      f'{want}; puede verse cortado, congelado o con un salto.')
-    return True, 'OK: misma duración.'
+        notes.append(f'Aviso: 0x{source:02X} dura {got} fotogramas y la casilla original '
+                     f'{want}; puede verse cortado, congelado o con un salto.')
+    return True, ' '.join(notes) or 'OK: misma duración.'
 
 
 class AssignPanel(QWidget):
@@ -130,7 +138,9 @@ class AssignPanel(QWidget):
             return
         source = item.data(MOTION_ROLE)
         pairs = [p for p in self.pairs if p[0] != self.slot]
-        allowed, message = assignment_check(self._bank, pairs, self.slot, source)
+        budget = GROWTH_BUDGET.get(self.bank_path.parents[1].name) if self.bank_path else None
+        allowed, message = assignment_check(self._bank, pairs, self.slot, source,
+                                            budget[1] if budget else 0)
         if allowed:
             self.pairs = pairs + ([(self.slot, source)] if source != self.slot else [])
         self._refresh()
