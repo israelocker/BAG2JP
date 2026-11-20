@@ -13,8 +13,14 @@ from typing import Callable, TypeVar
 
 T = TypeVar("T")
 
-# JP identities verified by popup logs; this is deliberately not a full roster.
-CHARACTERS = {"heat": 0, "strike": 1, "comet": 2, "shorty": 5, "bi-o": 9, "bi_o": 9, "gas-o": 9, "gas_o": 9, "gaso": 9}
+# Full BAG2 roster ids from the main-exe name table 0x8005147C; navigation
+# edges for each id still come only from an explored, reviewed catalog.
+CHARACTERS = {"heat": 0, "strike": 1, "comet": 2, "tsutomu": 3, "kelly": 4, "shorty": 5,
+              "pander": 6, "kitty-n": 7, "kitty_n": 7, "hiro": 8, "bi-o": 9, "bi_o": 9,
+              "gas-o": 9, "gas_o": 9, "gaso": 9, "capoeira": 10, "robo-z": 11, "robo_z": 11,
+              "columbo": 12, "sushi-boy": 13, "sushi_boy": 13, "chichi-sally": 14,
+              "chichi_sally": 14, "michael-doi": 15, "michael_doi": 15, "mcload": 16,
+              "hustle-kong": 17, "hustle_kong": 17}
 WATCHES = {
     "root": (0x8005D3D4, 4), "menu": (0x80192028, 4),
     "mode": (0x8005D2C4, 2), "p1_position": (0x800971EC, 4),

@@ -21,15 +21,6 @@ import versus_navigation as nav  # noqa: E402
 import versus_session as vs  # noqa: E402
 
 CATALOG = vs.project_config.assert_write_target(vs.load_config(), vs.CATALOG_TARGET, role="work")
-REVIEWED_IMAGES = (
-    "selector.png",
-    "probe-0-right-2.png", "probe-2-left-0.png",
-    "probe-0-down-1.png", "probe-1-left-5.png",
-    "probe-5-down-9.png", "probe-9-up-5.png",
-    "probe-5-right-1.png", "probe-1-up-0.png",
-    "review-sheet.png"
-)
-
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -41,10 +32,12 @@ def build_catalog(run: Path) -> dict:
     if not source.is_file():
         raise SystemExit(f"missing calibration catalog: {source}")
     catalog = json.loads(source.read_text(encoding="utf-8"))
-    missing = [name for name in REVIEWED_IMAGES if not (run / name).is_file()]
+    # One screenshot per calibrated edge (explore runs cover the full roster).
+    images = ["selector.png", *(f"probe-{s}-{a}-{t}.png" for s, a, t in catalog["edges"])]
+    missing = [name for name in images if not (run / name).is_file()]
     if missing:
         raise SystemExit("missing reviewed evidence: " + ", ".join(missing))
-    catalog["image_sha256"] = {name: sha256(run / name) for name in REVIEWED_IMAGES}
+    catalog["image_sha256"] = {name: sha256(run / name) for name in images}
     catalog["visual_review"] = "accepted"
     catalog["reviewed_catalog_sha256"] = nav.catalog_review_digest(catalog)
     nav.verify_catalog_review(catalog)

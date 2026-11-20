@@ -438,6 +438,60 @@ class Session:
                 edges.append(edge)
         return {"runtime_sha256": executable_hash, "edges": edges, "evidence": str(self.run)}
 
+    def explore(self, executable_hash: str, settle: float = 1.5,
+                seed: list | None = None) -> dict:
+        """Discover P1 grid edges by trying every direction from every reached id.
+
+        seed: [source, action, target] edges observed in an earlier explore run
+        (the selector timer can expire); they are trusted only for routing and
+        are re-emitted in the catalog, which still needs visual review.
+        """
+        if nav.cursor(self.state(), 1) != 0:
+            raise ValueError("Explore requires observed initial P1 Heat")
+        edges: dict[tuple[int, str], int] = {(s, a): t for s, a, t in seed or []}
+        tried: set[tuple[int, str]] = set(edges)
+        seen = {0} | {t for t in edges.values()} | {s for s, _ in edges}
+        selectable = self.state()["selectable"]
+        actions = ("up", "down", "left", "right")
+        while True:
+            current = nav.cursor(self.state(), 1)
+            open_nodes = [node for node in seen if any((node, a) not in tried for a in actions)]
+            if not open_nodes:
+                break
+            if current not in open_nodes:
+                # Walk over already explored edges to the nearest node with untried directions.
+                paths = []
+                for node in open_nodes:
+                    try:
+                        paths.append(nav.route(current, node, edges))
+                    except ValueError:
+                        pass
+                if not paths:
+                    raise ValueError(f"Explored nodes unreachable from {current}: {open_nodes}")
+                for step in min(paths, key=len):
+                    self.move(1, step, edges[(nav.cursor(self.state(), 1), step)])
+                continue
+            source = current
+            for action in [a for a in actions if (source, a) not in tried][:1]:
+                tried.add((source, action))
+                before = self.state()
+                nav.require_selector(before)
+                self.key(1, action)
+                try:
+                    after = self.wait(lambda current: nav.cursor(current, 1) != source, settle)
+                except TimeoutError:
+                    continue  # No edge in this direction.
+                nav.require_selector(after)
+                target = nav.cursor(after, 1)
+                if nav.cursor(after, 2) != nav.cursor(before, 2):
+                    raise ValueError("Cross-player cursor movement during exploration")
+                edges[(source, action)] = target
+                self.shot(f"probe-{source}-{action}-{target}")
+                seen.add(target)
+        return {"runtime_sha256": executable_hash,
+                "edges": [[s, a, t] for (s, a), t in edges.items()],
+                "selectable_mask": selectable, "reached": sorted(seen), "evidence": str(self.run)}
+
     def pick(self, side: int, name: str, version: str, costume: str, edges: dict) -> dict:
         """Resolve a name, route explicitly, and require exact popup confirmation."""
         character = nav.validate_pick(name, version, costume)
@@ -562,7 +616,8 @@ def config_selector() -> argparse.ArgumentParser:
 def build_parser(config: project_config.ProjectConfig) -> argparse.ArgumentParser:
     """Full CLI whose budget defaults are the resolved configuration values."""
     parser = argparse.ArgumentParser(description=__doc__, parents=[config_selector()])
-    parser.add_argument("--action", choices=("probe", "run", "inspect"), default="inspect")
+    parser.add_argument("--action", choices=("probe", "explore", "run", "inspect"), default="inspect")
+    parser.add_argument("--explore-seed", type=Path, help="JSON with edges from an earlier explore run")
     parser.add_argument("--game-id", type=int)
     parser.add_argument("--tag", default="versus")
     parser.add_argument("--ram-dump-frame", type=int,
@@ -665,8 +720,12 @@ def main(argv: list[str] | None = None) -> int:
                 session.start()
                 result["debug_fixtures"] = session.debug_fixtures
                 session.menu()
-                if args.action == "probe":
-                    catalog = session.probe(executable_hash)
+                if args.action in ("probe", "explore"):
+                    if args.action == "explore":
+                        seed = json.loads(args.explore_seed.read_text())["edges"] if args.explore_seed else None
+                        catalog = session.explore(executable_hash, seed=seed)
+                    else:
+                        catalog = session.probe(executable_hash)
                     (run / "catalog.json").write_text(json.dumps(catalog, indent=2))
                     settings.catalog.parent.mkdir(parents=True, exist_ok=True)
                     settings.catalog.write_text(json.dumps(catalog, indent=2))
