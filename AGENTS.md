@@ -65,6 +65,7 @@ Use a persisted plan and approval for broad changes, migrations or uncertain des
 - La investigación interna (análisis con Ghidra, cambios de código guardados por `GASO_CAUGHT_CLIP_PUBLISHED=0`, pruebas de host, documentación) **no requiere autorización del owner** para continuar. El agent puede avanzar sin pausas ni preguntas intermedias.
 - La autorización del owner **sí se requiere** solo al activar el ataque en el juego real (`CLIP_PUBLISHED=1`) y al realizar pruebas dentro de la partida (in-game flow).
 - Ninguna regla existente en este archivo impide la continuación de la investigación interna sin pedir permiso.
+- Ampliación (owner 2026-11-19, duradera): para el visor/editor de movimientos y situaciones similares, el agent puede continuar fases que modifiquen archivos o mods en `BAG2JP-exp-8mb` (con copia de seguridad y restauración verificables) y ejecutar las partidas grabadas de validación sin pedir permiso. `BAG2JP-win`, publicar/subir y las decisiones de alcance nuevas siguen requiriendo al owner.
 
 ## Uso obligatorio de herramientas disponibles (owner agreement 2026-11-12)
 

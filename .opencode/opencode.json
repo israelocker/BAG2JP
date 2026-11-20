@@ -4,7 +4,7 @@
     "buffer": 750000
   },
   "skills": [
-    "D:/Dev/Recomp/BAG2JP/agent-skills"
+    "agent-skills"
   ],
   "mcp": {
     "servers": {

@@ -1,0 +1,1 @@
+https://github.com/kajisho5/ffmpeg-skill 641564b101f49789b45e22c83a34718a62f3f9fd v3.6.0 installed 2026-11-12 (owner-authorized)

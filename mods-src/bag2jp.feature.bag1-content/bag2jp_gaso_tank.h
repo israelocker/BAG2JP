@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "bag2jp_gaso_bubble.h"
+#include "bag2jp_gaso_smoke_tim.h"
 
 #define GASO_CHAR_ID        9u
 #define GASO_ATTACK_ANIM    74u
@@ -183,6 +184,7 @@ static uint8_t s_gaso_hits_synced;
 static uint8_t s_gaso_attacking[2];
 static uint32_t s_gaso_epoch_seen;
 static uint32_t s_gaso_combat_frame;
+static uint8_t s_gaso_smoke_uploaded;
 /* Cue requests from the VBlank tick; a function-entry hook plays them. */
 static _Atomic uint32_t s_gaso_tank_cues;
 /* PsyQ rand() recurrence with its own seed, not the game's random stream. */
@@ -207,6 +209,7 @@ static void bag2jp_gaso_tank_reset(void) {
     s_gaso_hits_synced = 1;
     s_gaso_epoch_seen = bag2jp_gaso_caught_epoch();
     s_gaso_combat_frame = 0;
+    s_gaso_smoke_uploaded = 0;
 }
 
 /* Native BAG1 Gas-O smoke particle attributes from DBI table at 0x801DCE4C */
@@ -561,49 +564,74 @@ static int bag2jp_gaso_tank_tick(uint32_t frame) {
     int emitted = 0;
 
     /* 3. Emit native chemical gas puffs from Gas-O's backpack nozzles during the
-     * entrance (BAG1 vents a continuous dense cloud while the rival descends). */
-    if (s_gaso_combat_frame >= 50u && s_gaso_combat_frame <= 300u) {
-        strike_emit_tpage(&heap, ot_slot, 0x001Cu); /* authentic Gas-O TPAGE 0x001C */
-        for (uint32_t side = 0; side < 2; ++side) {
-            uint32_t chr = psx_mod_read_word(side == 0 ? B2_CHAR_P1_ADDR : B2_CHAR_P2_ADDR);
-            if (chr != GASO_CHAR_ID || !bag2jp_bag1_get_version((int)GASO_CHAR_ID, (int)side)) continue;
+     * entrance (BAG1 vents a continuous dense cloud while the rival descends)
+     * and during victory pose (anim 67). Upload the BAG1 smoke TIM to VRAM once
+     * per match before emitting. */
+    if (!s_gaso_smoke_uploaded) {
+        const uint32_t scratch = 0x8000F000u;
+        for (uint32_t i = 0; i < sizeof(s_gaso_smoke_clut); ++i) {
+            psx_mod_write_byte(scratch + i, s_gaso_smoke_clut[i]);
+        }
+        psx_mod_psyq_load_image(GASO_SMOKE_CLUT_X, GASO_SMOKE_CLUT_Y,
+                                GASO_SMOKE_CLUT_W, GASO_SMOKE_CLUT_H, scratch);
+        for (uint32_t i = 0; i < sizeof(s_gaso_smoke_pix); ++i) {
+            psx_mod_write_byte(scratch + i, s_gaso_smoke_pix[i]);
+        }
+        psx_mod_psyq_load_image(GASO_SMOKE_PIX_X, GASO_SMOKE_PIX_Y,
+                                GASO_SMOKE_PIX_W, GASO_SMOKE_PIX_H, scratch);
+        s_gaso_smoke_uploaded = 1;
+    }
 
-            uint32_t dancer = psx_mod_read_word(B2_DANCER_BASE + side * 8u);
-            if (dancer < 0x80010000u || dancer >= 0x80800000u) continue;
+    int tpage_emitted = 0;
+    for (uint32_t side = 0; side < 2; ++side) {
+        uint32_t chr = psx_mod_read_word(side == 0 ? B2_CHAR_P1_ADDR : B2_CHAR_P2_ADDR);
+        if (chr != GASO_CHAR_ID || !bag2jp_bag1_get_version((int)GASO_CHAR_ID, (int)side)) continue;
 
-            StrikeVec3 root = strike_read_root(dancer);
-            for (int puff = 0; puff < 3; ++puff) {
-                uint32_t t = frame + (uint32_t)puff * 7u;
-                /* Backpack height: pelvis minus ~40 units, drifting further up
-                 * (smaller Y) as the puff ages; +-26 units of lateral spread. */
-                StrikeVec3 w = {
-                    root.x + ((int32_t)s_circle_cos[t % 16u] * 26) / 4096,
-                    root.y - 40 - (int32_t)((t * 3u) % 90u),
-                    root.z + ((int32_t)s_circle_sin[t % 16u] * 26) / 4096
-                };
-                StrikeScreenPt pt;
-                if (!strike_project(&w, cam_rot, cam_pos, geom_h, &pt)) continue;
+        uint32_t dancer = psx_mod_read_word(B2_DANCER_BASE + side * 8u);
+        if (dancer < 0x80010000u || dancer >= 0x80800000u) continue;
 
-                int idx = 2 + (int)((t / 3u) % 8u);
-                uint8_t sw = s_gaso_smoke_tbl[idx].w;
-                uint8_t sh = s_gaso_smoke_tbl[idx].h;
-                uint8_t su = (uint8_t)s_gaso_smoke_tbl[idx].u;
-                uint8_t sv = (uint8_t)s_gaso_smoke_tbl[idx].v;
-                int16_t hw = (int16_t)(sw / 2);
-                int16_t hh = (int16_t)(sh / 2);
+        uint32_t anim = psx_mod_read_word(dancer + 0x154Cu);
+        int is_entrance = (s_gaso_combat_frame >= 50u && s_gaso_combat_frame <= 300u);
+        int is_victory = (anim == 67u);
+        if (!is_entrance && !is_victory) continue;
 
-                gaso_emit_poly_ft4(&heap, ot_slot,
-                                   pt.x - hw, pt.y - hh,
-                                   pt.x + hw, pt.y - hh,
-                                   pt.x - hw, pt.y + hh,
-                                   pt.x + hw, pt.y + hh,
-                                   su, sv,
-                                   (uint8_t)(su + sw - 1), sv,
-                                   su, (uint8_t)(sv + sh - 1),
-                                   (uint8_t)(su + sw - 1), (uint8_t)(sv + sh - 1),
-                                   0x7C00u, 0x001Cu, 0x00E0FFE0u);
-                emitted++;
-            }
+        if (!tpage_emitted) {
+            strike_emit_tpage(&heap, ot_slot, 0x001Cu); /* authentic Gas-O TPAGE 0x001C */
+            tpage_emitted = 1;
+        }
+
+        StrikeVec3 root = strike_read_root(dancer);
+        for (int puff = 0; puff < 3; ++puff) {
+            uint32_t t = frame + (uint32_t)puff * 7u;
+            /* Backpack height: pelvis minus ~40 units, drifting further up
+             * (smaller Y) as the puff ages; +-26 units of lateral spread. */
+            StrikeVec3 w = {
+                root.x + ((int32_t)s_circle_cos[t % 16u] * 26) / 4096,
+                root.y - 40 - (int32_t)((t * 3u) % 90u),
+                root.z + ((int32_t)s_circle_sin[t % 16u] * 26) / 4096
+            };
+            StrikeScreenPt pt;
+            if (!strike_project(&w, cam_rot, cam_pos, geom_h, &pt)) continue;
+
+            int idx = 2 + (int)((t / 3u) % 6u);
+            uint8_t sw = s_gaso_smoke_tbl[idx].w;
+            uint8_t sh = s_gaso_smoke_tbl[idx].h;
+            uint8_t su = (uint8_t)s_gaso_smoke_tbl[idx].u;
+            uint8_t sv = (uint8_t)s_gaso_smoke_tbl[idx].v;
+            int16_t hw = (int16_t)(sw / 2);
+            int16_t hh = (int16_t)(sh / 2);
+
+            gaso_emit_poly_ft4(&heap, ot_slot,
+                               pt.x - hw, pt.y - hh,
+                               pt.x + hw, pt.y - hh,
+                               pt.x - hw, pt.y + hh,
+                               pt.x + hw, pt.y + hh,
+                               su, sv,
+                               (uint8_t)(su + sw - 1), sv,
+                               su, (uint8_t)(sv + sh - 1),
+                               (uint8_t)(su + sw - 1), (uint8_t)(sv + sh - 1),
+                               0x7C00u, 0x001Cu, 0x00E0FFE0u);
+            emitted++;
         }
     }
 

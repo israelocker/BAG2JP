@@ -1,8 +1,12 @@
 # Real-ESRGAN one file per process (a long batch ended in VK_ERROR_DEVICE_LOST); retry once.
-# usage: esr_each.ps1 [-In in_retry] [-Out out_retry]
-param([string]$In = 'in_retry', [string]$Out = 'out_retry')
-$W = 'D:\Dev\Recomp\BAG2JP\_work\uipack'
-$exe = 'D:\Dev\Tools\realesrgan-ncnn-vulkan\realesrgan-ncnn-vulkan.exe'
+# usage: esr_each.ps1 [-In in_retry] [-Out out_retry] [-Exe realesrgan-ncnn-vulkan.exe]
+param(
+  [string]$In = 'in_retry',
+  [string]$Out = 'out_retry',
+  [string]$Exe = 'realesrgan-ncnn-vulkan.exe'
+)
+$RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..\..')).Path
+$W = Join-Path $RepoRoot '_work\uipack'
 New-Item -ItemType Directory -Force "$W\$Out" | Out-Null
 $files = Get-ChildItem "$W\$In" -Filter *.png
 $i = 0

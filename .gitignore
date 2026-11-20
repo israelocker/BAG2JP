@@ -18,3 +18,5 @@ mods-src/_superseded/
 __pycache__/
 # Machine-local host configuration; keep the portable common file and template tracked.
 /config/project.local.toml
+# Local crash-reporting / telemetry state
+.sentry-native/

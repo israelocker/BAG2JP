@@ -53,3 +53,31 @@ deadzone  = 3276
 
 [localization]
 language = "en"
+
+[song_sync]
+# Music-only offset (ms, -10000..10000) for the in-game dance song. 0 = default.
+# Positive = music starts later. Negative = music starts that far into the song
+# (it then ends that much before the dance ends).
+# start_offset_ms is added to every dance song.
+start_offset_ms = 0
+# BAG2 songs
+heat = 0
+strike = 0
+comet = 0
+tsutomu = 0
+kelly = 0
+shorty = 0
+pander = 0
+kitty_n = 0
+hiro = 0
+bi_o = 0
+capoeira = 0
+robo_z = 0
+columbo = 0
+sushi_boy = 0
+chichi_sally = 0
+michael_doi = 0
+# BAG1 songs
+bag1_heat = 0
+bag1_strike = 0
+bag1_gaso = 0
