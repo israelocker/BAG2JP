@@ -176,8 +176,8 @@ feature = "bag1-heat"
 target = "disc_user"
 offset = 458823680
 file = "payload/bag1_alt.bin"
-sha256 = "b14e0fe0290137efb111e6d81234414cee550cf1c4dbedcd5e3c70e02ea5cdd6"
-expected_sha256 = "9a16bfba067c78f79c91e4a7713b315b5b4d33f66a9cfb4c6355d6f35ee4eb4f"
+sha256 = "c8c0b4f163fa014299ce2c7abb7a52ffeb8eca5d8bcaabebd3a25428ac7d7a15"
+expected_sha256 = "bf336032a3133b2c4e322f83ad3739ae86c44831fb9e73ff4abec9790fa88a4f"
 
 [[feature]]
 id = "bag1-gaso-caught"
