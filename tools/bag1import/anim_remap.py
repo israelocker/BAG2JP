@@ -54,21 +54,29 @@ ROLES = {
 #        requests >= 29 as bar 7, level 35 - request). The normal anim of (s, v) follows
 #        (s-1, v); its alternate (table 0x80055854) follows a level-up from (s-1, v-1). Same rule as BAG2.
 # Each BAG2 row (level L, bar s) maps to BAG1 bar s + (7 - last bar of the row), so every row ends on a
-# BAG1 double, at BAG1 level min(B1_LEVEL[L], bar): consecutive cells are always a designed BAG1 transition.
+# BAG1 double, at BAG1 level min(B1_LEVEL[L], bar). Within a row, consecutive cells are designed BAG1
+# transitions, except row 0's first cell (clap override below). Between rows, B1_LEVEL is not monotonic
+# (L3 -> L4 drops 3 -> 0, L4 -> L5 jumps 0 -> 4), so BAG2 level-ups across row 4 have no BAG1 level-up
+# variant: native_variant keeps the normal anim there (e.g. slot 44 == slot 43). Unresolved by design.
 B2_ROWS = {0: (0, [6, 11, 21, 53]), 1: (0, [5, 10, 19, 26, 36, 52]), 2: (0, [4, 9, 17, 25, 34, 51]),
            3: (0, [3, 8, 15, 24, 32, 50]), 4: (0, [2, 7, 13, 23, 30, 39, 45, 49]),
            5: (2, [12, 22, 28, 38, 43, 48]), 6: (4, [27, 37, 41, 47]), 7: (6, [40, 46])}
 B2_ALT = {19: 20, 17: 18, 15: 16, 13: 14, 34: 35, 32: 33, 30: 31, 28: 29, 43: 44, 41: 42}  # slot -> alt
 # Target BAG1 level per BAG2 row ("escalado", owner 2026-11-20): L4, the only 8-bar row, plays the full
-# BAG1 level-0 combo (A C F J O U ZZZ), so 34/35 BAG1 cells are used and none repeats more than 3 times
-# (v = L left C/F/J unused and D/K in 4-5 slots). Comparison: _work/move-roles/remap_options.py.
+# BAG1 level-0 combo (bars 0-6 plus the level-0 double), so 34 of the 35 BAG1 grid anims are used
+# (only anim 2 is not) and no anim fills more than 3 rows (v = L left 3 anims unused, others in 4-5).
 B1_LEVEL = {0: 0, 1: 1, 2: 2, 3: 3, 4: 0, 5: 4, 6: 5, 7: 6}
-def b1_path(L):
+if set(B1_LEVEL) != set(B2_ROWS) or not all(0 <= v <= 6 for v in B1_LEVEL.values()):
+    raise ValueError("B1_LEVEL must map every BAG2 row to a BAG1 level 0..6")
+
+def b1_path(L: int) -> list[tuple[int, int]]:
+    """Return the BAG1 (bar, level) cell played by each bar of BAG2 row L."""
     s0, row = B2_ROWS[L]; k = 7 - (s0 + len(row) - 1)
     path = [(s + k, min(B1_LEVEL[L], s + k)) for s in range(s0, s0 + len(row))]
     if L == 0:
-        # BAG2 starts every combo (request 1) on row 0; BAG1 starts it on cell A, the clap
-        # (owner 2026-11-20, verified in BAG1 via PCSX-Redux). Skips one intermediate cell.
+        # BAG2 starts every combo (request 1) on row 0; BAG1 starts it on cell A (bar 0). PCSX-Redux
+        # traced BAG1 req 1 -> anim 1; that A is the clap is inferred from stills (owner accepted the
+        # BAG2 take 2026-11-20). Replaces cell (4, 0), so row 0 jumps from bar 0 to bar 5.
         path[0] = (0, 0)
     return path
 B1_PATHS = {L: b1_path(L) for L in B2_ROWS}

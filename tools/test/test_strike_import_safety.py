@@ -66,5 +66,32 @@ class StrikeImportSafetyTests(unittest.TestCase):
         self.assertIn((2, 26, 0x6104), attack_events)
 
 
+class ScaledGridTests(unittest.TestCase):
+    """Owner requirement 2026-11-20: scaled BAG1 levels per BAG2 row, combos open on cell A."""
+
+    def test_rows_play_their_scaled_bag1_level_and_end_on_a_double(self) -> None:
+        from anim_remap import B1_PATHS
+        self.assertEqual({L: path[-1] for L, path in B1_PATHS.items()},
+                         {0: (7, 0), 1: (7, 1), 2: (7, 2), 3: (7, 3), 4: (7, 0), 5: (7, 4),
+                          6: (7, 5), 7: (7, 6)})
+        self.assertEqual(B1_PATHS[4], [(s, 0) for s in range(8)])  # full BAG1 level-0 combo
+        self.assertEqual(B1_PATHS[0][0], (0, 0))                   # clap opens request 1
+
+    def test_cells_are_valid_bag1_transitions_except_the_clap_jump(self) -> None:
+        from anim_remap import B1_PATHS
+        for L, path in B1_PATHS.items():
+            for s, v in path:
+                self.assertLessEqual(v, s, f"row {L} cell {(s, v)}")
+            pairs = list(zip(path, path[1:]))[1 if L == 0 else 0:]
+            for (s1, v1), (s2, v2) in pairs:
+                self.assertEqual(s2, s1 + 1, f"row {L}")
+                self.assertIn(v2 - v1, (0, 1), f"row {L}")
+
+    def test_scaled_grid_uses_34_of_35_bag1_anims(self) -> None:
+        from anim_remap import B1_PATHS, b1_anim
+        used = {b1_anim(c, p[i - 1] if i else None) for p in B1_PATHS.values() for i, c in enumerate(p)}
+        self.assertEqual(len(used), 34)
+
+
 if __name__ == "__main__":
     unittest.main()

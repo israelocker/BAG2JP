@@ -1,6 +1,6 @@
 ---
 summary: Move viewer/editor (tools/move_viewer) state, motion reassignment and growth packages, evidence and limits.
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 # Move viewer / editor
 
@@ -35,4 +35,5 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 
 
 - 2026-11-20 BAG1 regrid 'escalado' (tools/bag1import/anim_remap.py B1_LEVEL; L4 row = BAG1 level-0 combo): Heat/Strike payload 3A9D9D70 deployed to exp-8mb only. Take regrid-heat-20261120a ACCEPTED (Heat BAG1 vs Strike BAG1): row-4 requests 23-27 -> slots 2,7,13,23,30 at f12998-14636; stills _work/move-roles/regrid/l4_sheet.png show both dancing distinct moves, no glitches. Calibration re-accepted after rebuild (seeded explore roster-recal-20261120; edge stills reused from run c, exe change = mod payload only). Pending: Goldfish review, Gas-O regrid, visual per-move identity vs BAG1 (C/F/J) not checked frame-by-frame.
-- 2026-11-20 row-0 clap: anim_remap b1_path row 0 cell 0 = BAG1 (0,0) A (request 1 = slot 6). Payload B80770CE deployed exp-8mb only. Take regrid-clap-20261120a ACCEPTED: req1 -> anim6 at f6962/f7592; stills _work/move-roles/regrid2/clap_sheet.png show upright arms-out then hands together at chest, matching BAG1 clap_heat.png. test_strike_import_safety slot 6 expectation 21 -> 1 per owner requirement. Gas-O not regridded.
+- 2026-11-20 row-0 clap: anim_remap b1_path row 0 cell 0 = BAG1 (0,0) A (request 1 = slot 6). Payload B80770CE deployed exp-8mb only. Take regrid-clap-20261120a ACCEPTED (owner watched owner.mp4: "si esta bien"): request 1 -> BAG2 slot 6 (= BAG1 anim 1, cell A) at f6962/f7592; stills _work/move-roles/regrid2/clap_sheet.png show upright arms-out then hands together at chest, matching BAG1 clap_heat.png. test_strike_import_safety slot 6 expectation 21 -> 1 per owner requirement. Gas-O not regridded.
+- 2026-11-20 Goldfish (requested gpt-6.1-sol, answered DeepSeek V4.1 Flash Free) on 3c9df3a/388eb9b: OK con cambios, no ALTA. Applied: ScaledGridTests (row levels, valid transitions, 34/35 anims; reverting B1_LEVEL now fails), B1_LEVEL domain check, b1_path docstring/types, corrected comments. Clap identity of A is inferred from stills (trace proves req1 -> anim 1 only). Accepted limit: BAG2 level-ups across row 4 (e.g. alt slot 44) have no BAG1 level-up variant and replay the normal anim (L4 is level 0); documented in anim_remap.py. Accepted payload B80770CE lives in uncommitted mods-src manifest/index together with pre-existing Gas-O tank edits; commit pending separation.
