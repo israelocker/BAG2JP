@@ -36,6 +36,9 @@ DISC_SHA256 = 'fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268'
 # player struct is placed). Costume 4 entries 167/168 are unmeasured and keep the stock bank.
 # Strike, Comet, Shorty, Bi-O (costume A, both sides): runs budget-*-20261120 measured with
 # _work/move-viewer/f2/budget_from_dump.py; P1 and P2 free bytes were equal per character.
+# Remaining 13 (runs budget-<p1>-<p2>-20261120, one side each): regions are identical
+# per side (equal P1/P2 for the 5 above; Heat re-measured 912 as P2 next to Hustle Kong),
+# so the single measured side is applied to both costume-A entries.
 # Disc slack after each entry is checked separately when the package is built.
 # See _work/move-viewer/f2/buffer/growth-budget.md.
 GROWTH_BUDGET = {
@@ -44,6 +47,19 @@ GROWTH_BUDGET = {
     'comet': ((93, 94), 15568),
     'shorty': ((107, 108), 1516),
     'bi_o': ((89, 90), 672),
+    'tsutomu': ((111, 112), 8268),
+    'kelly': ((99, 100), 68),
+    'pander': ((103, 104), 6132),
+    'kitty_n': ((101, 102), 5424),
+    'hiro': ((97, 98), 41052),
+    'capoeira': ((91, 92), 0),
+    'robo_z_gold': ((105, 106), 11316),
+    'columbo': ((115, 116), 94708),
+    'sushi_boy': ((123, 124), 33756),
+    'chichi_sally': ((113, 114), 37684),
+    'michael_doi': ((121, 122), 43108),
+    'mcload': ((119, 120), 12280),
+    'hustle_kong': ((117, 118), 1192),
 }
 
 
