@@ -2620,3 +2620,16 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Propósito: derivar el mapa de pistas por personaje para el visor. MCP: get_program_info, decompile/disassemble FUN_800319fc, FUN_80012b9c, FUN_8002bc38 (SLPM_862.19).
 - Evidencia: init FUN_800319fc pone 0x7CC..0x7E9=0xFF y llama init DBI vía tabla 0x800535DC[id+lado*19] (ids 6/12 cableados); el init DBI escribe el mapa con sb inmediatos; base p1 0x801CC084.
 - Validación independiente: mapa emulado de Heat A = volcado RAM (tools/move_viewer/tests/test_slot_map.py). Resultado: útil. Resto de personajes solo emulado; Columbo id12 y lado p2 sin resolver.
+
+## 2026-11-19 - presupuesto de crecimiento del banco de movimientos (subagente Opus, F2)
+- Propósito: tamaño máximo seguro al agrandar model_a_p1/001.bin. MCP: get_program_info (sha256 ea5a1668...), decompile FUN_80022410/80022518/800220b8/800319fc/80031d3c/80033d1c/80033f14/800342dc/8001f874/8001fb58/8001e0f4/800337b8, get_function_xrefs 800319fc/80031d3c/80033d1c/80033f14, get_xrefs_to 0x80089248/0x8008924c. Solo lectura.
+- Evidencia: tamaño de carga = TOC DFS (8001f874, CdRead ceil(sz/2048)); bases P1/P2 DAT_80089248/8008924c, paso 0x7729C (también constante en 800337b8); banco usado in situ, struct de jugador justo detrás (80031d3c). Lectura de 12 volcados RAM existentes: char 8 entrada 0x4AAFC, trabajo 0x22744, libre 0xA05C; build 8 MB reubica a 0x80200000/0x80300000.
+- Validación independiente: volcados RAM confirman paso 0x7729C (0x801485EC-0x800D1350). Sin volcado de Heat: trabajo de Heat desconocido.
+- Resultado: útil parcial. Salida _work/move-viewer/f2/buffer/growth-budget.md. Tiempo no medido. Siguiente: volcado RAM con Heat P1 para leer DAT_8005f818.
+
+## 2026-11-20 - P2 region tail block (move viewer F2)
+- Purpose: does DAT_80089230 block reduce Heat P2 growth budget. Program SLPM_862.19 sha256 ea5a1668..., MCP decompile FUN_800337b8, FUN_80033f14.
+- Evidence: FUN_800337b8 sets DAT_80089230 = P2base+0x7729C-align4(size) and copies a block; FUN_80033f14 consumes it via FUN_8002e08c before placing the P2 struct (transient).
+- Independent validation: RAM dump heat-p2-ramdump-20261120: Heat P2 free 912 B, equal to P1.
+- Outcome: useful; GROWTH_BUDGET extended to entries 95,96 (commit 2fc8853). Time: unknown.
+

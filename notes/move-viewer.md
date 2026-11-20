@@ -9,8 +9,11 @@ Plan and progress: `_work/move-viewer/gantt.md`. App: `py -3.13 tools/move_viewe
 ## F2 reassignment (WIP, not owner-accepted except copy take)
 - Copy semantics: slot <- copy of an original motion (`swap_mod.py --copy`); take f2-copy-20261119a accepted, owner "si esta bien".
 - Growth: the bank lives in place at the player base; struct follows align4(base+size).
-  Measured budget only Heat P1 entry 95: 912 B (RAM dump heat-ramdump-20261119). P2 (96)
-  and costume 4 (167/168) keep the stock bank when growing.
+  Measured budget Heat costume A: 912 B on P1 (entry 95, RAM dump heat-ramdump-20261119) and
+  P2 (entry 96, heat-p2-ramdump-20261120; Strike P1 free 4388 B). Ghidra: DAT_80089230 block
+  at the P2 region tail (FUN_800337b8) is consumed during P2 load (FUN_80033f14), so it does not
+  reduce the budget. Costume 4 (167/168) keeps the stock bank when growing. P2 in-game take:
+  f2-grow-p2-20261120a (see result below).
 - A grown entry patches its 4-byte DF2 size field (disc_user 366592 + 8 + 8*entry + 4).
 - Regional localization now owns only header bytes 366692..366693 (see
   `mods-src/bag2jp.localization.regional/1.0.0/PAYLOAD_README.txt`); both compose.
