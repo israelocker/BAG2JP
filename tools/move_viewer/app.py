@@ -85,16 +85,25 @@ class MoveViewer(QMainWindow):
     def set_view_widget(self, widget: QWidget) -> None:
         self.view_slot.insertWidget(0, widget, 1)
         self.view_slot.removeWidget(self.view_widget)
+        self.view_widget.hide()     # deleteLater runs later; hide so it does not paint meanwhile
         self.view_widget.deleteLater()
         self.view_widget = widget
 
     def show_combo_slot(self, character: str, slot: int) -> None:
         """Preview the slot of the selected Combos row (same renderer as the Moves tree)."""
         self._character = character
+        move = next((m for c in self._tables.get("characters", []) if c["name"] == character
+                     for m in c["moves"] if m["slot"] == slot), None)
+        for name, label in self.fields.items():
+            label.setText(str(move.get(name)) if move else "-")
+        self.fields["character"].setText(character)
+        self.fields["slot"].setText(str(slot))
         self.assign.set_character(character_bank(character))
+        self.assign.set_slot(slot, move["label"] if move else "")
         self.preview_motion(slot)
 
     def populate(self, tables: dict) -> None:
+        self._tables = tables
         self.combos.set_tables(tables)
         self.tree.clear()
         for char in tables["characters"]:

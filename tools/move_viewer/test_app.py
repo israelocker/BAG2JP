@@ -27,6 +27,16 @@ class AppTests(unittest.TestCase):
         self.assertEqual(window.fields["request"].text(), "101")
         self.assertEqual(window.fields["character"].text(), "HEAT")
 
+    def test_combo_slot_fills_details(self):
+        window = MoveViewer(TABLES)
+        self.assertEqual(window.tabs.tabText(1), "Combos")
+        window.show_combo_slot("HEAT", 90)
+        self.assertEqual(window.fields["label"].text(), "POSE1")
+        self.assertEqual(window.fields["slot"].text(), "90")
+        window.show_combo_slot("HEAT", 7)       # slot without a role entry
+        self.assertEqual(window.fields["character"].text(), "HEAT")
+        self.assertEqual(window.fields["label"].text(), "-")
+
     def test_view_widget_slot_is_replaceable(self):
         window = MoveViewer(TABLES)
         view = QLabel("renderer")
