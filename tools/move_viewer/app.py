@@ -125,7 +125,7 @@ def generate_mod(bank: Path, pairs: list[tuple[int, int]]) -> str:
         entries = list(entries)
     name = f"Move assign {folder}: " + ", ".join(f"{a}<-{b}" for a, b in pairs)
     swap_mod.generate(disc, entries, pairs, package_id, name, out, copy=True, max_growth=max_growth)
-    note = " (crece: solo jugador 1)" if max_growth else ""
+    note = " (crece: solo jugador 1, traje A; P2 y traje 4 quedan stock)" if max_growth else ""
     return f"Mod generado (desactivado) en {out} — entradas BUST2.BIN {entries}{note}"
 
 

@@ -38,3 +38,4 @@ de contexto en AGENTS no son medición actual; medir con el checker documental.
 `notes/archive/` y `docs/archive/` conservan originales no certificados como receta
 actual. Abrirlos solo para una evidencia/decisión concreta. No generalizar Heat
 ni declarar Strike aceptado: su fidelidad/matriz/fever siguen pendientes.
+- [Move viewer / editor](notes/move-viewer.md)

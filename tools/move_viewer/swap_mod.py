@@ -139,13 +139,13 @@ def grow_entry(container: bytes, bank: bytes) -> bytes:
 
 
 def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
-          copy: bool = False, max_growth: int = 0,
-          header_sector: bytes | None = None) -> list[tuple[int, bytes, bytes]]:
+          copy: bool = False, max_growth: int = 0) -> list[tuple[int, bytes, bytes]]:
     """Overlays (disc user offset, original bytes, patched bytes) for the entry.
 
     pairs are swaps a:b, or slot<-source copies when `copy` is set. A grown entry also
-    needs its BUST2.BIN header size patched (second overlay) and must end before the next
-    entry; growth past `max_growth` (measured RAM budget) is refused.
+    needs its 4-byte BUST2.BIN header size field patched (second overlay; composes with
+    other mods that only own other header bytes) and must end before the next entry;
+    growth past `max_growth` (measured RAM budget) is refused.
     """
     offset, size = entry_extent(disc, entry)
     first = offset // SECTOR
@@ -168,14 +168,8 @@ def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
     overlays = [(base, stock, patched)]
     if len(patched) != size:
         field = 8 + 8 * entry + 4
-        if header_sector is None:
-            overlays.append((ARCHIVE_LBA * SECTOR + field, struct.pack('<I', size),
-                             struct.pack('<I', len(patched))))
-        else:
-            # Replaces a whole-sector header overlay of another mod (that mod must be off).
-            sector = bytearray(header_sector)
-            struct.pack_into('<I', sector, field, len(patched))
-            overlays.append((ARCHIVE_LBA * SECTOR, read_user(disc, ARCHIVE_LBA, 1), bytes(sector)))
+        overlays.append((ARCHIVE_LBA * SECTOR + field, struct.pack('<I', size),
+                         struct.pack('<I', len(patched))))
     return overlays
 
 
@@ -276,13 +270,12 @@ def check_disc(disc: Path) -> None:
 
 def generate(disc: Path, entries: list[int], pairs: list[tuple[int, int]], package_id: str,
              name: str, out: Path, copy: bool = False,
-             max_growth: int = 0,
-             header_sector: bytes | None = None) -> list[tuple[int, bytes, bytes]]:
+             max_growth: int = 0) -> list[tuple[int, bytes, bytes]]:
     """Build the overlays of every entry and write the verified package to `out`."""
     if not entries:
         raise ValueError('no BUST2.BIN entry to patch')
     overlays = [o for entry in entries
-                for o in build(disc, entry, pairs, copy, max_growth, header_sector)]
+                for o in build(disc, entry, pairs, copy, max_growth)]
     write_package(out, package_id, name, overlays)
     return overlays
 
@@ -296,8 +289,6 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument('--copy', action='store_true', help='treat a:b as slot a <- copy of motion b')
     ap.add_argument('--max-growth', type=int, default=0,
                     help='allowed bank growth in bytes (only a measured GROWTH_BUDGET value)')
-    ap.add_argument('--header-sector', type=Path,
-                    help='2048-byte BUST2.BIN header payload of another mod to base the size patch on')
     ap.add_argument('--id', required=True, help='package id')
     ap.add_argument('--out', type=Path, required=True, help='package version dir to write')
     args = ap.parse_args(argv)
@@ -309,8 +300,7 @@ def main(argv: list[str] | None = None) -> None:
     entries = args.entry or find_entries(disc, args.bank.read_bytes())
     sep = '<-' if args.copy else '<->'
     name = ('Move assign ' if args.copy else 'Move swap ') + ', '.join(f'{a}{sep}{b}' for a, b in args.swap)
-    overlays = generate(disc, entries, args.swap, args.id, name, out, args.copy, args.max_growth,
-                        args.header_sector.read_bytes() if args.header_sector else None)
+    overlays = generate(disc, entries, args.swap, args.id, name, out, args.copy, args.max_growth)
     for offset, stock, patched in overlays:
         logger.info('%s: overlay at %d, %d -> %d bytes', out, offset, len(stock), len(patched))
 
