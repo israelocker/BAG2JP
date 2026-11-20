@@ -282,6 +282,16 @@ def generate(disc: Path, entries: list[int], pairs: list[tuple[int, int]], packa
     return overlays
 
 
+def check_growth_budget(entries: list[int], max_growth: int) -> None:
+    """Reject growth beyond the RAM-measured GROWTH_BUDGET of every entry being grown."""
+    for budget_entries, budget in GROWTH_BUDGET.values():
+        if set(entries) <= set(budget_entries):
+            if not 0 < max_growth <= budget:
+                raise SystemExit(f'--max-growth {max_growth} exceeds measured budget {budget} B')
+            return
+    raise SystemExit(f'no measured growth budget for entries {entries}')
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     where = ap.add_mutually_exclusive_group(required=True)
@@ -300,6 +310,8 @@ def main(argv: list[str] | None = None) -> None:
     check_disc(disc)
     out = assert_write_target(config, args.out.resolve(), role='work')
     entries = args.entry or find_entries(disc, args.bank.read_bytes())
+    if args.max_growth:
+        check_growth_budget(entries, args.max_growth)
     sep = '<-' if args.copy else '<->'
     name = ('Move assign ' if args.copy else 'Move swap ') + ', '.join(f'{a}{sep}{b}' for a, b in args.swap)
     overlays = generate(disc, entries, args.swap, args.id, name, out, args.copy, args.max_growth)
