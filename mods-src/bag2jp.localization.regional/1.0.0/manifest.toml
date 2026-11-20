@@ -200,10 +200,10 @@ when = { title_screen = "international" }
 [[overlay]]
 feature = "regional"
 target = "disc_user"
-offset = 366592
-file = "payload/003_0000179.bin"
-sha256 = "9f3fa1984dada7e1dbea7560a94f29945f78702ba40fce1b3bcd8845dabb9b38"
-expected_sha256 = "fa66eef68e26a72f9884b174ad25ba36cd0ef66449b3e76b6cc3cb809f8cde75"
+offset = 366692
+file = "payload/003_0000179_logo.bin"
+sha256 = "9273529050e632693952dd1489f6d41c0f42fcbf2d0c023684ab8c286c1ca1d9"
+expected_sha256 = "acf3fb3c306d5ded352894d57038bd28b09ed3eb0304e77e69b97cbcd00e5fcb"
 when = { boot_logos = "international" }
 
 [[overlay]]
