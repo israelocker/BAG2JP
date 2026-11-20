@@ -12,7 +12,7 @@ from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (QApplication, QFormLayout, QLabel, QMainWindow, QSplitter,
-                               QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+                               QTabWidget, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -20,6 +20,7 @@ from tools.move_viewer import move_tables  # noqa: E402
 from tools.move_viewer import swap_mod  # noqa: E402
 from tools.move_viewer.anim_view import AnimationView, asset_folder  # noqa: E402
 from tools.move_viewer.assign_panel import AssignPanel  # noqa: E402
+from tools.move_viewer.combo_view import ComboView  # noqa: E402
 from tools.workflow.project_config import (assert_write_target, load_config,  # noqa: E402
                                            require_paths)
 
@@ -55,15 +56,30 @@ class MoveViewer(QMainWindow):
         right = QVBoxLayout(details)
         right.addLayout(form)
         right.addLayout(self.view_slot, 1)
+        self.combos = ComboView()
+        self.combos.slot_selected.connect(self.show_combo_slot)
+        self.tabs = QTabWidget()
+        self.tabs.addTab(self.tree, "Moves")
+        self.tabs.addTab(self.combos, "Combos")
         splitter = QSplitter()
-        splitter.addWidget(self.tree)
+        splitter.addWidget(self.tabs)
         splitter.addWidget(details)
         self.assign = AssignPanel(self.preview_motion, generate_mod)
         splitter.addWidget(self.assign)
-        splitter.setSizes([380, 420, 380])
+        splitter.setStretchFactor(0, 5)     # Moves/Combos tabs get the extra width
+        splitter.setStretchFactor(1, 3)
+        splitter.setStretchFactor(2, 3)
+        self.splitter = splitter
         self._character = ""
         self.setCentralWidget(splitter)
         self.populate(tables)
+
+    def showEvent(self, event) -> None:
+        """Split the first time by weight; the layout ignores setSizes made before show."""
+        super().showEvent(event)
+        if not getattr(self, "_sized", False):
+            self._sized = True
+            self.splitter.setSizes([520, 340, 340])
 
     def set_view_widget(self, widget: QWidget) -> None:
         self.view_slot.insertWidget(0, widget, 1)
@@ -71,7 +87,14 @@ class MoveViewer(QMainWindow):
         self.view_widget.deleteLater()
         self.view_widget = widget
 
+    def show_combo_slot(self, character: str, slot: int) -> None:
+        """Preview the slot of the selected Combos row (same renderer as the Moves tree)."""
+        self._character = character
+        self.assign.set_character(character_bank(character))
+        self.preview_motion(slot)
+
     def populate(self, tables: dict) -> None:
+        self.combos.set_tables(tables)
         self.tree.clear()
         for char in tables["characters"]:
             char_item = QTreeWidgetItem([f"{char['id']:2d} {char['name']}"])
@@ -91,6 +114,7 @@ class MoveViewer(QMainWindow):
             label.setText(str(move.get(name)) if move else "-")
         if move:
             self._character = move["character"]
+            self.combos.set_character(move["character"])
             self.assign.set_character(character_bank(move["character"]))
         self.assign.set_slot(move["slot"] if move else None, move["label"] if move else "")
         if isinstance(self.view_widget, AnimationView):
