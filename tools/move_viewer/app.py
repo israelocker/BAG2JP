@@ -1,6 +1,6 @@
 """BAG2JP move viewer (read-only): Character -> Role -> Move tree with details.
 
-The 3D view is a placeholder; tools/move_viewer/model_codec.py will provide the renderer.
+The view plays the selected motion with the software renderer (anim_view.py).
 Usage: py -3.13 tools/move_viewer/app.py [--tables move_tables.json] [--smoke]
 """
 from __future__ import annotations
@@ -17,6 +17,8 @@ from PySide6.QtWidgets import (QApplication, QFormLayout, QLabel, QMainWindow, Q
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from tools.move_viewer import move_tables  # noqa: E402
+from tools.move_viewer.anim_view import AnimationView  # noqa: E402
+from tools.workflow.project_config import load_config, require_paths  # noqa: E402
 
 MOVE_ROLE = Qt.ItemDataRole.UserRole
 DETAIL_FIELDS = ("character", "role", "label", "request", "slot", "frames_a", "frames_b")
@@ -80,6 +82,15 @@ class MoveViewer(QMainWindow):
         move = item.data(0, MOVE_ROLE) if item is not None else None
         for name, label in self.fields.items():
             label.setText(str(move.get(name)) if move else "-")
+        if isinstance(self.view_widget, AnimationView):
+            self.view_widget.show_motion(move["character"] if move else "",
+                                         move["slot"] if move else None)
+
+
+def animation_view() -> AnimationView:
+    config = load_config(repo_root=ROOT)
+    assets, = require_paths(config, ("inputs.bag2jp_assets",))
+    return AnimationView(assets / "archive/characters")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -89,6 +100,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     app = QApplication.instance() or QApplication(sys.argv[:1])
     window = MoveViewer(load_tables(args.tables))
+    window.set_view_widget(animation_view())
     window.resize(1000, 650)
     window.show()
     if args.smoke:
