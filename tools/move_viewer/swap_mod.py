@@ -34,8 +34,17 @@ DISC_SHA256 = 'fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268'
 # Heat P2: run 20261120T113536848789Z-heat-p2-ramdump-20261120 left 912 B (0x8005F81C end vs
 # P2 base + 0x7729C; the P2 tail block DAT_80089230 is consumed by FUN_80033f14 before the
 # player struct is placed). Costume 4 entries 167/168 are unmeasured and keep the stock bank.
+# Strike, Comet, Shorty, Bi-O (costume A, both sides): runs budget-*-20261120 measured with
+# _work/move-viewer/f2/budget_from_dump.py; P1 and P2 free bytes were equal per character.
+# Disc slack after each entry is checked separately when the package is built.
 # See _work/move-viewer/f2/buffer/growth-budget.md.
-GROWTH_BUDGET = {'heat': ((95, 96), 912)}
+GROWTH_BUDGET = {
+    'heat': ((95, 96), 912),
+    'strike': ((109, 110), 4388),
+    'comet': ((93, 94), 15568),
+    'shorty': ((107, 108), 1516),
+    'bi_o': ((89, 90), 672),
+}
 
 
 def read_user(disc: Path, lba: int, count: int) -> bytes:
@@ -283,13 +292,21 @@ def generate(disc: Path, entries: list[int], pairs: list[tuple[int, int]], packa
 
 
 def check_growth_budget(entries: list[int], max_growth: int) -> None:
-    """Reject growth beyond the RAM-measured GROWTH_BUDGET of every entry being grown."""
-    for budget_entries, budget in GROWTH_BUDGET.values():
+    """Reject growth outside the RAM-measured GROWTH_BUDGET.
+
+    Args:
+        entries: BUST2.BIN entries that will grow; all must belong to one measured character.
+        max_growth: requested growth in bytes, 1..budget.
+
+    Raises:
+        ValueError: no measured budget covers `entries`, or `max_growth` is out of range.
+    """
+    for character, (budget_entries, budget) in GROWTH_BUDGET.items():
         if set(entries) <= set(budget_entries):
             if not 0 < max_growth <= budget:
-                raise SystemExit(f'--max-growth {max_growth} exceeds measured budget {budget} B')
+                raise ValueError(f'max growth {max_growth} B outside 1..{budget} B measured for {character}')
             return
-    raise SystemExit(f'no measured growth budget for entries {entries}')
+    raise ValueError(f'no measured growth budget covers entries {entries}')
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -311,7 +328,12 @@ def main(argv: list[str] | None = None) -> None:
     out = assert_write_target(config, args.out.resolve(), role='work')
     entries = args.entry or find_entries(disc, args.bank.read_bytes())
     if args.max_growth:
-        check_growth_budget(entries, args.max_growth)
+        if not args.copy:
+            ap.error('--max-growth only applies with --copy')
+        try:
+            check_growth_budget(entries, args.max_growth)
+        except ValueError as error:
+            ap.error(str(error))
     sep = '<-' if args.copy else '<->'
     name = ('Move assign ' if args.copy else 'Move swap ') + ', '.join(f'{a}{sep}{b}' for a, b in args.swap)
     overlays = generate(disc, entries, args.swap, args.id, name, out, args.copy, args.max_growth)

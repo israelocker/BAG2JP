@@ -1,7 +1,7 @@
 import struct
 import unittest
 
-from tools.move_viewer.swap_mod import patch_entry, split_bank, swap_motions
+from tools.move_viewer.swap_mod import GROWTH_BUDGET, check_growth_budget, main, patch_entry, split_bank, swap_motions
 
 
 def bank(*motions: bytes) -> bytes:
@@ -42,6 +42,26 @@ class GrowthOnDiscTest(unittest.TestCase):
         self.assertEqual(struct.unpack('<I', patched)[0], len(overlays[0][2]))
         # The regional mod owns header bytes 100..101; the size field must not overlap them.
         self.assertGreaterEqual(offset - ARCHIVE_LBA * SECTOR, 102)
+
+
+class GrowthBudgetTest(unittest.TestCase):
+    def test_measured_budget_accepts_both_sides(self) -> None:
+        entries, budget = GROWTH_BUDGET['heat']
+        check_growth_budget(list(entries), budget)
+
+    def test_growth_over_budget_rejected(self) -> None:
+        entries, budget = GROWTH_BUDGET['heat']
+        with self.assertRaisesRegex(ValueError, 'outside'):
+            check_growth_budget([entries[0]], budget + 1)
+
+    def test_unmeasured_entry_rejected(self) -> None:
+        entries, _ = GROWTH_BUDGET['heat']
+        with self.assertRaisesRegex(ValueError, 'no measured'):
+            check_growth_budget([entries[0], 167], 4)
+
+    def test_cli_requires_copy_for_growth(self) -> None:
+        with self.assertRaises(SystemExit):
+            main(['--entry', '95', '--swap', '71:6', '--max-growth', '4', '--id', 'x', '--out', '_work/x'])
 
 
 if __name__ == '__main__':

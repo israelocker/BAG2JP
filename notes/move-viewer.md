@@ -29,3 +29,6 @@ Plan and progress: `_work/move-viewer/gantt.md`. App: `py -3.13 tools/move_viewe
 Applied: removed `--header-sector` (unsafe: collided or leaked regional bytes); UI notes state P1 costume A only;
 host test for the 4-byte size overlay; regional sparse script versioned (`tools/move_viewer/regional_sparse179.py`).
 Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests inside version dirs; visual review of take d.
+
+- 2026-11-20 budgets (RAM dumps, P1=P2): Heat 912, Strike 4388, Comet 15568, Shorty 1516, Bi-O 672 B; GROWTH_BUDGET updated. Goldfish (asked gpt-6.1-sol, answered DeepSeek V4.1 Flash Free) on 045a867: OK con cambios; applied ValueError + argparse error, --max-growth only with --copy, tests moved to test_swap_mod. Not done: per-entry budgets (P1/P2 measured equal), other 13 characters unmeasured.
+

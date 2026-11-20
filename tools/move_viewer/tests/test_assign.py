@@ -80,17 +80,5 @@ class AssignTests(unittest.TestCase):
             self.assertFalse(data['feature'][0]['default_enabled'])
 
 
-
-
-class GrowthBudgetCliTest(unittest.TestCase):
-    def test_budget_enforced(self) -> None:
-        from tools.move_viewer.swap_mod import check_growth_budget
-        check_growth_budget([95, 96], 912)
-        with self.assertRaises(SystemExit):
-            check_growth_budget([95], 913)
-        with self.assertRaises(SystemExit):
-            check_growth_budget([95, 167], 100)
-
-
 if __name__ == '__main__':
     unittest.main()
