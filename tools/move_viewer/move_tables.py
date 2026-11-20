@@ -275,7 +275,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     config = load_config(repo_root=ROOT)
     out_dir = assert_write_target(
-        config, args.out_dir or require_paths(config, ("paths.move_viewer_work",))[0], role="work")
+        config, args.out_dir.resolve() if args.out_dir else require_paths(config, ("paths.move_viewer_work",))[0], role="work")
     result = load_default()
     paths = write_outputs(result, out_dir)
     print(f"{len(result['characters'])} characters -> {paths[0]} , {paths[1]}")

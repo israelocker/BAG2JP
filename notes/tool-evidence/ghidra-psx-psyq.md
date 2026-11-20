@@ -2585,3 +2585,38 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
   idénticos (lectura directa del archivo). Antes en la sesión: `slpm.bin == SLPM_862.19[0x800:]`.
 - Resultado: útil (decide el nombre de la clave: BAG2, no BAG1). Tiempo MCP < 1 min;
   ahorro y retrabajo: desconocidos. Siguiente: reutilizar mientras el binario no cambie.
+
+## 20261117-ghidra-001 - reconexión MCP para issue de sincronización musical
+- Propósito: reactivar Ghidra/MCP para investigar si la XA arranca antes que en el original.
+- Comando: `ghidraRun.bat ghidra/BAG2JP.gpr` (no había proceso Java; MCP daba BACKEND_UNAVAILABLE en 127.0.0.1:8080).
+- Evidencia: `get_program_info` → SLPM_862.19, sha256 ea5a1668…851efe, 1324 funciones; `search_functions_by_name("Cd")` → CdControl 0x8003ed60, CdSync 0x8003ecf8, CdReadyCallback 0x8003ed4c.
+- Dictamen: **útil (conectividad)**; aún sin análisis del arranque de música.
+- Medición: ~1 min de arranque; ahorro no medido.
+- Siguiente: xrefs de CdControl con CdlReadS/CdlPlay y origen del contador de ritmo.
+
+## 2026-11-19 - Dance View / motion request consultation
+- Purpose: explain how dance moves are identified and reordered (owner question). Launch: Start-Process ghidraRun.bat with BAG2JP.gpr (hidden-window and cmd /c variants failed: 'NO ACTIVE PROJECT' / no process); visible launch opened CodeBrowser SLPM_862.19.
+- MCP: get_program_info (sha256 ea5a1668...), read_memory 0x8005180c len 96 confirmed request->slot table bytes (00 06 0b 15 35 ...). get_function_by_address 0x8002a090: FUNCTION_NOT_FOUND (resolver not defined as a function in the Ghidra DB). Dance View table lives in overlay system/008.dbi (0x8008f890), not loaded in this program.
+- Outcome: partial-useful (table confirmed; resolver needs function creation for decompile). Time ~5 min launch issues. Next: define function at 0x8002a090 if a patch is pursued.
+
+- 2026-11-19 move viewer task 0.3: get_program_info (SLPM_862.19, sha256 ea5a1668...); read_memory 0x8005180C/182E/18E4/1838/17D0/17F8/1458/1378/0x8004DA14 (no gaps), 0x8009E818 uninitialized (overlay not loaded, read from _work/game/jp005.bin instead); get_xrefs_to on all tables: 0 refs (resolver 0x8002A090 undefined). Outcome: useful; bytes match tools/move_viewer/move_tables.py output (test_bytes_match_ghidra_reads). Character id order from name pointer table 0x8005147C found by host scan, not Ghidra. Time ~5 min.
+
+## 20261119-ghidra-move-viewer-s0 — formato de malla/pose de personaje BAG2 (spike S0)
+
+- Propósito: S0.1/S0.3/S0.4 del visor de movimientos (decodificación offline de Heat).
+- MCP: `get_program_info` (SLPM_862.19, sha256 ea5a1668…87851efe); decompile 800220b8,
+  80022518, 80022410, 80022800 (+disasm), 800133cc, 80013144, 80013544, 80013780,
+  800128b4, 800126f8, 80012a94, 80012b9c, 8002bc38, 8001f004 (+disasm), 80031d3c,
+  800201b0, 80022660; callers/callees de 800128b4, 8002c404, 800201b0, 80022660, 800227d4;
+  read_memory 0x80053544/0x800535dc/0x80051c24. Solo lectura.
+- Evidencia: R = Rz·Ry·Rx (8001f004); link[1] hermano / link[2] hijo (800133cc);
+  ángulos de reposo = 3 s16 en xf[0..1] (80022800); init de paquetes con byte de slot de
+  textura y fila CLUT (800201b0). Tabla de slots rellenada en runtime (vacía en el exe).
+- Validación independiente: render PNG de Heat reconocible; tests host
+  `tools/move_viewer/tests` (11 OK). Sin comparar aún con grabación del juego (S0.5).
+- Resultado: útil. Tiempo no medido. Siguiente: S0.5 comparación con grabación.
+
+## 2026-11-19 — mapa nodo→pista player+0x7CC (subagente Opus)
+- Propósito: derivar el mapa de pistas por personaje para el visor. MCP: get_program_info, decompile/disassemble FUN_800319fc, FUN_80012b9c, FUN_8002bc38 (SLPM_862.19).
+- Evidencia: init FUN_800319fc pone 0x7CC..0x7E9=0xFF y llama init DBI vía tabla 0x800535DC[id+lado*19] (ids 6/12 cableados); el init DBI escribe el mapa con sb inmediatos; base p1 0x801CC084.
+- Validación independiente: mapa emulado de Heat A = volcado RAM (tools/move_viewer/tests/test_slot_map.py). Resultado: útil. Resto de personajes solo emulado; Columbo id12 y lado p2 sin resolver.

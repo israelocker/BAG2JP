@@ -443,3 +443,18 @@ doc_kind: evidence
   y word0c00b617 ya instrumentados en el perfil canónico y evidencia anterior.
   Dictamen: útil para corregir la inferencia de un único init en main. No prueba
   nombres de fases ni lifecycle de savestates. Tiempo/ahorro no medidos.
+
+## 20261119-capstone-move-viewer-s0 — emisores de primitivas de malla
+
+- Comando: Capstone 5.0.7 (py -3.13) sobre `_work/mainexe/slpm.bin` 0x80027CF8..0x80028B28
+  -> `_work/move-viewer/emitters-27cf8-28b28.asm`; despachador 0x8008E780 de
+  `_work/strike-8008e780-disasm.txt` (existente). Volcados RAM existentes: tabla de slots
+  (strike viewer-run 20261106T054637) y mapa nodo->pista player+0x7CC
+  (`gaso-sign-late-diagnostic/sign-intro-15-ram.bin`: Heat nativo, nodo 12 = 0xFF).
+- Resultado: útil; orden de vértices/colores de F3/F4/G3/G4/FT3/FT4/GT3/GT4/(G+GT) leído.
+  Tipos 0x30..0x3A sin leer. Tiempo no medido.
+
+## 2026-11-19 — mapa nodo→pista player+0x7CC (subagente Opus)
+- Propósito: mapa de pistas por personaje. Capstone: emulación mínima del init DBI (tools/move_viewer/slot_map.py; salta jal).
+- Evidencia: init FUN_800319fc pone 0x7CC..0x7E9=0xFF y llama init DBI vía tabla 0x800535DC[id+lado*19] (ids 6/12 cableados); el init DBI escribe el mapa con sb inmediatos; base p1 0x801CC084.
+- Validación independiente: mapa emulado de Heat A = volcado RAM (tools/move_viewer/tests/test_slot_map.py). Resultado: útil. Resto de personajes solo emulado; Columbo id12 y lado p2 sin resolver.

@@ -20,6 +20,16 @@ from .pose import (HEAT_SLOT_MAP, NodePose, WorldMesh, decode_motion, pose_model
                    sample_motion, world_meshes)
 
 logger = logging.getLogger('move_viewer.render')
+
+
+def character_slot_map(pack: Path, costume: int) -> list[int]:
+    """Node->track map from the character DBI init (see slot_map.py); fails if not derivable."""
+    from .slot_map import derive_slot_map, find_char_id
+    dbi = sorted(pack.glob('*.dbi'))[0].read_bytes()
+    hits = find_char_id(dbi)
+    if not hits:
+        raise SystemExit(f'{pack}: no DBI init writes player+0x7CC')
+    return derive_slot_map(dbi, hits[0][0], costume=costume)
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from tools.workflow.project_config import assert_write_target, load_config, require_paths  # noqa: E402
@@ -129,12 +139,10 @@ def main(argv: list[str] | None = None) -> None:
     config = load_config(repo_root=ROOT)
     assets, = require_paths(config, ('inputs.bag2jp_assets',))
     base = assets / 'archive/characters' / args.character
-    args.out = assert_write_target(config, args.out, role='work')
+    args.out = assert_write_target(config, args.out.resolve(), role='work')
     model, bank, tims = load_character(base / f'model_{args.variant}', base / f'pack_{args.variant}')
     args.out.mkdir(parents=True, exist_ok=True)
-    if args.character != 'heat':
-        raise SystemExit('only heat has a verified node->track map; other characters would render rest pose')
-    slot_map = HEAT_SLOT_MAP
+    slot_map = character_slot_map(base / f'pack_{args.variant}', costume=0 if args.variant.startswith('a') else 1)
     rest = world_meshes(model, pose_model(model))
     for yaw in (0, 180, 90):
         render(model, rest, tims, yaw_deg=yaw).save(args.out / f'{args.character}_rest_yaw{yaw}.png')
