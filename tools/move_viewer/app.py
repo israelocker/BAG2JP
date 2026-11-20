@@ -110,7 +110,7 @@ def character_bank(name: str) -> Path | None:
 
 
 def generate_mod(bank: Path, pairs: list[tuple[int, int]]) -> str:
-    """Write a disabled swap package for every disc entry holding `bank`; returns a summary."""
+    """Write a disabled copy package (slot <- source) for every disc entry holding `bank`."""
     config = load_config(repo_root=ROOT)
     disc, work = require_paths(config, ("inputs.bag2_disc", "paths.move_viewer_work"))
     swap_mod.check_disc(disc)
@@ -118,8 +118,8 @@ def generate_mod(bank: Path, pairs: list[tuple[int, int]]) -> str:
     package_id = f"bag2jp.test.move-assign-{folder.replace('_', '-')}"
     out = assert_write_target(config, (work / "f2/pkg" / package_id / "1.0.0").resolve(), role="work")
     entries = swap_mod.find_entries(disc, bank.read_bytes())
-    name = f"Move assign {folder}: " + ", ".join(f"{a}<->{b}" for a, b in pairs)
-    swap_mod.generate(disc, entries, pairs, package_id, name, out)
+    name = f"Move assign {folder}: " + ", ".join(f"{a}<-{b}" for a, b in pairs)
+    swap_mod.generate(disc, entries, pairs, package_id, name, out, copy=True)
     return f"Mod generado (desactivado) en {out} — entradas BUST2.BIN {entries}"
 
 

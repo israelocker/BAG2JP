@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 from tools.move_viewer import swap_mod
-from tools.move_viewer.assign_panel import apply_swaps, motion_rows
+from tools.move_viewer.assign_panel import apply_copies, motion_rows
 
 
 def bank(*bodies: bytes) -> bytes:
@@ -15,8 +15,18 @@ def bank(*bodies: bytes) -> bytes:
 
 
 class AssignTests(unittest.TestCase):
-    def test_apply_swaps_tracks_original_motions(self):
-        self.assertEqual(apply_swaps([0, 1, 2, 3], [(0, 2), (2, 3)]), [2, 1, 3, 0])
+    def test_apply_copies_leaves_other_slots(self):
+        self.assertEqual(apply_copies([0, 1, 2, 3], [(0, 2), (2, 3)]), [2, 1, 3, 3])
+
+    def test_copy_motions_pads_or_blocks_growth(self):
+        stock = bank(b'aaaa', b'bb', b'cc')
+        smaller = swap_mod.copy_motions(stock, [(0, 1)])
+        self.assertEqual(len(smaller), len(stock))
+        motions, _ = swap_mod.split_bank(smaller)
+        self.assertEqual([m[4:] for m in motions], [b'bb', b'bb', b'cc'])
+        self.assertEqual(swap_mod.copy_growth(stock, [(1, 0)]), 2)
+        with self.assertRaises(ValueError):
+            swap_mod.copy_motions(stock, [(1, 0)])
 
     def test_motion_rows_hex_index_and_size(self):
         rows = motion_rows(bank(b'ab', b'cdef'))

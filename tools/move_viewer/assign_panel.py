@@ -1,9 +1,10 @@
-"""Reassignment panel (F2): pick a Dance View slot and a motion from the bank, queue swaps,
-then generate a disabled disc_user mod with swap_mod.py.
+"""Reassignment panel (F2): pick a Dance View slot and a motion from the bank, queue
+assignments, then generate a disabled disc_user mod with swap_mod.py.
 
-An assignment is a swap inside the motion bank: slot S receives motion M and M's old
-position receives S's motion, so the bank keeps its size and fits the stock sectors.
-Slots >= the bank length (fever/duet, location unknown) cannot be reassigned.
+An assignment copies the original motion M into slot S; every other slot is untouched.
+A duration different from the slot's original only warns (it may look cut or frozen).
+Growth of the bank is blocked: the entry must fit its stock disc extent and the in-RAM
+motion buffer size is not verified. Slots >= the bank length (fever/duet) are read-only.
 """
 from __future__ import annotations
 
@@ -15,7 +16,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QPushButton,
                                QVBoxLayout, QWidget)
 
-from .swap_mod import split_bank
+from .pose import decode_motion
+from .swap_mod import copy_growth, split_bank
 
 MOTION_ROLE = Qt.ItemDataRole.UserRole
 
@@ -27,12 +29,33 @@ def motion_rows(bank: bytes) -> list[str]:
             for i, m in enumerate(motions)]
 
 
-def apply_swaps(order: list[int], pairs: list[tuple[int, int]]) -> list[int]:
-    """Original motion index held by each slot after the queued swaps."""
+def apply_copies(order: list[int], pairs: list[tuple[int, int]]) -> list[int]:
+    """Original motion index held by each slot after the queued slot<-source copies."""
     order = list(order)
-    for a, b in pairs:
-        order[a], order[b] = order[b], order[a]
+    for slot, source in pairs:
+        order[slot] = source
     return order
+
+
+def motion_frames(bank: bytes, index: int) -> int | None:
+    try:
+        return decode_motion(bank, index)['frames']
+    except (IndexError, ValueError, KeyError):
+        return None
+
+
+def assignment_check(bank: bytes, pairs: list[tuple[int, int]], slot: int,
+                     source: int) -> tuple[bool, str]:
+    """(allowed, message) for adding slot <- source to the queued pairs."""
+    growth = copy_growth(bank, [*pairs, (slot, source)])
+    if growth > 0:
+        return False, (f'No cabe: el banco crecería {growth} bytes y se escribiría sobre los '
+                       f'datos siguientes del disco. Bloqueado.')
+    want, got = motion_frames(bank, slot), motion_frames(bank, source)
+    if want is not None and got is not None and want != got:
+        return True, (f'Aviso: 0x{source:02X} dura {got} fotogramas y la casilla original '
+                      f'{want}; puede verse cortado, congelado o con un salto.')
+    return True, 'OK: misma duración.'
 
 
 class AssignPanel(QWidget):
@@ -43,6 +66,7 @@ class AssignPanel(QWidget):
         super().__init__()
         self._preview, self._generate = preview, generate
         self.bank_path: Path | None = None
+        self._bank = b''
         self.slot: int | None = None
         self.pairs: list[tuple[int, int]] = []
         self._count = 0
@@ -50,7 +74,7 @@ class AssignPanel(QWidget):
         self.motions.currentItemChanged.connect(self._motion_selected)
         self.pending = QListWidget()
         self.target = QLabel('Casilla: -')
-        self.assign_button = QPushButton('Asignar a la casilla (intercambia)')
+        self.assign_button = QPushButton('Asignar a la casilla (copia)')
         self.assign_button.clicked.connect(self.assign)
         undo = QPushButton('Deshacer última')
         undo.clicked.connect(self.undo)
@@ -76,8 +100,10 @@ class AssignPanel(QWidget):
         self.bank_path, self.pairs = bank_path, []
         self.motions.clear()
         self._count = 0
+        self._bank = b''
         if bank_path is not None and bank_path.is_file():
-            rows = motion_rows(bank_path.read_bytes())
+            self._bank = bank_path.read_bytes()
+            rows = motion_rows(self._bank)
             self._count = len(rows)
             for i, row in enumerate(rows):
                 item = QListWidgetItem(row)
@@ -102,11 +128,13 @@ class AssignPanel(QWidget):
         item = self.motions.currentItem()
         if item is None or self.slot is None or self.slot >= self._count:
             return
-        order = apply_swaps(list(range(self._count)), self.pairs)
-        motion = order.index(item.data(MOTION_ROLE))
-        if motion != self.slot:
-            self.pairs.append((self.slot, motion))
+        source = item.data(MOTION_ROLE)
+        pairs = [p for p in self.pairs if p[0] != self.slot]
+        allowed, message = assignment_check(self._bank, pairs, self.slot, source)
+        if allowed:
+            self.pairs = pairs + ([(self.slot, source)] if source != self.slot else [])
         self._refresh()
+        self.result.setText(message)
 
     def undo(self) -> None:
         if self.pairs:
@@ -124,10 +152,7 @@ class AssignPanel(QWidget):
 
     def _refresh(self) -> None:
         self.pending.clear()
-        order = apply_swaps(list(range(self._count)), self.pairs)
-        for a, b in self.pairs:
-            self.pending.addItem(f'intercambio 0x{a:02X} <-> 0x{b:02X}')
-        changed = [i for i, m in enumerate(order) if m != i]
-        if changed:
-            self.pending.addItem('resultado: ' + ', '.join(f'0x{i:02X}=mov 0x{order[i]:02X}'
-                                                           for i in changed))
+        for slot, source in self.pairs:
+            self.pending.addItem(f'casilla 0x{slot:02X} <- copia de 0x{source:02X}')
+        if self.pairs:
+            self.pending.addItem(f'margen: {-copy_growth(self._bank, self.pairs)} bytes libres')

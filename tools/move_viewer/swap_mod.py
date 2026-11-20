@@ -70,6 +70,34 @@ def swap_motions(bank: bytes, pairs: list[tuple[int, int]]) -> bytes:
     return b''.join(motions) + tail
 
 
+def copy_motions(bank: bytes, assigns: list[tuple[int, int]]) -> bytes:
+    """Slot <- copy of an original motion, other slots untouched; same bank size.
+
+    The bank may not grow: the entry has to fit its stock disc extent and the in-RAM
+    motion buffer size is not verified yet. A smaller result is zero-padded after the
+    0 terminator.
+    """
+    motions, tail = split_bank(bank)
+    result = list(motions)
+    for slot, source in assigns:
+        if not (0 <= slot < len(motions) and 0 <= source < len(motions)):
+            raise ValueError(f'invalid assignment {slot}<-{source} for {len(motions)} motions')
+        result[slot] = motions[source]
+    body = b''.join(result)
+    if len(body) + 4 > len(bank):
+        raise ValueError(f'does not fit: bank grows by {len(body) + 4 - len(bank)} bytes')
+    return body + tail[:4] + bytes(len(bank) - len(body) - 4)
+
+
+def copy_growth(bank: bytes, assigns: list[tuple[int, int]]) -> int:
+    """Bytes the bank would grow with these copies (<= 0 fits)."""
+    motions, _ = split_bank(bank)
+    sizes = [len(m) for m in motions]
+    for slot, source in assigns:
+        sizes[slot] = len(motions[source])
+    return sum(sizes) + 4 - len(bank)
+
+
 def patch_entry(container: bytes, member: int, data: bytes) -> bytes:
     if container[:4] != b'DFS_':
         raise ValueError('entry is not a DFS container')
@@ -79,8 +107,12 @@ def patch_entry(container: bytes, member: int, data: bytes) -> bytes:
     return container[:offset] + data + container[offset + size:]
 
 
-def build(disc: Path, entry: int, pairs: list[tuple[int, int]]) -> tuple[int, bytes, bytes]:
-    """(disc user offset, original sectors, patched sectors) for the entry."""
+def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
+          copy: bool = False) -> tuple[int, bytes, bytes]:
+    """(disc user offset, original sectors, patched sectors) for the entry.
+
+    pairs are swaps a:b, or slot<-source copies when `copy` is set.
+    """
     offset, size = entry_extent(disc, entry)
     first = offset // SECTOR
     count = (offset % SECTOR + size + SECTOR - 1) // SECTOR
@@ -89,7 +121,8 @@ def build(disc: Path, entry: int, pairs: list[tuple[int, int]]) -> tuple[int, by
     container = stock[start:start + size]
     member_offset, member_size = struct.unpack_from('<II', container, 8 + 8 * BANK_MEMBER)
     bank = container[member_offset:member_offset + member_size]
-    patched = patch_entry(container, BANK_MEMBER, swap_motions(bank, pairs))
+    patched = patch_entry(container, BANK_MEMBER,
+                          copy_motions(bank, pairs) if copy else swap_motions(bank, pairs))
     return (ARCHIVE_LBA + first) * SECTOR, stock, stock[:start] + patched + stock[start + size:]
 
 
@@ -189,11 +222,11 @@ def check_disc(disc: Path) -> None:
 
 
 def generate(disc: Path, entries: list[int], pairs: list[tuple[int, int]], package_id: str,
-             name: str, out: Path) -> list[tuple[int, bytes, bytes]]:
+             name: str, out: Path, copy: bool = False) -> list[tuple[int, bytes, bytes]]:
     """Build one overlay per entry and write the verified package to `out`."""
     if not entries:
         raise ValueError('no BUST2.BIN entry to patch')
-    overlays = [build(disc, entry, pairs) for entry in entries]
+    overlays = [build(disc, entry, pairs, copy) for entry in entries]
     write_package(out, package_id, name, overlays)
     return overlays
 
@@ -204,6 +237,7 @@ def main(argv: list[str] | None = None) -> None:
     where.add_argument('--entry', type=int, action='append', help='BUST2.BIN model entry (Heat A p1 = 95)')
     where.add_argument('--bank', type=Path, help='001.bin motion bank: patch every entry that holds it')
     ap.add_argument('--swap', type=parse_pair, action='append', required=True, help='a:b motion indices')
+    ap.add_argument('--copy', action='store_true', help='treat a:b as slot a <- copy of motion b')
     ap.add_argument('--id', required=True, help='package id')
     ap.add_argument('--out', type=Path, required=True, help='package version dir to write')
     args = ap.parse_args(argv)
@@ -213,8 +247,9 @@ def main(argv: list[str] | None = None) -> None:
     check_disc(disc)
     out = assert_write_target(config, args.out.resolve(), role='work')
     entries = args.entry or find_entries(disc, args.bank.read_bytes())
-    name = 'Move swap ' + ', '.join(f'{a}<->{b}' for a, b in args.swap)
-    overlays = generate(disc, entries, args.swap, args.id, name, out)
+    sep = '<-' if args.copy else '<->'
+    name = ('Move assign ' if args.copy else 'Move swap ') + ', '.join(f'{a}{sep}{b}' for a, b in args.swap)
+    overlays = generate(disc, entries, args.swap, args.id, name, out, args.copy)
     for entry, (offset, stock, patched) in zip(entries, overlays):
         logger.info('%s: entry %d offset %d, %d sectors, %d bytes changed', out, entry, offset,
                     len(stock) // SECTOR, sum(x != y for x, y in zip(stock, patched, strict=True)))
