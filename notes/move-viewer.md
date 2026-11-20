@@ -13,7 +13,10 @@ Plan and progress: `_work/move-viewer/gantt.md`. App: `py -3.13 tools/move_viewe
   P2 (entry 96, heat-p2-ramdump-20261120; Strike P1 free 4388 B). Ghidra: DAT_80089230 block
   at the P2 region tail (FUN_800337b8) is consumed during P2 load (FUN_80033f14), so it does not
   reduce the budget. Costume 4 (167/168) keeps the stock bank when growing. P2 in-game take:
-  f2-grow-p2-20261120a (see result below).
+  f2-grow-p2-20261120c ACCEPTED (Strike P1, Heat P2, slots 72<-0x3A, 73<-0x54, +596 B):
+  P2 plays req104 -> anim73 at f6084; stills `_work/move-viewer/f2/p2c_sheet.png` show the floor
+  spin / handstand / stand-up of render `f2/render84/heat_m084_sheet.png`. Takes a/b were valid
+  but did not show the patched slot on screen (WAIT off-camera; CPU picked 73 not 72).
 - A grown entry patches its 4-byte DF2 size field (disc_user 366592 + 8 + 8*entry + 4).
 - Regional localization now owns only header bytes 366692..366693 (see
   `mods-src/bag2jp.localization.regional/1.0.0/PAYLOAD_README.txt`); both compose.
