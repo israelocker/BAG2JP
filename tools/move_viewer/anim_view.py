@@ -94,7 +94,12 @@ class AnimationView(QWidget):
     def advance(self) -> None:
         if not self._frames:
             return
-        self.image.setPixmap(self.frame_pixmap(self._index))
+        try:
+            self.image.setPixmap(self.frame_pixmap(self._index))
+        except (IndexError, ValueError, KeyError) as error:
+            self.timer.stop()
+            self.status.setText(f'render failed: {error}')
+            return
         self.status.setText(f"frame {self._keys[self._index]}/{self._motion['frames'] - 1}"
                             f" (step {self._motion['step']})")
         self._index = (self._index + 1) % len(self._frames)

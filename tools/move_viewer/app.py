@@ -60,7 +60,8 @@ class MoveViewer(QMainWindow):
         self.populate(tables)
 
     def set_view_widget(self, widget: QWidget) -> None:
-        self.view_slot.replaceWidget(self.view_widget, widget)
+        self.view_slot.insertWidget(0, widget, 1)
+        self.view_slot.removeWidget(self.view_widget)
         self.view_widget.deleteLater()
         self.view_widget = widget
 
