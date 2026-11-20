@@ -57,8 +57,8 @@ def assignment_check(bank: bytes, pairs: list[tuple[int, int]], slot: int,
                        f'se escribiría sobre memoria o datos del disco. Bloqueado.')
     notes = []
     if growth > 0:
-        notes.append(f'Crece {growth} de {max_growth} bytes medidos: solo jugador 1 traje A, '
-                     f'jugador 2 y los otros trajes conservan el original.')
+        notes.append(f'Crece {growth} de {max_growth} bytes medidos: jugador 1 y 2 con traje A, '
+                     f'los otros trajes conservan el original.')
     want, got = motion_frames(bank, slot), motion_frames(bank, source)
     if want is not None and got is not None and want != got:
         notes.append(f'Aviso: 0x{source:02X} dura {got} fotogramas y la casilla original '

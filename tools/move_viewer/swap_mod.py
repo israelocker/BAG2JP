@@ -31,9 +31,11 @@ DISC_SHA256 = 'fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268'
 # Measured bank growth budgets: character folder -> (entries allowed to grow, bytes).
 # Heat P1: RAM dump run 20261120T023117463572Z-heat-ramdump-20261119 left 912 B free in the
 # player region (0x8005F818 end vs P2 base); disc slack after entry 95 is 1200 B.
-# Only entry 95 (P1) is grown; other copies keep the stock bank. See
-# _work/move-viewer/f2/buffer/growth-budget.md.
-GROWTH_BUDGET = {'heat': ((95,), 912)}
+# Heat P2: run 20261120T113536848789Z-heat-p2-ramdump-20261120 left 912 B (0x8005F81C end vs
+# P2 base + 0x7729C; the P2 tail block DAT_80089230 is consumed by FUN_80033f14 before the
+# player struct is placed). Costume 4 entries 167/168 are unmeasured and keep the stock bank.
+# See _work/move-viewer/f2/buffer/growth-budget.md.
+GROWTH_BUDGET = {'heat': ((95, 96), 912)}
 
 
 def read_user(disc: Path, lba: int, count: int) -> bytes:

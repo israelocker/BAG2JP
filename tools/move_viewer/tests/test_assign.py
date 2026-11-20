@@ -53,7 +53,7 @@ class AssignTests(unittest.TestCase):
         self.assertFalse(assignment_check(stock, [], 1, 0)[0])
         allowed, message = assignment_check(stock, [], 1, 0, max_growth=2)
         self.assertTrue(allowed)
-        self.assertIn('jugador 1', message)
+        self.assertIn('jugador 1 y 2', message)
 
     def test_motion_rows_hex_index_and_size(self):
         rows = motion_rows(bank(b'ab', b'cdef'))
