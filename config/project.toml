@@ -16,6 +16,7 @@ hq_work = "_work/wsl/hq"
 hq_bag1_work = "_work/wsl/hq_b1"
 vs_work = "_work/wsl/vs"
 uipack_work = "_work/wsl/uipack"
+move_viewer_work = "_work/move-viewer"
 
 [wsl]
 distribution = "Ubuntu"
@@ -63,6 +64,8 @@ bag1_main_exe = "_work/bag1/scus.bin"
 # Full BAG1 PS-X EXE (with header); the native runtime RAM probe reads its text at 0x800.
 bag1_exe_image = "_work/bag1/SCUS_942.63"
 bag2_main_exe = "_work/mainexe/slpm.bin"
+# Match overlay 005.dbi without its 12-byte header (load address 0x8008F890).
+bag2_match_overlay = "_work/game/jp005.bin"
 # Loose BAG1 USA disc files (BIN1/, DFS1/) and per-character extracted inventories.
 bag1_disc_files = "_work/bag1_disc"
 character_inventory = "_work/character_inventory"

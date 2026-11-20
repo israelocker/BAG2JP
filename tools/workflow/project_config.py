@@ -57,7 +57,8 @@ def _field_registry() -> Mapping[str, FieldSpec]:
                   "tools_root": "tools", "gaso_out_usa": "output", "gaso_out_jp": "output",
                   "heat_test_workspace": "output", "heat_stage_workspace": "output",
                   "current_state": "output", "regional_work": "output", "hq_work": "output",
-                  "hq_bag1_work": "output", "vs_work": "output", "uipack_work": "output"}
+                  "hq_bag1_work": "output", "vs_work": "output", "uipack_work": "output",
+                  "move_viewer_work": "output"}
     for name, role in path_roles.items():
         operations = ("payload-manifest",) if name in ("build_root", "experimental_install") else ()
         fields[f"paths.{name}"] = FieldSpec("path", "native path", True, role, operations)
@@ -65,7 +66,8 @@ def _field_registry() -> Mapping[str, FieldSpec]:
                  "bag1_reference_runtime", "bag1_main_exe", "bag2_main_exe", "bag1_disc_files",
                  "character_inventory", "gaso_profile", "gaso_stock_bio",
                  "gaso_stock_fever", "gaso_motions", "heat_bag1_members", "bag2_cue", "bag2_disc",
-                 "bag2us_cue", "bag2us_assets", "bag2jp_base_archive", "bag2jp_assets", "bag1_exe_image"):
+                 "bag2us_cue", "bag2us_assets", "bag2jp_base_archive", "bag2jp_assets", "bag1_exe_image",
+                 "bag2_match_overlay"):
         fields[f"inputs.{name}"] = FieldSpec("path", "native path", True, "input")
     for name in ("audio_probe", "python_report", "winshot_root", "build_script",
                   "ffmpeg_review", "ffmpeg_wgc", "ffmpeg_native", "ghidra_launcher",

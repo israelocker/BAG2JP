@@ -65,3 +65,21 @@ modos y permisos explícitos de la sesión; un recordatorio no es autorización.
 
 Los antiguos objetivos «60–90%», «8 KB» o «30–45 minutos» sin comparación no son
 resultados. Registrar método, conjunto y alcance antes/después, sin inventar ahorro.
+
+## Equipos de agentes (2026-11-19)
+Para trabajo con varias líneas paralelas o secuenciales usar la skill compartida `team-orchestration-opencode` (adapta wshobson/agents agent-teams a `subagent`, plan en `_work/<tema>/plan.md` y enrutado: Opus/Sonnet investigan, Sonnet/GPT-6.1-terra implementan, Haiku/DeepSeek Flash buscan, modelos locales hacen lo mecánico de uno en uno). AGENTS.md prevalece; los subagentes no prueban en juego, no despliegan ni hacen commit.
+
+### Reparto fijo de modelos (owner 2026-11-19)
+Cada lanzamiento de subagente indica su modelo y el informe dice qué modelo hizo qué. Capacidades según conocimiento general, no medidas en el proyecto.
+
+| Rol | Principal | Alternativa |
+|---|---|---|
+| Coordinación y aceptación | claude-agent/opus | — |
+| Ingeniería inversa difícil (Ghidra, formatos) | claude-agent/opus (high) | openai/gpt-6.1-sol (high) |
+| Implementación con especificación conocida | claude-agent/sonnet (medium) | openai/gpt-6.1-terra (medium) |
+| Trabajo mecánico en bloque | deepseek/deepseek-flash | ollama/qwen3-coder:30b (serie) |
+| Búsqueda / resumen / conteo | claude-agent/haiku | ollama/qwen3-coder:30b |
+| Revisión (otra familia que el autor) | openai/gpt-6.1-sol | Sonnet solo si el autor fue Opus |
+| Inspección de imágenes/fotogramas | claude-agent/sonnet | nvidia/nemotron-3.5-super-vl |
+
+Excluidos: `google/antigravity-*` (Gemini y Claude vía Antigravity) y `deepseek/deepseek-v4-pro` (sin tokens de pago), por decisión del owner; gratuitos `opencode/*-free` y `nvidia/*` solo para tareas no sensibles tras prueba; versiones antiguas de Claude y Fable sin evaluar. Ollama: un modelo GPU a la vez y nunca durante pruebas de juego.

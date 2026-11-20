@@ -203,6 +203,10 @@ Arrancar el grabador al aparecer `stage-selected.png` y crear `STOP` al aparecer
 `song-end.png` del run de versus; si el harness cierra antes, el grabador aborta
 por cambio de ventana. Pendiente: `test_bag2_record` tiene 6 errores previos
 (`consola.ttf` no encontrada en la configuración temporal de los tests).
+Goldfish 2026-11-19 (commit 7e0a992; `_work/goldfish/20261119-recorder-priority/`):
+veredicto OK. Se pidió gpt-6.1-sol, pero respondió DeepSeek V4.1 Flash Free. Hallazgos
+bajos pendientes: falta un test de `creationflags` y la prioridad no consta en `session.json`.
+Riesgos medios comprobados en la toma f: sin kill de ffmpeg, `dropped` 0 y `dropped_late` 2.
 
 ## 5. Evidencia y señales de diagnóstico
 
