@@ -54,14 +54,18 @@ ROLES = {
 #        requests >= 29 as bar 7, level 35 - request). The normal anim of (s, v) follows
 #        (s-1, v); its alternate (table 0x80055854) follows a level-up from (s-1, v-1). Same rule as BAG2.
 # Each BAG2 row (level L, bar s) maps to BAG1 bar s + (7 - last bar of the row), so every row ends on a
-# BAG1 double, at BAG1 level min(L, bar): consecutive cells are always a designed BAG1 transition.
+# BAG1 double, at BAG1 level min(B1_LEVEL[L], bar): consecutive cells are always a designed BAG1 transition.
 B2_ROWS = {0: (0, [6, 11, 21, 53]), 1: (0, [5, 10, 19, 26, 36, 52]), 2: (0, [4, 9, 17, 25, 34, 51]),
            3: (0, [3, 8, 15, 24, 32, 50]), 4: (0, [2, 7, 13, 23, 30, 39, 45, 49]),
            5: (2, [12, 22, 28, 38, 43, 48]), 6: (4, [27, 37, 41, 47]), 7: (6, [40, 46])}
 B2_ALT = {19: 20, 17: 18, 15: 16, 13: 14, 34: 35, 32: 33, 30: 31, 28: 29, 43: 44, 41: 42}  # slot -> alt
+# Target BAG1 level per BAG2 row ("escalado", owner 2026-11-20): L4, the only 8-bar row, plays the full
+# BAG1 level-0 combo (A C F J O U ZZZ), so 34/35 BAG1 cells are used and none repeats more than 3 times
+# (v = L left C/F/J unused and D/K in 4-5 slots). Comparison: _work/move-roles/remap_options.py.
+B1_LEVEL = {0: 0, 1: 1, 2: 2, 3: 3, 4: 0, 5: 4, 6: 5, 7: 6}
 def b1_path(L):
     s0, row = B2_ROWS[L]; k = 7 - (s0 + len(row) - 1)
-    return [(s + k, min(L, s + k)) for s in range(s0, s0 + len(row))]
+    return [(s + k, min(B1_LEVEL[L], s + k)) for s in range(s0, s0 + len(row))]
 B1_PATHS = {L: b1_path(L) for L in B2_ROWS}
 B1_REQ_ANIM = [None, 1, 2, 3, 4, 5, 7, 8, 9, 11, 13, 14, 15, 17, 19, 21, 22, 23, 25, 27, 29, 31, 32, 33,
                35, 37, 39, 41, 43, 44, 45, 46, 47, 48, 49, 50]     # BAG1 table 0x80055830
