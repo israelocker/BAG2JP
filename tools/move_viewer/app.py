@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (QApplication, QFormLayout, QLabel, QMainWindow, QSplitter,
                                QTabWidget, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
@@ -74,7 +75,7 @@ class MoveViewer(QMainWindow):
         self.setCentralWidget(splitter)
         self.populate(tables)
 
-    def showEvent(self, event) -> None:
+    def showEvent(self, event: QShowEvent) -> None:
         """Split the first time by weight; the layout ignores setSizes made before show."""
         super().showEvent(event)
         if not getattr(self, "_sized", False):
