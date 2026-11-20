@@ -172,11 +172,14 @@ def generate_mod(bank: Path, pairs: list[tuple[int, int]],
     if swap_mod.copy_growth(data, pairs, cross.source.bank if cross else None) > 0:
         entries, max_growth = swap_mod.GROWTH_BUDGET[folder]
         entries = list(entries)
+    elif cross:
+        # Compatibility was checked against costume A only; costume 4 has another skeleton.
+        entries = list(swap_mod.GROWTH_BUDGET[folder][0])
     origin = f" from {cross.source.label}" if cross else ""
     name = f"Move assign {folder}{origin}: " + ", ".join(f"{a}<-{b}" for a, b in pairs)
     swap_mod.generate(disc, entries, pairs, package_id, name, out, copy=True,
                       max_growth=max_growth, cross=cross)
-    note = " (crece: jugador 1 y 2, traje A; traje 4 queda stock)" if max_growth else ""
+    note = " (jugador 1 y 2, traje A; traje 4 queda stock)" if max_growth or cross else ""
     return f"Mod generado (desactivado) en {out} — entradas BUST2.BIN {entries}{note}"
 
 

@@ -302,7 +302,7 @@ def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
     source indexes cross.source's bank (copies only, incompatible banks raise). A grown entry also
     needs its 4-byte BUST2.BIN header size field patched (second overlay; composes with
     other mods that only own other header bytes) and must end before the next entry;
-X
+    growth past `max_growth` (measured RAM budget) is refused.
     """
     offset, size = entry_extent(disc, entry)
     first = offset // SECTOR
