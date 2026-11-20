@@ -245,12 +245,37 @@ def copy_motions(bank: bytes, assigns: list[tuple[int, int]], max_growth: int = 
         if cross.target.bank != bank:
             raise ValueError('cross-bank copy: target bank differs from the bank being patched')
         require_compatible(cross, assigns)
-        sources, _ = split_bank(cross.source.bank)
+        sources = [mute_variant_cues(m) for m in split_bank(cross.source.bank)[0]]
     body = b''.join(_copy(motions, sources, assigns))
     growth = len(body) + 4 - len(bank)
     if growth > max_growth:
         raise ValueError(f'does not fit: bank grows by {growth} bytes (allowed {max_growth})')
     return body + bytes(4) + bytes(max(0, -growth))
+
+
+# BAG1 variants own cue ids 0x6000 + char id * 0x100 (tools/bag1import/rebase_cues.py); a stock
+# bank's match only loads them when the opponent is that variant. FUN_8002E2D0 plays the first
+# matching id of the global cue table, so a missing id is silent: 0x1FFF is the pipeline's mute.
+VARIANT_CUES = range(0x6000, 0x8000)
+MUTED_CUE = 0x1FFF
+
+
+def mute_variant_cues(motion: bytes) -> bytes:
+    """Point sound events (type 2/3) at variant-only cue ids to MUTED_CUE; `motion` has its size prefix."""
+    d = bytearray(motion)
+    if len(d) < 16:                # empty stock entries carry no event table
+        return motion
+    a = struct.unpack_from('<I', d, 4)[0]
+    o = 4 + a + struct.unpack_from('<I', d, 4 + a)[0]
+    p = o + struct.unpack_from('<H', d, o + 2)[0] * 2 + 4
+    while p + 6 <= len(d):
+        t, _, v = struct.unpack_from('<HHH', d, p)
+        if t == 0:
+            break
+        if t in (2, 3) and v in VARIANT_CUES:
+            struct.pack_into('<H', d, p + 4, MUTED_CUE)
+        p += 6
+    return bytes(d)
 
 
 def copy_growth(bank: bytes, assigns: list[tuple[int, int]], source_bank: bytes | None = None) -> int:

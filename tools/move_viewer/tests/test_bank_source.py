@@ -191,3 +191,17 @@ class RealDataTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class MuteVariantCuesTest(unittest.TestCase):
+    def test_variant_cues_muted_others_kept(self):
+        import struct
+        from tools.move_viewer.swap_mod import mute_variant_cues, MUTED_CUE
+        # body: u32 a=4 | at 4: u32 rel=4 -> info at 8: u16 0, u16 n=0 | events | 0
+        events = [(2, 5, 0x6103), (3, 6, 0x1101), (1, 7, 0x6100), (2, 8, 0x0002)]
+        body = struct.pack('<II', 4, 4) + struct.pack('<HH', 0, 0)
+        body += b''.join(struct.pack('<HHH', *e) for e in events) + bytes(2)
+        motion = struct.pack('<I', len(body)) + body
+        out = mute_variant_cues(motion)
+        got = [struct.unpack_from('<HHH', out, 16 + 6 * i) for i in range(4)]
+        self.assertEqual(got, [(2, 5, MUTED_CUE), (3, 6, 0x1101), (1, 7, 0x6100), (2, 8, 2)])
+        self.assertEqual(mute_variant_cues(b'\x04\x00\x00\x00abcd'), b'\x04\x00\x00\x00abcd')
