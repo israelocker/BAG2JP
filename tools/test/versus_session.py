@@ -364,6 +364,7 @@ class Session:
     def shot(self, name: str) -> None:
         """Save evidence; this does not claim automatic visual interpretation."""
         self.assert_process()
+        name = getattr(self, "shot_prefix", "") + name
         path = self.run / f"{name}.png"
         if path.exists():
             raise FileExistsError(path)
@@ -605,6 +606,14 @@ class Session:
             stream.close()
 
 
+def parse_second_versions(text: str) -> str:
+    """Validate 'V1,V2' with each value BAG1 or BAG2."""
+    parts = text.split(",")
+    if len(parts) != 2 or any(part not in ("BAG1", "BAG2") for part in parts):
+        raise argparse.ArgumentTypeError("expected BAG1|BAG2,BAG1|BAG2")
+    return text
+
+
 def config_selector() -> argparse.ArgumentParser:
     """Pre-parser: the configuration must resolve before other defaults exist."""
     selector = argparse.ArgumentParser(add_help=False)
@@ -642,6 +651,8 @@ def build_parser(config: project_config.ProjectConfig) -> argparse.ArgumentParse
                         help="shoot every stage carousel row before choosing the stage")
     parser.add_argument("--finish", action="store_true",
                         help="follow the song to its end and require the return to character select")
+    parser.add_argument("--second-versions", type=parse_second_versions, default=None,
+                        help="after --finish, play a second match with versions P1,P2 (e.g. BAG2,BAG2)")
     # An explicit value wins; otherwise the resolved harness.finish_timeout_seconds applies.
     parser.add_argument("--finish-timeout", type=finish_budget,
                         default=config.values.get("harness.finish_timeout_seconds"),
@@ -659,6 +670,8 @@ def main(argv: list[str] | None = None) -> int:
         selector.error(f"config error: {exc}")
     parser = build_parser(config)
     args = parser.parse_args(argv)
+    if args.second_versions and not args.finish:
+        parser.error("--second-versions requires --finish")
     if args.ram_dump_frame is not None and args.ram_dump_frame <= 0:
         parser.error("--ram-dump-frame must be positive")
     if len(nav.WATCHES) + (16 if args.watch_cues else 0) + len(args.watch_extra) > MAX_WATCH:
@@ -737,6 +750,15 @@ def main(argv: list[str] | None = None) -> int:
                     result["status"] = "machine_verified_awaiting_visual_review"
                     if args.finish:
                         result["finish"] = session.finish_match(args.finish_timeout)
+                        result["status"] = "complete_awaiting_visual_review"
+                    if args.second_versions:
+                        # Same process, new versions: exercises in-session BAG1/BAG2 switches.
+                        versions = args.second_versions.split(",")
+                        session.shot_prefix = "second-"
+                        session.shot("select")
+                        result["second_picks"] = [session.pick(side, getattr(args, f"p{side}_character"), versions[side - 1], getattr(args, f"p{side}_costume"), edges) for side in (1, 2)]
+                        session.match(args.stage, characters, [int(args.p1_costume == "B"), int(args.p2_costume == "B")])
+                        result["second_finish"] = session.finish_match(args.finish_timeout)
                         result["status"] = "complete_awaiting_visual_review"
             finally:
                 try:
