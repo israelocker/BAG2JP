@@ -65,3 +65,5 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 - Toma f3-sizefix-lose3-20261121-1 aceptada: mod Strike WAIT +420 B + force-lose3, Heat P2 LOSE3 f014397 -> phase 2/9 f015786 (antes colgaba). state.toml restaurado.
 - GROWTH_BUDGET Heat/Strike/Bi-O restaurado (912/4388/672). Sin probar: Strike como perdedor con banco crecido, Bi-O.
 - Goldfish (pedido DeepSeek, respondió Opus 5.5): OK con cambios. Aplicado MEDIA: b1v_reset borra los tamaños guardados. Pendiente BAJA: tamaño 0 como centinela, sin cota de cordura, sin test de host, presupuestos no comprueban hash de runtime; savestate con BAG1 activo usa tamaño compilado (limite declarado).
+
+- 2026-11-21: toma aceptada f3-sizefix3-lose3-20261121-1 (exe 0D3BC951, Heat P1, Strike P2 con banco crecido +420 B y LOSE3 forzado): Strike P2 LOSE3 req152 anim100 en f014387 y salida a fase 2/9 en f015967, sin cuelgue. Restauracion de state.toml verificada (CFD4F8CA). Sin probar: crecimiento de Bi-O y cambio BAG1/BAG2 con una entrada crecida.
