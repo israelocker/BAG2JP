@@ -340,9 +340,37 @@ def grow_entry(container: bytes, bank: bytes) -> bytes:
     return bytes(head) + bank + container[end:]
 
 
+# DUMMY.BIN padding (JP disc): the BAG1 alt payload owns LBA 224035..228919
+# (regrid3 bag1_alt.bin, 4885 sectors); the rest is free for relocated entries.
+# DF2_ offsets beyond BUST2.BIN already load in-game (BAG1 alt_off precedent).
+RELOCATE_FIRST_LBA = 228920
+RELOCATE_END_LBA = 237535
+
+
+def relocated(disc: Path, entry: int, size: int, patched: bytes,
+              lba: int) -> list[tuple[int, bytes, bytes]]:
+    """Overlays placing a grown entry in free DUMMY.BIN sectors and repointing its header.
+
+    The bag1-content plugin only follows stock/alt offsets, so a relocated BAG1-variant
+    entry loses its BAG1 switch while relocated (declared limit).
+    """
+    sectors = (len(patched) + SECTOR - 1) // SECTOR
+    if lba < RELOCATE_FIRST_LBA or lba + sectors > RELOCATE_END_LBA:
+        raise ValueError(f'relocation LBA {lba} (+{sectors} sectors) outside free DUMMY area')
+    stock = read_user(disc, lba, sectors)[:len(patched)]
+    if any(stock):
+        raise ValueError(f'relocation target at LBA {lba} is not zero padding')
+    old_offset = entry_extent(disc, entry)[0]
+    field = ARCHIVE_LBA * SECTOR + 8 + 8 * entry
+    return [(lba * SECTOR, stock, patched),
+            (field, struct.pack('<II', old_offset, size),
+             struct.pack('<II', (lba - ARCHIVE_LBA) * SECTOR, len(patched)))]
+
+
 def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
           copy: bool = False, max_growth: int = 0,
-          cross: CrossBank | None = None) -> list[tuple[int, bytes, bytes]]:
+          cross: CrossBank | None = None,
+          relocate_lba: int | None = None) -> list[tuple[int, bytes, bytes]]:
     """Overlays (disc user offset, original bytes, patched bytes) for the entry.
 
     pairs are swaps a:b, or slot<-source copies when `copy` is set; with `cross` the
@@ -366,7 +394,9 @@ def build(disc: Path, entry: int, pairs: list[tuple[int, int]],
     else:
         patched = grow_entry(container, new_bank)
         if offset + len(patched) > next_entry_offset(disc, entry):
-            raise ValueError(f'entry {entry} would overrun the next BUST2.BIN entry')
+            if relocate_lba is None:
+                raise ValueError(f'entry {entry} would overrun the next BUST2.BIN entry')
+            return relocated(disc, entry, size, patched, relocate_lba)
     base = (ARCHIVE_LBA + first) * SECTOR + start
     # expected_sha256 guards the stock bytes of the payload's own length (slack included).
     stock = read_user(disc, ARCHIVE_LBA + first,

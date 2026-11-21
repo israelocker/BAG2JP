@@ -94,3 +94,11 @@ class GrowthBudgetTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class RelocationBoundsTest(unittest.TestCase):
+    def test_relocation_outside_free_dummy_area_is_refused(self) -> None:
+        from pathlib import Path
+        for lba in (swap_mod.RELOCATE_FIRST_LBA - 1, swap_mod.RELOCATE_END_LBA - 1):
+            with self.assertRaises(ValueError):
+                swap_mod.relocated(Path('missing.bin'), 109, 10, b'\0' * 4096, lba)
