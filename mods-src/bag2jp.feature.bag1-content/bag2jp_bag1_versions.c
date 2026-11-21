@@ -201,17 +201,25 @@ static int b1v_region_japanese(const char* option) {
     return strcmp(value, "international") != 0;
 }
 
-static void b1v_apply_entry(const B1AltEntry* e, uint32_t count, int japanese) {
+/* BAG2 size as the disc table reports it. A disc_user mod (move viewer) may grow a BAG2
+ * entry in place; forcing the compiled stock size would place the player struct over the
+ * grown bank tail (LOSE3 hang, notes/move-viewer.md 2026-11-21). */
+static uint32_t b1v_bag2_size[sizeof b1_alt_entries / sizeof b1_alt_entries[0]];
+
+static void b1v_apply_entry(const B1AltEntry* e, uint32_t* bag2_size, uint32_t count,
+                            int japanese) {
     if (e->entry >= count) return;
     const uint32_t a = B1V_TABLE + 8u + 8u * e->entry;
     const uint32_t off = psx_mod_read_word(a);
     if (off != e->off && off != e->alt_off && (!e->jp_size || off != e->jp_off)) return;
+    if (off == e->off) *bag2_size = psx_mod_read_word(a + 4u);
+    if (!*bag2_size) *bag2_size = e->size;
     const int alt = b1v_wanted(e);
     const int available = !japanese || e->jp_size != 0;
     /* Missing JP resources must not be presented as the Japanese variant. */
     const int use_alt = alt && available;
     const uint32_t want = use_alt ? (japanese ? e->jp_off : e->alt_off) : e->off;
-    const uint32_t size = use_alt ? (japanese ? e->jp_size : e->alt_size) : e->size;
+    const uint32_t size = use_alt ? (japanese ? e->jp_size : e->alt_size) : *bag2_size;
     if (off == want && psx_mod_read_word(a + 4u) == size) return;
     psx_mod_write_word(a, want);
     psx_mod_write_word(a + 4u, size);
@@ -255,7 +263,7 @@ static void b1v_vblank(void) {
     const int stages_jp = b1v_region_japanese("stages");
     for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i) {
         const B1AltEntry* e = &b1_alt_entries[i];
-        b1v_apply_entry(e, count, e->kind == 3 ? stages_jp : models_jp);
+        b1v_apply_entry(e, &b1v_bag2_size[i], count, e->kind == 3 ? stages_jp : models_jp);
     }
 }
 

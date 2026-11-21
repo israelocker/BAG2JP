@@ -49,12 +49,11 @@ class GrowthBudgetTest(unittest.TestCase):
         entries, budget = GROWTH_BUDGET['comet']
         check_growth_budget(list(entries), budget)
 
-    def test_plugin_fixed_size_characters_cannot_grow(self) -> None:
-        # bag1-content rewrites these DF2_ sizes in RAM (LOSE3 hang, 2026-11-21).
+    def test_bag1_variant_characters_grow_within_measured_budget(self) -> None:
+        # bag1-content keeps the disc size since 2026-11-21 (LOSE3 hang fix).
         for character in ('heat', 'strike', 'bi_o'):
-            entries, _ = GROWTH_BUDGET[character]
-            with self.assertRaisesRegex(ValueError, 'outside'):
-                check_growth_budget([entries[0]], 4)
+            entries, budget = GROWTH_BUDGET[character]
+            check_growth_budget(list(entries), budget)
 
     def test_growth_over_budget_rejected(self) -> None:
         entries, budget = GROWTH_BUDGET['comet']
