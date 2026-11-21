@@ -19,7 +19,10 @@ from PySide6.QtWidgets import (QApplication, QFormLayout, QLabel, QMainWindow, Q
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from tools.move_viewer import move_tables  # noqa: E402
-from tools.move_viewer import bank_source, swap_mod  # noqa: E402
+from tools.move_viewer import bank_source, package_plan, reservations, selector_policy, swap_mod  # noqa: E402
+
+# Native selector authority; checked byte-identical to the installed BAG2JP.exe table (2026-11-21).
+SELECTOR_TABLE = ROOT / "mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_alt_index.h"
 from tools.move_viewer.anim_view import AnimationView, asset_folder  # noqa: E402
 from tools.move_viewer.assign_panel import AssignPanel  # noqa: E402
 from tools.move_viewer.combo_view import ComboView  # noqa: E402
@@ -177,8 +180,15 @@ def generate_mod(bank: Path, pairs: list[tuple[int, int]],
         entries = list(swap_mod.GROWTH_BUDGET[folder][0])
     origin = f" from {cross.source.label}" if cross else ""
     name = f"Move assign {folder}{origin}: " + ", ".join(f"{a}<-{b}" for a, b in pairs)
-    swap_mod.generate(disc, entries, pairs, package_id, name, out, copy=True,
-                      max_growth=max_growth, cross=cross)
+    install, = require_paths(config, ("paths.experimental_install",))
+    spans = reservations.inventory((work / 'f2/pkg', install / 'mods/installed'))
+    # Entries the BAG1 selector rewrites must stay at their native offsets (bag2jp_bag1_versions.c).
+    blocked = selector_policy.blocked_entries(SELECTOR_TABLE.read_text(encoding="utf-8"))
+    overlays = package_plan.plan(disc, entries, pairs, spans, max_growth=max_growth,
+                                 cross=cross, relocation_blocked=blocked)
+    if out.exists():
+        raise ValueError(f'Package already exists; preserved: {out}')
+    swap_mod.write_package(out, package_id, name, overlays)
     note = " (jugador 1 y 2, traje A; traje 4 queda stock)" if max_growth or cross else ""
     return f"Mod generado (desactivado) en {out} — entradas BUST2.BIN {entries}{note}"
 
