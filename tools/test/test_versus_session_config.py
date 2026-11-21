@@ -189,6 +189,21 @@ class ParserPrecedenceTest(unittest.TestCase):
                 self.assertEqual(code, 2)
         self.assertEqual(parser.parse_args(["--finish-timeout", "86400"]).finish_timeout, 86400.0)
 
+    def test_second_versions_accepts_only_two_known_versions(self) -> None:
+        parser = versus_session.build_parser(build_config(relocated_root(self)))
+        self.assertEqual(parser.parse_args(["--second-versions", "BAG2,BAG1"]).second_versions, "BAG2,BAG1")
+        self.assertIsNone(parser.parse_args([]).second_versions)
+        for value in ("BAG2", "BAG2,BAG3", "BAG1,BAG2,BAG2", "bag2,bag2"):
+            with self.subTest(value=value):
+                code, _ = self._error(parser, ["--second-versions", value])
+                self.assertEqual(code, 2)
+
+    def test_second_versions_requires_finish(self) -> None:
+        with mock.patch.object(versus_session, "load_config", return_value=build_config(relocated_root(self))):
+            with redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as raised:
+                versus_session.main(["--action", "run", "--second-versions", "BAG2,BAG2"])
+        self.assertEqual(raised.exception.code, 2)
+
 
 class MainBeforeEffectsTest(unittest.TestCase):
     def test_config_error_exits_before_any_effect(self) -> None:
