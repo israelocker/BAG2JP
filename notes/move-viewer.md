@@ -84,3 +84,5 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 - Toma f3-bound-lose3-20261121-1 aceptada (Heat P1, Strike P2 con WAIT crecido +420, force-lose3): log 'entry 109/110 BAG2 size 336720 (disc 336720, stock 336300)'; Heat P1 LOSE3 req152 f014483 -> phase 2/9 sin cuelgue; state.toml restaurado CFD4F8CA.
 - Sin verificar: Strike como perdedor con este exe; rechazo fuera de cota en juego (solo por código).
 
+- Goldfish 31bae3e (pedido deepseek-flash: ECONNREFUSED; respondió Sonnet 5.5): OK con cambios, sin ALTA. Límite conocido (MEDIA): savestate cargado con variante BAG1 activa deja el tamaño BAG2 sin observar -> al volver a BAG2 se usa stock; con banco crecido puede reaparecer el cuelgue LOSE3. Evitar savestates en BAG1 con mods del visor que crecen. BAJA pendientes: sin log en vuelta a stock/fallback; test lista heat/strike/bi_o a mano; cota duplicada a mano (cubierta por test).
+
