@@ -16,7 +16,17 @@ from PySide6.QtGui import QShowEvent
 from PySide6.QtWidgets import (QApplication, QFormLayout, QLabel, QMainWindow, QSplitter,
                                QTabWidget, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
 
-ROOT = Path(__file__).resolve().parents[2]
+def _repo_root() -> Path:
+    """Source checkout root; a frozen .exe finds it above its own location."""
+    if not getattr(sys, "frozen", False):
+        return Path(__file__).resolve().parents[2]
+    for parent in Path(sys.executable).resolve().parents:
+        if (parent / "config/project.toml").is_file():
+            return parent
+    raise SystemExit("move viewer: place the .exe inside the BAG2JP checkout")
+
+
+ROOT = _repo_root()
 sys.path.insert(0, str(ROOT))
 from tools.move_viewer import move_tables  # noqa: E402
 from tools.move_viewer import bank_source, package_plan, reservations, selector_policy, swap_mod  # noqa: E402
