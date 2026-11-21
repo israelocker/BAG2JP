@@ -105,6 +105,7 @@ class MoveViewer(QMainWindow):
 
     def show_combo_slot(self, character: str, slot: int) -> None:
         """Preview the slot of the selected Combos row (same renderer as the Moves tree)."""
+        self._close_comparison()
         self._character = character
         move = next((m for c in self._tables.get("characters", []) if c["name"] == character
                      for m in c["moves"] if m["slot"] == slot), None)
@@ -133,6 +134,7 @@ class MoveViewer(QMainWindow):
             self.tree.addTopLevelItem(char_item)
 
     def show_move(self, item: QTreeWidgetItem | None, _previous=None) -> None:
+        self._close_comparison()
         move = item.data(0, MOVE_ROLE) if item is not None else None
         for name, label in self.fields.items():
             label.setText(str(move.get(name)) if move else "-")
@@ -146,8 +148,42 @@ class MoveViewer(QMainWindow):
             self.view_widget.show_motion(move["character"] if move else "",
                                          move["slot"] if move else None)
 
-    def preview_motion(self, index: int, bank: bytes | None = None) -> None:
+    def _close_comparison(self) -> None:
+        if hasattr(self, '_comparison'):
+            self._comparison.close()
+
+    def closeEvent(self, event) -> None:
+        self._close_comparison()
+        super().closeEvent(event)
+
+    def preview_motion(self, index: int | None, bank: bytes | None = None,
+                       cross: swap_mod.CrossBank | None = None,
+                       target_slot: int | None = None) -> None:
+        if index is None:
+            self._close_comparison()
+            return
         if isinstance(self.view_widget, AnimationView) and self._character:
+            if cross is not None and target_slot is not None:
+                from tools.move_viewer.anim_view import MotionComparison
+                try:
+                    if hasattr(self, '_comparison'):
+                        self._comparison.close()
+                    budget = swap_mod.GROWTH_BUDGET.get(asset_folder(self._character))
+                    result = swap_mod.copy_motions(cross.target.bank, [(target_slot, index)],
+                                                   max_growth=budget[1] if budget else 0,
+                                                   cross=cross)
+                    if not hasattr(self, '_comparison'):
+                        self._comparison = MotionComparison(self.view_widget.characters_dir)
+                    if self._comparison.show_banks(self._character, index, bank,
+                                                    target_slot, result):
+                        self._comparison.show()
+                    else:
+                        self.assign.result.setText('Comparación bloqueada: no se pudo renderizar.')
+                except (OSError, ValueError, IndexError) as error:
+                    self.assign.result.setText(f'Comparación bloqueada: {error}')
+                return
+            if hasattr(self, '_comparison'):
+                self._comparison.close()
             self.view_widget.show_motion(self._character, index, bank)
 
 
@@ -182,7 +218,7 @@ def generate_mod(bank: Path, pairs: list[tuple[int, int]],
     data = bank.read_bytes()
     entries = swap_mod.find_entries(disc, data)
     max_growth = 0
-    if swap_mod.copy_growth(data, pairs, cross.source.bank if cross else None) > 0:
+    if swap_mod.copy_growth(data, pairs, cross=cross) > 0:
         entries, max_growth = swap_mod.GROWTH_BUDGET[folder]
         entries = list(entries)
     elif cross:

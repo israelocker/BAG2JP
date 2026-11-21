@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QImage, QPixmap
-from PySide6.QtWidgets import QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from .model_codec import load_character
 from .pose import decode_motion, pose_model, sample_motion, world_meshes
@@ -59,7 +59,7 @@ class AnimationView(QWidget):
             self._characters[folder] = (model, bank, tims, slot_map)
         return self._characters[folder]
 
-    def show_motion(self, character: str, slot: int | None, bank: bytes | None = None) -> None:
+    def show_motion(self, character: str, slot: int | None, bank: bytes | None = None) -> bool:
         """Start looping motion `slot` of `character`; shows a message when unavailable.
 
         `bank` previews that motion of another bank on the character's own model and slot map
@@ -67,22 +67,24 @@ class AnimationView(QWidget):
         """
         self.timer.stop()
         self._frames, self._keys, self._index = [], [], 0
+        self.image.clear()
+        self._motion = None
         if slot is None:
             self.image.clear()
             self.status.setText('-')
-            return
+            return False
         try:
             self._character = self._load(asset_folder(character))
             motion = decode_motion(self._character[1] if bank is None else bank, slot)
         except (OSError, IndexError, ValueError, SystemExit) as error:
             self.image.clear()
             self.status.setText(f'{character} slot {slot}: no render ({error})')
-            return
+            return False
         self._motion = motion
         self._keys = list(range(0, motion['frames'], max(1, motion['step'])))
         self._frames = [None] * len(self._keys)
         self.timer.start(round(GAME_FRAME_MS * max(1, motion['step'])))
-        self.advance()
+        return self.advance()
 
     def frame_pixmap(self, i: int) -> QPixmap:
         if self._frames[i] is None:
@@ -95,15 +97,73 @@ class AnimationView(QWidget):
                                                        QImage.Format.Format_RGB888).copy())
         return self._frames[i]
 
-    def advance(self) -> None:
+    def advance(self) -> bool:
         if not self._frames:
-            return
+            return False
         try:
             self.image.setPixmap(self.frame_pixmap(self._index))
         except (IndexError, ValueError, KeyError) as error:
             self.timer.stop()
+            self.image.clear()
             self.status.setText(f'render failed: {error}')
-            return
+            return False
         self.status.setText(f"frame {self._keys[self._index]}/{self._motion['frames'] - 1}"
                             f" (step {self._motion['step']})")
         self._index = (self._index + 1) % len(self._frames)
+        return True
+
+
+class MotionComparison(QWidget):
+    """Source and generated motion on the target model, driven by one frame clock.
+
+    This is an offline diagnostic, not a rendering of the original source model.
+    Different durations loop independently at their original frame counts.
+    """
+
+    def __init__(self, characters_dir: Path):
+        super().__init__()
+        self.setWindowTitle('Comparación de copia — modelo destino en ambas vistas')
+        self.source = AnimationView(characters_dir)
+        self.result = AnimationView(characters_dir)
+        layout = QHBoxLayout(self)
+        for title, view in (('Origen sin adaptar (modelo destino)', self.source),
+                            ('Resultado exacto del generador', self.result)):
+            column = QVBoxLayout()
+            column.addWidget(QLabel(title))
+            column.addWidget(view)
+            layout.addLayout(column)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.advance)
+        self.frame = 0
+
+    def show_banks(self, character: str, source_slot: int, source_bank: bytes,
+                   target_slot: int, result_bank: bytes) -> bool:
+        self.timer.stop()
+        self.frame = 0
+        self.setWindowTitle(f'{character}: origen 0x{source_slot:02X} → destino 0x{target_slot:02X}'
+                            ' — ambas vistas usan modelo destino')
+        ready = True
+        for view, slot, bank in ((self.source, source_slot, source_bank),
+                                 (self.result, target_slot, result_bank)):
+            ready = bool(view.show_motion(character, slot, bank)) and ready
+            view.timer.stop()
+        if not ready:
+            return False
+        self.timer.start(round(GAME_FRAME_MS))
+        return True
+
+    def advance(self) -> None:
+        for view in (self.source, self.result):
+            if view._frames and view._motion:
+                local = self.frame % view._motion['frames']
+                view._index = min(local // max(1, view._motion['step']), len(view._keys) - 1)
+                if not view.advance():
+                    self.timer.stop()
+                    return
+        self.frame += 1
+
+    def closeEvent(self, event) -> None:
+        self.timer.stop()
+        self.source.timer.stop()
+        self.result.timer.stop()
+        super().closeEvent(event)

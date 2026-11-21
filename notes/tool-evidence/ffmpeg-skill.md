@@ -9,7 +9,14 @@ updated: "2026-11-15"
 doc_kind: evidence
 ---
 
-# ffmpeg-skill - historial
+# ffmpeg-skill — historial
+
+## 20261121-retarget-slot0-review — atribución visual corregida
+
+- Objetivo: inspección de los movimientos copiados en tomas Heat/Bi-O, no edición ni exportación. Skill local cargado; extracción mediante `py -3.13 tools/test/bag2_record.py frames --tag <tag> --frame <gf> --span 12 --step 2` y hojas reducidas Pillow. No se ejecutó un nuevo comando directo del skill FFmpeg en este tramo: se reutilizó el extractor del grabador con su reloj y backend ya verificados, necesario para localizar eventos por game frame.
+- Inputs y hashes: manifests inmutables bajo `_work/recordings/rt-heat-slot0-strike-p1-20261121a/` y `rt-heat-slot0-strike-p2-20261121b/`; captura rechazada P2a retenida por separado. Runtime 35266C386CAB, región JP.
+- Hallazgo: req106 es slot71, no slot0. Además, el actor negro con S en primer plano era Strike, no Heat. Hojas `heat-strike-slot0-sheet.jpg` y secuencia P2 gf11719 no acreditan la pose de Heat; corrección durable en notes/move-viewer.md. `heat-p2-both-idle.jpg` en gf8849 muestra Heat blanco/rojo a la derecha y Strike a la izquierda.
+- Resultado: útil para refutar evidencia mal atribuida; fidelidad de slot0 y dueto todavía no demostrados. Referencia de joints sin cámara calibrada no permite comparación pixel a pixel. Latencia de pantalla sin calibrar; sin garantía ±2 frames ni juicio subjetivo de audio. Tiempo manual y ahorro desconocidos.
 
 ## 20261115-block4-process-review — captura nativa aceptada, inspección objetiva
 

@@ -1,7 +1,7 @@
 ---
 id: move-viewer-retarget
 title: "Visor: copia de movimientos entre esqueletos distintos (Heat, Bi-O, Gas-O)"
-status: done
+status: validation_reopened
 created: 2026-11-21
 ---
 
@@ -39,8 +39,9 @@ Aprobar el plan (o recortar a solo Heat).
 
 
 # Registro de ejecución (2026-11-21)
+- Corrección posterior al cierre: la validación del movimiento reconocible sigue abierta. Las capturas son aceptadas por el grabador, no una prueba del slot0 copiado: req106 corresponde a slot71. Revisión correctiva en `notes/move-viewer.md`; no se atribuye conformidad al owner. Este archivo permanece en su ubicación histórica para conservar las referencias, pero su estado ya no es «done».
 - Aprobado por el owner. Fase 1/2: `tools/move_viewer/retarget.py` (mapa de pistas explícito, escala de raíz, rechazo de pistas sin mapa o fusionadas). Las diferencias de nodos eran de nodos sin animar: el mapa de pistas resultó ser identidad en Heat y Bi-O, sin recomposición de rotaciones.
-- Fase 3: no hay vista previa en la UI. Se sustituyó por una comparación objetiva (`_work/move-viewer/retarget/compare_*.py`): rotación mundial 0.0° y ratio de raíz igual a la escala.
+- Fase 3 pendiente: no hay vista previa en la UI. La comparación objetiva (`_work/move-viewer/retarget/compare_*.py`: rotación mundial 0.0° y ratio de raíz igual a la escala) es evidencia adicional, no sustituye la vista lado a lado aprobada. No cerrar el plan mientras falte esa funcionalidad.
 - Heat: commit 775d7db; tomas rt-heat-p1/p2-20261121a aceptadas.
 - Gas-O = variante BAG1 del personaje 9 (carpeta bi_o); no existe otra fuente. Commit c5c1084 (slot_map `sb`); tomas rt-bio-p1/p2-20261121a aceptadas.
 - Pendiente: revisión fotograma a fotograma del movimiento copiado y conformidad del owner; vista previa lado a lado en la UI no implementada.

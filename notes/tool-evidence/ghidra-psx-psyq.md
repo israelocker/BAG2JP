@@ -11,6 +11,16 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 20261121 — límites de clasificación fever durante revisión retarget
+- Mismo main JP `SLPM_862.19`, SHA ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe, MCP confirmado por get_program_info. `get_xrefs_to(0x8005E6C0,limit=10)` y decompilación de `FUN_800326d4`: índice de banco según fever y personaje; fever2 amplía índices hasta 0x7e antes de adjuntar banco. No demuestra fidelidad o dueto por sí solo.
+- `decompile_function_by_address(0x800353c4)` falló FUNCTION_NOT_FOUND; no se creó una función artificial. Consulta acotada posterior a 0x80014520 resuelve tablas distintas según fever y selección de personaje; tampoco clasifica visualmente una coreografía.
+- Contraste independiente: cuatro traces/capturas correctivas y guardas `BAG2_DUET_RNG_GUARDS`, limitadas a Heat/Heat. Resultado parcial: evita aplicar fixture inválido a Bi-O; clasificación/coreografía exacta continúa sin probar. Tiempo y ahorro desconocidos; sin modificación de análisis ni runtime. Siguiente: revisar secuencias visuales del actor correcto y conservar estos límites.
+
+## 20261121 — revisión de evidencia retarget reabierta
+- MCP `get_program_info`: `SLPM_862.19`, main JP PSX LE32, SHA ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. Consulta acotada `decompile_function(FUN_80012b9c)`: traducción raíz s16 desplazada un bit, recorrido de 30 nodos y mapa de pistas con centinela FF; llamada a FUN_8001f004 para matrices. Sin cambios al análisis.
+- Contraste independiente: `tools/move_viewer/pose.py`, tabla de solicitudes `_work/move-viewer/move_tables.json` y traces de las cuatro tomas retarget. El contraste detectó que req106 corresponde a slot71, no al slot0 copiado: corrige evidencia previa, no prueba fidelidad visual.
+- Resultado útil para localizar el consumidor; tiempo, ahorro y retrabajo no medidos. Siguiente comprobación: imágenes del slot0 real en escenario sin oclusiones; no repetir consulta sin nuevos inputs.
+
 ## 20261121 — selector de intro para prueba de reubicación
 - Cierre posterior: captura `f3-relocated-strike-clock-20261121b` aceptada, Strike P1 ejercitó naturalmente req104→anim73 gf5443/5998. Se omite el pase adicional de callers por redundante para esta prueba y no se crea/aplica fixture; las limitaciones de límites/callers del análisis siguen vigentes. Referencia y revisión visual en notes/move-viewer.md. No atribuir a Ghidra validación de un parche que nunca se aplicó.
 - Propósito: sustituir ensayo aleatorio de Strike por un disparo de intro verificado. MCP `get_program_info()` confirma main JP `SLPM_862.19`, SHA ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. `decompile_function_by_address(0x8002a090)` y `(0x80092b18)` fallan FUNCTION_NOT_FOUND: resultado no útil para decompilar en este programa; no implica ausencia del código ni justifica parche.

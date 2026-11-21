@@ -11,6 +11,21 @@ doc_kind: evidence
 
 # bag2_record.py - historial
 
+## 20261121-retarget-dense-review — continuación del ensayo correctivo
+- Bi-O P1/P2 `rt-bio-slot0-strike-p{1,2}-20261121a` finalizaron accepted=true; harness, grabador y finalize exit0. Restauración de configuración, estado y 150 saves verificada en logs; hashes de entradas/runtime en manifests. No nuevo juego en esta revisión.
+- `frames --tag <tag> --frame <centro> --span 57 --step 1`: centros HeatP1 8981, HeatP2 8905, BiOP1 9522, BiOP2 9476. Script `review_dense_go.py` verificó 115 imágenes por toma y generó 12 páginas; todas inspeccionadas. Intervalos anim0 según trace: 8925..9037, 8849..8962, 9466..9578, 9420..9533 respectivamente.
+- Validación independiente: contenido de paquetes contrastado con `copy_motions`; identificación visual Heat blanco/rojo y Bi-O azul, no el rival Strike. Modelos intactos y transición visible; no alineación cuantitativa con frames locales del original. WGC puede repetir/omitir frames y la latencia no está calibrada.
+- Fever parcial: algunas cámaras siguen al ganador rival; no atribuir ese baile al importado. Fixture actual solo Heat espejo. Resultado útil para integridad visible, no aceptación completa de coreografía/dueto. Tiempo manual/ahorro desconocidos; siguiente paso comparación sobre modelo fuente y cobertura pendiente.
+
+## 20261121-retarget-slot0 — revisión correctiva, aceptación parcial
+
+- Objetivo: revisar el slot0 copiado de Heat y Bi-O/Gas-O en ambos lados; req106 corresponde al slot71 y no prueba la copia. Runtime experimental 35266C386CAB; sin cambios en instalación estable.
+- Comando: `pwsh -NoProfile -File _work/move-viewer/f3/install_capture_diagnostic.ps1 -Tag <tag> -Id <package> -P1 <character> -P2 <character> -Stage StrikeBAG2`. Captura WGC y audio de proceso; versiones y hashes completos quedan en los manifests de cada toma.
+- `rt-heat-slot0-strike-p1-20261121a`: accepted=true, jitter p99 13.01ms. `rt-heat-slot0-strike-p2-20261121a`: rejected, p99 20.15ms; conservada sin relajar gates ni refinalizar. Repetición `rt-heat-slot0-strike-p2-20261121b`: accepted=true, p99 13.21ms. Restauración de configuración y 150 saves verificada por harness.
+- Hipótesis de carga paralela: repetición sin procesamiento pesado pasó; no demuestra causalidad. La toma Bi-O P1 sigue en curso al registrar esta entrada.
+- Validación independiente: overlays instalados coinciden con el slot0 retargetado esperado mediante `_work/move-viewer/retarget/check_packaged_slot0.py`; no prueba la pose ejecutada. Inspección inicial confundió Strike negro con Heat blanco/rojo; conclusión retirada explícitamente en notes/move-viewer.md. GO P2 gf8849 permite identificar ambos; fidelidad y dueto siguen pendientes.
+- Resultado: útil para detectar fallos de evidencia y captura, no aceptación completa de gameplay. Tiempos de revisión y ahorro desconocidos. No se modificó el grabador.
+
 ## 20261115-block4-process-game — primera toma nativa de proceso aceptada
 
 - Objetivo: misma recuperación F7/CAUGHT con fuente host real, sin salvar formato

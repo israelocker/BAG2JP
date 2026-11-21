@@ -33,6 +33,16 @@ class CompatTests(unittest.TestCase):
         self.target = source('own', motion(40), motion(50), motion(60))
         self.variant = source('variant', motion(41), motion(52, pad=8), motion(60))
 
+    def test_ui_budget_counts_adapted_motion_not_raw_source(self):
+        from dataclasses import replace
+        from unittest.mock import patch
+        variant = replace(source('variant', motion(40)), retarget=object())
+        cross = CrossBank(source('own', motion(40)), variant)
+        with patch('tools.move_viewer.retarget.apply', return_value=motion(40, pad=8)):
+            allowed, message = assignment_check(cross.target.bank, [], 0, 0, 7, cross)
+            self.assertFalse(allowed, message)
+            self.assertTrue(assignment_check(cross.target.bank, [], 0, 0, 8, cross)[0])
+
     def test_matching_skeleton_and_map_is_compatible(self):
         self.assertEqual(swap_mod.incompatibilities(self.target, self.variant), [])
         swap_mod.require_compatible(CrossBank(self.target, self.variant), [(0, 1)])
@@ -121,7 +131,7 @@ class PanelTests(unittest.TestCase):
             panel.set_slot(0, 'move')
             panel.source_box.setCurrentIndex(1)
             panel.motions.setCurrentRow(1)
-            self.assertEqual(previews[-1], (1, variant.bank))
+            self.assertEqual(previews[-1], (1, variant.bank, CrossBank(own, variant), 0))
             panel.assign()
             self.assertEqual(panel.pairs, [(0, 1)])
             self.assertIn('de variant', panel.pending.item(0).text())
@@ -171,6 +181,38 @@ class RealDataTests(unittest.TestCase):
         cls.characters = assets / 'archive/characters'
         if not (cls.payload / 'payload/bag1_alt.bin').is_file():
             raise unittest.SkipTest('BAG1 payload not built')
+
+    def test_reviewed_retarget_is_assignable_through_ui_check(self):
+        from tools.move_viewer.assign_panel import assignment_check
+        for folder in ('heat', 'bi_o'):
+            with self.subTest(folder=folder):
+                own, variant = bank_source.sources_for(self.characters, self.payload, folder)
+                cross = CrossBank(own, variant)
+                budget = swap_mod.GROWTH_BUDGET[folder][1]
+                swap_mod.copy_motions(own.bank, [(0, 0)], budget, cross)
+                allowed, message = assignment_check(own.bank, [], 0, 0, budget, cross)
+                self.assertTrue(allowed, message)
+
+    def test_ui_comparison_receives_exact_generated_retarget_bank(self):
+        from unittest.mock import Mock
+        from PySide6.QtWidgets import QApplication
+        from tools.move_viewer.app import MoveViewer
+        from tools.move_viewer.anim_view import AnimationView
+        app = QApplication.instance() or QApplication([])
+        viewer = MoveViewer({'characters': []})
+        viewer.set_view_widget(AnimationView(self.characters))
+        for folder in ('heat', 'bi_o'):
+            with self.subTest(folder=folder):
+                own, variant = bank_source.sources_for(self.characters, self.payload, folder)
+                viewer._character = folder
+                expected = swap_mod.copy_motions(own.bank, [(0, 0)],
+                    swap_mod.GROWTH_BUDGET[folder][1], CrossBank(own, variant))
+                viewer._comparison = Mock()
+                viewer.preview_motion(0, variant.bank, CrossBank(own, variant), 0)
+                viewer._comparison.show_banks.assert_called_once_with(
+                    folder, 0, variant.bank, 0, expected)
+                viewer._comparison.show.assert_called_once()
+        viewer.close()
 
     def test_strike_variant_is_compatible_and_heat_and_gaso_are_blocked(self):
         strike = bank_source.sources_for(self.characters, self.payload, 'strike')

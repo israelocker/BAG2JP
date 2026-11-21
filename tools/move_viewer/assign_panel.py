@@ -5,10 +5,11 @@ An assignment copies the original motion M into slot S; every other slot is unto
 A duration different from the slot's original only warns (it may look cut or frozen).
 A "Banco origen" selector copies from another bank instead (the BAG1 variant of the same
 character, or another character); swap_mod.require_compatible blocks sources whose skeleton,
-node->track map or tracks differ. The source preview is drawn with the target's own model,
-which is exactly what the copy produces.
-Growth of the bank is blocked: the entry must fit its stock disc extent and the in-RAM
-motion buffer size is not verified. Slots >= the bank length (fever/duet) are read-only.
+node->track map or tracks differ, except for reviewed retarget profiles. Comparison uses
+the target model for both the raw source and the exact generated result; it is not a
+preview of the original BAG1 model. Growth uses each character's measured RAM budget;
+disc placement and reservations are checked by the package planner before writing.
+Slots >= the bank length (fever/duet) are read-only.
 """
 from __future__ import annotations
 
@@ -24,7 +25,7 @@ from PySide6.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QListWidget, QLis
 
 from .pose import decode_motion
 from .swap_mod import (GROWTH_BUDGET, BankSource, CrossBank, copy_growth,
-                       incompatibilities, motion_incompatibility, split_bank)
+                       require_compatible, split_bank)
 
 MOTION_ROLE = Qt.ItemDataRole.UserRole
 
@@ -60,13 +61,14 @@ def assignment_check(bank: bytes, pairs: list[tuple[int, int]], slot: int,
     With `cross`, `source` indexes cross.source.bank and incompatible banks are blocked.
     """
     if cross is not None:
-        reasons = incompatibilities(cross.target, cross.source)
-        problem = motion_incompatibility(cross.target, cross.source, source)
-        if problem:
-            reasons.append(problem)
-        if reasons:
-            return False, ('Banco origen incompatible, bloqueado: ' + '; '.join(reasons))
-    growth = copy_growth(bank, [*pairs, (slot, source)], cross.source.bank if cross else None)
+        try:
+            require_compatible(cross, [*pairs, (slot, source)])
+        except ValueError as error:
+            return False, ('Banco origen incompatible, bloqueado: ' + str(error))
+    try:
+        growth = copy_growth(bank, [*pairs, (slot, source)], cross=cross)
+    except ValueError as error:
+        return False, f'Copia bloqueada: {error}'
     if growth > max_growth:
         return False, (f'No cabe: el banco crecería {growth} bytes (permitido {max_growth}) y '
                        f'se escribiría sobre memoria o datos del disco. Bloqueado.')
@@ -88,7 +90,8 @@ def assignment_check(bank: bytes, pairs: list[tuple[int, int]], slot: int,
 class AssignPanel(QWidget):
     """Motion list + queued assignments for one character.
 
-    preview(index) draws a motion of the own bank; preview(index, bank) one of another bank.
+    preview(index) draws an own motion; preview(index, bank, cross, slot) compares a copy.
+    preview(None) invalidates a comparison after a selection change.
     generate(bank_path, pairs) builds the mod; generate(bank_path, pairs, cross) when the
     pairs copy from another bank.
     """
@@ -168,6 +171,7 @@ class AssignPanel(QWidget):
         return CrossBank(replace(self._sources[0], bank=self._bank), self._sources[index])
 
     def _source_changed(self, _index: int) -> None:
+        self._preview(None)
         self._fill_motions(self._source_bank())
         self.result.setText('')
 
@@ -182,9 +186,11 @@ class AssignPanel(QWidget):
 
     def _motion_selected(self, item: QListWidgetItem | None, _previous=None) -> None:
         if item is None:
+            self._preview(None)
             return
         if self._selected():
-            self._preview(item.data(MOTION_ROLE), self._source_bank())
+            self._preview(item.data(MOTION_ROLE), self._source_bank(),
+                          self._cross(self._selected()), self.slot)
         else:
             self._preview(item.data(MOTION_ROLE))
 
@@ -231,5 +237,5 @@ class AssignPanel(QWidget):
         for slot, source in self.pairs:
             self.pending.addItem(f'casilla 0x{slot:02X} <- copia de 0x{source:02X}{origin}')
         if self.pairs:
-            free = -copy_growth(self._bank, self.pairs, cross.source.bank if cross else None)
+            free = -copy_growth(self._bank, self.pairs, cross=cross)
             self.pending.addItem(f'margen: {free} bytes libres')

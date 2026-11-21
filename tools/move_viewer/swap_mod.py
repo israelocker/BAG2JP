@@ -247,7 +247,16 @@ def copy_motions(bank: bytes, assigns: list[tuple[int, int]], max_growth: int = 
     With `cross`, sources index into cross.source.bank instead and the pair is first
     checked with require_compatible (raises ValueError); `bank` must be cross.target.bank.
     """
-    motions, tail = split_bank(bank)
+    body = _copy_body(bank, assigns, cross)
+    growth = len(body) + 4 - len(bank)
+    if growth > max_growth:
+        raise ValueError(f'does not fit: bank grows by {growth} bytes (allowed {max_growth})')
+    return body + bytes(4) + bytes(max(0, -growth))
+
+
+def _copy_body(bank: bytes, assigns: list[tuple[int, int]], cross: CrossBank | None) -> bytes:
+    """One transformation authority for estimation and generation."""
+    motions, _ = split_bank(bank)
     if cross is None:
         sources = motions
     else:
@@ -260,11 +269,7 @@ def copy_motions(bank: bytes, assigns: list[tuple[int, int]], max_growth: int = 
             picked = {index for _, index in assigns}
             sources = [retarget.apply(m, cross.source.retarget) if i in picked else m
                        for i, m in enumerate(sources)]
-    body = b''.join(_copy(motions, sources, assigns))
-    growth = len(body) + 4 - len(bank)
-    if growth > max_growth:
-        raise ValueError(f'does not fit: bank grows by {growth} bytes (allowed {max_growth})')
-    return body + bytes(4) + bytes(max(0, -growth))
+    return b''.join(_copy(motions, sources, assigns))
 
 
 # BAG1 variants own cue ids 0x6000 + char id * 0x100 (tools/bag1import/rebase_cues.py); a stock
@@ -292,8 +297,13 @@ def mute_variant_cues(motion: bytes) -> bytes:
     return bytes(d)
 
 
-def copy_growth(bank: bytes, assigns: list[tuple[int, int]], source_bank: bytes | None = None) -> int:
+def copy_growth(bank: bytes, assigns: list[tuple[int, int]], source_bank: bytes | None = None,
+                *, cross: CrossBank | None = None) -> int:
     """Bytes the bank would grow with these copies (<= 0 fits); sources index `source_bank`."""
+    if cross is not None:
+        if source_bank is not None and source_bank != cross.source.bank:
+            raise ValueError('source bank differs from copy relation')
+        return len(_copy_body(bank, assigns, cross)) + 4 - len(bank)
     motions, _ = split_bank(bank)
     sources = motions if source_bank is None else split_bank(source_bank)[0]
     return sum(len(m) for m in _copy(motions, sources, assigns)) + 4 - len(bank)
