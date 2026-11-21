@@ -212,41 +212,48 @@ class PickIgnoresEarlierMatchTest(unittest.TestCase):
                "confirm: side 0 char 1 version BAG1 costume A\n")
         new = ("open: side 0 char 1 (bag1 version 1, current 1)\n"
                "confirm: side 0 char 1 version BAG2 costume A\n")
-        log = [old]
-        session = versus_session.Session.__new__(versus_session.Session)
-        session.settings = mock.Mock(game=Path("game"), state_timeout=1.0)
-        session.started = 0.0
-        session.shot_prefix = "second-"
-        keys: list[str] = []
-
-        def key(side: int, name: str) -> None:
-            keys.append(name)
-            if name == "circle" and len(keys) == 1:
-                log[0] = old + new.splitlines(keepends=True)[0]
-            elif name == "circle" and len(keys) == 3:
-                delayed.append(1)  # the new confirm line lands one read later
-
-        delayed: list[int] = []
-
-        def read(path: Path, started: float) -> str:
-            if delayed:
-                if len(delayed) > 1:
-                    log[0] = old + new
-                delayed.append(1)
-            return log[0]
-
-        session.key = key
-        session.shot = lambda name: None
-        session.state = lambda: {}
-        session.wait = lambda accept: None
-        with mock.patch.object(versus_session, "session_log", side_effect=read), \
-             mock.patch.object(versus_session.nav, "require_selector"), \
-             mock.patch.object(versus_session.nav, "route", return_value=[]), \
-             mock.patch.object(versus_session.nav, "cursor", return_value=1):
-            observed = session.pick(1, "strike", "BAG2", "A", {})
+        open_line, confirm_line = new.splitlines(keepends=True)
+        observed, keys = self._pick(old, lambda path: path.write_text(old + open_line),
+                                    lambda path: path.write_text(old + new))
         # Fresh "current 1" (BAG1 active) needs a right press to reach BAG2.
         self.assertEqual(keys[:3], ["circle", "right", "circle"])
         self.assertEqual(observed["version"], "BAG2")
+
+    def test_rewritten_shorter_log_is_read_from_start(self) -> None:
+        old = "x" * 500 + "\n"
+        new = ("open: side 0 char 1 (bag1 version 1, current 0)\n"
+               "confirm: side 0 char 1 version BAG2 costume A\n")
+        open_line = new.splitlines(keepends=True)[0]
+        observed, keys = self._pick(old, lambda path: path.write_text(open_line),
+                                    lambda path: path.write_text(new))
+        self.assertEqual(keys[:2], ["circle", "circle"])
+        self.assertEqual(observed["version"], "BAG2")
+
+    def _pick(self, initial: str, on_open, on_confirm) -> tuple[dict, list[str]]:
+        """Run pick on a real log file; key presses append the game's next lines."""
+        with tempfile.TemporaryDirectory() as tmp:
+            game = Path(tmp)
+            path = game / "bag2jp_charsel_popup.log"
+            path.write_text(initial)
+            session = versus_session.Session.__new__(versus_session.Session)
+            session.settings = mock.Mock(game=game, state_timeout=1.0)
+            session.started = 0.0
+            session.shot_prefix = "second-"
+            keys: list[str] = []
+
+            def key(side: int, name: str) -> None:
+                keys.append(name)
+                if name == "circle":
+                    (on_open if keys.count("circle") == 1 else on_confirm)(path)
+
+            session.key = key
+            session.shot = lambda name: None
+            session.state = lambda: {}
+            session.wait = lambda accept: None
+            with mock.patch.object(versus_session.nav, "require_selector"), \
+                 mock.patch.object(versus_session.nav, "route", return_value=[]), \
+                 mock.patch.object(versus_session.nav, "cursor", return_value=1):
+                return session.pick(1, "strike", "BAG2", "A", {}), keys
 
 
 class MainBeforeEffectsTest(unittest.TestCase):

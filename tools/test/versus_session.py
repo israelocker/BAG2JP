@@ -175,6 +175,22 @@ def session_log(path: Path, started: float) -> str:
     return tail(path)
 
 
+def log_size(path: Path) -> int:
+    """Byte offset marking where lines written from now on start."""
+    return path.stat().st_size if path.is_file() else 0
+
+
+def session_log_since(path: Path, started: float, offset: int) -> str:
+    """Text appended after offset; a shorter (rewritten) log is read from its start."""
+    if not path.is_file():
+        return ""
+    if path.stat().st_mtime < started:
+        raise ValueError("Popup log belongs to an earlier process")
+    with path.open("rb") as stream:
+        stream.seek(offset if path.stat().st_size >= offset else 0)
+        return stream.read().decode("utf-8", errors="replace")
+
+
 def copy_current(source: Path, run: Path, started: float) -> bool:
     """Archive only evidence this session produced; a never-started session owns nothing."""
     if not started or not source.is_file() or source.stat().st_mtime < started:
@@ -506,8 +522,9 @@ class Session:
         self.shot(f"p{side}-character")
         log_path = self.settings.game / "bag2jp_charsel_popup.log"
         # The log lasts the whole process: ignore lines from an earlier match.
-        start = len(session_log(log_path, self.started))
-        fresh = lambda: session_log(log_path, self.started)[start:]
+        # Byte offsets, not tail() lengths: tail() is a sliding 64 KB window.
+        start = log_size(log_path)
+        fresh = lambda: session_log_since(log_path, self.started, start)
         self.key(side, "circle")
         log = nav.wait_until(fresh, lambda text: f"open: side {side-1} char {character} " in text,
                              self.settings.state_timeout)
@@ -524,7 +541,7 @@ class Session:
                 self.key(side, "down")
             self.key(side, "right")
         self.shot(f"p{side}-popup")
-        start = len(session_log(log_path, self.started))
+        start = log_size(log_path)
         self.key(side, "circle")
         log = nav.wait_until(fresh, lambda text: f"confirm: side {side-1} char {character} " in text,
                              self.settings.state_timeout)
