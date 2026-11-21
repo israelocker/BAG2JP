@@ -161,3 +161,16 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 - Visor: `selector_policy.exe_follows_relocation` desbloquea la reubicación de entradas BAG1 solo si el exe instalado está en `RELOCATION_AWARE_SHA256`; con un exe desconocido se mantiene el bloqueo. 87 tests OK.
 - No probado: volver BAG1->BAG2 en la misma sesión con entrada reubicada; fever duet; otros personajes BAG1.
 
+
+## F3 empaquetado .exe (2026-11-21)
+- PyInstaller 6.22.3 instalado con permiso del owner. `py -3.13 -m PyInstaller --noconfirm --onedir --windowed --name MoveViewer --paths . --distpath _work/move-viewer/dist --workpath _work/move-viewer/pyi-build --specpath _work/move-viewer tools/move_viewer/app.py`. El .exe busca la raíz del checkout (config/project.toml) sobre su ubicación. Smoke del .exe: 18 personajes; 87 pruebas OK; commit 9968339. Sin aceptación visual de la UI empaquetada.
+- Copia entre esqueletos: plan pendiente de aprobación en plans/pending/move-viewer-retarget.md.
+
+## Retarget Heat BAG1->BAG2: validación grabada (2026-11-21)
+- Archivado bag2jp.test.bag1-heat-model en _work/move-viewer/archived-pkgs/installed (bloques retirados de state.toml y .bak-20261119-moveassign; originales *.bak-pre-heat-archive). Paquete bag2jp.test.move-assign-heat-from-heat-variante-bag1 (95/96, slot0<-0 variante BAG1 retargetada).
+- Tomas aceptadas (manifest accepted=true, restauración verificada, 150 saves): rt-heat-p1-20261121a (Heat P1 vs Strike) y rt-heat-p2-20261121a (Strike vs Heat P2). Heat íntegro en partida y vuelta al selector en ambas. Falta: comprobación fotograma a fotograma del movimiento copiado y conformidad del owner. Siguiente: Bi-O (41 vs 42 nodos).
+
+## Retarget Bi-O (2026-11-21)
+- slot_map acepta escritor de mapa BAG1 con `sb` directo; perfil `bi_o` identidad 19 pistas, escala raíz 26401/25942. Commit c5c1084; 90 tests OK. Comparación objetiva (_work/move-viewer/retarget/compare_bi_o.py): 1872 poses, diferencia máx. de rotación mundial 0.0°, ratio raíz mediana 1.0177 (esperado 1.0177).
+- Paquete bag2jp.test.move-assign-bi-o-from-bi-o-variante-bag1 (entradas 89/90, slot0<-mov.0 BAG1). Paquete de prueba anterior move-assign-bi-o archivado en _work/move-viewer/archived-pkgs (no estaba en state.toml).
+- Tomas aceptadas y restauración verificada: rt-bio-p1-20261121a (Bi-O vs Strike) y rt-bio-p2-20261121a (Strike vs Bi-O). Bi-O íntegro en el juego. Pendiente: revisión fotograma a fotograma del movimiento copiado y conformidad del owner.
