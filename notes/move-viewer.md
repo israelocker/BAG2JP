@@ -75,3 +75,5 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 ## 2026-11-21 Cambio BAG1→BAG2 en la misma sesión con banco crecido
 - Toma `f3-switch-20261121-1` aceptada (`_work/move-viewer/f3/switch_take.ps1`; nueva opción `versus_session.py --second-versions`). Partida 1: Strike BAG1 (entrada 109 -> BAG1 en f3736). Partida 2: Strike BAG2 con WAIT crecido +420 B (109 -> BAG2 en f17672). Strike P1 LOSE3 req152 anim100 en f028639 -> phase 2/9 en f030055: sin cuelgue. state.toml restaurado. No revisado fotograma a fotograma; `--second-versions` sin test de host.
 
+
+- 2026-11-21: repetida la toma de cambio BAG1->BAG2 con el arnés corregido (2b5c3e4): f3-switch-20261121-2 aceptada; confirmaciones nuevas BAG1 y luego BAG2 para Strike; entrada 109 -> BAG2 en f17597; segunda partida Strike LOSE3 req152 en f028604 -> fase 2/9 en f030106, sin cuelgue; state.toml restaurado (hash OK). No revisada fotograma a fotograma.
