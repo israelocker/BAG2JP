@@ -131,6 +131,8 @@ class BankSource:
     label: str
     bank: bytes
     skeleton: Skeleton
+    # Reviewed retarget.Retarget applied when copying into the own bank (None: exact skeleton).
+    retarget: object | None = None
 
 
 class CrossBank(NamedTuple):
@@ -198,7 +200,8 @@ def motion_incompatibility(target: BankSource, source: BankSource, index: int) -
 
 def require_compatible(cross: CrossBank, assigns: list[tuple[int, int]]) -> None:
     """Raise ValueError unless every slot <- source copy is safe at the format/skeleton level."""
-    reasons = incompatibilities(cross.target, cross.source)
+    retarget = cross.source.retarget
+    reasons = [] if retarget is not None else incompatibilities(cross.target, cross.source)
     for slot, index in assigns:
         problem = motion_incompatibility(cross.target, cross.source, index)
         if problem:
@@ -252,6 +255,11 @@ def copy_motions(bank: bytes, assigns: list[tuple[int, int]], max_growth: int = 
             raise ValueError('cross-bank copy: target bank differs from the bank being patched')
         require_compatible(cross, assigns)
         sources = [mute_variant_cues(m) for m in split_bank(cross.source.bank)[0]]
+        if cross.source.retarget is not None:
+            from tools.move_viewer import retarget
+            picked = {index for _, index in assigns}
+            sources = [retarget.apply(m, cross.source.retarget) if i in picked else m
+                       for i, m in enumerate(sources)]
     body = b''.join(_copy(motions, sources, assigns))
     growth = len(body) + 4 - len(bank)
     if growth > max_growth:

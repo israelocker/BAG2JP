@@ -81,8 +81,9 @@ def variant_source(payload_dir: Path, folder: str) -> BankSource | None:
             model = model or members
     if pack is None or model is None:
         return None
+    from tools.move_viewer.retarget import PROFILES
     return BankSource(f'{folder} (variante BAG1)', model[1],
-                      skeleton_of(model[0], _slot_map(Path(), pack[1])))
+                      skeleton_of(model[0], _slot_map(Path(), pack[1])), PROFILES.get(folder))
 
 
 def compatible_others(characters_dir: Path, folder: str, own: BankSource) -> list[BankSource]:

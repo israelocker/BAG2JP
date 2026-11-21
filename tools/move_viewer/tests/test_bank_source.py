@@ -177,12 +177,14 @@ class RealDataTests(unittest.TestCase):
         self.assertEqual(len(strike), 2)
         self.assertEqual(swap_mod.incompatibilities(*strike), [])
         swap_mod.require_compatible(CrossBank(*strike), [(2, 2)])
-        for folder in ('heat', 'bi_o'):
-            own, variant = bank_source.sources_for(self.characters, self.payload, folder)
-            with self.subTest(folder):
-                self.assertTrue(swap_mod.incompatibilities(own, variant))
-                with self.assertRaises(ValueError):
-                    swap_mod.copy_motions(own.bank, [(2, 2)], 1 << 20, CrossBank(own, variant))
+        own, variant = bank_source.sources_for(self.characters, self.payload, 'heat')
+        self.assertTrue(swap_mod.incompatibilities(own, variant))
+        self.assertIsNotNone(variant.retarget)  # reviewed profile: copy allowed via retarget
+        swap_mod.copy_motions(own.bank, [(2, 2)], 1 << 20, CrossBank(own, variant))
+        own, variant = bank_source.sources_for(self.characters, self.payload, 'bi_o')
+        self.assertTrue(swap_mod.incompatibilities(own, variant))
+        with self.assertRaises(ValueError):
+            swap_mod.copy_motions(own.bank, [(2, 2)], 1 << 20, CrossBank(own, variant))
 
     def test_reverse_direction_has_the_same_verdict(self):
         own, variant = bank_source.sources_for(self.characters, self.payload, 'strike')
