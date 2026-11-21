@@ -49,3 +49,13 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 - Strike variante: 105 eventos silenciados (ids 0x6100-0x610B). Sin prueba en partida.
 
 - 2026-11-20 F3.1 en partida: toma f3-cross-strike-20261120a ACEPTADA (Strike BAG2 P1 vs Heat; WAIT 71 <- WAIT 71 de la variante BAG1, +420 B, entradas 109/110, cues de variante silenciados). Traza: req106 -> anim71 cada 88 fotogramas desde f5624; fotogramas gf6530-6650 (_work/move-viewer/f3/cross_sheet.png) muestran a Strike de pie sin deformaciones. No verificado: diferencia visual frente al WAIT stock (duraciones 46/45 claves casi iguales), otros movimientos, P2 con el mod. state.toml restaurado (hash verificado).
+
+## 2026-11-21 Cuelgue LOSE3 con bancos crecidos (causa raíz)
+- Síntoma: con un mod que hace crecer el banco de Strike (+420 B), el resultado se cuelga cuando sale LOSE3 (anim 100); 3/3 casos. Sin mod no ocurre.
+- Evidencia (volcados `_work/move-viewer/f3/hang/`): el banco en RAM sí crece (member1 0x427ac→0x42950), pero la estructura del jugador sigue en 0x8012fcc4 y la TOC DF2_ en RAM conserva el tamaño stock (0x521ac). La estructura pisa la cola del banco (anim 100).
+- Causa: `bag2jp_bag1_versions.c:206-217` reescribe cada fotograma los tamaños DF2_ de Heat/Strike/Gas-O (`b1_alt_entries`) con valores compilados.
+- Arreglo `f537f4d`: GROWTH_BUDGET 0 para heat/strike/bi_o. Las tomas F2 de Heat crecido tenían el fallo latente (no tocaron la cola).
+- Pendiente: validar en juego mod sin crecimiento + LOSE3 (bucle `f3-nogrow-lose3-20261121`); opción futura: que el plugin respete el tamaño del disco.
+
+- Validación en partida (2026-11-21): mod de prueba `bag2jp.test.force-lose3` (`_work/move-viewer/f3/force_lose3_mod.py`; jp005+0x91d0 `addiu v0,v0,0x96`→`addiu v0,zero,0x98`, disc_user 864732) + Strike sin crecimiento (72<-71). Toma `f3-forced-lose3-20261121-1` aceptada: Heat P2 LOSE3 req152 anim100 en f014398, sale a fase 2/9 en f015787 sin cuelgue; state.toml restaurado (hash verificado). Antes: 3/3 cuelgues con banco crecido. Las 6 rondas sin forzar (`f3-nogrow-lose3-20261121-1..6`) no sacaron LOSE3.
+
