@@ -43,12 +43,17 @@ DISC_SHA256 = 'fe8285f2ee5737680abe4ba20e53be9e029e0ab65ff2aa35c4695709bb0e5268'
 # so the single measured side is applied to both costume-A entries.
 # Disc slack after each entry is checked separately when the package is built.
 # See _work/move-viewer/f2/buffer/growth-budget.md.
+# Heat, Strike and Bi-O are 0 (measured RAM free 912/4388/672 B is NOT usable): the
+# bag1-content plugin (bag2jp_bag1_versions.c, b1_alt_entries) rewrites their DF2_ sizes in
+# RAM every frame with compiled stock sizes, so a grown bank keeps the stock player-struct
+# placement and the struct overwrites the bank tail (anim 100 LOSE3 -> result-screen hang,
+# dumps _work/move-viewer/f3/hang/, 2026-11-21).
 GROWTH_BUDGET = {
-    'heat': ((95, 96), 912),
-    'strike': ((109, 110), 4388),
+    'heat': ((95, 96), 0),
+    'strike': ((109, 110), 0),
     'comet': ((93, 94), 15568),
     'shorty': ((107, 108), 1516),
-    'bi_o': ((89, 90), 672),
+    'bi_o': ((89, 90), 0),
     'tsutomu': ((111, 112), 8268),
     'kelly': ((99, 100), 68),
     'pander': ((103, 104), 6132),

@@ -46,11 +46,18 @@ class GrowthOnDiscTest(unittest.TestCase):
 
 class GrowthBudgetTest(unittest.TestCase):
     def test_measured_budget_accepts_both_sides(self) -> None:
-        entries, budget = GROWTH_BUDGET['heat']
+        entries, budget = GROWTH_BUDGET['comet']
         check_growth_budget(list(entries), budget)
 
+    def test_plugin_fixed_size_characters_cannot_grow(self) -> None:
+        # bag1-content rewrites these DF2_ sizes in RAM (LOSE3 hang, 2026-11-21).
+        for character in ('heat', 'strike', 'bi_o'):
+            entries, _ = GROWTH_BUDGET[character]
+            with self.assertRaisesRegex(ValueError, 'outside'):
+                check_growth_budget([entries[0]], 4)
+
     def test_growth_over_budget_rejected(self) -> None:
-        entries, budget = GROWTH_BUDGET['heat']
+        entries, budget = GROWTH_BUDGET['comet']
         with self.assertRaisesRegex(ValueError, 'outside'):
             check_growth_budget([entries[0]], budget + 1)
 
