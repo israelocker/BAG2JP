@@ -321,6 +321,7 @@ static void b1v_reset(void) {
     b1v_stage_choice_chr = -1;
     b1v_stage_choice_version = -1;
     memset(b1v_scaled_dancer, 0, sizeof b1v_scaled_dancer);
+    memset(b1v_bag2_size, 0, sizeof b1v_bag2_size); /* no disc size leaks across sessions */
     b1load_forget();
     b1leash_forget();
     b1center_forget();

@@ -64,3 +64,4 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 - `bag2jp_bag1_versions.c` guarda por entrada el tamaño BAG2 que reporta la tabla DF2_ (si un mod lo creció) y lo restaura en vez del tamaño compilado. Exe exp-8mb BB95C688 (backup `_work/move-viewer/f3/BAG2JP.exe.bak-20261121-presize`).
 - Toma f3-sizefix-lose3-20261121-1 aceptada: mod Strike WAIT +420 B + force-lose3, Heat P2 LOSE3 f014397 -> phase 2/9 f015786 (antes colgaba). state.toml restaurado.
 - GROWTH_BUDGET Heat/Strike/Bi-O restaurado (912/4388/672). Sin probar: Strike como perdedor con banco crecido, Bi-O.
+- Goldfish (pedido DeepSeek, respondió Opus 5.5): OK con cambios. Aplicado MEDIA: b1v_reset borra los tamaños guardados. Pendiente BAJA: tamaño 0 como centinela, sin cota de cordura, sin test de host, presupuestos no comprueban hash de runtime; savestate con BAG1 activo usa tamaño compilado (limite declarado).
