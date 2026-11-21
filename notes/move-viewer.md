@@ -86,3 +86,9 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 
 - Goldfish 31bae3e (pedido deepseek-flash: ECONNREFUSED; respondió Sonnet 5.5): OK con cambios, sin ALTA. Límite conocido (MEDIA): savestate cargado con variante BAG1 activa deja el tamaño BAG2 sin observar -> al volver a BAG2 se usa stock; con banco crecido puede reaparecer el cuelgue LOSE3. Evitar savestates en BAG1 con mods del visor que crecen. BAJA pendientes: sin log en vuelta a stock/fallback; test lista heat/strike/bi_o a mano; cota duplicada a mano (cubierta por test).
 
+
+## 2026-11-21 Cota de tamaño: test C de host y log de rechazos
+- Goldfish GPT (gpt-6.1-sol) sobre 31bae3e/16626aa: OK con cambios. MEDIA aplicada: la cota vive en `mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_size.h` (`b1v_accept_size`), probada compilando el C real con gcc de WSL (`tools/move_viewer/tests/test_bag1_size.py`: stock-1, stock, +4388, +4389, 0, 0xFFFFFFFF; la mutación de la cota la pone en rojo). BAJA aplicada: se registra cada valor nuevo de la tabla, incluidos la vuelta a stock y los rechazos.
+- Exe F462EAE4 en exp-8mb (copia `_work/move-viewer/f3/BAG2JP.exe.bak-20261121-log`). Calibración roster-recal-log-20261121 aceptada (aristas y capturas reutilizadas).
+- Tomas aceptadas f3-log-strikeloser-20261121-1 y f3-log-strikep2-20261121-1 (Strike crecido +420 y force-lose3): log 'entry 109/110 BAG2 size 336720 (disc 336720, stock 336300)'; Heat perdió con LOSE3 en las dos (f014463 y f014481) y se pasó a la fase 2/9 sin cuelgue; state.toml CFD4F8CA.
+- Sin verificar en este exe: Strike como perdedor (sí lo está en f3-sizefix3 con la misma lógica de tamaño) y los savestates con BAG1 activo (límite conocido).

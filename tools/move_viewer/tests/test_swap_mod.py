@@ -59,7 +59,7 @@ class GrowthBudgetTest(unittest.TestCase):
         """bag1-content rejects disc sizes above stock + B1V_MAX_GROWTH."""
         import re
         from tools.move_viewer.swap_mod import ROOT
-        source = (ROOT / 'mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_versions.c').read_text()
+        source = (ROOT / 'mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_size.h').read_text()
         bound = int(re.search(r'#define B1V_MAX_GROWTH (\d+)u', source).group(1))
         for character in ('heat', 'strike', 'bi_o'):
             self.assertLessEqual(GROWTH_BUDGET[character][1], bound, character)
