@@ -509,15 +509,22 @@ def check_disc(disc: Path) -> None:
 def generate(disc: Path, entries: list[int], pairs: list[tuple[int, int]], package_id: str,
              name: str, out: Path, copy: bool = False,
              max_growth: int = 0, cross: CrossBank | None = None,
-             relocate_lba: int | None = None) -> list[tuple[int, bytes, bytes]]:
+             relocate_lba: int | None = None,
+             reserved_spans: tuple[tuple[int, int], ...] = ()) -> list[tuple[int, bytes, bytes]]:
     """Build entries and write a verified package, optionally using free DUMMY sectors.
 
     `relocate_lba` opts into relocation when disc slack is exhausted; destinations
     advance by whole sectors so entries in this package cannot share payload space.
-    The caller must reserve this range against other enabled packages. No automatic
-    relocation is enabled by the UI until that cross-package reservation exists.
+    `reserved_spans` contains absolute disc_user [start, end) byte ranges owned by
+    other packages. All writes (including header fields) must avoid these ranges.
+    The caller supplies a complete, current inventory; this function neither scans
+    installed packages nor locks their state. No automatic relocation is enabled
+    by the UI until that cross-package inventory exists.
     Returns the absolute disc_user overlays written to `out`.
     """
+    for start, end in reserved_spans:
+        if type(start) is not int or type(end) is not int or start < 0 or end <= start:
+            raise ValueError(f'invalid reserved disc span [{start}, {end})')
     if not entries:
         raise ValueError('no BUST2.BIN entry to patch')
     if len(set(entries)) != len(entries):
@@ -532,6 +539,11 @@ def generate(disc: Path, entries: list[int], pairs: list[tuple[int, int]], packa
     spans = sorted((offset, offset + len(patched)) for offset, _, patched in overlays)
     if any(end > next_start for (_, end), (next_start, _) in zip(spans, spans[1:])):
         raise ValueError('generated disc overlays overlap')
+    for start, end in spans:
+        for reserved_start, reserved_end in reserved_spans:
+            if start < reserved_end and reserved_start < end:
+                raise ValueError(f'overlay [{start}, {end}) intersects reserved disc span '
+                                 f'[{reserved_start}, {reserved_end})')
     write_package(out, package_id, name, overlays)
     return overlays
 

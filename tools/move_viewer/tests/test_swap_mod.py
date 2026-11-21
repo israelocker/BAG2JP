@@ -154,5 +154,75 @@ class RelocationGenerationTest(unittest.TestCase):
             self.assertFalse(out.exists())
 
 
+class PackageReservationTest(unittest.TestCase):
+    """Absolute disc_user half-open reservations cover header and payload writes."""
+
+    def generate_fixture(self, out, reserved):
+        from pathlib import Path
+        from unittest.mock import patch
+
+        with patch.object(swap_mod, 'build', return_value=[(100, b'aaa', b'bbb')]):
+            return swap_mod.generate(Path('unused.bin'), [109], [], 'test', 'Test', out,
+                                     reserved_spans=reserved)
+
+    def test_collision_refuses_write_even_inside_an_existing_package(self):
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+
+        with TemporaryDirectory() as directory:
+            out = Path(directory)
+            sentinel = out / 'manifest.toml'
+            sentinel.write_bytes(b'preserve existing package')
+            for reserved in (((100, 103),), ((99, 101),), ((102, 104),)):
+                with self.subTest(reserved=reserved):
+                    with self.assertRaisesRegex(ValueError, 'reserved disc span'):
+                        self.generate_fixture(out, reserved)
+                    self.assertEqual(sentinel.read_bytes(), b'preserve existing package')
+                    self.assertFalse((out / 'payload').exists())
+
+    def test_adjacent_half_open_ranges_are_allowed(self):
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+
+        with TemporaryDirectory() as directory:
+            out = Path(directory) / 'package'
+            self.generate_fixture(out, ((90, 100), (103, 104)))
+            self.assertTrue((out / 'manifest.toml').is_file())
+
+    def test_second_header_overlay_collision_preserves_existing_package(self):
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from unittest.mock import patch
+
+        with TemporaryDirectory() as directory:
+            out = Path(directory)
+            sentinel = out / 'manifest.toml'
+            sentinel.write_bytes(b'preserve header collision')
+            # Sorted spans put this header *after* the payload: both must be checked.
+            overlays = [(100, b'aaa', b'bbb'), (500, b'12345678', b'abcdefgh')]
+            with patch.object(swap_mod, 'build', return_value=overlays):
+                with self.assertRaisesRegex(ValueError, 'reserved disc span'):
+                    swap_mod.generate(Path('unused.bin'), [109], [], 'test', 'Test', out,
+                                      reserved_spans=((500, 508),))
+            self.assertEqual(sentinel.read_bytes(), b'preserve header collision')
+            self.assertFalse((out / 'payload').exists())
+
+    def test_invalid_reservations_fail_before_build_or_write(self):
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from unittest.mock import patch
+
+        with TemporaryDirectory() as directory:
+            out = Path(directory) / 'package'
+            for reserved in (((100, 100),), ((103, 100),), ((-1, 100),), ((True, 4),)):
+                with self.subTest(reserved=reserved), patch.object(
+                        swap_mod, 'build', return_value=[(100, b'aaa', b'bbb')]) as build:
+                    with self.assertRaisesRegex(ValueError, 'invalid reserved disc span'):
+                        swap_mod.generate(Path('unused.bin'), [109], [], 'test', 'Test', out,
+                                          reserved_spans=reserved)
+                    build.assert_not_called()
+                    self.assertFalse(out.exists())
+
+
 if __name__ == '__main__':
     unittest.main()
