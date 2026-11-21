@@ -5,11 +5,24 @@ tags: ["tools", "evidence"]
 summary: "Historial de Ghidra MCP y soporte PSX/PsyQ; no certifica identificación automática."
 related: ["notes/assets.md", "AGENTS.md"]
 created: "2026-11-06"
-updated: "2026-11-15"
+updated: "2026-11-21"
 doc_kind: evidence
 ---
 
 # Ghidra / PSX / PsyQ — historial
+
+## 20261121 — selector de intro para prueba de reubicación
+- Cierre posterior: captura `f3-relocated-strike-clock-20261121b` aceptada, Strike P1 ejercitó naturalmente req104→anim73 gf5443/5998. Se omite el pase adicional de callers por redundante para esta prueba y no se crea/aplica fixture; las limitaciones de límites/callers del análisis siguen vigentes. Referencia y revisión visual en notes/move-viewer.md. No atribuir a Ghidra validación de un parche que nunca se aplicó.
+- Propósito: sustituir ensayo aleatorio de Strike por un disparo de intro verificado. MCP `get_program_info()` confirma main JP `SLPM_862.19`, SHA ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. `decompile_function_by_address(0x8002a090)` y `(0x80092b18)` fallan FUNCTION_NOT_FOUND: resultado no útil para decompilar en este programa; no implica ausencia del código ni justifica parche.
+- Complemento autorizado: `py -3.13 _work/move-viewer/f3/trace_intro_request.py`, Ghidra12.1.4/JDK21.0.12.1, proyecto aislado ya existente `gaso-runtime-hooks`, programa `bag2-combat005-duration-payload.bin`, sin análisis/importación nuevos; consultas80092b18/8009395c/8009c6a8. InputJP005 SHA bc5f3045084e4b3e19009910441627977863c8b5791b5cdb716a766e68b28fb2, base8008f890. Preserva GUI main y sesiones.
+- Resultado: exit0/13.03s; comando completo, salida, tiempo y hash en `_work/move-viewer/f3/intro-request-decompile.{json,log}`. Dos candidatos son gráficos;8009c6a8 era interior de bloque y el script creó función artificial allí (límite no fiable, no reutilizarlo como función nativa). Contraste Capstone5.0.7 y comparación exacta payload=`005.dbi[12:]`; SHA payload c180916e0f9fd6cc0cb9bb88b41e61c6feae197f1215a6bb17d80996004e00d9. Ahorro/retrabajo desconocidos.
+- Pase correctivo sin escrituras: `py -3.13 _work/move-viewer/f3/inspect_intro_ghidra.py`, mismo proyecto/programa con `-readOnly -noanalysis`, script `InspectIntro.java`. Exit0; informe `intro-ghidra-readonly.txt` confirma propietario existente80099e90 para rama8009c574 y selector8009c5ac=andi v0,v0,1, llamada80049f24 y consumidor8009c670=sumar103. Función artificial8009c6a8 sigue separando parte del consumidor: se declara, no se altera análisis previo para ocultarlo. MCP `get_program_info` conserva identidad main; `decompile_function_by_address(0x80049f24)` identifica `rand()` y su trampolín PsyQ. Útil para distinguir selector de coincidencias gráficas; caller/dispatch externo y ejecución nativa pendientes, no se aplica parche. Tiempo segundo pase no medido; ahorro desconocido.
+- Consultas MCP complementarias `decompile_function_by_address(0x8002bac8)` y `(0x8001fa6c)`: cargador toma id del módulo en80051934, decodifica según id y copia DBI payload desde+12 a la base, limpia BSS y cache. No identifican por sí solas los callers del selector. Barrido independiente encuentra jal80099e90 en80096664/8009d2e4/8009e20c; el siguiente pase readOnly está preparado, pero se difiere hasta terminar la captura para no introducir contención de Java. Sin ahorro medido ni nueva aceptación.
+
+## 20261121 — loader para reubicación del visor
+- Propósito: contrastar si el loader admite offsets DF2 fuera del extent ISO de BUST2.BIN. MCP `get_program_info()` confirma `SLPM_862.19`, PSX LE JP main, SHA-256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`; `decompile_function(FUN_8001f874)` devuelve función 8001f874 completa.
+- Resultado: lee offset/tamaño de la tabla DF2, `CdIntToPos(base + (offset >> 11))`, `CdRead((size+2047)>>11,...)`; sin comprobación del extent ISO en esta función. Contraste independiente host: overlays Strike 109 generados por swap_mod (338696 B, destino LBA228920). Esto no prueba aún ejecución del movimiento; toma grabada pendiente en notes/move-viewer.md.
+- Dictamen: útil para acotar el consumidor; no modificación/análisis masivo. Tiempo/ahorro/retrabajo no medidos. No repetir con inputs iguales; siguiente evidencia es la partida nativa.
 
 ## 20261115-ghidra-standards-recheck — consultas de los auditores documentales
 

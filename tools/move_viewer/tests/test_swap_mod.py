@@ -94,13 +94,65 @@ class GrowthBudgetTest(unittest.TestCase):
             main(['--entry', '95', '--swap', '71:6', '--max-growth', '4', '--id', 'x', '--out', '_work/x'])
 
 
-if __name__ == '__main__':
-    unittest.main()
-
-
 class RelocationBoundsTest(unittest.TestCase):
     def test_relocation_outside_free_dummy_area_is_refused(self) -> None:
         from pathlib import Path
         for lba in (swap_mod.RELOCATE_FIRST_LBA - 1, swap_mod.RELOCATE_END_LBA - 1):
             with self.assertRaises(ValueError):
                 swap_mod.relocated(Path('missing.bin'), 109, 10, b'\0' * 4096, lba)
+
+    def test_truncated_destination_is_not_treated_as_zero_padding(self) -> None:
+        from pathlib import Path
+        from unittest.mock import patch
+
+        with patch.object(swap_mod, 'read_user', return_value=b''), \
+                patch.object(swap_mod, 'entry_extent', return_value=(20168704, 10)):
+            with self.assertRaisesRegex(ValueError, 'incomplete relocation target'):
+                swap_mod.relocated(Path('truncated.bin'), 109, 10, b'x' * 20, 228920)
+
+    def test_nonzero_destination_is_refused(self) -> None:
+        from pathlib import Path
+        from unittest.mock import patch
+
+        with patch.object(swap_mod, 'read_user', return_value=b'\0' * 19 + b'x'):
+            with self.assertRaisesRegex(ValueError, 'not zero padding'):
+                swap_mod.relocated(Path('occupied.bin'), 109, 10, b'x' * 20, 228920)
+
+
+class RelocationGenerationTest(unittest.TestCase):
+    def test_two_sides_get_distinct_sector_aligned_destinations(self) -> None:
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from tools.move_viewer import app
+
+        disc, = swap_mod.require_paths(swap_mod.load_config(), ('inputs.bag2_disc',))
+        own, variant = app.character_sources('STRIKE')[:2]
+        with TemporaryDirectory() as directory:
+            overlays = swap_mod.generate(
+                disc, [109, 110], [(73, 73)], 'bag2jp.test.relocation', 'Relocation test',
+                Path(directory), copy=True, max_growth=4388,
+                cross=swap_mod.CrossBank(own, variant), relocate_lba=228920)
+        self.assertEqual([offset for offset, _, _ in overlays],
+                         [468828160, 367472, 469168128, 367480])
+        self.assertEqual([len(data) for _, _, data in overlays], [338696, 8, 338696, 8])
+        self.assertLessEqual(overlays[0][0] + len(overlays[0][2]), overlays[2][0])
+
+    def test_insufficient_space_does_not_write_a_partial_package(self) -> None:
+        from pathlib import Path
+        from tempfile import TemporaryDirectory
+        from tools.move_viewer import app
+
+        disc, = swap_mod.require_paths(swap_mod.load_config(), ('inputs.bag2_disc',))
+        own, variant = app.character_sources('STRIKE')[:2]
+        with TemporaryDirectory() as directory:
+            out = Path(directory) / 'package'
+            with self.assertRaisesRegex(ValueError, 'outside free DUMMY area'):
+                swap_mod.generate(
+                    disc, [109, 110], [(73, 73)], 'bag2jp.test.relocation', 'Relocation test',
+                    out, copy=True, max_growth=4388,
+                    cross=swap_mod.CrossBank(own, variant), relocate_lba=237369)
+            self.assertFalse(out.exists())
+
+
+if __name__ == '__main__':
+    unittest.main()

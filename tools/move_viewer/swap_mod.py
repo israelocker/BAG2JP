@@ -358,6 +358,8 @@ def relocated(disc: Path, entry: int, size: int, patched: bytes,
     if lba < RELOCATE_FIRST_LBA or lba + sectors > RELOCATE_END_LBA:
         raise ValueError(f'relocation LBA {lba} (+{sectors} sectors) outside free DUMMY area')
     stock = read_user(disc, lba, sectors)[:len(patched)]
+    if len(stock) != len(patched):
+        raise ValueError(f'incomplete relocation target at LBA {lba}')
     if any(stock):
         raise ValueError(f'relocation target at LBA {lba} is not zero padding')
     old_offset = entry_extent(disc, entry)[0]
@@ -506,12 +508,30 @@ def check_disc(disc: Path) -> None:
 
 def generate(disc: Path, entries: list[int], pairs: list[tuple[int, int]], package_id: str,
              name: str, out: Path, copy: bool = False,
-             max_growth: int = 0, cross: CrossBank | None = None) -> list[tuple[int, bytes, bytes]]:
-    """Build the overlays of every entry and write the verified package to `out`."""
+             max_growth: int = 0, cross: CrossBank | None = None,
+             relocate_lba: int | None = None) -> list[tuple[int, bytes, bytes]]:
+    """Build entries and write a verified package, optionally using free DUMMY sectors.
+
+    `relocate_lba` opts into relocation when disc slack is exhausted; destinations
+    advance by whole sectors so entries in this package cannot share payload space.
+    The caller must reserve this range against other enabled packages. No automatic
+    relocation is enabled by the UI until that cross-package reservation exists.
+    Returns the absolute disc_user overlays written to `out`.
+    """
     if not entries:
         raise ValueError('no BUST2.BIN entry to patch')
-    overlays = [o for entry in entries
-                for o in build(disc, entry, pairs, copy, max_growth, cross)]
+    if len(set(entries)) != len(entries):
+        raise ValueError('duplicate BUST2.BIN entries')
+    overlays = []
+    cursor = relocate_lba
+    for entry in entries:
+        current = build(disc, entry, pairs, copy, max_growth, cross, relocate_lba=cursor)
+        if cursor is not None and current[0][0] == cursor * SECTOR:
+            cursor += (len(current[0][2]) + SECTOR - 1) // SECTOR
+        overlays.extend(current)
+    spans = sorted((offset, offset + len(patched)) for offset, _, patched in overlays)
+    if any(end > next_start for (_, end), (next_start, _) in zip(spans, spans[1:])):
+        raise ValueError('generated disc overlays overlap')
     write_package(out, package_id, name, overlays)
     return overlays
 
