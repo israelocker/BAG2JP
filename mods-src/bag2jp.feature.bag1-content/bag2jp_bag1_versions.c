@@ -204,6 +204,7 @@ static int b1v_region_japanese(const char* option) {
 /* BAG2 size as the disc table reports it. A disc_user mod (move viewer) may grow a BAG2
  * entry in place; forcing the compiled stock size would place the player struct over the
  * grown bank tail (LOSE3 hang, notes/move-viewer.md 2026-11-21). */
+#define B1V_MAX_GROWTH 4388u /* keep >= max GROWTH_BUDGET of b1_alt_entries characters */
 static uint32_t b1v_bag2_size[sizeof b1_alt_entries / sizeof b1_alt_entries[0]];
 
 static void b1v_apply_entry(const B1AltEntry* e, uint32_t* bag2_size, uint32_t count,
@@ -212,7 +213,18 @@ static void b1v_apply_entry(const B1AltEntry* e, uint32_t* bag2_size, uint32_t c
     const uint32_t a = B1V_TABLE + 8u + 8u * e->entry;
     const uint32_t off = psx_mod_read_word(a);
     if (off != e->off && off != e->alt_off && (!e->jp_size || off != e->jp_off)) return;
-    if (off == e->off) *bag2_size = psx_mod_read_word(a + 4u);
+    if (off == e->off) {
+        const uint32_t seen = psx_mod_read_word(a + 4u);
+        /* Only in-place growth within the largest measured budget (swap_mod GROWTH_BUDGET,
+         * Strike 4388 B) is plausible; anything else falls back to the compiled size. */
+        const uint32_t accepted = seen >= e->size && seen <= e->size + B1V_MAX_GROWTH
+                                  ? seen : e->size;
+        if (accepted != *bag2_size && (accepted != e->size || seen != accepted))
+            b1v_log("%07u entry %u BAG2 size %u (disc %u, stock %u)", b1v_frame,
+                    e->entry, accepted, seen, e->size);
+        *bag2_size = accepted;
+    }
+    /* 0 = never seen at the BAG2 offset this session (e.g. savestate with BAG1 active). */
     if (!*bag2_size) *bag2_size = e->size;
     const int alt = b1v_wanted(e);
     const int available = !japanese || e->jp_size != 0;

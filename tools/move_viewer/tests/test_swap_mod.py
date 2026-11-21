@@ -55,6 +55,15 @@ class GrowthBudgetTest(unittest.TestCase):
             entries, budget = GROWTH_BUDGET[character]
             check_growth_budget(list(entries), budget)
 
+    def test_plugin_growth_bound_covers_bag1_variant_budgets(self) -> None:
+        """bag1-content rejects disc sizes above stock + B1V_MAX_GROWTH."""
+        import re
+        from tools.move_viewer.swap_mod import ROOT
+        source = (ROOT / 'mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_versions.c').read_text()
+        bound = int(re.search(r'#define B1V_MAX_GROWTH (\d+)u', source).group(1))
+        for character in ('heat', 'strike', 'bi_o'):
+            self.assertLessEqual(GROWTH_BUDGET[character][1], bound, character)
+
     def test_grow_shifts_members_after_bank(self) -> None:
         from tools.move_viewer.swap_mod import grow_entry
         members = [b'A' * 8, b'B' * 8, b'C' * 4]

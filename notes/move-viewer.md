@@ -77,3 +77,10 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 
 
 - 2026-11-21: repetida la toma de cambio BAG1->BAG2 con el arnés corregido (2b5c3e4): f3-switch-20261121-2 aceptada; confirmaciones nuevas BAG1 y luego BAG2 para Strike; entrada 109 -> BAG2 en f17597; segunda partida Strike LOSE3 req152 en f028604 -> fase 2/9 en f030106, sin cuelgue; state.toml restaurado (hash OK). No revisada fotograma a fotograma.
+
+## 2026-11-21 Cota de crecimiento en bag1-content
+- `B1V_MAX_GROWTH 4388u`: el tamaño BAG2 leído en RAM solo se acepta entre stock y stock+4388; si no, stock. Registra una línea al cambiar.
+- exe 808F2752 en exp-8mb; calibración roster-recal-bound-20261121 (aristas/capturas reutilizadas).
+- Toma f3-bound-lose3-20261121-1 aceptada (Heat P1, Strike P2 con WAIT crecido +420, force-lose3): log 'entry 109/110 BAG2 size 336720 (disc 336720, stock 336300)'; Heat P1 LOSE3 req152 f014483 -> phase 2/9 sin cuelgue; state.toml restaurado CFD4F8CA.
+- Sin verificar: Strike como perdedor con este exe; rechazo fuera de cota en juego (solo por código).
+
