@@ -53,9 +53,8 @@ GROWTH_BUDGET = {
     'strike': ((109, 110), 4388),
     'comet': ((93, 94), 15568),
     'shorty': ((107, 108), 1516),
-    # Bi-O/Gas-O entries have 3 members and the motion bank is not the last one, so
-    # grow_entry cannot grow it (672 B of RAM were measured; 2026-11-21).
-    'bi_o': ((89, 90), 0),
+    # Bi-O/Gas-O entries have a third member after the bank; grow_entry shifts it.
+    'bi_o': ((89, 90), 672),
     'tsutomu': ((111, 112), 8268),
     'kelly': ((99, 100), 68),
     'pander': ((103, 104), 6132),
@@ -315,14 +314,30 @@ def next_entry_offset(disc: Path, entry: int) -> int:
 
 
 def grow_entry(container: bytes, bank: bytes) -> bytes:
-    """Container with a larger motion bank; the bank must be the last member."""
+    """Container with a larger motion bank; members after it move by the growth.
+
+    The game reaches every member through the DFS header (FUN_8001fb58), so later
+    members (Bi-O's 002.bin) may shift if they were packed contiguously after the bank.
+    """
     count = struct.unpack_from('<I', container, 4)[0]
     member_offset, member_size = struct.unpack_from('<II', container, 8 + 8 * BANK_MEMBER)
-    if count != BANK_MEMBER + 1 or member_offset + member_size != len(container):
-        raise ValueError('motion bank is not the last member: cannot grow the entry')
+    end = member_offset + member_size
+    if len(bank) % 4:
+        raise ValueError('grown motion bank must keep 4-byte alignment')
+    later = [struct.unpack_from('<II', container, 8 + 8 * i) for i in range(BANK_MEMBER + 1, count)]
+    expected = end
+    for offset, size in later:
+        if offset != expected:
+            raise ValueError('members after the motion bank are not contiguous: cannot grow')
+        expected = offset + size
+    if expected != len(container):
+        raise ValueError('container has trailing data after its members: cannot grow')
+    growth = len(bank) - member_size
     head = bytearray(container[:member_offset])
     struct.pack_into('<I', head, 8 + 8 * BANK_MEMBER + 4, len(bank))
-    return bytes(head) + bank
+    for i, (offset, _) in enumerate(later, BANK_MEMBER + 1):
+        struct.pack_into('<I', head, 8 + 8 * i, offset + growth)
+    return bytes(head) + bank + container[end:]
 
 
 def build(disc: Path, entry: int, pairs: list[tuple[int, int]],

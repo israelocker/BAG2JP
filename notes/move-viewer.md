@@ -69,3 +69,5 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 - 2026-11-21: toma aceptada f3-sizefix3-lose3-20261121-1 (exe 0D3BC951, Heat P1, Strike P2 con banco crecido +420 B y LOSE3 forzado): Strike P2 LOSE3 req152 anim100 en f014387 y salida a fase 2/9 en f015967, sin cuelgue. Restauracion de state.toml verificada (CFD4F8CA). Sin probar: crecimiento de Bi-O y cambio BAG1/BAG2 con una entrada crecida.
 
 - 2026-11-21: Bi-O/Gas-O no puede crecer: sus entradas tienen 3 miembros y el banco no es el ultimo (grow_entry lo rechaza). GROWTH_BUDGET bi_o = 0; los 672 B medidos quedan sin uso hasta implementar el desplazamiento del tercer miembro.
+
+- 2026-11-21: grow_entry desplaza los miembros posteriores al banco (el juego los localiza por la cabecera DFS, FUN_8001fb58). Bi-O vuelve a tener presupuesto 672 B. Toma aceptada f3-bio-grow-lose3-20261121-1 (Heat P1, Bi-O P2 con WAIT 71<-0x00, +524 B, LOSE3 forzado): Bi-O LOSE3 req152 anim100 en f014713 y fase 2/9 en f016051, sin cuelgue; state.toml restaurado (CFD4F8CA). No comprobado fotograma a fotograma que WAIT muestre el movimiento nuevo (periodo req106 = 104 fr).

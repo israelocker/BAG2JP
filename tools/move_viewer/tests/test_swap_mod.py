@@ -51,13 +51,22 @@ class GrowthBudgetTest(unittest.TestCase):
 
     def test_bag1_variant_characters_grow_within_measured_budget(self) -> None:
         # bag1-content keeps the disc size since 2026-11-21 (LOSE3 hang fix).
-        for character in ('heat', 'strike'):
+        for character in ('heat', 'strike', 'bi_o'):
             entries, budget = GROWTH_BUDGET[character]
             check_growth_budget(list(entries), budget)
 
-    def test_bi_o_bank_cannot_grow(self) -> None:
-        # Its motion bank is not the last DFS member (grow_entry would raise).
-        self.assertEqual(GROWTH_BUDGET['bi_o'][1], 0)
+    def test_grow_shifts_members_after_bank(self) -> None:
+        from tools.move_viewer.swap_mod import grow_entry
+        members = [b'A' * 8, b'B' * 8, b'C' * 4]
+        offset, header = 8 + 8 * 3, b''
+        for m in members:
+            header += struct.pack('<II', offset, len(m))
+            offset += len(m)
+        container = b'DFS_' + struct.pack('<I', 3) + header + b''.join(members)
+        grown = grow_entry(container, b'X' * 12)
+        self.assertEqual(struct.unpack_from('<II', grown, 8 + 16), (8 + 24 + 20, 4))
+        self.assertEqual(grown[-4:], b'CCCC')
+        self.assertEqual(struct.unpack_from('<I', grown, 8 + 12)[0], 12)
 
     def test_growth_over_budget_rejected(self) -> None:
         entries, budget = GROWTH_BUDGET['comet']
