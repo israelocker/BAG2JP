@@ -205,6 +205,50 @@ class ParserPrecedenceTest(unittest.TestCase):
         self.assertEqual(raised.exception.code, 2)
 
 
+class PickIgnoresEarlierMatchTest(unittest.TestCase):
+    def test_second_pick_waits_for_new_popup_lines(self) -> None:
+        """Match 1 lines (BAG1 confirmed) must not satisfy match 2's waits."""
+        old = ("open: side 0 char 1 (bag1 version 1, current 0)\n"
+               "confirm: side 0 char 1 version BAG1 costume A\n")
+        new = ("open: side 0 char 1 (bag1 version 1, current 1)\n"
+               "confirm: side 0 char 1 version BAG2 costume A\n")
+        log = [old]
+        session = versus_session.Session.__new__(versus_session.Session)
+        session.settings = mock.Mock(game=Path("game"), state_timeout=1.0)
+        session.started = 0.0
+        session.shot_prefix = "second-"
+        keys: list[str] = []
+
+        def key(side: int, name: str) -> None:
+            keys.append(name)
+            if name == "circle" and len(keys) == 1:
+                log[0] = old + new.splitlines(keepends=True)[0]
+            elif name == "circle" and len(keys) == 3:
+                delayed.append(1)  # the new confirm line lands one read later
+
+        delayed: list[int] = []
+
+        def read(path: Path, started: float) -> str:
+            if delayed:
+                if len(delayed) > 1:
+                    log[0] = old + new
+                delayed.append(1)
+            return log[0]
+
+        session.key = key
+        session.shot = lambda name: None
+        session.state = lambda: {}
+        session.wait = lambda accept: None
+        with mock.patch.object(versus_session, "session_log", side_effect=read), \
+             mock.patch.object(versus_session.nav, "require_selector"), \
+             mock.patch.object(versus_session.nav, "route", return_value=[]), \
+             mock.patch.object(versus_session.nav, "cursor", return_value=1):
+            observed = session.pick(1, "strike", "BAG2", "A", {})
+        # Fresh "current 1" (BAG1 active) needs a right press to reach BAG2.
+        self.assertEqual(keys[:3], ["circle", "right", "circle"])
+        self.assertEqual(observed["version"], "BAG2")
+
+
 class MainBeforeEffectsTest(unittest.TestCase):
     def test_config_error_exits_before_any_effect(self) -> None:
         stderr = io.StringIO()

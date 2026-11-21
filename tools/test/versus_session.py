@@ -186,10 +186,11 @@ def copy_current(source: Path, run: Path, started: float) -> bool:
 def contact_sheet(run: Path) -> Path:
     """Combine semantic checkpoints for one compact visual review, not auto-vision."""
     from PIL import Image, ImageDraw
-    names = [name for name in ("versus-selected", "selector", "p1-popup", "p2-popup", "stage-selected", "gameplay")
-             if (run / f"{name}.png").is_file()]
+    base = ("versus-selected", "selector", "p1-popup", "p2-popup", "stage-selected", "gameplay")
+    second = tuple(f"second-{name}" for name in ("p1-popup", "p2-popup", "stage-selected", "gameplay"))
+    names = [name for name in base + second if (run / f"{name}.png").is_file()]
     if not names:
-        names = ["final-state"] if (run / "final-state.png").is_file() else []
+        names = [name for name in ("final-state", "second-final-state") if (run / f"{name}.png").is_file()][:1]
     if not names:
         raise ValueError("No captured checkpoints")
     sheet = Image.new("RGB", (1200, ((len(names) + 1) // 2) * 370))
@@ -244,6 +245,7 @@ class Session:
         self.process: subprocess.Popen | None = None
         self.identity: dict = {}
         self.started = 0.0
+        self.shot_prefix: str = ""  # "second-" while a --second-versions match runs
         self.bindings: dict = {}
         self.actions: list[dict] = []
         self.shots: list[str] = []
@@ -364,7 +366,7 @@ class Session:
     def shot(self, name: str) -> None:
         """Save evidence; this does not claim automatic visual interpretation."""
         self.assert_process()
-        name = getattr(self, "shot_prefix", "") + name
+        name = self.shot_prefix + name
         path = self.run / f"{name}.png"
         if path.exists():
             raise FileExistsError(path)
@@ -502,10 +504,12 @@ class Session:
             expected = edges[(nav.cursor(self.state(), side), action)]
             self.move(side, action, expected)
         self.shot(f"p{side}-character")
-        self.key(side, "circle")
         log_path = self.settings.game / "bag2jp_charsel_popup.log"
-        # Popup log is truncated on activation in this task-owned process.
-        log = nav.wait_until(lambda: session_log(log_path, self.started), lambda text: f"open: side {side-1} char {character} " in text,
+        # The log lasts the whole process: ignore lines from an earlier match.
+        start = len(session_log(log_path, self.started))
+        fresh = lambda: session_log(log_path, self.started)[start:]
+        self.key(side, "circle")
+        log = nav.wait_until(fresh, lambda text: f"open: side {side-1} char {character} " in text,
                              self.settings.state_timeout)
         match = re.findall(rf"open: side {side-1} char {character} \(bag1 version (\d+), current (\d+)\)", log)
         if not match:
@@ -520,8 +524,9 @@ class Session:
                 self.key(side, "down")
             self.key(side, "right")
         self.shot(f"p{side}-popup")
+        start = len(session_log(log_path, self.started))
         self.key(side, "circle")
-        log = nav.wait_until(lambda: session_log(log_path, self.started), lambda text: f"confirm: side {side-1} char {character} " in text,
+        log = nav.wait_until(fresh, lambda text: f"confirm: side {side-1} char {character} " in text,
                              self.settings.state_timeout)
         observed = nav.confirmation(log, side - 1, character, version, costume)
         self.wait(lambda state: (state[f"p{side}_status"] >> 16 & 255) == 2)
@@ -696,6 +701,10 @@ def main(argv: list[str] | None = None) -> int:
     except project_config.ConfigError as exc:
         parser.error(f"config error: {exc}")
     characters = [nav.validate_pick(getattr(args, f"p{side}_character"), getattr(args, f"p{side}_version"), getattr(args, f"p{side}_costume")) for side in (1, 2)]
+    if args.second_versions:
+        # Reject an unsupported second version before any game or file effect.
+        for side, version in zip((1, 2), args.second_versions.split(",")):
+            nav.validate_pick(getattr(args, f"p{side}_character"), version, getattr(args, f"p{side}_costume"))
     executable_hash = nav.sha256(settings.game / "BAG2JP.exe")
     catalog = None
     if args.action == "run":
@@ -754,6 +763,10 @@ def main(argv: list[str] | None = None) -> int:
                     if args.second_versions:
                         # Same process, new versions: exercises in-session BAG1/BAG2 switches.
                         versions = args.second_versions.split(",")
+                        result["phase"] = "second-match"
+                        # Same readiness gate as menu(): keys during the fade can be lost.
+                        session.wait(lambda state: state["root"] in nav.SELECTOR_ROOTS and
+                                     (state["p1_status"] >> 16 & 255) == 1 and (state["p2_status"] >> 16 & 255) == 1)
                         session.shot_prefix = "second-"
                         session.shot("select")
                         result["second_picks"] = [session.pick(side, getattr(args, f"p{side}_character"), versions[side - 1], getattr(args, f"p{side}_costume"), edges) for side in (1, 2)]
