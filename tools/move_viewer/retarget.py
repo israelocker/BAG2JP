@@ -28,6 +28,9 @@ class Retarget:
 # 25053 (BAG1) vs 26740 (BAG2).
 PROFILES: dict[str, Retarget] = {
     'heat': Retarget({t: t for t in range(19)}, 26740 / 25053),
+    # Bi-O: probe_tracks.py shows the same 19-track parent topology in both versions (BAG1
+    # DBI init 0x801CEDBC writes the map with sb); rest root y 25942 (BAG1) vs 26401 (BAG2).
+    'bi_o': Retarget({t: t for t in range(19)}, 26401 / 25942),
 }
 
 

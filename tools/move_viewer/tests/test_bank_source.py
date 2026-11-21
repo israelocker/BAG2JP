@@ -182,9 +182,8 @@ class RealDataTests(unittest.TestCase):
         self.assertIsNotNone(variant.retarget)  # reviewed profile: copy allowed via retarget
         swap_mod.copy_motions(own.bank, [(2, 2)], 1 << 20, CrossBank(own, variant))
         own, variant = bank_source.sources_for(self.characters, self.payload, 'bi_o')
-        self.assertTrue(swap_mod.incompatibilities(own, variant))
-        with self.assertRaises(ValueError):
-            swap_mod.copy_motions(own.bank, [(2, 2)], 1 << 20, CrossBank(own, variant))
+        self.assertIsNotNone(variant.retarget)  # reviewed profile (BAG1 sb map writer)
+        swap_mod.copy_motions(own.bank, [(2, 2)], 1 << 20, CrossBank(own, variant))
 
     def test_reverse_direction_has_the_same_verdict(self):
         own, variant = bank_source.sources_for(self.characters, self.payload, 'strike')

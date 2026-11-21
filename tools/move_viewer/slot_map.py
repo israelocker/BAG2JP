@@ -46,13 +46,16 @@ def init_table(side: int = 0) -> list[int]:
 
 
 def map_writer_start(dbi: bytes, base: int, addr: int) -> bool:
-    """Entry plausibility: an 'addiu rX, rY, 0x7CC' within the first 8 instructions."""
+    """Entry plausibility: an 'addiu rX, rY, 0x7CC' or (BAG1 Bi-O) an 'sb rX, 0x7CC+i(rY)'
+    within the first 8 instructions."""
     off = addr - base
     for k in range(8):
         if not 0 <= off + 4 * k < len(dbi) - 3:
             return False
         w = struct.unpack_from('<I', dbi, off + 4 * k)[0]
         if (w >> 26) == 0x09 and (w & 0xFFFF) == MAP_OFF:
+            return True
+        if (w >> 26) == 0x28 and MAP_OFF <= (w & 0xFFFF) < MAP_OFF + MAP_LEN:
             return True
     return False
 
