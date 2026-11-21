@@ -53,7 +53,9 @@ GROWTH_BUDGET = {
     'strike': ((109, 110), 4388),
     'comet': ((93, 94), 15568),
     'shorty': ((107, 108), 1516),
-    'bi_o': ((89, 90), 672),
+    # Bi-O/Gas-O entries have 3 members and the motion bank is not the last one, so
+    # grow_entry cannot grow it (672 B of RAM were measured; 2026-11-21).
+    'bi_o': ((89, 90), 0),
     'tsutomu': ((111, 112), 8268),
     'kelly': ((99, 100), 68),
     'pander': ((103, 104), 6132),

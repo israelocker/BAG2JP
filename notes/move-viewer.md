@@ -67,3 +67,5 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 - Goldfish (pedido DeepSeek, respondió Opus 5.5): OK con cambios. Aplicado MEDIA: b1v_reset borra los tamaños guardados. Pendiente BAJA: tamaño 0 como centinela, sin cota de cordura, sin test de host, presupuestos no comprueban hash de runtime; savestate con BAG1 activo usa tamaño compilado (limite declarado).
 
 - 2026-11-21: toma aceptada f3-sizefix3-lose3-20261121-1 (exe 0D3BC951, Heat P1, Strike P2 con banco crecido +420 B y LOSE3 forzado): Strike P2 LOSE3 req152 anim100 en f014387 y salida a fase 2/9 en f015967, sin cuelgue. Restauracion de state.toml verificada (CFD4F8CA). Sin probar: crecimiento de Bi-O y cambio BAG1/BAG2 con una entrada crecida.
+
+- 2026-11-21: Bi-O/Gas-O no puede crecer: sus entradas tienen 3 miembros y el banco no es el ultimo (grow_entry lo rechaza). GROWTH_BUDGET bi_o = 0; los 672 B medidos quedan sin uso hasta implementar el desplazamiento del tercer miembro.
