@@ -92,3 +92,7 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 - Exe F462EAE4 en exp-8mb (copia `_work/move-viewer/f3/BAG2JP.exe.bak-20261121-log`). Calibración roster-recal-log-20261121 aceptada (aristas y capturas reutilizadas).
 - Tomas aceptadas f3-log-strikeloser-20261121-1 y f3-log-strikep2-20261121-1 (Strike crecido +420 y force-lose3): log 'entry 109/110 BAG2 size 336720 (disc 336720, stock 336300)'; Heat perdió con LOSE3 en las dos (f014463 y f014481) y se pasó a la fase 2/9 sin cuelgue; state.toml CFD4F8CA.
 - Sin verificar en este exe: Strike como perdedor (sí lo está en f3-sizefix3 con la misma lógica de tamaño) y los savestates con BAG1 activo (límite conocido).
+
+## 2026-11-21 Strike perdedor con banco crecido (exe F462EAE4)
+- Mod de prueba `bag2jp.test.force-winner` (`_work/move-viewer/f3/force_winner_mod.py`): anula `bnez` en jp005 0x80098940 (FUN_800987f4) → gana P2 salvo empate. Intentos previos (store 0x800990b8 = inicialización; tabla 0x8009E8A4 = cuelgue) descartados.
+- Toma f3-forcewin3-strike-20261121-1 aceptada: Strike P1 (WAIT +420 desde variante BAG1) LOSE3 req152 anim100 f014652 → phase 2/9 f016207, sin cuelgue; log tamaño 109/110 336720; state.toml CFD4F8CA.
