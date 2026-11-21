@@ -4,6 +4,11 @@ updated: 2026-11-21
 ---
 # Move viewer / editor
 
+## Candidato de reubicación no BAG1 (2026-11-21, solo host)
+- Entradas fuera de la tabla del selector con presupuesto > holgura: Shorty 107/108 (presupuesto 1516 B, holgura 80 B). Copia slot0←74 crece 84 B (`_work/move-viewer/f3/find_shorty_pair.py`).
+- Simulación del plan real con inventario y política del selector (`_work/move-viewer/f3/plan_shorty.py`, sin escrituras): 107→LBA 229086 y 108→LBA 229234, cada una de 301060 B, además de los dos campos de cabecera DF2 (367456 y 367464). No hay colisiones.
+- Siguiente paso: generar el paquete, instalarlo en `BAG2JP-exp-8mb` con copia de seguridad y hacer una partida grabada con Shorty P1/P2 hasta el resultado y la vuelta al selector. Todavía no hay aceptación en juego.
+
 ## Selector: lector de autoridad en preparación (2026-11-21)
 - `selector_policy.py` lee la tabla nativa completa y rechaza filas desconocidas, duplicados y tabla vacía. La autoridad actual contiene 30 entradas, no 32; ambas entradas de Strike están protegidas.
 - Suite completa posterior: 86 pruebas, exit0, 6.273s. El lector todavía no se conecta a UI: el bloqueo global de reubicación sigue vigente hasta contrastar la autoridad con el plugin instalado.
@@ -143,3 +148,16 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 ## 2026-11-21 Strike perdedor con banco crecido (exe F462EAE4)
 - Mod de prueba `bag2jp.test.force-winner` (`_work/move-viewer/f3/force_winner_mod.py`): anula `bnez` en jp005 0x80098940 (FUN_800987f4) → gana P2 salvo empate. Intentos previos (store 0x800990b8 = inicialización; tabla 0x8009E8A4 = cuelgue) descartados.
 - Toma f3-forcewin3-strike-20261121-1 aceptada: Strike P1 (WAIT +420 desde variante BAG1) LOSE3 req152 anim100 f014652 → phase 2/9 f016207, sin cuelgue; log tamaño 109/110 336720; state.toml CFD4F8CA.
+
+- Toma P1 `f3-relocated-shorty-20261121a` (Shorty P1 vs Heat, paquete reubicado 107->LBA229086/108->229234): manifest accepted=true, harness exit0, resultado y selector presentes, restauración de ajustes/150 saves y state.toml verificada; plan de mods aplicado. Shorty íntegro en gameplay (review-sheet). Límite: el trace solo muestra índice de casilla (req106->anim71), no demuestra por sí solo el contenido copiado slot0<-74; falta comparación visual del movimiento. Run `_work/versus-runs/20261121T193536677563Z-f3-relocated-shorty-20261121a-vs`.
+- Toma P2 `f3-relocated-shorty-p2-20261121a` (Heat P1 vs Shorty P2): manifest accepted=true, harness/finalize exit0, restauración verificada; trace P2 ch5 req106 desde f005547; Shorty íntegro en gameplay. Mismo límite: falta comparación visual del contenido copiado y conformidad del owner. Run `_work/versus-runs/20261121T194243952827Z-f3-relocated-shorty-p2-20261121a-vs`.
+
+- Comparación visual Shorty (2026-11-21): montaje _work/move-viewer/f3/shorty-compare2.png (arriba referencia sin paquete gf6500..11500 paso1000; abajo reubicada P1 +125). En gf6500/6625 la referencia muestra la espera nativa y la reubicada otra pose (brazo alzado), coherente con slot0<-74; resto: Shorty íntegro, sin corrupción. Desfase de cámara/ritmo entre tomas; no es comparación fotograma exacto. Pendiente conformidad del owner.
+
+## F3 reubicación BAG1 — 2026-11-21
+- Plugin bag1-content: `b1v_apply_entry` guarda el offset BAG2 real (`b1v_bag2_off`) si la tabla apunta a un offset reubicado por un mod disc_user; restaura BAG2 a ese offset. Exe 35266C386CAB desplegado en exp-8mb (backup `BAG2JP.exe.bak-f3-pre-bag1reloc`).
+- Calibración versus recaptada (probe f3-probe-35266c, 8 aristas revisadas, aceptada).
+- Toma `f3-bag1reloc-strike-20261121c` accepted=true, restauración verificada: paquete strike-relocated-individual2, P1 Strike BAG1 (log: entry 109 -> BAG1 JP), P2 Strike BAG2 con entrada 110 reubicada (sin reescritura). Gameplay con ambos modelos íntegros, fin de canción y vuelta al selector (review-sheet/returned-selector).
+- Visor: `selector_policy.exe_follows_relocation` desbloquea la reubicación de entradas BAG1 solo si el exe instalado está en `RELOCATION_AWARE_SHA256`; con un exe desconocido se mantiene el bloqueo. 87 tests OK.
+- No probado: volver BAG1->BAG2 en la misma sesión con entrada reubicada; fever duet; otros personajes BAG1.
+

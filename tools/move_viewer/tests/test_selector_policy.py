@@ -1,11 +1,24 @@
 """Selector authority must be parsed completely, never partially trusted."""
 import unittest
+import unittest.mock
 from pathlib import Path
 
 from tools.move_viewer import selector_policy
 
 
 class SelectorPolicyTest(unittest.TestCase):
+    def test_only_proven_exe_follows_relocation(self):
+        import hashlib, tempfile
+        with tempfile.TemporaryDirectory() as temp:
+            exe = Path(temp) / 'BAG2JP.exe'
+            self.assertFalse(selector_policy.exe_follows_relocation(exe))
+            exe.write_bytes(b'unknown build')
+            self.assertFalse(selector_policy.exe_follows_relocation(exe))
+            digest = hashlib.sha256(b'unknown build').hexdigest().upper()
+            with unittest.mock.patch.object(selector_policy, 'RELOCATION_AWARE_SHA256',
+                                            frozenset({digest})):
+                self.assertTrue(selector_policy.exe_follows_relocation(exe))
+
     def test_canonical_native_authority_protects_both_sides(self):
         root = Path(__file__).resolve().parents[3]
         header = root / 'mods-src/bag2jp.feature.bag1-content/bag2jp_bag1_alt_index.h'

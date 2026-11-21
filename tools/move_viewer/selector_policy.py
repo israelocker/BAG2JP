@@ -1,4 +1,6 @@
 """Read the native selector's complete protected-entry authority."""
+import hashlib
+from pathlib import Path
 import re
 
 _TABLE = re.compile(r'static const B1AltEntry b1_alt_entries\[\]\s*=\s*\{(.*?)\};', re.S)
@@ -41,3 +43,17 @@ def blocked_entries(source: str) -> frozenset[int]:
     if not entries:
         raise ValueError('empty native selector table')
     return frozenset(entries)
+
+
+# Builds whose bag1-content selector records relocated BAG2 offsets (b1v_bag2_off) and whose
+# relocation was accepted in a recorded take. Unknown builds keep the conservative block.
+RELOCATION_AWARE_SHA256 = frozenset({
+    '35266C386CABD9019D7441FB558C3EA72BF5B6182C7C09417833D5BB837268CD',  # f3-bag1reloc-strike-20261121c
+})
+
+
+def exe_follows_relocation(exe: Path) -> bool:
+    """True only for an installed exe proven to follow relocated selector entries."""
+    if not exe.is_file():
+        return False
+    return hashlib.sha256(exe.read_bytes()).hexdigest().upper() in RELOCATION_AWARE_SHA256

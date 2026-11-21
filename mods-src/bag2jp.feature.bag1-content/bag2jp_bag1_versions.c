@@ -207,14 +207,18 @@ static int b1v_region_japanese(const char* option) {
  * grown bank tail (LOSE3 hang, notes/move-viewer.md 2026-11-21). */
 static uint32_t b1v_bag2_size[sizeof b1_alt_entries / sizeof b1_alt_entries[0]];
 static uint32_t b1v_seen_size[sizeof b1_alt_entries / sizeof b1_alt_entries[0]];
+static uint32_t b1v_bag2_off[sizeof b1_alt_entries / sizeof b1_alt_entries[0]];
 
-static void b1v_apply_entry(const B1AltEntry* e, uint32_t* bag2_size, uint32_t* last_seen,
+static void b1v_apply_entry(const B1AltEntry* e, uint32_t* bag2_off, uint32_t* bag2_size, uint32_t* last_seen,
                             uint32_t count, int japanese) {
     if (e->entry >= count) return;
     const uint32_t a = B1V_TABLE + 8u + 8u * e->entry;
     const uint32_t off = psx_mod_read_word(a);
-    if (off != e->off && off != e->alt_off && (!e->jp_size || off != e->jp_off)) return;
-    if (off == e->off) {
+    /* A disc_user mod (move viewer) may relocate the BAG2 entry into DUMMY.BIN: any offset
+     * other than the BAG1 ones is then the BAG2 offset (recorded on first sight). */
+    if (off != e->alt_off && (!e->jp_size || off != e->jp_off)) *bag2_off = off;
+    if (!*bag2_off) *bag2_off = e->off;
+    if (off == *bag2_off) {
         const uint32_t seen = psx_mod_read_word(a + 4u);
         const uint32_t accepted = b1v_accept_size(seen, e->size);
         /* Once per new table value: growth, return to stock and rejections all show up. */
@@ -230,7 +234,7 @@ static void b1v_apply_entry(const B1AltEntry* e, uint32_t* bag2_size, uint32_t* 
     const int available = !japanese || e->jp_size != 0;
     /* Missing JP resources must not be presented as the Japanese variant. */
     const int use_alt = alt && available;
-    const uint32_t want = use_alt ? (japanese ? e->jp_off : e->alt_off) : e->off;
+    const uint32_t want = use_alt ? (japanese ? e->jp_off : e->alt_off) : *bag2_off;
     const uint32_t size = use_alt ? (japanese ? e->jp_size : e->alt_size) : *bag2_size;
     if (off == want && psx_mod_read_word(a + 4u) == size) return;
     psx_mod_write_word(a, want);
@@ -275,7 +279,7 @@ static void b1v_vblank(void) {
     const int stages_jp = b1v_region_japanese("stages");
     for (unsigned i = 0; i < sizeof b1_alt_entries / sizeof b1_alt_entries[0]; ++i) {
         const B1AltEntry* e = &b1_alt_entries[i];
-        b1v_apply_entry(e, &b1v_bag2_size[i], &b1v_seen_size[i], count, e->kind == 3 ? stages_jp : models_jp);
+        b1v_apply_entry(e, &b1v_bag2_off[i], &b1v_bag2_size[i], &b1v_seen_size[i], count, e->kind == 3 ? stages_jp : models_jp);
     }
 }
 

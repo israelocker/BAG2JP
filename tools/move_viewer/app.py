@@ -182,8 +182,11 @@ def generate_mod(bank: Path, pairs: list[tuple[int, int]],
     name = f"Move assign {folder}{origin}: " + ", ".join(f"{a}<-{b}" for a, b in pairs)
     install, = require_paths(config, ("paths.experimental_install",))
     spans = reservations.inventory((work / 'f2/pkg', install / 'mods/installed'))
-    # Entries the BAG1 selector rewrites must stay at their native offsets (bag2jp_bag1_versions.c).
+    # BAG1 selector entries may only move when the installed exe follows relocated offsets
+    # (b1v_bag2_off, bag2jp_bag1_versions.c; recorded take f3-bag1reloc-strike-20261121c).
     blocked = selector_policy.blocked_entries(SELECTOR_TABLE.read_text(encoding="utf-8"))
+    if selector_policy.exe_follows_relocation(install / "BAG2JP.exe"):
+        blocked = frozenset()
     overlays = package_plan.plan(disc, entries, pairs, spans, max_growth=max_growth,
                                  cross=cross, relocation_blocked=blocked)
     if out.exists():
