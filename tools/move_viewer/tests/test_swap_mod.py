@@ -1,6 +1,8 @@
 import struct
 import unittest
 
+from tools.move_viewer import swap_mod
+
 from tools.move_viewer.swap_mod import GROWTH_BUDGET, check_growth_budget, main, patch_entry, split_bank, swap_motions
 
 
