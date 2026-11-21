@@ -75,11 +75,13 @@ Cada lanzamiento de subagente indica su modelo y el informe dice qué modelo hiz
 | Rol | Principal | Alternativa |
 |---|---|---|
 | Coordinación y aceptación | claude-agent/opus | — |
-| Ingeniería inversa difícil (Ghidra, formatos) | claude-agent/opus (high) | openai/gpt-6.1-sol (high) |
+| Ingeniería inversa difícil (Ghidra, formatos) | openai/gpt-6.1-sol (high) | claude-agent/opus (high) |
 | Implementación con especificación conocida | claude-agent/sonnet (medium) | openai/gpt-6.1-terra (medium) |
-| Trabajo mecánico en bloque | deepseek/deepseek-flash | ollama/qwen3-coder:30b (serie) |
+| Trabajo mecánico en bloque | claude-agent/haiku | ollama/qwen3-coder:30b (serie) |
 | Búsqueda / resumen / conteo | claude-agent/haiku | ollama/qwen3-coder:30b |
-| Revisión (otra familia que el autor) | openai/gpt-6.1-sol | Sonnet solo si el autor fue Opus |
+| Revisión Goldfish (otra familia que el autor) | openai/gpt-6.1-sol | claude-agent/sonnet, u opus si el autor fue Sonnet |
+
+Prueba GPT principal (owner 2026-11-21): 3–4 tareas midiendo tiempo, retrabajo y errores antes de fijarlo. Si GPT falla (sin tokens, error de conexión), se usa la alternativa automáticamente y el informe lo declara. deepseek-flash dio ECONNREFUSED repetidos el 2026-11-21: queda fuera hasta nueva prueba.
 | Inspección de imágenes/fotogramas | claude-agent/sonnet | nvidia/nemotron-3.5-super-vl |
 
 Excluidos: `google/antigravity-*` (Gemini y Claude vía Antigravity) y `deepseek/deepseek-v4-pro` (sin tokens de pago), por decisión del owner; gratuitos `opencode/*-free` y `nvidia/*` solo para tareas no sensibles tras prueba; versiones antiguas de Claude y Fable sin evaluar. Ollama: un modelo GPU a la vez y nunca durante pruebas de juego.
