@@ -85,7 +85,9 @@ def render(model: Model, world: WorldMesh, tims: list[Tim], size=(360, 520),
         if x0 > x1 or y0 > y1:
             continue
         area = (sx[1] - sx[0]) * (sy[2] - sy[0]) - (sx[2] - sx[0]) * (sy[1] - sy[0])
-        if abs(area) < 1e-9:
+        # Back faces are dropped, like the game's NCLIP test; this view's mirrored
+        # screen space makes front faces negative. Without it Comet's inner hair covers her face.
+        if area > -1e-9:
             continue
         gx, gy = np.meshgrid(np.arange(x0, x1 + 1) + 0.5, np.arange(y0, y1 + 1) + 0.5)
         b1 = ((gx - sx[0]) * (sy[2] - sy[0]) - (sx[2] - sx[0]) * (gy - sy[0])) / area
