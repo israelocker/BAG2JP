@@ -2,7 +2,7 @@
 #ifndef BAG2JP_SCORE_FIXTURE_H
 #define BAG2JP_SCORE_FIXTURE_H
 
-/* JP identity, local-versus root/mode, active dance, Heat A/B mirror, and the
+/* JP identity, local-versus root/mode, active dance, reviewed A/B mirror, and the
  * exact native score-gap gate. No code or winner/fever flags are written. */
 static const uint32_t BAG2_SCORE_FIXTURE_GUARDS[][3] = {
     {0x8004E2D8u, 0x54535542u, 0xFFFFFFFFu}, /* BUST */
@@ -11,8 +11,6 @@ static const uint32_t BAG2_SCORE_FIXTURE_GUARDS[][3] = {
     {0x8005D2C4u, 2u, 0xFFFFu},             /* local versus mode */
     {0x8005D3D8u, 1u, 0xFFFFFFFFu},          /* dance phase */
     {0x8005D3DCu, 3u, 0xFFFFFFFFu},
-    {0x8005E6A0u, 0u, 0xFFFFFFFFu},          /* Heat P1 */
-    {0x8005E6A4u, 0u, 0xFFFFFFFFu},          /* Heat P2 */
     {0x8005E668u, 0x100u, 0xFFFFu},          /* A/P1, B/P2 */
     {0x80098C44u, 0x284203E8u, 0xFFFFFFFFu}  /* native abs(score gap)<1000 */
 };
@@ -25,6 +23,16 @@ static const uint32_t BAG2_SCORE_FIXTURE_GUARDS[][3] = {
 #define BAG2_FIXTURE_RNG_SEED_ADDR 0x00008548u
 #define BAG2_FIXTURE_RNG_SEED 1u /* OpenBIOS rand=16838, modulo3=2. */
 
+/* Native JP character IDs: only the two retarget profiles under validation.
+ * Mixed rivals and every other character remain rejected. */
+#define BAG2_FIXTURE_HEAT_ID 0u
+#define BAG2_FIXTURE_BIO_ID 9u
+static int bag2_fixture_reviewed_mirror(void) {
+    const uint32_t p1 = psx_mod_read_word(0x8005E6A0u);
+    const uint32_t p2 = psx_mod_read_word(0x8005E6A4u);
+    return p1 == p2 && (p1 == BAG2_FIXTURE_HEAT_ID || p1 == BAG2_FIXTURE_BIO_ID);
+}
+
 /* Checked at the duet's rand call, never while dancing or at other rand sites.
  * The complete BIOS rand body binds the seed address and arithmetic contract. */
 static const uint32_t BAG2_DUET_RNG_GUARDS[][3] = {
@@ -35,8 +43,6 @@ static const uint32_t BAG2_DUET_RNG_GUARDS[][3] = {
     {0x8005D3D8u, 1u, 0xFFFFFFFFu},
     {0x8005D3DCu, 7u, 0xFFFFFFFFu},
     {0x8005D3E0u, 1u, 0xFFFFFFFFu},
-    {0x8005E6A0u, 0u, 0xFFFFFFFFu},
-    {0x8005E6A4u, 0u, 0xFFFFFFFFu},
     {0x8005E668u, 0x100u, 0xFFFFu},
     {0x8005E6C0u, 2u, 0xFFu},
     {BAG2_FIXTURE_RNG_CALL_ADDR, BAG2_FIXTURE_RNG_CALL_WORD, 0xFFFFFFFFu},
@@ -59,7 +65,7 @@ static const uint32_t BAG2_DUET_RNG_GUARDS[][3] = {
 };
 
 static int bag2_duet_rng_fixture_tick(int enabled) {
-    if (!enabled) return 0;
+    if (!enabled || !bag2_fixture_reviewed_mirror()) return 0;
     for (unsigned int i = 0; i < sizeof(BAG2_DUET_RNG_GUARDS) /
                                       sizeof(BAG2_DUET_RNG_GUARDS[0]); ++i) {
         const uint32_t* guard = BAG2_DUET_RNG_GUARDS[i];
@@ -70,11 +76,14 @@ static int bag2_duet_rng_fixture_tick(int enabled) {
 }
 
 static int bag2_score_fixture_matches(void) {
+    if (!bag2_fixture_reviewed_mirror()) return 0;
     /* JP005 FUN_80099e90 dispatches dance via 800987bc without reading this
-     * residual field. Recorded paths retain 3 or 23; accept only those paths,
+     * residual field. Heat paths retain 3/23; the reviewed Bi-O mirror retains24.
+     * Accept the latter only for that mirror, not every actor or arbitrary phase.
      * never an arbitrary phase. The dance/root/actor/code guards still apply. */
     const uint32_t residual = psx_mod_read_word(0x8005D3E0u);
-    if (residual != 3u && residual != 23u) return 0;
+    if (residual != 3u && residual != 23u &&
+        !(residual == 24u && psx_mod_read_word(0x8005E6A0u) == BAG2_FIXTURE_BIO_ID)) return 0;
     for (unsigned int i = 0; i < sizeof(BAG2_SCORE_FIXTURE_GUARDS) /
                                       sizeof(BAG2_SCORE_FIXTURE_GUARDS[0]); ++i) {
         const uint32_t* guard = BAG2_SCORE_FIXTURE_GUARDS[i];

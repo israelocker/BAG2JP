@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class ScoreFixtureTests(unittest.TestCase):
-    """Only an explicitly opted-in, verified Heat mirror may receive scores."""
+    """Only opted-in, guarded Heat/Bi-O mirrors may receive diagnostic writes."""
 
     def test_instruction_callback_signature_and_opt_in(self) -> None:
         """Compile the real adapter with its two-argument API and trace/env gates."""
@@ -55,7 +55,7 @@ int main(void) {
         source.write_text('''#include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
-static int bad, writes, p1_writes, p2_writes;
+static int bad, writes, p1_writes, p2_writes, actor1, actor2;
 static const uint32_t guards[][2] = {
  {0x8004E2D8,0x54535542}, {0x8004E2DC,0x4D5F415F},
  {0x8005D3D4,19}, {0x8005D2C4,2}, {0x8005D3D8,1},
@@ -64,11 +64,17 @@ static const uint32_t guards[][2] = {
  {0x80098C44,0x284203E8}
 };
 uint32_t psx_mod_read_word(uint32_t address) {
-  int mismatch=bad>=14 && bad<=24 ? bad-13 : bad;
-  if (address==0x8005D3E0 && bad>=13)
-   return mismatch==7 ? 22 : 23;
-  for (int i=0; i<11; ++i) if (address==guards[i][0])
-   return guards[i][1] ^ (mismatch==i+1 ? 1 : 0);
+  int mismatch=bad>=27 && bad<=37 ? bad-26 :
+               bad>=14 && bad<=24 ? bad-13 : bad;
+  if (address==0x8005D3E0 && bad>=26) return mismatch==7 ? 25 : 24;
+   if (address==0x8005D3E0 && bad>=13) {
+    return mismatch==7 ? 22 : 23;
+   }
+   for (int i=0; i<11; ++i) if (address==guards[i][0]) {
+    uint32_t value=address==0x8005E6A0 ? (uint32_t)actor1 :
+                   address==0x8005E6A4 ? (uint32_t)actor2 : guards[i][1];
+    return value ^ (mismatch==i+1 ? 1 : 0);
+   }
  assert(0 && "Unexpected fixture read"); return 0;
 }
 void psx_mod_write_word(uint32_t address,uint32_t value) {
@@ -81,12 +87,14 @@ void psx_mod_write_word(uint32_t address,uint32_t value) {
 ''' + f'#include "{linux_header}"\n' + '''
 int main(int argc,char**argv) {
  (void)&bag2_duet_rng_fixture_tick;
- assert(argc==2); bad=atoi(argv[1]);
-  int applied=bag2_score_fixture_tick(bad!=12 && bad!=25);
-  assert(writes==((bad==0 || bad==13) ? 2 : 0));
-  assert(p1_writes==((bad==0 || bad==13) ? 1 : 0));
-  assert(p2_writes==((bad==0 || bad==13) ? 1 : 0));
-  assert(applied==(bad==0 || bad==13));
+  assert(argc==4); bad=atoi(argv[1]);actor1=atoi(argv[2]);actor2=atoi(argv[3]);
+  int allowed=actor1==actor2 && (actor1==0 || actor1==9);
+   int positive=allowed && (bad==0 || bad==13 || (bad==26 && actor1==9));
+   int applied=bag2_score_fixture_tick(bad!=12 && bad!=25 && bad!=38);
+   assert(writes==(positive ? 2 : 0));
+   assert(p1_writes==(positive ? 1 : 0));
+   assert(p2_writes==(positive ? 1 : 0));
+   assert(applied==positive);
  return 0;
 }
 ''', encoding='utf-8', newline='\n')
@@ -94,10 +102,12 @@ int main(int argc,char**argv) {
         prefix = ['wsl.exe', '-d', 'Ubuntu', '--exec']
         subprocess.run(prefix + ['gcc', '-Wall', '-Wextra', '-Werror',
                                 linux_output + '/test.c', '-o', linux_output + '/test'], check=True)
-        for case in range(26):
-            with self.subTest(case=case):
-                subprocess.run(prefix + [linux_output + '/test', str(case)], check=True,
-                               capture_output=True, text=True)
+        for actors in ((0, 0), (9, 9), (0, 9), (9, 0), (1, 1), (18, 18)):
+            for case in range(39):
+                with self.subTest(actors=actors, case=case):
+                    subprocess.run(prefix + [linux_output + '/test', str(case),
+                                            str(actors[0]), str(actors[1])], check=True,
+                                   capture_output=True, text=True)
 
     def test_rng_seed_only_at_verified_duet_call(self) -> None:
         """Reject disabled/wrong-phase/modified-code cases before seed writes."""
@@ -106,7 +116,7 @@ int main(int argc,char**argv) {
         header = '/mnt/d/' + (ROOT / 'mods-src/bag2jp.debug.anim-trace/bag2jp_score_fixture.h').as_posix()[3:]
         source = '''#include <stdint.h>
 #include <assert.h>
-static int bad, writes;
+static int bad, writes, actor1, actor2;
 static const uint32_t expected[][2] = {
  {0x8004E2D8,0x54535542}, {0x8004E2DC,0x4D5F415F},
  {0x8005D3D4,19}, {0x8005D2C4,2}, {0x8005D3D8,1},
@@ -125,7 +135,11 @@ static const uint32_t expected[][2] = {
 };
 uint32_t psx_mod_read_word(uint32_t address) {
  for (unsigned i=0;i<sizeof(expected)/sizeof(expected[0]);++i)
-  if (address==expected[i][0]) return expected[i][1] ^ (bad==(int)i+1 ? 1 : 0);
+   if (address==expected[i][0]) {
+    uint32_t value=address==0x8005E6A0 ? (uint32_t)actor1 :
+                   address==0x8005E6A4 ? (uint32_t)actor2 : expected[i][1];
+    return value ^ (bad==(int)i+1 ? 1 : 0);
+   }
  assert(0 && "Unexpected RNG fixture read"); return 0;
 }
 void psx_mod_write_word(uint32_t address,uint32_t value) {
@@ -136,11 +150,16 @@ int main(void) {
  (void)&bag2_score_fixture_tick;
  unsigned rand_value=((1u*0x41C64E6Du+0x3039u)>>16)&0x7FFFu;
  assert(rand_value==16838 && rand_value%3==2);
- assert(!bag2_duet_rng_fixture_tick(0)); assert(writes==0);
- for (bad=1;bad<=(int)(sizeof(expected)/sizeof(expected[0]));++bad) {
-  assert(!bag2_duet_rng_fixture_tick(1)); assert(writes==0);
- }
- bad=0; assert(bag2_duet_rng_fixture_tick(1)); assert(writes==1);
+  const int pairs[][2]={{0,0},{9,9},{0,9},{9,0},{1,1},{18,18}};
+  for (unsigned p=0;p<sizeof(pairs)/sizeof(pairs[0]);++p) {
+   actor1=pairs[p][0];actor2=pairs[p][1];writes=0;bad=0;
+   int allowed=p<2;
+   assert(!bag2_duet_rng_fixture_tick(0)); assert(writes==0);
+   for (bad=1;bad<=(int)(sizeof(expected)/sizeof(expected[0]));++bad) {
+    assert(!bag2_duet_rng_fixture_tick(1)); assert(writes==0);
+   }
+   bad=0; assert(bag2_duet_rng_fixture_tick(1)==allowed); assert(writes==allowed);
+  }
  return 0;
 }
 '''

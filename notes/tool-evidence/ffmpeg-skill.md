@@ -11,6 +11,10 @@ doc_kind: evidence
 
 # ffmpeg-skill — historial
 
+## 20261122 — Bi-O dueto residual24
+- `bag2_record.py frames --tag rt-bio-duet-residual24-20261122a --frame 19130 --span 240 --step 20` y `--frame 18932 --span 12 --step 1`, adaptador `look.py`, ambos exit0. Imágenes originales conservadas; montajes derivados RGB `bio-phase24-duet-sheet.jpg` y `bio-duet-dense-start.jpg`,25 posiciones cada uno, inspeccionados. Retorno reducido `bio-duet-return.jpg` inspeccionado.
+- Manifest accepted=true, exe9FE29FA7 y hashes completos en manifest; trace confirma fixture y req184/185. Modelos Bi-O A/B íntegros y secuencia conjunta reconocible; no alineación cuantitativa con el original, garantía de frames únicos ni precisión de latencia. Calidad subjetiva del audio no juzgada. Tiempo manual/ahorro desconocidos; grabación lista para conformidad humana.
+
 ## 20261122 — selector reubicado, toma b
 - `py -3.13 tools/test/bag2_record.py frames --tag rt-reloc-selector-newexe-20261122b --frame 9500 --span 12 --step 2` (adaptador `look.py`) exit0;13 posiciones revisadas en `reloc-newexe-b-sequence.jpg`, ambos Strike íntegros. `reloc-newexe-b-review.jpg` combina imágenes de gameplay y retorno; `song-end.png` ya es selector, no imagen del resultado.
 - Originales sin modificar; manifest accepted=true y SHA runtime1518964FC6ED69C48DE03B5EEEBDC92DCBBF676182E4D8D816D5E7DEEF394264. Evidencia de integridad/flujo, no fidelidad exacta ni precisión visual garantizada. Tiempo manual y ahorro desconocidos.

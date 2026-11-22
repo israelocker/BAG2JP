@@ -11,6 +11,14 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 2026-11-22 — contraste residual24 Bi-O
+- MCP `get_program_info` confirmó de nuevo SLPM_862.19 PSX LE32, SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; lectura acotada `decompile_function(FUN_800326d4)` completa confirma carga de banco por personaje/fever y relleno0x7e. No demuestra coreografía ni contiene JP005 en ese programa MCP.
+- Evidencia independiente de captura rt-bio-duet-fixture-20261122a: baile mode2 residual24, espejo9/9 y costume100; no marcas fixture. Reutilizado análisis headless previo JP005 80099e90->800987bc (residual no leído en dispatch baile), sin repetir exportación ni modificar análisis. Resultado pertinente para restringir la nueva ruta solo a Bi-O, no habilitar valores arbitrarios. Tiempo/ahorro desconocidos; próximo paso validar candidato con tests y toma declarada.
+
+## 2026-11-22 — banco fever por perfil, investigación Bi-O
+- MCP `get_program_info` confirmó `SLPM_862.19`, PSX LE32, base80000000, SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. `decompile_function(FUN_800326d4)` completo sin truncar: el índice de banco combina tipo fever y byte de personaje; fever2 rellena hasta0x7e antes de anexar banco. Relectura acotada pertinente para distinguir ruta genérica de la restricción diagnóstica Heat, no nueva prueba de fidelidad.
+- Contraste: el fixture C actual limitaba explícitamente ambos IDs a0; candidato comparte predicado espejo0/0 o9/9 con las guardas nativas anteriores. El decompilado no demuestra por sí solo dueto Bi-O ni valida el overlay JP005 ausente del programa MCP. Resultado útil para delimitar ensayo, no aceptación. Tiempo manual y ahorro desconocidos; siguiente acción: revisión host y prueba grabada del perfil explícito.
+
 ## 2026-11-22 — cierre de investigación residual del baile
 - JP005 original SHA-256 `bc5f3045084e4b3e19009910441627977863c8b5791b5cdb716a766e68b28fb2`, payload base `8008f890`; proyecto headless separado `score-gate-jp005`, Ghidra12.1.4. `InspectScoreGate.java 0x80099e90` y `0x800987bc` mediante `-process 005.dbi -noanalysis -postScript` terminaron exit0; logs `ghidra-active-dance.log` y `ghidra-dance-case3.log` en `_work/move-viewer/retarget/`.
 - Evidencia: dispatcher case3 llama a `FUN_800987bc`, que compara posición de canción y cambia al cierre sin leer el residual `8005d3e0`. Contraste independiente: traza de partida observó residual23 y prueba compilada causal rechazó dicho caso antes de la corrección. Solo se admitieron valores observados3/23; no autorización general de fases.

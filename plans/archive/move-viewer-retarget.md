@@ -1,7 +1,7 @@
 ---
 id: move-viewer-retarget
 title: "Visor: copia de movimientos entre esqueletos distintos (Heat, Bi-O, Gas-O)"
-status: validation_reopened
+status: technical_validation_complete_pending_owner
 created: 2026-11-21
 ---
 
@@ -39,6 +39,7 @@ Aprobar el plan (o recortar a solo Heat).
 
 
 # Registro de ejecución (2026-11-21)
+- Cierre técnico posterior (2026-11-22): implementados perfiles, generación, comparación con modelo fuente original y ejecutable; revisión densa de slot0 en Heat/Bi-O P1/P2, además de secuencias conjuntas diagnósticas Heat A/B y Bi-O A/B con fixture realmente ejercitado. Bi-O `rt-bio-duet-residual24-20261122a` accepted=true, modelos íntegros y vuelta al selector revisados. Restaurado exe experimental1518964F verificado; diagnóstico no añadido al allowlist. Detalles/hashes, pruebas host y Goldfish en `notes/move-viewer.md` y logs de herramientas. Estas evidencias cierran el candidato acotado, no fidelidad exacta/universal ni conformidad del owner, aún pendiente.
 - Corrección posterior al cierre: la validación del movimiento reconocible sigue abierta. Las capturas son aceptadas por el grabador, no una prueba del slot0 copiado: req106 corresponde a slot71. Revisión correctiva en `notes/move-viewer.md`; no se atribuye conformidad al owner. Este archivo permanece en su ubicación histórica para conservar las referencias, pero su estado ya no es «done».
 - Aprobado por el owner. Fase 1/2: `tools/move_viewer/retarget.py` (mapa de pistas explícito, escala de raíz, rechazo de pistas sin mapa o fusionadas). Las diferencias de nodos eran de nodos sin animar: el mapa de pistas resultó ser identidad en Heat y Bi-O, sin recomposición de rotaciones.
 - Fase 3 pendiente: no hay vista previa en la UI. La comparación objetiva (`_work/move-viewer/retarget/compare_*.py`: rotación mundial 0.0° y ratio de raíz igual a la escala) es evidencia adicional, no sustituye la vista lado a lado aprobada. No cerrar el plan mientras falte esa funcionalidad.

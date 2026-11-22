@@ -11,6 +11,15 @@ doc_kind: evidence
 
 # bag2_record.py - historial
 
+## 20261122 — Bi-O A/B, residual24 ejercitado
+- Comando `install_capture_diagnostic.ps1 -Tag rt-bio-duet-residual24-20261122a -Id bag2jp.test.move-assign-bi-o-from-bi-o-variante-bag1 -P1 Bi-O -P2 Bi-O -C1 A -C2 B -Stage StrikeBAG2`, opt-in `BAG2JP_TEST_P1_DUET=1`. Exe diagnóstico SHA9FE29FA74A1490E13B8F7E01518B73FB36920DDF1FDAEA3B0BAA095AC5537FA3. Run `20261122T012300491886Z-rt-bio-duet-residual24-20261122a-vs`, manifest/hashes en la grabación del mismo tag.
+- Accepted=true, rechazos vacíos, game/rec/finalize0,346.201s; ajustes/150 saves/estado restaurados. Audio de proceso44100Hz, offset -0.3428511619567871s,19669 pares sin descarte, error reloj0.1055ms, PCM SHA f8b95e892bd91cc2f50ee2f8b630213419d323643862cfc51713a96af5ac2ec2.
+- Validación independiente: marcas reales score y RNG; gf18932 req184/185 en ambos ch9. Revisadas25 muestras conjuntas y25 posiciones consecutivas solicitadas: actores íntegros y participación conjunta; retorno al selector visible. No prueba de juego natural, fidelidad exacta, frames físicos únicos ni audio subjetivo. Exe1518964F restaurado y hash verificado después; estable intacto. Tiempo de revisión/ahorro desconocidos; pendiente conformidad del owner.
+
+## 20261122 — espejo Bi-O: captura aceptada, fixture no ejercitado
+- `rt-bio-duet-fixture-20261122a`, exe73E14490, opt-in declarado; comandos y entradas en nota move-viewer. Rec/vs/finalize0; accepted=true, audio proceso44100Hz, clock_error0.10055ms, PCM SHA9b389d00aaccb94759c5316c07acddb5e73d2ada810c58dab34b9a40b8de9928. Harness347.844s, ajustes/150 guardados y estado exterior restaurados. Exe previo1518964F restaurado byte/hash exacto después.
+- Sin marcas fixture score/RNG; 194 cambios mode2 dance1/3/24 contrastados con guard3/23. Resultado útil para diagnóstico de condición no ejercitada, no aceptación de dueto ni valoración subjetiva del audio. Grabación intacta, sin rescatar ni relajar gates; siguiente ensayo solo tras corrección acotada y verificada. Tiempo manual/ahorro desconocidos.
+
 ## 20261122 — selector phase23, P1 BAG2 reubicado
 - Toma `rt-reloc-selector-newexe-20261122b`, paquete `bag2jp.test.strike-relocated-individual2`, Strike P1 BAG2/P2 BAG1, StrikeBAG2; runtime SHA1518964FC6ED69C48DE03B5EEEBDC92DCBBF676182E4D8D816D5E7DEEF394264. Manifest accepted=true sin rechazos, game/rec/finalize0; harness333.409s, ajustes/150 guardados y estado exterior restaurados y verificados.
 - Contraste independiente: manifest del paquete solo reubica109; log conserva109 BAG2 y sustituye110 BAG1. Gameplay,13 posiciones gf9500±12 paso2 y regreso al selector inspeccionados: actores íntegros. La toma a tenía109 en BAG1 y no probaba ejecutar su banco reubicado. Sin certificación de fidelidad exacta, latencia visual ni calidad subjetiva del audio. Evidencia en `_work/recordings/rt-reloc-selector-newexe-20261122b/` y run `20261122T004641000197Z-rt-reloc-selector-newexe-20261122b-vs`; tiempo manual y ahorro desconocidos.
