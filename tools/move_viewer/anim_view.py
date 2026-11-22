@@ -14,7 +14,8 @@ from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
-from .model_codec import load_character
+from .model_codec import load_character, parse_model, parse_tim
+import struct
 from .pose import decode_motion, pose_model, sample_motion, world_meshes
 from .render_offline import character_slot_map, render
 
@@ -76,10 +77,31 @@ class AnimationView(QWidget):
         try:
             self._character = self._load(asset_folder(character))
             motion = decode_motion(self._character[1] if bank is None else bank, slot)
-        except (OSError, IndexError, ValueError, SystemExit) as error:
+        except (OSError, IndexError, ValueError, struct.error, SystemExit) as error:
             self.image.clear()
             self.status.setText(f'{character} slot {slot}: no render ({error})')
             return False
+        return self._start_motion(motion)
+
+    def show_source(self, source, slot: int) -> bool:
+        """Render raw source motion on its own model, textures and native slot map."""
+        self.timer.stop()
+        self._frames, self._keys, self._index = [], [], 0
+        self._motion = None
+        self.image.clear()
+        try:
+            if source.model_data is None or source.skeleton.slot_map is None:
+                raise ValueError('source model or slot map unavailable')
+            model = parse_model(source.model_data, allow_zero_padding=True)
+            tims = [parse_tim(data) for data in source.texture_data]
+            self._character = (model, source.bank, tims, source.skeleton.slot_map)
+            motion = decode_motion(source.bank, slot)
+        except (OSError, IndexError, ValueError, struct.error, SystemExit) as error:
+            self.status.setText(f'{source.label}: no render ({error})')
+            return False
+        return self._start_motion(motion)
+
+    def _start_motion(self, motion) -> bool:
         self._motion = motion
         self._keys = list(range(0, motion['frames'], max(1, motion['step'])))
         self._frames = [None] * len(self._keys)
@@ -114,9 +136,9 @@ class AnimationView(QWidget):
 
 
 class MotionComparison(QWidget):
-    """Source and generated motion on the target model, driven by one frame clock.
+    """Original source and exact generated motion, driven by one frame clock.
 
-    This is an offline diagnostic, not a rendering of the original source model.
+    Without source assets the left view is explicitly labelled as using the target model.
     Different durations loop independently at their original frame counts.
     """
 
@@ -126,10 +148,11 @@ class MotionComparison(QWidget):
         self.source = AnimationView(characters_dir)
         self.result = AnimationView(characters_dir)
         layout = QHBoxLayout(self)
+        self.source_label = QLabel('Origen sin adaptar (modelo destino)')
         for title, view in (('Origen sin adaptar (modelo destino)', self.source),
                             ('Resultado exacto del generador', self.result)):
             column = QVBoxLayout()
-            column.addWidget(QLabel(title))
+            column.addWidget(self.source_label if view is self.source else QLabel(title))
             column.addWidget(view)
             layout.addLayout(column)
         self.timer = QTimer(self)
@@ -137,16 +160,23 @@ class MotionComparison(QWidget):
         self.frame = 0
 
     def show_banks(self, character: str, source_slot: int, source_bank: bytes,
-                   target_slot: int, result_bank: bytes) -> bool:
+                   target_slot: int, result_bank: bytes, *, source=None) -> bool:
         self.timer.stop()
         self.frame = 0
         self.setWindowTitle(f'{character}: origen 0x{source_slot:02X} → destino 0x{target_slot:02X}'
                             ' — ambas vistas usan modelo destino')
+        self.source_label.setText('Origen: modelo original BAG1/BAG2' if source is not None
+                                  else 'Origen sin adaptar (modelo destino)')
         ready = True
         for view, slot, bank in ((self.source, source_slot, source_bank),
                                  (self.result, target_slot, result_bank)):
-            ready = bool(view.show_motion(character, slot, bank)) and ready
+            if view is self.source and source is not None:
+                ready = bool(view.show_source(source, slot)) and ready
+            else:
+                ready = bool(view.show_motion(character, slot, bank)) and ready
             view.timer.stop()
+        if source is not None:
+            self.setWindowTitle(f'{source.label}: modelo original → {character}: resultado de copia')
         if not ready:
             return False
         self.timer.start(round(GAME_FRAME_MS))
@@ -159,6 +189,9 @@ class MotionComparison(QWidget):
                 view._index = min(local // max(1, view._motion['step']), len(view._keys) - 1)
                 if not view.advance():
                     self.timer.stop()
+                    for panel in (self.source, self.result):
+                        panel.image.clear()
+                        panel.status.setText('Comparación invalidada: error de renderizado')
                     return
         self.frame += 1
 

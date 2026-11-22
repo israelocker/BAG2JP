@@ -133,6 +133,8 @@ class BankSource:
     skeleton: Skeleton
     # Reviewed retarget.Retarget applied when copying into the own bank (None: exact skeleton).
     retarget: object | None = None
+    model_data: bytes | None = None
+    texture_data: tuple[bytes, ...] = ()
 
 
 class CrossBank(NamedTuple):

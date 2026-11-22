@@ -39,6 +39,48 @@ class ComparisonTest(unittest.TestCase):
         self.assertEqual(cross.source.label, 'variant')
         panel.close()
 
+    def test_model_padding_opt_in_never_accepts_nonzero_tail(self):
+        import struct
+        from tools.move_viewer.model_codec import parse_model
+        data = struct.pack('<I4iI', 1, -1, -1, -1, -1, 0) + bytes(40)
+        self.assertEqual(len(parse_model(data).nodes), 1)
+        with self.assertRaises(ValueError):
+            parse_model(data + bytes(4))
+        self.assertEqual(len(parse_model(data + bytes(4), allow_zero_padding=True).nodes), 1)
+        with self.assertRaises(ValueError):
+            parse_model(data + b'\0\0\1', allow_zero_padding=True)
+
+    def test_native_model_rejects_cycles_and_bad_link_indices(self):
+        import struct
+        from tools.move_viewer.model_codec import parse_model
+        for links in ((-1, -1, -1, 0), (-1, 0, -1, -1), (-1, -1, 2, -1)):
+            with self.subTest(links=links), self.assertRaises(ValueError):
+                parse_model(struct.pack('<I4iI', 1, *links, 0) + bytes(40))
+
+    def test_truncated_original_source_is_reported_without_stale_image(self):
+        from tools.move_viewer.swap_mod import Skeleton
+        source = BankSource('broken', b'bank', Skeleton((), ()), model_data=b'\0')
+        view = anim_view.AnimationView(Path('unused'))
+        view.image.setPixmap(QPixmap(2, 2))
+        self.assertFalse(view.show_source(source, 0))
+        self.assertTrue(view.image.pixmap().isNull())
+        self.assertFalse(view.timer.isActive())
+        view.close()
+
+    def test_original_source_model_is_loaded_instead_of_target_model(self):
+        from tools.move_viewer.swap_mod import Skeleton
+        source = BankSource('BAG1 original', b'bank', Skeleton((), ()),
+                            model_data=b'model', texture_data=(b'texture',))
+        view = anim_view.AnimationView(Path('unused'))
+        with (patch.object(anim_view, 'parse_model', return_value='native model') as model,
+              patch.object(anim_view, 'parse_tim', return_value='native texture'),
+              patch.object(anim_view, 'decode_motion', return_value={'frames': 5, 'step': 2}),
+              patch.object(view, 'frame_pixmap', return_value=QPixmap(2, 2))):
+            self.assertTrue(view.show_source(source, 0))
+            self.assertEqual(view._character, ('native model', b'bank', ['native texture'], ()))
+            model.assert_called_once_with(b'model', allow_zero_padding=True)
+        view.close()
+
     def test_comparison_uses_shared_clock_and_stops_when_closed(self):
         self.assertTrue(hasattr(anim_view, 'MotionComparison'))
         with patch.object(anim_view.AnimationView, 'show_motion') as show:
@@ -104,3 +146,26 @@ class ComparisonTest(unittest.TestCase):
                 self.assertFalse(comparison.isVisible())
                 comparison.close()
                 viewer.close()
+
+    def test_main_close_stops_own_motion_and_late_failure_invalidates_both(self):
+        from tools.move_viewer.app import MoveViewer
+        viewer = MoveViewer({'characters': []})
+        player = anim_view.AnimationView(Path('unused'))
+        viewer.set_view_widget(player)
+        player.timer.start(100)
+        viewer.close()
+        self.assertFalse(player.timer.isActive())
+        comparison = anim_view.MotionComparison(Path('unused'))
+        for view in (comparison.source, comparison.result):
+            view._motion = {'frames': 5, 'step': 1}
+            view._keys = list(range(5))
+            view._frames = [None] * 5
+        with (patch.object(comparison.source, 'frame_pixmap', return_value=QPixmap(2, 2)),
+              patch.object(comparison.result, 'frame_pixmap', side_effect=[QPixmap(2, 2), ValueError('late')])):
+            comparison.advance()
+            self.assertFalse(comparison.source.image.pixmap().isNull())
+            comparison.advance()
+            self.assertTrue(comparison.source.image.pixmap().isNull())
+            self.assertTrue(comparison.result.image.pixmap().isNull())
+            self.assertIn('invalidada', comparison.source.status.text())
+        comparison.close()

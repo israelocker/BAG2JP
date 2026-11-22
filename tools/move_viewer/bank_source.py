@@ -24,11 +24,19 @@ PLAYER_ONE, DBI_MAGIC = 0, b'DBI_'
 
 
 def _members(container: bytes) -> list[bytes]:
-    if container[:4] != b'DFS_':
+    if len(container) < 8 or container[:4] != b'DFS_':
         raise ValueError('payload entry is not a DFS container')
     count = struct.unpack_from('<I', container, 4)[0]
-    return [container[o:o + s] for o, s in
-            (struct.unpack_from('<II', container, 8 + 8 * i) for i in range(count))]
+    table_end = 8 + 8 * count
+    if table_end > len(container):
+        raise ValueError('truncated DFS directory')
+    members = []
+    for i in range(count):
+        offset, size = struct.unpack_from('<II', container, 8 + 8 * i)
+        if offset < table_end or offset + size > len(container):
+            raise ValueError('DFS member outside payload')
+        members.append(container[offset:offset + size])
+    return members
 
 
 def _slot_map(pack_dir: Path, dbi: bytes | None = None, costume: int = 0) -> list[int] | None:
@@ -52,7 +60,10 @@ def own_source(characters_dir: Path, folder: str) -> BankSource | None:
         return None
     slot_map = _slot_map(base / 'pack_a_p1')
     return BankSource(f'{folder} (BAG2)', bank.read_bytes(),
-                      skeleton_of(model.read_bytes(), slot_map))
+                      skeleton_of(model.read_bytes(), slot_map),
+                      model_data=model.read_bytes(),
+                      texture_data=tuple(p.read_bytes() for p in sorted((base / 'pack_a_p1').glob('*.tim'))
+                                         if p.stem != '000'))
 
 
 def variant_source(payload_dir: Path, folder: str) -> BankSource | None:
@@ -73,7 +84,10 @@ def variant_source(payload_dir: Path, folder: str) -> BankSource | None:
     pack = model = None
     for row in sorted((r for r in rows if r['chr'] == chr_id and r['kind'] == PLAYER_ONE),
                       key=lambda r: r['entry']):
-        entry = payload[row['alt_off'] - base:row['alt_off'] - base + row['alt_size']]
+        offset, size = row['alt_off'] - base, row['alt_size']
+        if offset < 0 or size < 0 or offset + size > len(payload):
+            raise ValueError('report entry outside payload')
+        entry = payload[offset:offset + size]
         members = _members(entry)
         if len(members) >= 2 and members[1][:4] == DBI_MAGIC:
             pack = pack or members
@@ -83,7 +97,9 @@ def variant_source(payload_dir: Path, folder: str) -> BankSource | None:
         return None
     from tools.move_viewer.retarget import PROFILES
     return BankSource(f'{folder} (variante BAG1)', model[1],
-                      skeleton_of(model[0], _slot_map(Path(), pack[1])), PROFILES.get(folder))
+                      skeleton_of(model[0], _slot_map(Path(), pack[1])), PROFILES.get(folder),
+                      model[0], tuple(member for member in pack[1:]
+                                      if member[:4] == b'\x10\x00\x00\x00'))
 
 
 def compatible_others(characters_dir: Path, folder: str, own: BankSource) -> list[BankSource]:

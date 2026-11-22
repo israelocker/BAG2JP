@@ -6,8 +6,8 @@ A duration different from the slot's original only warns (it may look cut or fro
 A "Banco origen" selector copies from another bank instead (the BAG1 variant of the same
 character, or another character); swap_mod.require_compatible blocks sources whose skeleton,
 node->track map or tracks differ, except for reviewed retarget profiles. Comparison uses
-the target model for both the raw source and the exact generated result; it is not a
-preview of the original BAG1 model. Growth uses each character's measured RAM budget;
+the original source model beside the exact generated result on the target model.
+Growth uses each character's measured RAM budget;
 disc placement and reservations are checked by the package planner before writing.
 Slots >= the bank length (fever/duet) are read-only.
 """

@@ -207,12 +207,18 @@ def parse_mesh(data: bytes, start: int) -> tuple[Mesh, int]:
     return Mesh(verts, h[0x26], groups, exports, imports, prims, unsupported), pos
 
 
-def parse_model(data: bytes) -> Model:
-    """Parse the whole node table; raises ValueError unless the file parses exactly."""
+def parse_model(data: bytes, *, allow_zero_padding: bool = False) -> Model:
+    """Parse exactly, optionally accepting only zero padding after a complete model."""
     count = struct.unpack_from('<I', data, 0)[0]
+    if not count or 4 + 16 * count > len(data):
+        raise ValueError('invalid model node count')
     links = [list(struct.unpack_from('<4i', data, 4 + 16 * i)) for i in range(count)]
+    if any(link < NO_LINK or link >= count for row in links for link in row):
+        raise ValueError('model link outside node table')
     roots, r = [], 0
     while r != NO_LINK:
+        if r in roots:
+            raise ValueError('cyclic model roots')
         roots.append(r)
         r = links[r][3]
     model = Model([None] * count, roots)          # type: ignore[list-item]
@@ -238,22 +244,28 @@ def parse_model(data: bytes) -> Model:
         xf = struct.unpack_from('<3h2x8i', data, pos)
         model.nodes[n] = Node(n, links[n], kind, xf[0:3], xf[3:6], xf[7:10], mesh, inst)
         pos += TRANSFORM_WORDS * 4
-    if pos != len(data):
+    if pos != len(data) and not (allow_zero_padding and pos < len(data) and not any(data[pos:])):
         raise ValueError(f'model parse ended at {pos}, file has {len(data)} bytes')
     return model
 
 
 def _walk(links: list[list[int]], roots: list[int]) -> list[int]:
     order: list[int] = []
+    seen: set[int] = set()
 
-    def rec(n: int) -> None:
-        if n < 0:
-            return
-        order.append(n)
-        rec(links[n][1])
-        rec(links[n][2])
     for root in roots:
-        rec(root)
+        pending = [root]
+        while pending:
+            n = pending.pop()
+            if n < 0:
+                continue
+            if n in seen:
+                raise ValueError('cyclic or shared model node')
+            seen.add(n)
+            order.append(n)
+            pending.extend((links[n][2], links[n][1]))
+    if len(order) != len(links):
+        raise ValueError('unreachable model nodes')
     return order
 
 

@@ -29,6 +29,14 @@ def source(label: str, *motions: bytes, links=LINKS, slot_map=MAP) -> BankSource
 
 
 class CompatTests(unittest.TestCase):
+    def test_dfs_member_directory_must_fit_container(self):
+        invalid = (b'DFS_', b'DFS_' + struct.pack('<I', 1),
+                   b'DFS_' + struct.pack('<III', 1, 16, 99) + b'x',
+                   b'DFS_' + struct.pack('<III', 1, 8, 1))
+        for data in invalid:
+            with self.subTest(data=data), self.assertRaises(ValueError):
+                bank_source._members(data)
+
     def setUp(self):
         self.target = source('own', motion(40), motion(50), motion(60))
         self.variant = source('variant', motion(41), motion(52, pad=8), motion(60))
@@ -182,6 +190,18 @@ class RealDataTests(unittest.TestCase):
         if not (cls.payload / 'payload/bag1_alt.bin').is_file():
             raise unittest.SkipTest('BAG1 payload not built')
 
+    def test_variant_preview_carries_its_original_model_and_textures(self):
+        from tools.move_viewer.model_codec import parse_model, parse_tim
+        for folder in ('heat', 'bi_o', 'strike'):
+            with self.subTest(folder=folder):
+                own, variant = bank_source.sources_for(self.characters, self.payload, folder)
+                self.assertIsNotNone(variant.model_data)
+                model = parse_model(variant.model_data, allow_zero_padding=True)
+                self.assertEqual(len(model.nodes), len(variant.skeleton.links))
+                self.assertTrue(variant.texture_data)
+                self.assertTrue(all(parse_tim(data).pixels.size for data in variant.texture_data))
+                self.assertNotEqual(variant.model_data, own.model_data)
+
     def test_reviewed_retarget_is_assignable_through_ui_check(self):
         from tools.move_viewer.assign_panel import assignment_check
         for folder in ('heat', 'bi_o'):
@@ -210,7 +230,7 @@ class RealDataTests(unittest.TestCase):
                 viewer._comparison = Mock()
                 viewer.preview_motion(0, variant.bank, CrossBank(own, variant), 0)
                 viewer._comparison.show_banks.assert_called_once_with(
-                    folder, 0, variant.bank, 0, expected)
+                    folder, 0, variant.bank, 0, expected, source=variant)
                 viewer._comparison.show.assert_called_once()
         viewer.close()
 

@@ -154,6 +154,8 @@ class MoveViewer(QMainWindow):
 
     def closeEvent(self, event) -> None:
         self._close_comparison()
+        if hasattr(self.view_widget, 'timer'):
+            self.view_widget.timer.stop()
         super().closeEvent(event)
 
     def preview_motion(self, index: int | None, bank: bytes | None = None,
@@ -175,7 +177,7 @@ class MoveViewer(QMainWindow):
                     if not hasattr(self, '_comparison'):
                         self._comparison = MotionComparison(self.view_widget.characters_dir)
                     if self._comparison.show_banks(self._character, index, bank,
-                                                    target_slot, result):
+                                                    target_slot, result, source=cross.source):
                         self._comparison.show()
                     else:
                         self.assign.result.setText('Comparación bloqueada: no se pudo renderizar.')

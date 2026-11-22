@@ -11,6 +11,11 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 20261121 — comprobación acotada del sitio RNG de dueto
+- Propósito: contrastar el sitio nativo del fixture existente antes de usarlo, sin modificar binario ni análisis. `get_program_info` confirmó main JP SLPM_862.19 PSX LE32 y SHA ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- `decompile_function_by_address(0x8009cdb8)` devolvió FUNCTION_NOT_FOUND: no hay función definida en ese overlay/sitio en el programa abierto. No se creó función ni se sustituyó por análisis offline. La cabecera del fixture conserva sus guards exactos; esta consulta fallida no verifica el overlay activo ni la clasificación de duetos.
+- Resultado: inconcluso para ese sitio, lectura no destructiva. Tiempo/ahorro/retrabajo no medidos. Siguiente: usar guards/log explícitos de fixture y evidencia grabada, no inferir clasificación de la consulta fallida.
+
 ## 20261121 — límites de clasificación fever durante revisión retarget
 - Mismo main JP `SLPM_862.19`, SHA ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe, MCP confirmado por get_program_info. `get_xrefs_to(0x8005E6C0,limit=10)` y decompilación de `FUN_800326d4`: índice de banco según fever y personaje; fever2 amplía índices hasta 0x7e antes de adjuntar banco. No demuestra fidelidad o dueto por sí solo.
 - `decompile_function_by_address(0x800353c4)` falló FUNCTION_NOT_FOUND; no se creó una función artificial. Consulta acotada posterior a 0x80014520 resuelve tablas distintas según fever y selección de personaje; tampoco clasifica visualmente una coreografía.
