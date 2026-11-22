@@ -145,8 +145,8 @@ class WorldMesh:
     colors: np.ndarray                   # (N, 3) float 0..255 (lit)
 
 
-LIGHT_DIRECTION = np.array([0.3, 0.6, -0.75])
-AMBIENT = 0.45
+LIGHT_DIRECTION = np.array([0.3, 0.6, 0.75])   # +z = character front (toes point +z)
+AMBIENT = 0.7  # matched to the in-game Heat recording heat-ref-20261122a (white suit)
 
 
 def world_meshes(model: Model, poses: dict[int, NodePose]) -> WorldMesh:
