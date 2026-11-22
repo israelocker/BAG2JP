@@ -24,12 +24,14 @@ logger = logging.getLogger('move_viewer.render')
 
 def character_slot_map(pack: Path, costume: int) -> list[int]:
     """Node->track map from the character DBI init (see slot_map.py); fails if not derivable."""
-    from .slot_map import derive_slot_map, find_char_id
+    from .slot_map import P1_DBI_BASE, P2_DBI_BASE, derive_slot_map, find_char_id
+    side = 1 if pack.name.endswith('_p2') else 0
+    base = P2_DBI_BASE if side else P1_DBI_BASE
     dbi = sorted(pack.glob('*.dbi'))[0].read_bytes()
-    hits = find_char_id(dbi)
+    hits = find_char_id(dbi, side=side, base=base)
     if not hits:
         raise SystemExit(f'{pack}: no DBI init writes player+0x7CC')
-    return derive_slot_map(dbi, hits[0][0], costume=costume)
+    return derive_slot_map(dbi, hits[0][0], costume=costume, side=side, base=base)
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from tools.workflow.project_config import assert_write_target, load_config, require_paths  # noqa: E402

@@ -11,6 +11,15 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 2026-11-22 — F1 actualización de acompañante y límites de análisis
+- MCP `get_program_info`: SLPM_862.19, PSX LE32, SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. `read_memory(8002a090,192)` y lectura previa `8002b12c,208` sin huecos. Consultas address-based decompilar8002d824/8002d06c/8002b164/8002a090 y nombres tentativos devolvieron FUNCTION_NOT_FOUND; resultado negativo retenido, no ausencia de instrucciones ni utilidad demostrada de adivinar nombres.
+- Capstone local complementario sobre el mismo main identifica actualizador8002a090 y consumidor8002d06c; archivo `_work/move-viewer/f1/companion-update-full.asm`. Contraste nativo: remapeo de slots, separación escalada y posible intercambio de actores; contradice la solución ingenua de duplicar modelo/slot con offset fijo. Proyecto/ análisis intactos, sin patches/runtime nuevo. Tiempo manual y ahorro desconocidos. Siguiente: contrato de escena y regresión mínima antes de implementación.
+
+## 2026-11-22 — F1 Chichi/Sally, companion y P2
+- MCP confirmó SLPM_862.19 PSX LE32, SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. Consultas acotadas: decompile_function FUN_80031d3c/FUN_800319fc (carga), FUN_8002bc38/FUN_8002c060/FUN_8002c404 (animación/render), get_function_xrefs 800319fc/8002bc38/8002c060; read_memory 800536ac y 80051978/800519c4. Agrupadas como una investigación, no pruebas de aceptación.
+- Carga nativa char14 consume modelo primario, banco001 y modelo companion002; el companion comparte el banco001 y usa inicializador del lado correcto. FUN_8002c404 anima cada actor mediante el mismo decodificador y selecciona render distinto para lados0/1 y companions2/3. Tabla de callback P1 apunta801cf2ac y P2 apunta801d69ec; lectura MCP verificada. Capstone local complementó el DBI P2 en base801d37c4: callback801d69ec llama801d5ffc, relacionado con efectos. No se presenta como decompilado MCP del overlay.
+- Contraste host: cuatro variantes Chichi/Sally tienen modelo002 válido de22 nodos; load_character y AnimationView actuales solo cargan/renderizan modelo000. Mapas primarios P1/P2 derivados con bases/tablas explícitas coinciden. Falta demostrar actualización/colocación del companion antes de corregir; no atribuir el defecto a una divergencia del mapa P2 ni al mapa7EA sin evidencia. Tiempo manual/ahorro desconocidos; siguiente: seguir la colocación nativa y reproducir escena incompleta.
+
 ## 2026-11-22 — cierre documental del visor
 - MCP get_program_info: SLPM_862.19 PSX LE32, SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; decompile_function(FUN_800326d4), consulta acotada de la autoridad de carga fever por personaje antes de archivar el hito. Resultado coherente con la lectura previa, sin nueva aceptación runtime ni cambios de análisis. Uso redundante para nuevo hallazgo, útil solo como comprobación de programa/autoridad exigida; tiempo y ahorro desconocidos. No repetir esta consulta para certificar el archivo comprimido: eso se verifica mediante hashes.
 

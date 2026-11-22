@@ -27,6 +27,7 @@ EXE_BASE = 0x80010000
 INIT_TABLE = 0x800535DC
 MAP_OFF, MAP_LEN, MAP2_OFF, MAP2_LEN = 0x7CC, 30, 0x7EA, 36
 P1_DBI_BASE = 0x801CC084   # verified below: table entries land on prologues with this base
+P2_DBI_BASE = 0x801D37C4   # native second-player DBI load region, same init-table stride
 PLAYER = 0x10000000
 
 md = Cs(CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN)
