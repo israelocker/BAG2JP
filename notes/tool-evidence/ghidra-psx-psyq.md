@@ -5,11 +5,35 @@ tags: ["tools", "evidence"]
 summary: "Historial de Ghidra MCP y soporte PSX/PsyQ; no certifica identificación automática."
 related: ["notes/assets.md", "AGENTS.md"]
 created: "2026-11-06"
-updated: "2026-11-21"
+updated: "2026-11-22"
 doc_kind: evidence
 ---
 
 # Ghidra / PSX / PsyQ — historial
+
+## 2026-11-22 — native vertex transform bounded read
+- SLPM_862.19 main confirmed through MCP, SHA256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`. Decompile `FUN_80027cf8` failed FUNCTION_NOT_FOUND; this assembly range is not a defined function. No analysis changes or repeated function query.
+- `read_memory(0x80027cf8,204)` succeeded with initialized bytes and no gaps. The bounded range contains packed vertex/GTE transform instructions; it does not establish a causal explanation for Heat/Sushi artifacts. Independent visual validation remains unresolved; measured time/manual savings unknown. Next investigate remaining pose/raster seams without changing the already-confirmed primitive ordering or transform field mapping.
+
+## 2026-11-22 — visual loading: emitter index contrast
+- Read-only MCP `read_memory(0x80027fc8,768)` and `read_memory(0x80028300,256)` returned initialized bytes with no gaps. Earlier address-based function disassembly at80027fc8 failed FUNCTION_NOT_FOUND; that assembly range is not a defined function. No function creation or analysis changes.
+- Complementary Capstone probe of `_work/mainexe/slpm.bin` (raw image, base80010000) decoded each4-byte instruction separately to avoid stopping at GTE opcodes. Native flat quad emitter80028510 stores a/b/c projected vertices at packet14/10/08 and d at0C: GPU order c,d,b,a agrees with the codec. Triangle shifts6/14/22 plus mask03FC likewise agree. No vertex-order fix is justified by this evidence. This does not resolve Heat/Sushi visual defects; time/savings unknown. Next contrast remaining geometry/pose and rasterization seams, not repeat rejected UV/index hypotheses.
+
+## 20261122 — Capoeira: descarte de matrices inactivas
+- MCP confirmó SLPM_862.19 PSX LE32 SHA256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`; decompilados completos `FUN_80013780` y `FUN_8002c404`: copia condicional de30 matrices y separación matrices actuales/anteriores. Sin cambios de análisis.
+- Contraste con disassembly acotado previo y RAMgf12002: flag8005F7B8 no nulo omite actualizar compañero; copia de matrices no incondicional. Matrices residuales y next-frame inválidos se descartan como autoridad de pose. Resultado útil para evitar una escena inventada, no aceptación visual. Próximo: snapshot durante slot emparejado observado; tiempo/ahorro desconocidos.
+
+## 2026-11-22 — companion interpolation and captured root contrast
+- Bounded MCP decompiles `FUN_800128b4`, `FUN_80012b9c`, `FUN_8002bc38` on the previously confirmed SLPM_862.19 main: key selection, s16 root shift, and actor1548 blend weight between1554/1558. No analysis changes. Relevant RAM SHA87be9612b8796cb2b9570869c4aea661a5ab14e4d7e4af135a05becd7f47af59, game frame12001.
+- Independent deterministic host arithmetic: key18/19, weight3883, separate fixed-point product shifts yield root[-1341,637,-173]; native actor scales53/60 plus parent translation reproduce both P1 actor root-world triples exactly. Floating interpolation and a combined shift do not reproduce them. This establishes captured translation arithmetic, not full rotation/scene equivalence or universal motion coverage. Timing/savings unknown; next regression-test this native sampling seam before UI integration.
+
+## 2026-11-22 — guard de colocación compartida F1
+- MCP `get_program_info`: SLPM_862.19, PSX LE32, SHA ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. `read_memory(0x8002b1a0,64)` devolvió bytes inicializados sin huecos del consumidor de coordenadas del acompañante. Reutilizado contexto de ramas previamente contrastadas; esta lectura no demuestra posiciones de una partida ni modifica análisis.
+- Decisión de implementación: exigir matrices explícitas al preparar escena conjunta en lugar de asumir offset fijo. Diez tests host escena/render correctos; evidencia runtime pendiente. Tiempo manual y ahorro desconocidos.
+
+## 2026-11-22 — consulta Capoeira: confirmar acompañante omitido
+- `get_program_info`: SLPM_862.19 PSX LE32 SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. `decompile_function(FUN_80031d3c)` completo: rama10 llama800319fc y postinit8005369c; rama14 tiene postinit distinto800536ac. Contraste local pack_a_p2 Capoeira ID10 y modelos000/002 de37nodos cadauno, banco001 de118slots; loader actual solo000 confirma omisión.
+- Resultado útil para responder alcance del fallo, no validar reglas ni fidelidad de Capoeira. Sin cambios de análisis/runtime ni autorización inferida de reparación adicional. Tiempo/ahorro desconocidos; siguiente acción depende del alcance aprobado.
 
 ## 2026-11-22 — F1 actualización de acompañante y límites de análisis
 - MCP `get_program_info`: SLPM_862.19, PSX LE32, SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. `read_memory(8002a090,192)` y lectura previa `8002b12c,208` sin huecos. Consultas address-based decompilar8002d824/8002d06c/8002b164/8002a090 y nombres tentativos devolvieron FUNCTION_NOT_FOUND; resultado negativo retenido, no ausencia de instrucciones ni utilidad demostrada de adivinar nombres.
@@ -2692,3 +2716,6 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 - Independent validation: RAM dump heat-p2-ramdump-20261120: Heat P2 free 912 B, equal to P1.
 - Outcome: useful; GROWTH_BUDGET extended to entries 95,96 (commit 2fc8853). Time: unknown.
 
+
+## 2026-11-22 move viewer primitive sizes
+- Purpose: confirm per-kind record sizes. MCP get_program_info (SLPM_862.19) + decompile_function_by_address 0x800220b8. Evidence: count pairs 0xAC..0xEA advance 2/2,4/4,5/6,3/3,6/8,4/5,5/6,4/5,2/2,2/2,3/4,2/2,4/5,6/8,6/8 words, equal to model_codec.PRIMITIVE_LAYOUT. Outcome: useful (sizes confirmed; field semantics not covered). Time ~2 min. Note: name lookup 'FUN_800220B8' fails (case); use address tool.
