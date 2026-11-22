@@ -49,6 +49,7 @@ def blocked_entries(source: str) -> frozenset[int]:
 # relocation was accepted in a recorded take. Unknown builds keep the conservative block.
 RELOCATION_AWARE_SHA256 = frozenset({
     '35266C386CABD9019D7441FB558C3EA72BF5B6182C7C09417833D5BB837268CD',  # f3-bag1reloc-strike-20261121c
+    '1518964FC6ED69C48DE03B5EEEBDC92DCBBF676182E4D8D816D5E7DEEF394264',  # rt-reloc-selector-newexe-20261122b
 })
 
 

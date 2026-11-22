@@ -11,6 +11,10 @@ doc_kind: evidence
 
 # bag2_record.py - historial
 
+## 20261122 — selector phase23, P1 BAG2 reubicado
+- Toma `rt-reloc-selector-newexe-20261122b`, paquete `bag2jp.test.strike-relocated-individual2`, Strike P1 BAG2/P2 BAG1, StrikeBAG2; runtime SHA1518964FC6ED69C48DE03B5EEEBDC92DCBBF676182E4D8D816D5E7DEEF394264. Manifest accepted=true sin rechazos, game/rec/finalize0; harness333.409s, ajustes/150 guardados y estado exterior restaurados y verificados.
+- Contraste independiente: manifest del paquete solo reubica109; log conserva109 BAG2 y sustituye110 BAG1. Gameplay,13 posiciones gf9500±12 paso2 y regreso al selector inspeccionados: actores íntegros. La toma a tenía109 en BAG1 y no probaba ejecutar su banco reubicado. Sin certificación de fidelidad exacta, latencia visual ni calidad subjetiva del audio. Evidencia en `_work/recordings/rt-reloc-selector-newexe-20261122b/` y run `20261122T004641000197Z-rt-reloc-selector-newexe-20261122b-vs`; tiempo manual y ahorro desconocidos.
+
 ## 20261122 — ensayo correctivo phase23 en curso
 - Resultado posterior: `rt-heat-duet-phase23-20261122a` accepted=true, rechazos vacíos, game/rec/finalize exit0; harness330.678s y restauración de ajustes/150 guardados/estado verificada. Run `20261122T002838154106Z-rt-heat-duet-phase23-20261122a-vs`. Esta vez aparecen ambas marcas: puntuaciones500000/500100 y semilla RNG1; gf18001 solicita184/185 (anim130/131). Montaje `heat-phase23-duet-sheet.jpg`, 25 muestras gf18200±240 paso20, inspeccionado: ambos Heat A/B participan en la secuencia conjunta, sin ruptura visible. Es diagnóstico con puntuaciones/RNG intervenidos, no juego natural ni prueba de Gas-O. No se infiere fidelidad exacta ni calidad subjetiva de audio.
 - Entrada: exe experimental SHA256 `1518964FC6ED69C48DE03B5EEEBDC92DCBBF676182E4D8D816D5E7DEEF394264`; backup del exe anterior conservado. Calibración `20261122T002616187569Z-rt-score-phase23-calibration`: ocho bordes inspeccionados y aceptados con `accept_versus_calibration.py`; restauración de ajustes y 150 guardados verificada. El estado posterior al probe se preservó antes de restaurar los bytes del backup canónico.

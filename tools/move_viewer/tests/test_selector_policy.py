@@ -7,6 +7,11 @@ from tools.move_viewer import selector_policy
 
 
 class SelectorPolicyTest(unittest.TestCase):
+    def test_recorded_phase23_build_is_explicitly_registered(self):
+        self.assertIn(
+            '1518964FC6ED69C48DE03B5EEEBDC92DCBBF676182E4D8D816D5E7DEEF394264',
+            selector_policy.RELOCATION_AWARE_SHA256)
+
     def test_only_proven_exe_follows_relocation(self):
         import hashlib, tempfile
         with tempfile.TemporaryDirectory() as temp:

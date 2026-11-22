@@ -11,6 +11,10 @@ doc_kind: evidence
 
 # ffmpeg-skill — historial
 
+## 20261122 — selector reubicado, toma b
+- `py -3.13 tools/test/bag2_record.py frames --tag rt-reloc-selector-newexe-20261122b --frame 9500 --span 12 --step 2` (adaptador `look.py`) exit0;13 posiciones revisadas en `reloc-newexe-b-sequence.jpg`, ambos Strike íntegros. `reloc-newexe-b-review.jpg` combina imágenes de gameplay y retorno; `song-end.png` ya es selector, no imagen del resultado.
+- Originales sin modificar; manifest accepted=true y SHA runtime1518964FC6ED69C48DE03B5EEEBDC92DCBBF676182E4D8D816D5E7DEEF394264. Evidencia de integridad/flujo, no fidelidad exacta ni precisión visual garantizada. Tiempo manual y ahorro desconocidos.
+
 ## 20261122 — fixture corregido y contraste Bi-O
 - `bag2_record.py frames` (adaptador del skill `look.py`): Heat `rt-heat-duet-phase23-20261122a`, gf18200±240 paso20 y gf18001±12 paso1; Bi-O `rt-bio-slot0-strike-p2-20261121a`, gf18431±24 paso1. Extracciones exit0; manifests/hashes conservados, sin alterar videos originales. Montajes derivados inspeccionados: `heat-phase23-duet-sheet.jpg`, `heat-duet-dense-start.jpg`, `bio-p2-fever-dense.jpg`.
 - Heat: marcas score/RNG y peticiones184/185 contrastadas con ambos actores visibles; retorno al selector inspeccionado. Bi-O: distinguir primer plano Strike de posterior aparición del modelo azul. No prueba sincronía exacta ni calidad subjetiva audio. Un JPEG del retorno falló inicialmente por RGBA; conversión explícita RGB corrigió el derivado, no el original. Tiempos manuales y ahorro desconocidos.
