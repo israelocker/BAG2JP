@@ -48,8 +48,9 @@ def triangles(model: Model, world: WorldMesh):
                 if max(p.vertices[i] for i in tri) >= len(pos):
                     continue
                 xyz = np.array([pos[p.vertices[i]] for i in tri])
-                rgb = np.array([world.colors[p.colors[i]] if p.colors[i] < len(world.colors)
-                                else (128, 128, 128) for i in tri], float)
+                rgb = np.array([p.vertex_rgb[i] if p.vertex_rgb else p.rgb if p.rgb is not None
+                                else world.colors[p.colors[i]]
+                                if p.colors[i] < len(world.colors) else (128, 128, 128) for i in tri], float)
                 uv = np.array([p.uvs[i] for i in tri], float) if p.uvs else None
                 yield xyz, rgb, uv, p.texture_slot, p.clut_row
 

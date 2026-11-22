@@ -57,6 +57,52 @@ class PrimitiveDecodeTests(unittest.TestCase):
         self.assertEqual(p.uvs, [(0x68, 0x01), (0x71, 0x01), (0x68, 0x1F), (0x71, 0x1F)])
         self.assertEqual((p.texture_slot, p.clut_row), (1, 1))
 
+    def test_direct_rgb_textured_tri(self):
+        rec = bytes.fromhex('00030201' '102030ff' '01020304' '05060701')
+        p = mc.decode_primitive(0x30, False, rec)
+        self.assertEqual((p.vertices, p.rgb), ([3, 2, 1], (0x10, 0x20, 0x30)))
+        self.assertEqual(p.uvs, [(1, 2), (3, 4), (5, 6)])
+        self.assertEqual((p.texture_slot, p.clut_row), (7, 1))
+
+    def test_kind_32_uses_colour_indices(self):
+        rec = bytes.fromhex('00030201' 'b905cd05' '01020304' '0506000a')
+        p = mc.decode_primitive(0x32, False, rec)
+        self.assertEqual((p.kind, p.rgb, p.colors, p.clut_row), (0x32, None, [0x5B9] * 3, 10))
+
+    def test_kind_33_is_flat(self):
+        rec = bytes.fromhex('001a180d' '00000000')
+        self.assertEqual(mc.decode_primitive(0x33, False, rec).vertices,
+                         mc.decode_primitive(0x2B, False, rec).vertices)
+        self.assertIsNone(mc.decode_primitive(0x33, False, rec).uvs)
+
+    def test_kind_38_direct_vertex_rgb_tri(self):
+        rec = bytes.fromhex('00030201' '010101ff' '020202ff' '030303ff' '10111213' '14150701')
+        p = mc.decode_primitive(0x38, False, rec)
+        self.assertEqual(p.vertex_rgb, [(1,) * 3, (2,) * 3, (3,) * 3])
+        self.assertEqual((p.uvs, p.texture_slot, p.clut_row), ([(0x10, 0x11), (0x12, 0x13), (0x14, 0x15)], 7, 1))
+
+    def test_kind_38_quad_colour_order(self):
+        rec = bytes.fromhex('00000000' '010101ff' '020202ff' '030303ff' '040404ff' + '00' * 12)
+        p = mc.decode_primitive(0x38, True, rec)
+        self.assertEqual(p.vertex_rgb, [(1,) * 3, (4,) * 3, (2,) * 3, (3,) * 3])
+
+    def test_kind_31_quad_uses_gt_layout(self):
+        rec = bytearray(24)
+        rec[0xC:0x14] = bytes(range(10, 18))
+        self.assertEqual(mc.decode_primitive(0x31, True, bytes(rec)).uvs,
+                         mc.decode_primitive(0x2D, True, bytes(rec)).uvs)
+
+    def test_triangle_colour_precedence(self):
+        from tools.move_viewer import render_offline as R
+        from types import SimpleNamespace as NS
+        prims = [mc.Primitive(0x38, False, [0, 1, 2], [0] * 3, vertex_rgb=[(9, 9, 9)] * 3, rgb=(5, 5, 5)),
+                 mc.Primitive(0x30, False, [0, 1, 2], [0] * 3, rgb=(5, 5, 5)),
+                 mc.Primitive(0x2B, False, [0, 1, 2], [0, 0, 7])]
+        model = NS(nodes=[NS(mesh=NS(primitives=prims))])
+        world = NS(positions={0: np.zeros((3, 3))}, colors=np.array([[1.0, 1, 1]]))
+        got = [t[1][:, 0].tolist() for t in R.triangles(model, world)]
+        self.assertEqual(got, [[9, 9, 9], [5, 5, 5], [1, 1, 128]])
+
     def test_kind_31_uses_gt_layout(self):
         rec = bytes.fromhex('00011614' '01000400' '03000000' 'b749bb4a' 'ba492000')
         p = mc.decode_primitive(0x31, False, rec)
