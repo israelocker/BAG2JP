@@ -52,7 +52,10 @@ def triangles(model: Model, world: WorldMesh):
                                 else world.colors[p.colors[i]]
                                 if p.colors[i] < len(world.colors) else (128, 128, 128) for i in tri], float)
                 uv = np.array([p.uvs[i] for i in tri], float) if p.uvs else None
-                yield xyz, rgb, uv, p.texture_slot, p.clut_row
+                base = None if p.base_colors is None else np.array(
+                    [world.colors[p.base_colors[i]] if p.base_colors[i] < len(world.colors)
+                     else (128, 128, 128) for i in tri], float)
+                yield xyz, rgb, uv, p.texture_slot, p.clut_row, base
 
 
 def rotate_view(xyz: np.ndarray, yaw_deg: float) -> np.ndarray:
@@ -63,10 +66,20 @@ def rotate_view(xyz: np.ndarray, yaw_deg: float) -> np.ndarray:
 
 def render(model: Model, world: WorldMesh, tims: list[Tim], size=(360, 520),
            yaw_deg: float = 0.0, bounds: tuple[np.ndarray, float] | None = None) -> Image.Image:
-    """Z-buffered orthographic raster of all decoded triangles."""
+    """Z-buffered orthographic raster of one actor."""
+    return render_scene([(model, world, tims)], size, yaw_deg, bounds)
+
+
+def render_scene(actors: list[tuple[Model, WorldMesh, list[Tim]]], size=(360, 520),
+                 yaw_deg: float = 0.0,
+                 bounds: tuple[np.ndarray, float] | None = None) -> Image.Image:
+    """Render actors through one camera and depth buffer, preserving textures."""
     w, h = size
-    tris = list(triangles(model, world))
-    allp = rotate_view(np.concatenate([t[0] for t in tris]), yaw_deg)
+    tris = [(actor, tri) for actor, (model, world, _) in enumerate(actors)
+            for tri in triangles(model, world)]
+    if not tris:
+        raise ValueError('scene has no drawable triangles')
+    allp = rotate_view(np.concatenate([tri[0] for _, tri in tris]), yaw_deg)
     if bounds is None:
         lo, hi = allp.min(0), allp.max(0)
         center, extent = (lo + hi) / 2, max(hi[0] - lo[0], (hi[1] - lo[1]) * w / h) * 1.1
@@ -76,7 +89,8 @@ def render(model: Model, world: WorldMesh, tims: list[Tim], size=(360, 520),
     img = np.zeros((h, w, 3)) + BACKGROUND
     zbuf = np.full((h, w), np.inf)
     palettes = {}
-    for xyz, rgb, uv, slot, row in tris:
+    for actor, (xyz, rgb, uv, slot, row, base) in tris:
+        tims = actors[actor][2]
         p = rotate_view(xyz, yaw_deg)
         sx = (p[:, 0] - center[0]) * k + w / 2
         sy = -(p[:, 1] - center[1]) * k + h / 2
@@ -104,15 +118,19 @@ def render(model: Model, world: WorldMesh, tims: list[Tim], size=(360, 520),
         col = bc @ rgb
         if uv is not None and slot is not None and slot < len(tims):
             tim = tims[slot]
-            key = (slot, row)
+            key = (actor, slot, row)
             if key not in palettes:
                 palettes[key] = clut_to_rgba(tim.clut[min(row, len(tim.clut) - 1)])
             tuv = bc @ uv
             tu = np.clip(tuv[:, 0].astype(int), 0, tim.pixels.shape[1] - 1)
             tv = np.clip(tuv[:, 1].astype(int), 0, tim.pixels.shape[0] - 1)
             tex = palettes[key][tim.pixels[tv, tu]]
-            closer &= tex[:, 3] > 0
+            opaque = tex[:, 3] > 0
             col = np.clip(tex[:, :3] * col / GPU_NEUTRAL, 0, 255)
+            if base is None:
+                closer &= opaque
+            else:         # 0x2F: transparent texels show the Gouraud layer drawn first
+                col = np.where(opaque[:, None], col, bc @ base)
         ys, xs, z, col = ys[closer], xs[closer], z[closer], col[closer]
         zbuf[ys, xs] = z
         img[ys, xs] = col
@@ -122,7 +140,7 @@ def render(model: Model, world: WorldMesh, tims: list[Tim], size=(360, 520),
 def export_obj(model: Model, world: WorldMesh, path: Path) -> int:
     """Write triangles (posed world positions, per-vertex colours as OBJ extension)."""
     lines, count = [], 0
-    for xyz, rgb, _, _, _ in triangles(model, world):
+    for xyz, rgb, *_ in triangles(model, world):
         for v, c in zip(xyz, rgb):
             lines.append('v %.3f %.3f %.3f %.3f %.3f %.3f' % (*v, *(np.clip(c, 0, 255) / 255)))
         lines.append(f'f {count + 1} {count + 2} {count + 3}')

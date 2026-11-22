@@ -54,6 +54,7 @@ class Primitive:
     semi_transparency: int = 0  # 0 = opaque, else GPU abr + 1
     rgb: tuple[int, int, int] | None = None  # direct colour (kind 0x30) instead of indices
     vertex_rgb: list[tuple[int, int, int]] | None = None  # direct per-vertex colour (0x38)
+    base_colors: list[int] | None = None  # 0x2F Gouraud layer drawn under the texture
 
 
 @dataclass
@@ -191,13 +192,15 @@ def decode_primitive(kind: int, quad: bool, rec: bytes) -> Primitive:
         p = Primitive(kind, False, [a, b, c], [_lo(w[1]), _hi(w[1]), _lo(w[2])],
                       [_uv(rec, 0xC), _uv(rec, 0xE), _uv(rec, 0x10)])
         return _textured(p, rec, 0x12)
-    if kind == 0x2F:              # G3+GT3 / G4+GT4 in one packet; keep the textured layer
+    if kind == 0x2F:              # G3+GT3 / G4+GT4 in one packet: Gouraud base, texture on top
         if quad:
             p = Primitive(kind, True, [c, d, b, a], [_lo(w[3]), _hi(w[4]), _hi(w[3]), _lo(w[4])],
-                          [_uv(rec, 0x14), _uv(rec, 0x1A), _uv(rec, 0x16), _uv(rec, 0x18)])
+                          [_uv(rec, 0x14), _uv(rec, 0x1A), _uv(rec, 0x16), _uv(rec, 0x18)],
+                          base_colors=[_lo(w[1]), _hi(w[2]), _hi(w[1]), _lo(w[2])])
             return _textured(p, rec, 0x1C)
         p = Primitive(kind, False, [a, b, c], [_hi(w[2]), _lo(w[3]), _hi(w[3])],
-                      [_uv(rec, 0x10), _uv(rec, 0x12), _uv(rec, 0x14)])
+                      [_uv(rec, 0x10), _uv(rec, 0x12), _uv(rec, 0x14)],
+                      base_colors=[_lo(w[1]), _hi(w[1]), _lo(w[2])])
         return _textured(p, rec, 0x16)
     raise UnsupportedPrimitive(f'primitive kind 0x{kind:02X}')
 
