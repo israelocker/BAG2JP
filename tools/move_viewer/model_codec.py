@@ -33,7 +33,8 @@ PRIMITIVE_LAYOUT = ((0x2B, 2, 2), (0x2C, 4, 4), (0x2D, 5, 6), (0x2E, 3, 3), (0x2
                     (0x30, 4, 5), (0x31, 5, 6), (0x32, 4, 5), (0x33, 2, 2), (0x34, 2, 2),
                     (0x35, 3, 4), (0x36, 2, 2), (0x37, 4, 5), (0x38, 6, 8), (0x39, 6, 8))
 LAST_COUNT_WORD = 0x3A          # low: 4-word records, high: 0x14-byte records
-DECODED_KINDS = {0x2B, 0x2C, 0x2D, 0x2E, 0x2F}
+# 0x30/0x31/0x33 inferred from Sushi Boy records (2026-11-22), not yet from their emitters.
+DECODED_KINDS = {0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x33}
 
 
 class UnsupportedPrimitive(ValueError):
@@ -51,6 +52,7 @@ class Primitive:
     texture_slot: int | None = None
     clut_row: int = 0
     semi_transparency: int = 0  # 0 = opaque, else GPU abr + 1
+    rgb: tuple[int, int, int] | None = None  # direct colour (kind 0x30) instead of indices
 
 
 @dataclass
@@ -137,7 +139,20 @@ def decode_primitive(kind: int, quad: bool, rec: bytes) -> Primitive:
     """Decode one record; vertex/colour/UV order follows the emitter and packet init."""
     w = struct.unpack(f'<{len(rec) // 4}I', rec)
     a, b, c, d = _indices(w[0])
-    if kind == 0x2B:              # F3 / F4
+    if kind == 0x30:              # FT3 / FT4 with a direct RGB word
+        rgb = (w[1] & 0xFF, (w[1] >> 8) & 0xFF, (w[1] >> 16) & 0xFF)
+        if quad:
+            p = Primitive(kind, True, [c, d, b, a], [0] * 4,
+                          [_uv(rec, 8), _uv(rec, 0xE), _uv(rec, 0xA), _uv(rec, 0xC)], rgb=rgb)
+            return _textured(p, rec, 0x10)
+        p = Primitive(kind, False, [a, b, c], [0] * 3,
+                      [_uv(rec, 8), _uv(rec, 0xA), _uv(rec, 0xC)], rgb=rgb)
+        return _textured(p, rec, 0xE)
+    if kind == 0x31:              # same record layout as GT3 / GT4
+        p = decode_primitive(0x2D, quad, rec)
+        p.kind = kind
+        return p
+    if kind in (0x2B, 0x33):      # F3 / F4 (0x33: same two-word layout)
         col = _lo(w[1])
         return Primitive(kind, quad, [c, d, b, a] if quad else [a, b, c], [col] * (4 if quad else 3))
     if kind == 0x2E:              # G3 / G4
