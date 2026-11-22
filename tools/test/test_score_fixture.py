@@ -55,7 +55,7 @@ int main(void) {
         source.write_text('''#include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
-static int bad, writes;
+static int bad, writes, p1_writes, p2_writes;
 static const uint32_t guards[][2] = {
  {0x8004E2D8,0x54535542}, {0x8004E2DC,0x4D5F415F},
  {0x8005D3D4,19}, {0x8005D2C4,2}, {0x8005D3D8,1},
@@ -64,22 +64,29 @@ static const uint32_t guards[][2] = {
  {0x80098C44,0x284203E8}
 };
 uint32_t psx_mod_read_word(uint32_t address) {
- for (int i=0; i<11; ++i) if (address==guards[i][0])
-  return guards[i][1] ^ (bad==i+1 ? 1 : 0);
+  int mismatch=bad>=14 && bad<=24 ? bad-13 : bad;
+  if (address==0x8005D3E0 && bad>=13)
+   return mismatch==7 ? 22 : 23;
+  for (int i=0; i<11; ++i) if (address==guards[i][0])
+   return guards[i][1] ^ (mismatch==i+1 ? 1 : 0);
  assert(0 && "Unexpected fixture read"); return 0;
 }
 void psx_mod_write_word(uint32_t address,uint32_t value) {
   assert((address==0x8005E6F8 && value==500000) ||
         (address==0x8005E6FC && value==500100));
+  if (address==0x8005E6F8) ++p1_writes;
+  if (address==0x8005E6FC) ++p2_writes;
  ++writes;
 }
 ''' + f'#include "{linux_header}"\n' + '''
 int main(int argc,char**argv) {
  (void)&bag2_duet_rng_fixture_tick;
  assert(argc==2); bad=atoi(argv[1]);
- int applied=bag2_score_fixture_tick(bad!=12);
- assert(writes==(bad==0 ? 2 : 0));
- assert(applied==(bad==0));
+  int applied=bag2_score_fixture_tick(bad!=12 && bad!=25);
+  assert(writes==((bad==0 || bad==13) ? 2 : 0));
+  assert(p1_writes==((bad==0 || bad==13) ? 1 : 0));
+  assert(p2_writes==((bad==0 || bad==13) ? 1 : 0));
+  assert(applied==(bad==0 || bad==13));
  return 0;
 }
 ''', encoding='utf-8', newline='\n')
@@ -87,7 +94,7 @@ int main(int argc,char**argv) {
         prefix = ['wsl.exe', '-d', 'Ubuntu', '--exec']
         subprocess.run(prefix + ['gcc', '-Wall', '-Wextra', '-Werror',
                                 linux_output + '/test.c', '-o', linux_output + '/test'], check=True)
-        for case in range(13):
+        for case in range(26):
             with self.subTest(case=case):
                 subprocess.run(prefix + [linux_output + '/test', str(case)], check=True,
                                capture_output=True, text=True)

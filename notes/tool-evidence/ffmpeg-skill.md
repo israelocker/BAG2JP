@@ -11,6 +11,14 @@ doc_kind: evidence
 
 # ffmpeg-skill — historial
 
+## 20261122 — fixture corregido y contraste Bi-O
+- `bag2_record.py frames` (adaptador del skill `look.py`): Heat `rt-heat-duet-phase23-20261122a`, gf18200±240 paso20 y gf18001±12 paso1; Bi-O `rt-bio-slot0-strike-p2-20261121a`, gf18431±24 paso1. Extracciones exit0; manifests/hashes conservados, sin alterar videos originales. Montajes derivados inspeccionados: `heat-phase23-duet-sheet.jpg`, `heat-duet-dense-start.jpg`, `bio-p2-fever-dense.jpg`.
+- Heat: marcas score/RNG y peticiones184/185 contrastadas con ambos actores visibles; retorno al selector inspeccionado. Bi-O: distinguir primer plano Strike de posterior aparición del modelo azul. No prueba sincronía exacta ni calidad subjetiva audio. Un JPEG del retorno falló inicialmente por RGBA; conversión explícita RGB corrigió el derivado, no el original. Tiempos manuales y ahorro desconocidos.
+
+## 20261122 — revisión fever Heat A/B, fixture no ejercitado
+- Propósito: distinguir participación individual y dueto real en `rt-heat-duet-fixture-20261122a`, runtime SHA35266c386cabd9019d7441fb558c3ea72bf5b6182c7c09417833d5bb837268cd. `py -3.13 tools/test/bag2_record.py frames --tag rt-heat-duet-fixture-20261122a --frame 18000 --span 300 --step 30` usa el adaptador `look.py` del skill; exit0, 21 posiciones solicitadas. Manifest y hashes originales conservados en la grabación aceptada.
+- Inspección: montaje reducido `_work/move-viewer/retarget/heat-fixture-fever-review.jpg` revisado; Heat A ganador, Heat B derrotado y gesto de fuego seguido de fever individual. Contraste independiente: no marcas score/RNG, fase de baile23 frente a guard3. Resultado útil para rechazar la afirmación de dueto, no aceptación coreográfica. No se alteró/re-finalizó la toma; calidad subjetiva de audio y latencia exacta no verificadas. Tiempo y ahorro desconocidos; siguiente paso: validar el fixture antes de otra toma diagnóstica.
+
 ## 20261121-retarget-slot0-review — atribución visual corregida
 
 - Objetivo: inspección de los movimientos copiados en tomas Heat/Bi-O, no edición ni exportación. Skill local cargado; extracción mediante `py -3.13 tools/test/bag2_record.py frames --tag <tag> --frame <gf> --span 12 --step 2` y hojas reducidas Pillow. No se ejecutó un nuevo comando directo del skill FFmpeg en este tramo: se reutilizó el extractor del grabador con su reloj y backend ya verificados, necesario para localizar eventos por game frame.

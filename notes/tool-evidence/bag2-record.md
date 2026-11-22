@@ -11,6 +11,16 @@ doc_kind: evidence
 
 # bag2_record.py - historial
 
+## 20261122 — ensayo correctivo phase23 en curso
+- Resultado posterior: `rt-heat-duet-phase23-20261122a` accepted=true, rechazos vacíos, game/rec/finalize exit0; harness330.678s y restauración de ajustes/150 guardados/estado verificada. Run `20261122T002838154106Z-rt-heat-duet-phase23-20261122a-vs`. Esta vez aparecen ambas marcas: puntuaciones500000/500100 y semilla RNG1; gf18001 solicita184/185 (anim130/131). Montaje `heat-phase23-duet-sheet.jpg`, 25 muestras gf18200±240 paso20, inspeccionado: ambos Heat A/B participan en la secuencia conjunta, sin ruptura visible. Es diagnóstico con puntuaciones/RNG intervenidos, no juego natural ni prueba de Gas-O. No se infiere fidelidad exacta ni calidad subjetiva de audio.
+- Entrada: exe experimental SHA256 `1518964FC6ED69C48DE03B5EEEBDC92DCBBF676182E4D8D816D5E7DEEF394264`; backup del exe anterior conservado. Calibración `20261122T002616187569Z-rt-score-phase23-calibration`: ocho bordes inspeccionados y aceptados con `accept_versus_calibration.py`; restauración de ajustes y 150 guardados verificada. El estado posterior al probe se preservó antes de restaurar los bytes del backup canónico.
+- Toma `rt-heat-duet-phase23-20261122a`: mismo paquete Heat, espejo A/B, escenario StrikeBAG2, opt-in `BAG2JP_TEST_P1_DUET=1`. Resultado pendiente; no se declara activación del fixture, dueto ni aceptación de captura antes de manifest, marcas y revisión visual. Sin carga de procesamiento de imágenes concurrente; efecto causal sobre jitter todavía desconocido.
+
+## 20261122 — Heat A/B, fixture no ejercitado
+- Comando: `install_capture_diagnostic.ps1 -Tag rt-heat-duet-fixture-20261122a -Id bag2jp.test.move-assign-heat-from-heat-variante-bag1 -P1 Heat -P2 Heat -C1 A -C2 B -Stage StrikeBAG2`, entorno declarado `BAG2JP_TEST_P1_DUET=1`. Exe JP SHA35266c386cabd9019d7441fb558c3ea72bf5b6182c7c09417833d5bb837268cd; manifest y hashes en `_work/recordings/rt-heat-duet-fixture-20261122a/`.
+- Rec/vs/finalize exit0, manifest accepted=true; proceso audio44100Hz, jitter p9913.22ms,8 muestras tardías descartadas. Harness333.206s; restauración de ajustes,150 guardados y hash exterior del estado verificados.
+- Contraste: result.json declara fixture, pero no hay marcas de activación score/RNG; traza fase1/3/23 frente al guard1/3/3. Montaje de21 muestras gf18000±300 paso30 revisado: Heat A ejecuta fever individual con Heat B derrotado, modelos íntegros. No prueba dueto ni puntuación natural. No se altera ni rescata la toma; se investiga offline antes de repetir. Latencia visual no calibrada, calidad subjetiva audio no evaluada, ahorro desconocido.
+
 ## 20261121-retarget-dense-review — continuación del ensayo correctivo
 - Bi-O P1/P2 `rt-bio-slot0-strike-p{1,2}-20261121a` finalizaron accepted=true; harness, grabador y finalize exit0. Restauración de configuración, estado y 150 saves verificada en logs; hashes de entradas/runtime en manifests. No nuevo juego en esta revisión.
 - `frames --tag <tag> --frame <centro> --span 57 --step 1`: centros HeatP1 8981, HeatP2 8905, BiOP1 9522, BiOP2 9476. Script `review_dense_go.py` verificó 115 imágenes por toma y generó 12 páginas; todas inspeccionadas. Intervalos anim0 según trace: 8925..9037, 8849..8962, 9466..9578, 9420..9533 respectivamente.

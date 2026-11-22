@@ -11,7 +11,6 @@ static const uint32_t BAG2_SCORE_FIXTURE_GUARDS[][3] = {
     {0x8005D2C4u, 2u, 0xFFFFu},             /* local versus mode */
     {0x8005D3D8u, 1u, 0xFFFFFFFFu},          /* dance phase */
     {0x8005D3DCu, 3u, 0xFFFFFFFFu},
-    {0x8005D3E0u, 3u, 0xFFFFFFFFu},
     {0x8005E6A0u, 0u, 0xFFFFFFFFu},          /* Heat P1 */
     {0x8005E6A4u, 0u, 0xFFFFFFFFu},          /* Heat P2 */
     {0x8005E668u, 0x100u, 0xFFFFu},          /* A/P1, B/P2 */
@@ -71,6 +70,11 @@ static int bag2_duet_rng_fixture_tick(int enabled) {
 }
 
 static int bag2_score_fixture_matches(void) {
+    /* JP005 FUN_80099e90 dispatches dance via 800987bc without reading this
+     * residual field. Recorded paths retain 3 or 23; accept only those paths,
+     * never an arbitrary phase. The dance/root/actor/code guards still apply. */
+    const uint32_t residual = psx_mod_read_word(0x8005D3E0u);
+    if (residual != 3u && residual != 23u) return 0;
     for (unsigned int i = 0; i < sizeof(BAG2_SCORE_FIXTURE_GUARDS) /
                                       sizeof(BAG2_SCORE_FIXTURE_GUARDS[0]); ++i) {
         const uint32_t* guard = BAG2_SCORE_FIXTURE_GUARDS[i];
