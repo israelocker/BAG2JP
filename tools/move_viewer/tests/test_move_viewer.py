@@ -37,7 +37,7 @@ class PrimitiveDecodeTests(unittest.TestCase):
 
     def test_unsupported_kind(self):
         with self.assertRaises(mc.UnsupportedPrimitive):
-            mc.decode_primitive(0x32, False, bytes(16))
+            mc.decode_primitive(0x34, False, bytes(8))
 
     def test_direct_rgb_textured_quad(self):
         # Sushi Boy record: indices, RGB word, four UV pairs, slot/clut word.
@@ -47,6 +47,15 @@ class PrimitiveDecodeTests(unittest.TestCase):
         self.assertEqual(p.rgb, (0xB3, 0xB3, 0xB3))
         self.assertEqual(p.uvs, [(3, 0xBF), (3, 0x8F), (0x3D, 0xBF), (0x3E, 0x8F)])
         self.assertEqual(p.texture_slot, 0)
+
+    def test_kind_38_direct_vertex_rgb_quad(self):
+        # Strike record: indices, four RGB words, UV pairs at 0x14..0x1B, slot/clut word.
+        rec = bytes.fromhex('02010003' '777777ff' '444444ff' '828282ff' '777777ff'
+                            '6801681f' '711f7101' '01010000')
+        p = mc.decode_primitive(0x38, True, rec)
+        self.assertEqual(p.vertex_rgb, [(0x77,) * 3, (0x77,) * 3, (0x44,) * 3, (0x82,) * 3])
+        self.assertEqual(p.uvs, [(0x68, 0x01), (0x71, 0x01), (0x68, 0x1F), (0x71, 0x1F)])
+        self.assertEqual((p.texture_slot, p.clut_row), (1, 1))
 
     def test_kind_31_uses_gt_layout(self):
         rec = bytes.fromhex('00011614' '01000400' '03000000' 'b749bb4a' 'ba492000')

@@ -33,8 +33,8 @@ PRIMITIVE_LAYOUT = ((0x2B, 2, 2), (0x2C, 4, 4), (0x2D, 5, 6), (0x2E, 3, 3), (0x2
                     (0x30, 4, 5), (0x31, 5, 6), (0x32, 4, 5), (0x33, 2, 2), (0x34, 2, 2),
                     (0x35, 3, 4), (0x36, 2, 2), (0x37, 4, 5), (0x38, 6, 8), (0x39, 6, 8))
 LAST_COUNT_WORD = 0x3A          # low: 4-word records, high: 0x14-byte records
-# 0x30/0x31/0x33 inferred from Sushi Boy records (2026-11-22), not yet from their emitters.
-DECODED_KINDS = {0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x33}
+# 0x30-0x33/0x38 inferred from Sushi Boy, Comet and Strike records (2026-11-22), not yet from their emitters.
+DECODED_KINDS = {0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x38}
 
 
 class UnsupportedPrimitive(ValueError):
@@ -53,6 +53,7 @@ class Primitive:
     clut_row: int = 0
     semi_transparency: int = 0  # 0 = opaque, else GPU abr + 1
     rgb: tuple[int, int, int] | None = None  # direct colour (kind 0x30) instead of indices
+    vertex_rgb: list[tuple[int, int, int]] | None = None  # direct per-vertex colour (0x38)
 
 
 @dataclass
@@ -148,6 +149,20 @@ def decode_primitive(kind: int, quad: bool, rec: bytes) -> Primitive:
         p = Primitive(kind, False, [a, b, c], [0] * 3,
                       [_uv(rec, 8), _uv(rec, 0xA), _uv(rec, 0xC)], rgb=rgb)
         return _textured(p, rec, 0xE)
+    if kind == 0x32:              # FT3 / FT4 layout of 0x30 with colour indices; first one used
+        p = decode_primitive(0x30, quad, rec)
+        p.kind, p.rgb, p.colors = kind, None, [_lo(w[1])] * len(p.vertices)
+        return p
+    if kind == 0x38:              # GT3 / GT4 with direct RGB words per vertex
+        rgb = [(x & 0xFF, (x >> 8) & 0xFF, (x >> 16) & 0xFF) for x in w[1:5 if quad else 4]]
+        if quad:
+            p = Primitive(kind, True, [c, d, b, a], [0] * 4,
+                          [_uv(rec, 0x14), _uv(rec, 0x1A), _uv(rec, 0x16), _uv(rec, 0x18)],
+                          vertex_rgb=[rgb[0], rgb[3], rgb[1], rgb[2]])
+            return _textured(p, rec, 0x1C)
+        p = Primitive(kind, False, [a, b, c], [0] * 3,
+                      [_uv(rec, 0x10), _uv(rec, 0x12), _uv(rec, 0x14)], vertex_rgb=rgb)
+        return _textured(p, rec, 0x16)
     if kind == 0x31:              # same record layout as GT3 / GT4
         p = decode_primitive(0x2D, quad, rec)
         p.kind = kind
