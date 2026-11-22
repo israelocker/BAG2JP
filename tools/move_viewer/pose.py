@@ -16,7 +16,7 @@ Sources (SLPM_862.19, Ghidra MCP):
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -48,9 +48,10 @@ def rotation(angles: tuple[float, float, float]) -> np.ndarray:
 
 @dataclass
 class MotionPose:
-    """Angles per slot and root translation for one (possibly fractional) frame."""
+    """Slot rotations and root translation; matrices override legacy angle poses."""
     slot_angles: dict[int, np.ndarray]
     root_translation: np.ndarray
+    slot_rotations: dict[int, np.ndarray] = field(default_factory=dict)
 
 
 def keyframe_position(frame: float, frames: int, step: int) -> float:
@@ -67,19 +68,43 @@ def _lerp_angles(a: np.ndarray, b: np.ndarray, t: float) -> np.ndarray:
     return a + d * t
 
 
+def _blend_rotations(first: np.ndarray, second: np.ndarray, weight: float) -> np.ndarray:
+    """Float analogue of FUN_80012350: blend rows Y/Z, cross and normalize.
+
+    The GTE uses fixed-point arithmetic; this preserves its interpolation path,
+    not bit-exact rounding. Degenerate rows require native context, not a guessed
+    Euler fallback.
+    """
+    if weight == 0:
+        return first
+    if weight == 1:
+        return second
+    mixed = first * (1 - weight) + second * weight
+    y = mixed[1]
+    x = np.cross(y, mixed[2])
+    z = np.cross(x, y)
+    rows = np.stack((x, y, z))
+    lengths = np.linalg.norm(rows, axis=1)
+    if not np.isfinite(lengths).all() or np.any(lengths <= np.finfo(float).eps * 16):
+        raise ValueError('degenerate native rotation blend requires separate context')
+    return rows / lengths[:, None]
+
+
 def sample_motion(decoded: dict, frame: float) -> MotionPose:
-    """Pose at ``frame``; in-between frames lerp angles (game blends matrices, FUN_80012350)."""
+    """Pose at ``frame`` using native-style matrix blending (float approximation)."""
     k = keyframe_position(frame, decoded['frames'], decoded['step'])
     k0 = int(np.floor(k))
     k1 = min(k0 + 1, len(decoded['translation'][0]) - 1)
     t = k - k0
     angles = {}
+    matrices = {}
     for bone, axes in zip(decoded['bones'], decoded['rotations']):
         a0 = np.array([ax[k0] for ax in axes], float)
         a1 = np.array([ax[k1] for ax in axes], float)
         angles[bone] = _lerp_angles(a0, a1, t)
+        matrices[bone] = _blend_rotations(rotation(a0), rotation(a1), t)
     tr = np.array([[ax[k0] >> 1, ax[k1] >> 1] for ax in decoded['translation']], float)
-    return MotionPose(angles, tr[:, 0] * (1 - t) + tr[:, 1] * t)
+    return MotionPose(angles, tr[:, 0] * (1 - t) + tr[:, 1] * t, matrices)
 
 
 def decode_motion(bank: bytes, index: int) -> dict:
@@ -110,7 +135,8 @@ def pose_model(model: Model, motion: MotionPose | None = None,
             i = matrix_index[n]
             slot = slot_map[i] if i < len(slot_map) else UNMAPPED_SLOT
         angles = motion.slot_angles.get(slot) if slot not in (None, UNMAPPED_SLOT) else None
-        r = rotation(angles if angles is not None else node.rest_angles)
+        matrix = motion.slot_rotations.get(slot) if slot not in (None, UNMAPPED_SLOT) else None
+        r = matrix if matrix is not None else rotation(angles if angles is not None else node.rest_angles)
         if n == model.roots[0] and motion is not None:
             t = motion.root_translation * player_scale / 128     # FUN_80013144: * scale >> 7
         else:
