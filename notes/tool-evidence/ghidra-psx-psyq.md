@@ -11,6 +11,9 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 2026-11-22 — cierre documental del visor
+- MCP get_program_info: SLPM_862.19 PSX LE32, SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; decompile_function(FUN_800326d4), consulta acotada de la autoridad de carga fever por personaje antes de archivar el hito. Resultado coherente con la lectura previa, sin nueva aceptación runtime ni cambios de análisis. Uso redundante para nuevo hallazgo, útil solo como comprobación de programa/autoridad exigida; tiempo y ahorro desconocidos. No repetir esta consulta para certificar el archivo comprimido: eso se verifica mediante hashes.
+
 ## 2026-11-22 — contraste residual24 Bi-O
 - MCP `get_program_info` confirmó de nuevo SLPM_862.19 PSX LE32, SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; lectura acotada `decompile_function(FUN_800326d4)` completa confirma carga de banco por personaje/fever y relleno0x7e. No demuestra coreografía ni contiene JP005 en ese programa MCP.
 - Evidencia independiente de captura rt-bio-duet-fixture-20261122a: baile mode2 residual24, espejo9/9 y costume100; no marcas fixture. Reutilizado análisis headless previo JP005 80099e90->800987bc (residual no leído en dispatch baile), sin repetir exportación ni modificar análisis. Resultado pertinente para restringir la nueva ruta solo a Bi-O, no habilitar valores arbitrarios. Tiempo/ahorro desconocidos; próximo paso validar candidato con tests y toma declarada.
