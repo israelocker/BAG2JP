@@ -432,3 +432,7 @@ Pending: `--max-growth` not tied to GROWTH_BUDGET in CLI; `.bak` manifests insid
 - Cause: kind 0x2F packs a Gouraud layer (w1/w2) under the GT layer; the viewer dropped it, so transparent texels showed the back hair. Transparent texels now use the base colour (commit e16997a, 169 tests OK).
 - Validated against the accepted in-game recording heat-ref-20261122a: chest logo and face now match (`_work/move-viewer/visual-loading/live/cull/heat_base.png`). Base-colour word order is inferred from 0x2E, not yet confirmed in Ghidra.
 - Remaining: viewer lighting darker than the game (grey suit vs white); semi-transparency not emulated.
+
+### 2026-11-22 — lighting matched to in-game Heat
+- LIGHT_DIRECTION z flipped to +0.75 (front is +z; the back was lit) and AMBIENT 0.45 -> 0.7, tuned by eye against heat-ref-20261122a (commit b96d4e8). Still an approximation: GTE light matrices (0x80027DC4) unread.
+- All 18 characters re-rendered front/back (`live/cull/fb_0..2.png`): no holes, no see-through patches. Only Heat has an in-game reference; the other 17 were checked by eye only. Open: Tsutomu thin yellow lines beside the body; semi-transparency not emulated.
