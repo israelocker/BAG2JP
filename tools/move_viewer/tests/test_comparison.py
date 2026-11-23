@@ -15,6 +15,67 @@ from PySide6.QtWidgets import QListWidgetItem
 
 
 class ComparisonTest(unittest.TestCase):
+    def test_full_resolution_264_frame_buffers_stay_within_individual_budget(self):
+        import numpy as np
+        view = anim_view.AnimationView(Path('unused'))
+        budget = 128 * 1024 * 1024
+        width, height = anim_view.RENDER_SIZE
+        with (patch.object(anim_view, 'require_values', return_value=(budget,)),
+              patch.object(view, '_render_request', return_value=lambda key: np.full((height, width, 3), key % 256, dtype=np.uint8))):
+            self.assertTrue(view._start_motion({'frames': 264, 'step': 1}))
+            self.wait_prepared(view, iterations=2000)
+        self.assertEqual(len(view._frames), 264)
+        self.assertEqual(sum(frame.nbytes for frame in view._frames), 264 * width * height * 3)
+        self.assertLessEqual(sum(frame.nbytes for frame in view._frames) + 11 * width * height, budget)
+        for index in (0, 131, 263):
+            self.assertEqual(view.frame_pixmap(index).toImage().pixelColor(0, 0).red(), index % 256)
+        view.close()
+        self.assertEqual(view._frames, [])
+
+    def test_conversion_allocation_failures_stop_playback(self):
+        for error in (MemoryError('allocation'), RuntimeError('Qt conversion')):
+            with self.subTest(error=type(error).__name__):
+                view = anim_view.AnimationView(Path('unused'))
+                view._frames, view._keys = [None], [0]
+                view._motion = {'frames': 1, 'step': 1}
+                view.timer.start(100)
+                with patch.object(view, 'frame_pixmap', side_effect=error):
+                    self.assertFalse(view.advance())
+                self.assertFalse(view.timer.isActive())
+                self.assertEqual(view._frames, [])
+                view.close()
+
+    def test_closed_view_releases_prepared_rgb_while_widget_retained(self):
+        import numpy as np
+        view = anim_view.AnimationView(Path('unused'))
+        with patch.object(view, '_render_request', return_value=lambda key: np.zeros((2, 2, 3), dtype=np.uint8)):
+            self.assertTrue(view._start_motion({'frames': 2, 'step': 1}))
+            self.wait_prepared(view)
+        self.assertTrue(view._frames)
+        view.close()
+        self.assertEqual(view._frames, [])
+        self.assertTrue(view.image.pixmap().isNull())
+
+    def test_chichi_264_frames_fit_cache_without_dropping_keys(self):
+        view = anim_view.AnimationView(Path('unused'))
+        budget = 128 * 1024 * 1024
+        with (patch.object(anim_view, 'require_values', return_value=(budget,)),
+              patch.object(anim_view, 'PreparationWorker') as worker):
+            self.assertTrue(view._start_motion({'frames': 264, 'step': 1}))
+            self.assertEqual(worker.call_args.args[0], tuple(range(264)))
+        view.close()
+
+    def test_prepared_frames_keep_rgb_not_a_second_pixmap_cache(self):
+        import numpy as np
+        view = anim_view.AnimationView(Path('unused'))
+        with patch.object(view, '_render_request', return_value=lambda key: np.full((2, 2, 3), key + 50, dtype=np.uint8)):
+            self.assertTrue(view._start_motion({'frames': 2, 'step': 1}))
+            self.wait_prepared(view)
+        self.assertTrue(all(isinstance(frame, np.ndarray) for frame in view._frames))
+        self.assertEqual(view.frame_pixmap(1).toImage().pixelColor(0, 0).red(), 51)
+        self.assertTrue(all(isinstance(frame, np.ndarray) for frame in view._frames))
+        view.close()
+
     def test_closed_view_rejects_new_preparation(self):
         view = anim_view.AnimationView(Path('unused'))
         view.close()
@@ -126,7 +187,7 @@ class ComparisonTest(unittest.TestCase):
             self.wait_prepared(view)
             QTest.qWait(30)
             self.assertEqual(len(view._frames), 2)
-            self.assertEqual(view._frames[0].toImage().pixelColor(0, 0).red(), 200)
+            self.assertEqual(view.frame_pixmap(0).toImage().pixelColor(0, 0).red(), 200)
             self.assertEqual(view.progress.value(), 2)
         finally:
             release.set()
@@ -137,9 +198,9 @@ class ComparisonTest(unittest.TestCase):
             widget.close()
         QApplication.processEvents()
 
-    def wait_prepared(self, view):
+    def wait_prepared(self, view, iterations=200):
         from PySide6.QtTest import QTest
-        for _ in range(200):
+        for _ in range(iterations):
             QApplication.processEvents()
             if view._prepared or view.status.text().startswith('preparation failed:'):
                 return

@@ -33,7 +33,7 @@ RENDER_SIZE = (300, 430)
 VIEW_YAW = 180
 # Render/parse failures that must stop playback and report instead of leaving a timer alive.
 RENDER_ERRORS = (OSError, IndexError, KeyError, TypeError, ValueError, ArithmeticError,
-                 struct.error, SystemExit)
+                 struct.error, SystemExit, RuntimeError, MemoryError)
 
 
 def asset_folder(name: str) -> str:
@@ -93,7 +93,7 @@ class AnimationView(QWidget):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.advance)
         self._characters: dict[str, tuple] = {}
-        self._frames: list[QPixmap | None] = []
+        self._frames: list[QPixmap | np.ndarray | None] = []
         self._keys: list[int] = []
         self._index = 0
         self._motion = None
@@ -237,12 +237,14 @@ class AnimationView(QWidget):
                                       ('viewer.preparation_cache_bytes',))
             if self.external_clock:
                 budget //= 2  # Both comparison panels share the configured allowance.
-            # RGB (3) + pixmap (4) per frame, plus one RGB conversion copy (3).
+            # Keep RGB only. Reserve one conversion copy (3), the next pixmap (4)
+            # and the previously displayed pixmap (4) during replacement.
             # Renderer geometry, z-buffer and allocator overhead are not cache bytes.
-            required = (len(self._keys) * 7 + 3) * RENDER_SIZE[0] * RENDER_SIZE[1]
+            conversion_bytes = 11 * RENDER_SIZE[0] * RENDER_SIZE[1]
+            required = len(self._keys) * 3 * RENDER_SIZE[0] * RENDER_SIZE[1] + conversion_bytes
             if required > budget:
                 raise ValueError('selected motion exceeds preparation cache budget')
-            worker = PreparationWorker(tuple(self._keys), self._render_request(), budget // 2)
+            worker = PreparationWorker(tuple(self._keys), self._render_request(), budget - conversion_bytes)
             self.destroyed.connect(worker.cancel)
             self._worker = worker
             self._workers.add(worker)
@@ -286,12 +288,8 @@ class AnimationView(QWidget):
             buffers.clear()
             return
         try:
-            pixmaps = []
-            for rgb in buffers:
-                h, w, _ = rgb.shape
-                image = QImage(rgb.data, w, h, rgb.strides[0], QImage.Format.Format_RGB888)
-                pixmaps.append(QPixmap.fromImage(image.copy()))
-            self._frames = pixmaps
+            # Transfer array ownership, not all frames into a second GUI cache.
+            self._frames = list(buffers)
             self._prepared = True
             self.progress.setValue(self.progress.maximum())
             if not self.advance():
@@ -335,6 +333,8 @@ class AnimationView(QWidget):
         """Keep worker objects alive until their cooperative shutdown completes."""
         self._close_pending = True
         self.cancel_preparation()
+        self._frames, self._keys, self._index = [], [], 0
+        self.image.clear()
         for worker in tuple(self._workers):
             worker.cancel()
         if self._workers:
@@ -349,7 +349,12 @@ class AnimationView(QWidget):
             h, w, _ = rgb.shape
             self._frames[i] = QPixmap.fromImage(QImage(rgb.data, w, h, 3 * w,
                                                         QImage.Format.Format_RGB888).copy())
-        return self._frames[i]
+        frame = self._frames[i]
+        if isinstance(frame, np.ndarray):
+            h, w, _ = frame.shape
+            image = QImage(frame.data, w, h, frame.strides[0], QImage.Format.Format_RGB888)
+            return QPixmap.fromImage(image.copy())
+        return frame
 
     def _render_request(self):
         """Capture request inputs so CPU rendering never reads changing widget state."""
