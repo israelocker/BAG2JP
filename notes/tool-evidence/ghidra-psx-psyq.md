@@ -11,6 +11,20 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 2026-11-22 — additional draw blend in Capoeira12440
+- MCP `get_program_info` confirmed JP SLPM_862.19, PSX LE32, SHA256ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. Re-read `decompile_function_by_address(0x8002c404)` specifically after new RAM evidence: actor+1546 is passed to native pose composition, distinct from key interpolation+1548; previous matrices are retained by the render path. No Ghidra analysis changed.
+- New RAM12440 SHA2564b11c64b4485ec7a2b6ae539653fd0a12c2ace5594a632d5024b39fe13ba4a3c has draw weights3328/3072, shape4096. Independent local-matrix probe residual0.0843/0.0802 and world residuals exceed the earlier stable sample: not safely classified as rounding. Diagnostic comparison now rejects missing/non4096 draw or shape state; regenerated12004 and12430 stable contexts still pass. This supports a guard, not reconstruction of unknown history. Time/manual savings unknown; next stable capture requires fresh runtime calibration.
+
+## 2026-11-22 — matrix blend and native draw context
+- Follow-up attempted `decompile_function_by_address(0x8002a090)` again and received FUNCTION_NOT_FOUND. This repeated an unchanged known limitation and added no evidence; do not retry it without a newly defined function. No analysis changed; time/rework unmeasured.
+- Same verified JP main SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. Successful MCP decompiles at80012350,800128b4,80012b9c,8002c060,8002bc38,8002c404 and80013144; no analysis changes. Purpose: resolve native interpolation, current/previous animation state and local/world draw matrices, not infer live state from static bytes.
+- FUN_80012350 reconstructs an orthonormal basis from blended Y/Z rows. FUN_8002bc38 resolves key frames/weights and current154c versus previous1550 slots; FUN_80013144 separates world draw and light transforms. Independent check: gf12004 RAM SHA58c4a92b57cbec93ffc5f8c2deb8e129907bf95b5352b11b45f8e2174cd757f1, matching archive motion bytes and captured matrices. Floating blend max discrepancy0.00172 versus old Euler1.00024;176 host tests pass. Outcome: useful, verified cause and bounded correction; not arbitrary companion placement acceptance. Time/manual rework/savings unmeasured. Next verify companion contexts under approved F1 policy.
+
+## 2026-11-22 — companion goal resume: bounded updater read
+- Purpose: recheck the native companion updater before contrasting a new captured pose. MCP `get_program_info()` confirmed JP main `SLPM_862.19`, SHA256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`; no overlay or live RAM was queried.
+- `decompile_function_by_address(0x8002a090)` returned FUNCTION_NOT_FOUND, consistent with the earlier undefined assembly range. `read_memory(0x8002a754,96)` succeeded with initialized bytes and no gaps. No functions created, analysis modified, or replacement disassembly represented as MCP output.
+- Existing native pairing/placement findings remain reusable; this read does not validate rotations or a new context. Outcome: bounded byte confirmation, not a new pose acceptance. Independent check: forthcoming recorded RAM capture gf12004. Time/manual rework/savings unknown; next contrast captured current matrices and reject inactive companion state.
+
 ## 2026-11-22 — native vertex transform bounded read
 - SLPM_862.19 main confirmed through MCP, SHA256 `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`. Decompile `FUN_80027cf8` failed FUNCTION_NOT_FOUND; this assembly range is not a defined function. No analysis changes or repeated function query.
 - `read_memory(0x80027cf8,204)` succeeded with initialized bytes and no gaps. The bounded range contains packed vertex/GTE transform instructions; it does not establish a causal explanation for Heat/Sushi artifacts. Independent visual validation remains unresolved; measured time/manual savings unknown. Next investigate remaining pose/raster seams without changing the already-confirmed primitive ordering or transform field mapping.
@@ -2719,3 +2733,21 @@ Propósito: contrato de acceso a clip CAUGHT separado, BAG2 NTSC-J main SLPM_862
 
 ## 2026-11-22 move viewer primitive sizes
 - Purpose: confirm per-kind record sizes. MCP get_program_info (SLPM_862.19) + decompile_function_by_address 0x800220b8. Evidence: count pairs 0xAC..0xEA advance 2/2,4/4,5/6,3/3,6/8,4/5,5/6,4/5,2/2,2/2,3/4,2/2,4/5,6/8,6/8 words, equal to model_codec.PRIMITIVE_LAYOUT. Outcome: useful (sizes confirmed; field semantics not covered). Time ~2 min. Note: name lookup 'FUN_800220B8' fails (case); use address tool.
+
+
+## 20261122 — gf11810 transition context exclusion
+MCP get_program_info confirmed JP SLPM_862.19 SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; decompile_function_by_address80013144 reread specifically against new RAM11810 SHA7d6bd0760261d92bbb034c6f10bc1832b8eb00e22e8eaaa023fb466c30eaf78b, drawblend2048. Param5 below4096 blends composed world matrix and translation against historical param4/param6; current snapshot is not authority for isolated playback with missing history. Independent capture inspection flags[1,1], inactive Capoeira companion and comparison rejection. No analysis modifications. Query useful for preserving exclusion, not new pose acceptance; manual time/savings unknown. Next: source-only motion inspection, not another blind capture.
+
+
+## 20261122 — local and root draw-history distinction
+- MCP get_program_info confirmed JP main SLPM_862.19 SHAea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; bounded decompile_function_by_address80013144 and8002bc38 for the new12440 retained-history question, not unchanged acceptance. No analysis modifications.13144 blends root world matrix;2bc38 ALSO blends all30 local matrices at2c against3ec with1546. Independent RAM12440 SHA4b11c64b4485ec7a2b6ae539653fd0a12c2ace5594a632d5024b39fe13ba4a3c.
+- Control `_work/move-viewer/history-blend-12440.json`: primary error0.084322->0.003089; secondary history overwritten, error remains0.060184. Root-supplied render visually inspected but not fidelity acceptance. Source frame-offset fit diagnostic does not authorize an offset policy. Unknown time/savings. Next: identify a bounded pre-draw history capture seam; no blind recapture or arbitrary-playback guard removal.
+
+### 2026-11-23 - reconnection + status read
+- Purpose: reconnect MCP after Ghidra was closed; bounded status read for move_viewer history seam.
+- Command: ghidraRun.bat BAG2JP.gpr (MCP unreachable before launch); get_program_info -> SLPM_862.19 sha256 ea5a1668...; decompile_function_by_address 0x8002bc38, 0x8002c404.
+- Outcome: MCP works; reads consistent with notes/move-viewer.md (1546 blend in 2bc38; 2c404 composes 14c4 root and sets 8008f88c=actor+155c). No modifications. Time ~1 min; no rework.
+
+## 2026-11-23 move viewer B1/B3/D1
+- Purpose: 0x35 emitter (B1), pre-draw history seam (D1). MCP: get_function_xrefs 0x800220b8/0x80013780/0x8002bc38/0x8002c404; decompile 0x80022e94, 0x80013780, 0x8002c404; disassemble 0x8002bc38, 0x8002c404. Program SLPM_862.19.
+- Outcome: B1 not found (code after 0x80022F40 undefined, no function); 0x35 decoded from data instead (partial/unhelpful). D1 useful: copy +2C->+3EC at 0x8002cbd8 gated by DAT_8005d3e4; +2C->+D14 at 0x8002bd78. Validated against prior RAM evidence (secondary history == current). Time ~10 min, no rework. Next: runtime capture at FUN_8002c404 entry.
