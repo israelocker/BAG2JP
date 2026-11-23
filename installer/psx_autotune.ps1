@@ -120,9 +120,9 @@ $cambios = [ordered]@{
     window_width            = "$ancho"
     fullscreen              = "0"
     render_thread           = $renderThread
-    present_thread          = "false"
+    present_thread          = "true"
     frame_generation        = "false"
-    vsync                   = '"on"'
+    vsync                   = '"immediate"'
     frame_interpolation     = "false"
     frame_interpolation_fps = "0"
 }

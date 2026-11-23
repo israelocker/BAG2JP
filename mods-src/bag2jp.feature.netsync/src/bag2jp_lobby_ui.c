@@ -222,26 +222,9 @@ static void profile_save(void) {
 static int key_pressed(int vk) {
     if (vk > 0 && vk < 256 && s_frame_vk[vk]) {
         s_frame_vk[vk] = 0;
-        s_prev_keys[vk & 0xFF] = 1;
         return 1;
     }
-#ifdef _WIN32
-    DWORD fg_pid = 0;
-    HWND fg = GetForegroundWindow();
-    if (fg) GetWindowThreadProcessId(fg, &fg_pid);
-    if (fg_pid != GetCurrentProcessId()) {
-        s_prev_keys[vk & 0xFF] = 0;
-        return 0;
-    }
-    SHORT st = GetAsyncKeyState(vk);
-    uint8_t down = (st & 0x8000) ? 1 : 0;
-    int edge = down && !s_prev_keys[vk & 0xFF];
-    s_prev_keys[vk & 0xFF] = down;
-    return edge;
-#else
-    (void)vk;
     return 0;
-#endif
 }
 
 static void poll_text_input(char* buf, int* len, int max_len) {
