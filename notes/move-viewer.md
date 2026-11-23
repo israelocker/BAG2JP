@@ -4,6 +4,48 @@ updated: 2026-11-23
 ---
 # Move viewer / editor
 
+## 2026-11-23 — Static snapshot state transport (host candidate)
+
+`pose_snapshot_scene` and `AnimationView.show_native_snapshot` now accept the same
+optional per-actor previous-local rotations and NodeLighting as `pose_scene`.
+This is static only: omitted state retains old preview behavior, roots/scales remain
+independently corrected, and no constant GTE state is imposed on animation playback.
+No raw PHV2 block is automatically interpreted as missing-track prior destination.
+
+Goldfish: two cold static reviews with exact replies and frozen inputs under
+`_work/goldfish/viewer-static-state/`. Invalid node-light objects could escape as
+AttributeError; confirmed by pre-decode regression RED, fixed with shared NodeLighting
+type validation/ValueError before decoding. UI real-boundary regression verifies
+failure clears image and signals clock invalidation. Snapshot tests now exercise
+actual root/pose/GTE code with distinct scales128/256 and independently pinned
+positions/colours, not just mocked forwarding. Numerical validation remains with its
+authoritative pose/GTE consumer; outer actor mappings and light object types are
+checked at the shared transport boundary. Disposition and corrected-input hashes
+are saved; reviewer verdict is not owner approval or deployment permission.
+
+Full234tests PASS61.349s (`audit/snapshot-state-reviewed-suite.log`); targeted46PASS.
+Parser-only extra check roundtrips256 synthetic PHV2 records/495616bytes exactly,
+rejects9 partial lengths (`audit/d2-reader-deterministic-roundtrip.json`), no provenance.
+Fresh package `dist-host-state-20261123/MoveViewer/MoveViewer.exe`, SHA256
+`E1B0C4EDFB5E1D31A17260719F3B830D7C5B015D9322C0731ADBE714EA45446F`,5868903bytes;
+`--smoke` exit0, `audit/host-state-package-smoke.json`. Startup/tree evidence only,
+not packaged animation or native acceptance.
+
+Reused `audit/record_live.py --synthetic-static-state --indices 0,3,10,14`:
+`audit/rec-static-state-candidate-b/` has four source-Qt static sequences, six samples
+each,4fps MP4, primary-reviewed corrected full-viewport `review-sheet.png`.
+Heat/Tsutomu and both Capoeira/Chichi models are visible. Synthetic parent offsets,
+identity missing-track history and artificial GTE state deliberately show transport,
+not captured placement/colour/native fidelity; status evidence caption explicitly
+identifies the synthetic fixture. Playback timer/cache remain stopped/empty.
+Earlier `rec-static-state-candidate/` is diagnostic: excessive synthetic separation
+made duos tiny and the first crop cut characters. Inputs/crop were corrected in the
+fresh take, not silently salvaged. No new game, audio acceptance or native capture.
+
+Next: bounded direct-render/cache stress of actual Chichi duo66 with synthetic
+placement, not bypassing normal fail-closed UI. Native placement/history/profile
+acceptance remains E; source/package candidates do not close those requirements.
+
 ## 2026-11-23 — D2 reader and per-actor C1/C3 host integration
 
 Owner renewed host/viewer work before E; the earlier whole-task stop was premature.
@@ -33,8 +75,8 @@ The earlier incorrect test vertex field/unit fixtures and a negative test accide
 passing on the malformed bank were corrected; RED/green attempts retained in audit/.
 Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
 
-Next: expose the same explicit state in the existing **static snapshot** path, not
-as a constant lighting state across inferred playback. Native captures/acceptance
+Next from this checkpoint (subsequently implemented above): expose the same explicit
+state in the **static snapshot** path, not constant lighting across inferred playback. Native captures/acceptance
 remain E, including verified duo placement, complete C1 state and Tsutomu96 history.
 
 ## 2026-11-23 — B4 explicit leaf preview: reviewed host candidate

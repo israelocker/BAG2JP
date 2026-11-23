@@ -11,6 +11,27 @@ doc_kind: evidence
 
 # Ghidra / PSX / PsyQ — historial
 
+## 2026-11-23 — PHV2 reader / explicit host-state continuation
+
+- Purpose: confirm the target/seam while separating raw captured history/weight from
+  normalized preview state; no new game launches authorized before E.
+- Tool/query: installed Ghidra MCP `get_program_info`, `read_memory(0x8002BC38,48)`,
+  `decompile_function(FUN_8002bc38)`. All succeeded, memory has no gaps.
+- Input: SLPM_862.19 JP main, SHA256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`;
+  same main binary, no overlay query or database modification.
+- Evidence: final branch tests unsigned actor+1546 <4096 before blending +2C with
+  +3EC; raw observer `read_half` is representationally0..65535, not an independently
+  verified normalized blend contract. Do not apply raw history as C3 prior local state.
+- Independent check: actual canonical C observer compiled by existing
+  `PreDrawCaptureTest`, mocked guest memory/IO, output decoded by new PHV2 reader;
+  `audit/d2-reader-producer-check.json` passed two actors/frame100/weight1350.
+  This does not verify live callback order, state provenance or native placement.
+- Outcome: useful scoped distinction; reader boundary corrected with 4097/65535 RED
+  regressions. Full viewer230tests PASS51.130s. Time/savings/manual rework unknown;
+  no utility claim beyond that result. Next: static snapshot opt-in state transport,
+  then owner gate before native E captures. No game run for this host-only change.
+
 ## 2026-11-23 — B4 draw/root-selection bounded follow-up
 
 - Purpose: avoid drawing alternative roots unconditionally. MCP `get_program_info`

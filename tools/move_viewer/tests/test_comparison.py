@@ -260,6 +260,47 @@ class ComparisonTest(unittest.TestCase):
         self.assertIn('gf12401', view.status.text())
         view.close()
 
+    def test_snapshot_explicit_state_forwarding_and_failure_clear_stale_image(self):
+        import numpy as np
+        view = anim_view.AnimationView(Path('unused'))
+        previous, lights = ({0: np.eye(3)},), ({0: 'light'},)
+        signals = []
+        view.static_reference_shown.connect(lambda: signals.append(True))
+        with (patch.object(anim_view, 'pose_snapshot_scene', return_value=['actor']) as pose,
+              patch.object(anim_view, 'render_scene', return_value=np.zeros((4, 4, 3), dtype=np.uint8))):
+            self.assertTrue(view.show_native_snapshot('scene', ('context',), 'recorded',
+                                                     previous_local_rotations=previous, lighting=lights))
+            pose.assert_called_once_with('scene', ('context',),
+                                         previous_local_rotations=previous, lighting=lights)
+        self.assertIn('explicit local history', view.status.text())
+        self.assertIn('explicit per-node lighting', view.status.text())
+        self.assertIn('approximate rotations', view.status.text())
+        for boundary in ('pose_snapshot_scene', 'render_scene'):
+            view._scene, view._motion = 'stale', 'stale'
+            view._frames, view._keys = [None], [0]
+            view.timer.start()
+            with (patch.object(anim_view, 'pose_snapshot_scene', return_value=['actor']),
+                  patch.object(anim_view, boundary, side_effect=ValueError('bad state'))):
+                self.assertFalse(view.show_native_snapshot('scene', (), 'recorded', lighting=({}, None)))
+            self.assertTrue(view.image.pixmap().isNull())
+            self.assertIsNone(view._scene)
+            self.assertIsNone(view._motion)
+            self.assertEqual(view._frames, [])
+            self.assertEqual(view._keys, [])
+            self.assertFalse(view.timer.isActive())
+        from tools.move_viewer.scene import CharacterScene, NativeActorContext
+        from tools.move_viewer import scene as scene_module
+        loaded = CharacterScene(('first',), b'bank', [], [], 'heat')
+        context = (NativeActorContext(0, 0, 0, 0, 128, (0, 0, 0)),)
+        with patch.object(scene_module, 'decode_motion') as decode:
+            self.assertFalse(view.show_native_snapshot(loaded, context, 'invalid node state',
+                                                       lighting=({0: None},)))
+            decode.assert_not_called()
+        self.assertTrue(view.image.pixmap().isNull())
+        self.assertIn('lighting', view.status.text())
+        self.assertEqual(len(signals), 4)
+        view.close()
+
     def test_companion_selection_uses_scene_and_refuses_unknown_placement(self):
         from tools.move_viewer.scene import CharacterScene
         view = anim_view.AnimationView(Path('unused'))

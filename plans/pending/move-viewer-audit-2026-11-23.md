@@ -18,10 +18,14 @@ Estado real: A implementada; B1/B2 con pruebas, B3 parcial y B4 candidato explí
 de mallas hoja (cinco parejas, diez secuencias del visor, sin eventos/mapa nativos); C2 candidato
 con grabación del visor; C1 aritmética A/B y estado por nodo explícito (checkpoint70afeac),
 sin perfil completo del mismo draw; C3 candidato de preservación local explícita,
-sin historial real de motion96. Suite218tests verde. D1 seam identificado, D2 sigue
-sin historial/peso del mismo draw; D3 caché y grabación real del modelo primario
+sin historial real de motion96. Suite230tests verde (51.130s, checkpointd42a914).
+D1 seam identificado; D2 incorpora lector PHV2 y transporte por actor de estado
+C1/C3, pero sigue sin captura verificada del historial/peso del mismo draw;
+D3 caché y grabación real del modelo primario
 slot66 (264frames/88claves), no del dúo. No declarar A–D completas ni aceptar
 geometría/iluminación/colocación nativas a partir de estos resultados de host.
+La integración host continúa con el snapshot estático; no se reaplica un estado
+GTE constante a toda una animación ni se convierte +3EC en historial C3 implícito.
 Estimaciones en sesiones de trabajo (S ≈ una sesión del agente). Cada tarea termina con
 test de host + grabación del visor (`record_live.py`) de los personajes afectados.
 
@@ -60,6 +64,25 @@ test de host + grabación del visor (`record_live.py`) de los personajes afectad
 | E1 | Tras pausa y autorización: capturar historial/peso D2, estado GTE C1 y referencias Comet B/Sushi/Tsutomu/Chichi/Capoeira | implementación A–D + autorización owner | manifest `accepted: true`, restauración y verificación nativa de B4/C1/C3/D2/D3 |
 | E2 | Comparación fotograma a fotograma visor vs juego | E1 | diferencias listadas; owner confirma conformidad |
 | E3 | Commit final, snapshot del hito | E2 | snapshot verificado |
+
+### Entradas que faltan antes de aceptar resultados nativos
+
+- D2: PHV2 completo y vinculado al runtime/actor/draw de una grabación aceptada;
+  el lector solo acredita estructura, no procedencia. Repeticiones de actor/frame
+  son ambiguas y no se elige una llamada arbitraria. Registros con fallos de IO o
+  mezclados de sesiones no se rescatan.
+- C1: luz transformada por nodo, colour/background/far/IR0 y proyección del mismo
+  draw. El backend explícito está probado, no existe todavía ese perfil verificado.
+- C3: destino previo real de las pistas ausentes de Tsutomu96; no sustituirlo por
+  historial de mezcla +3EC. Las barras son geometría del accesorio ligada al nodo12,
+  no consecuencia demostrada de esas dos pistas; no borrarlas.
+- B4: eventos/mapas de pose de las selecciones alternativas Heat/Pander; mantener
+  selección explícita de hojas, no dibujar todas las raíces ni inventar eventos.
+- D3: preparar el dúo66 con colocación verificada D2. La evidencia88claves primaria
+  y el estrés sintético264buffers no equivalen al dúo nativo.
+- E readiness: antes de una nueva partida, diagnosticar offline las dos capturas
+  rechazadas, revalidar runtime/rutas/sesiones y protección/restauración. No cambiar
+  BAG2JP-win ni reinterpretar los intentos rechazados como aceptación.
 
 ## Gantt por fases (sesiones de calendario; corregido 2026-11-23)
 Las fases se solapan: las sesiones de calendario (15) son menos que la suma de esfuerzo.

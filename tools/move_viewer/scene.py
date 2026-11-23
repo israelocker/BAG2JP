@@ -84,25 +84,47 @@ def load_scene(model_dir: Path, pack_dir: Path) -> CharacterScene:
     return CharacterScene(models, bank, tims, slots, character)
 
 
-def pose_snapshot_scene(scene: CharacterScene, contexts: tuple[NativeActorContext, ...]
+def _validate_actor_states(count, previous_local_rotations, lighting):
+    """Reject partial actor state before decoding either scene path."""
+    for states in (previous_local_rotations, lighting):
+        if states is not None and (len(states) != count or
+                                   any(not isinstance(state, dict) for state in states)):
+            raise ValueError('explicit state mappings must match actors')
+    if lighting is not None and any(not isinstance(value, NodeLighting)
+                                    for state in lighting for value in state.values()):
+        raise ValueError('explicit lighting requires NodeLighting values')
+
+
+def pose_snapshot_scene(scene: CharacterScene, contexts: tuple[NativeActorContext, ...], *,
+                        previous_local_rotations: tuple[dict[int, np.ndarray], ...] | None = None,
+                        lighting: tuple[dict[int, NodeLighting], ...] | None = None
                         ) -> list[tuple[Model, WorldMesh, list[Tim]]]:
-    """Render an observed snapshot; rotations remain the preview approximation."""
+    """Render captured roots with optional unscaled local history and node lighting.
+
+    Explicit states follow actor order, as in pose_scene; neither raw actor+3EC
+    history nor light transformation is inferred. This is not native acceptance.
+    """
     if len(contexts) != len(scene.models) or len(contexts) not in (1, 2):
         raise ValueError('snapshot context count must match actors')
+    _validate_actor_states(len(scene.models), previous_local_rotations, lighting)
     actors = []
-    for model, context in zip(scene.models, contexts):
+    for actor_index, (model, context) in enumerate(zip(scene.models, contexts)):
         motion = decode_motion(scene.bank, context.slot)
         root = snapshot_world_root(motion, context)
         frame = (context.first_frame +
                  (context.second_frame - context.first_frame) * context.blend / 4096)
         sampled = sample_motion(motion, frame)
-        poses = pose_model(model, sampled, scene.slot_map, player_scale=context.scale)
-        # Preserve preview rotations, correcting only the independently verified root.
+        pose_options = ({} if previous_local_rotations is None else
+                        {'previous_local_rotations': previous_local_rotations[actor_index]})
+        poses = pose_model(model, sampled, scene.slot_map, player_scale=context.scale,
+                           **pose_options)
+        # Preserve pose rotations, correcting only the independently verified root.
         preview_root = sampled.root_translation * context.scale / 128
         offset = root - preview_root
         placed = {index: NodePose(value.rotation, value.translation + offset, value.draw)
                   for index, value in poses.items()}
-        actors.append((model, world_meshes(model, placed), scene.tims))
+        light_options = {} if lighting is None else {'lighting': lighting[actor_index]}
+        actors.append((model, world_meshes(model, placed, **light_options), scene.tims))
     return actors
 
 
@@ -121,10 +143,7 @@ def pose_scene(scene: CharacterScene, primary_slot: int, frames: tuple[float, ..
     count = len(scene.models)
     if count not in (1, 2):
         raise ValueError('scene requires one or two actors')
-    for states in (previous_local_rotations, lighting):
-        if states is not None and (len(states) != count or
-                                   any(not isinstance(state, dict) for state in states)):
-            raise ValueError('explicit state mappings must match actors')
+    _validate_actor_states(count, previous_local_rotations, lighting)
     if placements is None:
         if count != 1:
             raise ValueError('companion placement requires explicit native context')

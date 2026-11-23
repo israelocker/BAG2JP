@@ -9,6 +9,56 @@ from tools.move_viewer import scene
 
 
 class SceneLoadingTest(unittest.TestCase):
+    def test_snapshot_forwards_distinct_local_state_after_root_correction(self):
+        from tools.move_viewer.pose import MotionPose, NodePose
+        loaded = scene.CharacterScene(('first', 'second'), b'bank', [], [7], 'capoeira')
+        contexts = tuple(scene.NativeActorContext(i, 0, 1, 2048, scale, (0, 0, 0))
+                         for i, scale in enumerate((128, 256)))
+        previous = ({0: np.eye(3)}, {0: np.eye(3) * 2})
+        from tools.move_viewer.gte_lighting import NodeLighting
+        zero = ((0, 0, 0),) * 3
+        lights = ({0: NodeLighting(zero, zero, (0,) * 3, (0,) * 3, 0)},
+                  {0: NodeLighting(zero, zero, (1,) * 3, (0,) * 3, 0)})
+        def pose(model, sampled, mapping, *, player_scale, previous_local_rotations):
+            index = loaded.models.index(model)
+            self.assertIs(previous_local_rotations, previous[index])
+            self.assertEqual(player_scale, contexts[index].scale)
+            return {0: NodePose(np.eye(3), np.array([3., 4., 5.]), np.eye(3))}
+        def meshes(model, placed, *, lighting):
+            index = loaded.models.index(model)
+            self.assertIs(lighting, lights[index])
+            np.testing.assert_array_equal(placed[0].translation,
+                                          np.array([3., 4., 5.]) + 10 - (index + 1))
+            return placed
+        with (patch.object(scene, 'decode_motion', return_value={}),
+              patch.object(scene, 'snapshot_world_root', return_value=np.full(3, 10.)),
+              patch.object(scene, 'sample_motion', return_value=MotionPose({}, np.ones(3))),
+              patch.object(scene, 'pose_model', side_effect=pose) as posed,
+              patch.object(scene, 'world_meshes', side_effect=meshes)):
+            actors = scene.pose_snapshot_scene(loaded, contexts,
+                                              previous_local_rotations=previous, lighting=lights)
+        self.assertEqual(len(actors), 2)
+        self.assertEqual(posed.call_count, 2)
+
+    def test_snapshot_malformed_state_fails_before_decode(self):
+        loaded = scene.CharacterScene(('first', 'second'), b'bank', [], [], 'capoeira')
+        contexts = (scene.NativeActorContext(0, 0, 0, 0, 128, (0, 0, 0)),) * 2
+        with patch.object(scene, 'decode_motion') as decode:
+            for field in ('previous_local_rotations', 'lighting'):
+                for states in (({},), ({}, None), ({}, {}, {})):
+                    with self.subTest(field=field, states=states), self.assertRaises(ValueError):
+                        scene.pose_snapshot_scene(loaded, contexts, **{field: states})
+            decode.assert_not_called()
+
+    def test_snapshot_invalid_node_light_fails_before_decode(self):
+        loaded = scene.CharacterScene(('first',), b'bank', [], [], 'heat')
+        contexts = (scene.NativeActorContext(0, 0, 0, 0, 128, (0, 0, 0)),)
+        with patch.object(scene, 'decode_motion') as decode:
+            for value in (None, 'not lighting', object()):
+                with self.subTest(value=type(value)), self.assertRaisesRegex(ValueError, 'lighting'):
+                    scene.pose_snapshot_scene(loaded, contexts, lighting=({0: value},))
+            decode.assert_not_called()
+
     def test_explicit_actor_state_reaches_real_pose_and_lighting_paths(self):
         from types import SimpleNamespace
         from tools.move_viewer.pose import MotionPose, rotation
@@ -34,10 +84,19 @@ class SceneLoadingTest(unittest.TestCase):
         transforms = (np.eye(4), np.eye(4))
         transforms[1][:3, 3] = [10, 20, 30]
         with (patch.object(scene.animlib, 'anim_list', return_value=[None] * 118),
-              patch.object(scene, 'decode_motion', return_value={'frames': 2}),
+              patch.object(scene, 'decode_motion', return_value={'frames': 4, 'step': 2,
+                                                               'translation': [[0, 0]] * 3}),
               patch.object(scene, 'sample_motion', return_value=MotionPose({}, np.zeros(3)))):
             actors = scene.pose_scene(loaded, 54, (0, 0), transforms,
                                       previous_local_rotations=previous, lighting=lights)
+            contexts = (scene.NativeActorContext(54, 0, 0, 0, 128, (0, 0, 0)),
+                        scene.NativeActorContext(101, 0, 0, 0, 256, (10, 20, 30)))
+            snapshots = scene.pose_snapshot_scene(loaded, contexts,
+                                                  previous_local_rotations=previous, lighting=lights)
+        np.testing.assert_allclose(snapshots[0][1].positions[0][0], [1, 0, 0], atol=1e-12)
+        np.testing.assert_allclose(snapshots[1][1].positions[0][0], [10, 22, 30], atol=1e-12)
+        np.testing.assert_array_equal(snapshots[0][1].colors[0], [64, 64, 64])
+        np.testing.assert_array_equal(snapshots[1][1].colors[0], [50, 25, 12])
         np.testing.assert_allclose(actors[0][1].positions[0][0], [1, 0, 0], atol=1e-12)
         np.testing.assert_allclose(actors[1][1].positions[0][0], [10, 21, 30], atol=1e-12)
         np.testing.assert_array_equal(actors[0][1].colors[0], [64, 64, 64])

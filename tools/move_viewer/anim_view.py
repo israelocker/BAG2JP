@@ -24,6 +24,7 @@ from .scene import (COMPANION_CHARACTERS, CharacterScene, companion_slot, load_s
                     pose_scene, pose_snapshot_scene)
 from .render_offline import render_scene
 from .pose import animlib
+from .gte_lighting import NodeLighting
 from .companion_reference import load_reference, reference_matches
 
 anim_list = animlib.anim_list
@@ -46,7 +47,9 @@ class AnimationView(QWidget):
     preparation_ready = Signal()
     preparation_failed = Signal()
 
-    def show_native_snapshot(self, scene, contexts, evidence: str) -> bool:
+    def show_native_snapshot(self, scene, contexts, evidence: str, *,
+                             previous_local_rotations: tuple[dict[int, np.ndarray], ...] | None = None,
+                             lighting: tuple[dict[int, NodeLighting], ...] | None = None) -> bool:
         """Display an explicitly captured reference, never start inferred playback."""
         self.cancel_preparation()
         self.timer.stop()
@@ -54,12 +57,22 @@ class AnimationView(QWidget):
         self._frames, self._keys, self._index = [], [], 0
         self.image.clear()
         try:
-            actors = pose_snapshot_scene(scene, contexts)
+            options = {}
+            if previous_local_rotations is not None:
+                options['previous_local_rotations'] = previous_local_rotations
+            if lighting is not None:
+                options['lighting'] = lighting
+            actors = pose_snapshot_scene(scene, contexts, **options)
             rgb = np.ascontiguousarray(render_scene(actors, size=RENDER_SIZE, yaw_deg=VIEW_YAW))
             height, width, _ = rgb.shape
             image = QImage(rgb.data, width, height, rgb.strides[0], QImage.Format.Format_RGB888)
             self.image.setPixmap(QPixmap.fromImage(image.copy()))
-            self.status.setText(f'{evidence} — captured roots; approximate rotations; static reference')
+            qualifiers = ['captured roots', 'approximate rotations']
+            if previous_local_rotations is not None:
+                qualifiers.append('explicit local history')
+            if lighting is not None:
+                qualifiers.append('explicit per-node lighting')
+            self.status.setText(f'{evidence} — {"; ".join(qualifiers)}; static reference')
             self.static_reference_shown.emit()
             return True
         except RENDER_ERRORS as error:
