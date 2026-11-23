@@ -7,11 +7,11 @@ window_width      = 1920
 fast_boot         = false
 bios_hle          = true
 fullscreen        = 0
-render_thread = false
+render_thread = true
 present_thread = false
 frame_generation = false
 vsync             = "on"
-frame_interpolation = false
+frame_interpolation = true
 frame_interpolation_fps = 0
 aspect_ratio      = "4:3"
 
@@ -26,33 +26,31 @@ fast_forward_toggle_pad = 0
 [launcher]
 skip_launcher = false
 
-[netplay]
-player_name = "Player"
-lobby_url = "ws://netplay.retcomm.net:8765"
-
 [disc]
 path = "disc_image/game.cue"
 
 [memcard]
-dir     = "saves"
-card1   = "saves/card1.mcd"
-card2   = "saves/card2.mcd"
+dir = "saves"
+card1 = "saves/card1.mcd"
+card2 = "saves/card2.mcd"
 enable1 = true
 enable2 = true
 
 [controller]
-p1_device = "keyboard"
+p1_device = "gamepad"
 p1_mode   = "digital"
 p1_deadzone = 3276
-p2_device = "none"
+p2_device = "keyboard"
 p2_mode   = "digital"
 p2_deadzone = 3276
-multitap  = true
-multitap_analog = true
+multitap  = false
+multitap_analog = false
 deadzone  = 3276
 
 [localization]
 language = "en"
+
+
 
 [song_sync]
 # Music-only offset (ms, -10000..10000) for the in-game dance song. 0 = default.
@@ -61,23 +59,23 @@ language = "en"
 # start_offset_ms is added to every dance song.
 start_offset_ms = 0
 # BAG2 songs
-heat = 0
-strike = 0
-comet = 0
-tsutomu = 0
-kelly = 0
-shorty = 0
-pander = 0
-kitty_n = 0
-hiro = 0
-bi_o = 0
-capoeira = 0
-robo_z = 0
-columbo = 0
-sushi_boy = 0
-chichi_sally = 0
-michael_doi = 0
+heat = 200
+strike = 200
+comet = 100
+tsutomu = 200
+kelly = 200
+shorty = 200
+pander = 200
+kitty_n = 200
+hiro = 200
+bi_o = 200
+capoeira = 200
+robo_z = 200
+columbo = 200
+sushi_boy = 200
+chichi_sally = 200
+michael_doi = 200
 # BAG1 songs
-bag1_heat = 0
-bag1_strike = 0
-bag1_gaso = 0
+bag1_heat = 200
+bag1_strike = 200
+bag1_gaso = 200
