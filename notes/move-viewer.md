@@ -4,6 +4,21 @@ updated: 2026-11-23
 ---
 # Move viewer / editor
 
+## 2026-11-23 — E1 offline diagnosis of rejected calibration takes
+
+Owner authorized E ("si culmina la fase E"). Offline only, no game launched yet.
+Both rejected takes (`_work/recordings/viewer-d2-cal-{d506,317e}`, runs
+`_work/versus-runs/20261123T141648248233Z-viewer-d2-cal-d506-vs`,
+`20261123T150404190465Z-viewer-d2-cal-317e-vs`) end because the game process exited
+silently mid-song: d506 at songframe 10228 (PID 55096, winshot.ps1), 317e at songframe
+7131 (PID 44288, postkey.ps1). stdout/stderr show normal startup and no error; anim
+trace tails are normal samples; no Application events, no CrashDumps; the only freeze
+dump (12:58) is a frame-0 startup hard_freeze unrelated to these exits. Manifest
+rejections (audio lifecycle, foreground guard) are consequences of the exit. Since
+the pre-observer D506 EXE also exited, the PHV2 observer is not the sole cause. Root
+cause unknown. Rejected takes stay rejected; no salvage. Next E capture must keep
+freeze/exit diagnostics enabled and stop (not retry blindly) if the exit recurs.
+
 ## 2026-11-23 — D3 real Chichi duo66 host stress
 
 Direct host render (not live UI) of real `chichi_sally` A/P1: primary slot 66 plus
