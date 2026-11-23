@@ -94,3 +94,13 @@ flowchart LR
 1. **Inicio**: leer `AGENTS.md`, `NOTES.md`, `notes/online.md` y este plan.
 2. **No duplicar**: reutilizar `mods-src/bag2jp.feature.netsync/src/bag2jp_netsync.c` para la sincronización en partida; este plan añade la capa de **Lobby/Sala/Chat/Menú** por encima.
 3. **Regla de aceptación**: no dar por terminado el modo online con pruebas en una sola máquina; la Fase 6 requiere evidencia de dos PCs/redes reales según `notes/online.md`.
+
+
+## Avance cerrado (2026-11-23 — commit `a6af5c2`)
+- **Lobby nativo PS1 1v1**: menú `online match` en `bag2jp_endings_view.c`, UI OpenGL 4:3 en `bag2jp_lobby_ui.c` (retratos HD `online_avatars/`, banners/headers `online_ui/`, perfil persistente `bag2jp_online_profile.ini`, transiciones CRT, SFX nativos SPU `0x200..0x203`, `psx_host_set_ui_capture` + `psx_host_set_input_sink`, freeze del temporizador attract `0x8005D3DC`).
+- **Plug-and-play sobre MQTT público gratuito**: `bag2jp_lobby_client.c` usa los brokers de `bag2jp_online_servers.txt` (`broker.hivemq.com:1883`, `broker.emqx.io:1883`, `test.mosquitto.org:1883`) sin servidor propio, con *heartbeat* de host cada 25 s y limpieza automática de salas fantasma a los 90 s (manteniendo fallback TCP si se define `BAG2JP_LOBBY_HOST`).
+- **Flujo completo verificado con 2 instancias reales**:
+  - Partida completa LAN (`_work/recordings/online-2exe-autoplay/`): salto automático a `2 player game`, sin pausa por pérdida de foco (`s_focus_always = 1`), `0 out of sync`, 2 ataques Jammer (`0x6e`) de Comet y retorno automático a `ROOM 1V1` (`finish_match -> Waiting`).
+  - Prueba cero-servidor por Internet (`_work/recordings/online-2exe-mqtt/`): `LIMAHOST` y `CDMXGUEST` conectados vía `broker.hivemq.com:1883`, `transport=3` (`NS_INTERNET`), STUN y enlace P1/P2 confirmado en `bag2jp_netsync.log`.
+- **Instalador Windows (NSIS)**: `D:\Games\Bust A Groove 2 (Japan)\installer-online\BAG2JP-Online-Setup.exe` generado desde `installer/bag2jp_online.nsi` con payload `BAG2JP-release-online` (incluye `BAG2JP.exe`, `online_avatars/`, `online_ui/`, `bag2jp_online_servers.txt` y `LEEME.txt`).
+- **Pendiente de Fase 6**: validación real entre dos PCs en redes remotas distintas detrás de NAT (Lima ↔ CDMX).
