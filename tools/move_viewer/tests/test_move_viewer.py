@@ -35,9 +35,22 @@ class PrimitiveDecodeTests(unittest.TestCase):
         self.assertEqual((p.texture_slot, p.semi_transparency, p.clut_row), (2, 1, 5))
         self.assertEqual(p.uvs, [(10, 11), (16, 17), (12, 13), (14, 15)])
 
-    def test_unsupported_kind(self):
-        with self.assertRaises(mc.UnsupportedPrimitive):
-            mc.decode_primitive(0x34, False, bytes(8))
+    def test_unsupported_kinds_fail_closed(self):
+        # No shipped model uses these kinds (audit 2026-11-23); they must not be guessed.
+        for kind, lo, hi in mc.PRIMITIVE_LAYOUT:
+            if kind in mc.DECODED_KINDS:
+                continue
+            for quad, words in ((False, lo), (True, hi)):
+                with self.subTest(kind=hex(kind), quad=quad), self.assertRaises(mc.UnsupportedPrimitive):
+                    mc.decode_primitive(kind, quad, bytes(words * 4))
+        self.assertEqual({k for k, _, _ in mc.PRIMITIVE_LAYOUT} - mc.DECODED_KINDS,
+                         {0x34, 0x36, 0x37, 0x39})
+
+    def test_kind_35_is_gouraud_with_mode_word(self):
+        rec = bytes.fromhex('00060700' '09040a04' '0d040100')   # Comet B tri, LE words
+        p = mc.decode_primitive(0x35, False, rec)
+        self.assertEqual((p.vertices, p.colors, p.semi_transparency),
+                         ([6, 7, 0], [0x0409, 0x040A, 0x040D], 1))
 
     def test_direct_rgb_textured_quad(self):
         # Sushi Boy record: indices, RGB word, four UV pairs, slot/clut word.

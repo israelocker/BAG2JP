@@ -13,7 +13,7 @@ Sources (SLPM_862.19, read-only Ghidra MCP + Capstone over the main executable):
                 export/import loops, then one emitter per primitive kind.
   0x80027FC8..  emitters (vertex/colour fields); FUN_800201B0 packet init (UV, texture
                 slot byte: bits 0-4 slot, bits 5-7 semi-transparency, next byte CLUT row).
-Only kinds 0x2B..0x2F are decoded; the newer BAG2 kinds raise UnsupportedPrimitive.
+Kinds in DECODED_KINDS are decoded; 0x34/0x36/0x37/0x39 (unused by shipped models) raise UnsupportedPrimitive.
 """
 from __future__ import annotations
 
