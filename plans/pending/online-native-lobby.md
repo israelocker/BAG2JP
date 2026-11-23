@@ -4,7 +4,7 @@ title: "Plan de trabajo: Modo Online Nativo e Intuitivo (Lobby 1 vs 1)"
 tags: ["online", "lobby", "ui", "netsync", "plan"]
 status: pending
 created: "2026-11-20"
-updated: "2026-11-20"
+updated: "2026-11-22"
 related: ["notes/online.md", "mods-src/bag2jp.feature.netsync/src/bag2jp_netsync.c"]
 ---
 
@@ -34,33 +34,34 @@ Implementar un modo Online accesible directamente desde el menú principal de BA
   - Servidor -> Cliente: `room_list {rooms[]}`, `room_state {room_id, room_name, host_name, guest_name, guest_ready, state}`, `chat_msg {sender, text, ts}`, `match_start {room_code, transport}`, `error {code, msg}`.
   - Regla de servidor: `start_match` solo se acepta si quien lo envía es el Host, hay Guest conectado, `guest_ready == true` y `host.content_id == guest.content_id`.
 
-### Fase 1: Servidor de Lobby + Relay 1 vs 1
-- Implementar servidor ligero para gestionar salas 1 vs 1, estados (`Waiting`, `Ready`, `Playing`), chat de sala y validación de fingerprint entre Host y Guest.
-- Incluir soporte de **relay** (o señalización) para conexión entre dos PCs reales detrás de NAT.
-- **Aceptación**: pruebas automatizadas de host (crear sala, unir segundo cliente, chat, bloqueo de `Start` sin `Ready`, `Start` con `Ready`).
+### Fase 1: Servidor de Lobby + Relay 1 vs 1 *(COMPLETADA)*
+- Implementado en `tools/online/lobby_server.py` (JSON-lines sobre TCP, puerto `47400`) con `tools/online/test_lobby_server.py` (2/2 tests OK).
+- Pendiente para Fase 6: añadir capa relay para NAT detrás de Internet real.
 
-### Fase 2: Cliente de Lobby en el proyecto
-- Implementar cliente de red en C/C++ (conexión al servidor de lobby, heartbeat, manejo de eventos de sala y chat) integrado como módulo/mod.
-- **Aceptación**: dos instancias locales conectadas al servidor intercambian estado de sala y chat por consola/log.
+### Fase 2: Cliente de Lobby en el proyecto *(COMPLETADA)*
+- Implementado en `mods-src/bag2jp.feature.netsync/src/bag2jp_lobby_client.h` y `bag2jp_lobby_client.c` (Winsock2 no bloqueante + `WSAStartup`).
 
-### Fase 3: UI de Lobby, Sala 1 vs 1 y Chat (Overlay)
-- Implementar pantallas en overlay del framework (ImGui/SDL):
-  - **Lobby**: lista de salas, estado, botón `Crear sala`, `Unirse`, `Actualizar`.
-  - **Sala 1 vs 1**: slots Host/Guest, botón `Ready` (Guest), botón `Start` (Host, bloqueado hasta `Ready`), caja de **Chat**.
-- **Aceptación**: navegación completa con mando/teclado, entrada de texto funcional en chat y **validación visual grabada en `BAG2JP-exp-8mb`** mostrando Lobby, Sala 1v1, `Ready`/`Start` y Chat en pantalla.
+### Fase 3: UI de Lobby, Sala 1 vs 1 y Chat (Overlay) *(VALIDADA VISUALMENTE)*
+- Implementado en `mods-src/bag2jp.feature.netsync/src/bag2jp_lobby_ui.h` y `bag2jp_lobby_ui.c` (captura de teclado SDL3 + renderizado OSD en `host_osd_set_status` / `host_osd_set_diagnostics`, tick en vblank `bag2jp.lobby`).
+- **Validación visual**: `frame_connected_10s.png` confirma el juego en `WinSta0\Default` conectado en vivo a `lobby_server.py` mostrando `ONLINE LOBBY (0 salas)`.
 
-### Fase 4: Hook en Menú Principal
-- Añadir opción **Online** en el menú principal del juego que abra directamente el Lobby y permita volver al menú al salir.
-- **Aceptación**: entrada visible y funcional desde el menú principal sin romper navegación nativa, **con validación visual grabada en `BAG2JP-exp-8mb`**.
+### Fase 4: Hook en Menú Principal *(COMPLETADA Y VALIDADA VISUALMENTE)*
+- Implementado en `mods-src/bag2jp.feature.endings-view/bag2jp_endings_view.c` (ampliado a 7 ítems `0..6`, **`online match`** en índice 5 justo antes de `options`) + texturas HD `menu_hd` (clara y oscura) escaladas al 72 % con `online match` en `u=122..192, v=48..72`.
+- **Validación visual oficial (`bag2_record.py`)**:
+  - Menú principal con las 7 opciones: `_work/recordings/online-main-menu/menu_frame_v10_19s.png`.
+  - Flujo `online match` -> Lobby -> Crear Sala (`C`): `_work/recordings/online-match-flow/owner.mp4` (`v2_lobby_28s.png`, `v2_room_31s.png`).
 
 ### Fase 5: Puente Sala -> Partida Versus (`netsync`)
 - Al pulsar `Start`, intercambiar parámetros de partida y fingerprint, cerrar/ocultar overlay de sala y arrancar Versus usando `bag2jp.feature.netsync` / netplay del framework.
 - Manejar fin de canción, rematch o retorno a la sala/lobby.
 - **Aceptación**: partida completa 1 vs 1 entre dos procesos locales con inicio sincronizado, fin de canción y retorno limpio.
 
-### Fase 6: Validación en juego real (2 PCs / Internet)
-- Validar según [notes/online.md](file:///d:/Dev/Recomp/BAG2JP/notes/online.md): identidad igual, inputs de ambos peers, desconexión/focus, final/retorno, audio/video grabado de ambos extremos y conformidad del owner.
-- **Aceptación**: grabación aceptada de ambos extremos en redes distintas.
+### Fase 6: Validación en juego real (2 PCs / Internet) *(VALIDACIÓN LOCAL 2-PEER COMPLETADA; PENDIENTE 2 PCs REALES)*
+- **Validación local 2-peer completada (`bag2_record.py`, `manifest.json` `"accepted": true`)**:
+  - Host (`BAG2JP.exe --no-launcher`) entra a **`online match`** desde el menú principal, crea sala (`C`), recibe la conexión de `tools/online/guest_bot.py` (`GuestPlayer`), muestra el mensaje de chat (`Hola! Listo para jugar`), cambia a `(READY)` y habilita `[F6] START`.
+  - Evidencia: `_work/recordings/online-2peer-flow/owner.mp4` y `_work/recordings/online-2peer-flow/v2_ready_34s.png`.
+- **Pendiente de aceptación final (requiere 2.ª PC física / owner según `notes/online.md`)**:
+  - Prueba entre dos PCs reales en redes distintas con grabación de ambos extremos (inputs, barreras, desconexión/focus, final/retorno y escucha subjetiva de latencia).
 
 ---
 

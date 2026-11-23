@@ -51,6 +51,7 @@
 #include "cpu_state.h"
 #include "host_osd.h"
 #include "host_overlay.h"
+#include "bag2jp_lobby_ui.h"
 
 int bag2jp_mods_menu_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out);
 void bag2jp_mods_menu_reattach(void);
@@ -215,6 +216,21 @@ static int ns_read_code(void) {                 /* 1 when the room code changed 
     snprintf(s_code, sizeof s_code, "%s", code);
     s_code_hash = h;
     return changed;
+}
+
+static void ns_net_open(void);
+
+void bag2jp_netsync_apply_lobby_match(const char* room_code) {
+    if (!room_code || !room_code[0]) return;
+    if (!s_mu) s_mu = SDL_CreateMutex();
+    const char* env_tr = getenv("BAG2JP_LOBBY_TRANSPORT");
+    s_transport = (env_tr && strcmp(env_tr, "lan") == 0) ? NS_LAN : NS_INTERNET;
+    if (s_data == INVALID_SOCKET) {
+        ns_net_open();
+    }
+    snprintf(s_code, sizeof s_code, "%s", room_code);
+    s_code_hash = ns_hash(s_code);
+    ns_log("lobby match applied: transport=%d room='%s' hash=%08x", s_transport, s_code, s_code_hash);
 }
 
 static void ns_read_servers(void) {
@@ -784,6 +800,7 @@ static void ns_pads_frame(void) {
 /* ------------------------------------------------------------------ match */
 static uint32_t ns_timer(void* u, SDL_TimerID id, uint32_t interval);
 static void ns_activate(void) {
+    bag2jp_lobby_ui_init("127.0.0.1", 47400, "Player", bag2jp_bag1_content_id());
     char v[32] = {0};
     s_transport = NS_OFF;
     if (psx_mod_current_option_value("transport", v, sizeof v) > 0) {
@@ -846,7 +863,7 @@ static void ns_pause_end(const char* why) {
 static void ns_pause_tick(void) {
     if (s_focus_always < 0) {
         const char* e = SDL_getenv("BAG2JP_NETSYNC_FOCUS");
-        s_focus_always = e && !strcmp(e, "always");
+        s_focus_always = !(e && !strcmp(e, "strict"));
     }
     const int lf = s_focus_always ? 1 : SDL_GetKeyboardFocus() != NULL;
     if (lf != s_lfocus) {
@@ -925,6 +942,7 @@ static void ns_audio_probe(void) {
 }
 
 static void ns_vblank(void) {
+    bag2jp_lobby_ui_tick();
     s_vblanks++;
     ns_audio_probe();
     if (s_transport < NS_LAN) return;
@@ -935,6 +953,9 @@ static void ns_vblank(void) {
     if (s_mine.valid && s_vblanks - s_step_resend < 60 && (s_vblanks - s_step_resend) % 6 == 5) ns_send_step(&s_mine);
     const int dance = ns_in_dance();
     if (dance && !s_was_dance && s_routing) ns_match_start();
+    if (!dance && s_was_dance) {
+        bag2jp_lobby_ui_return_from_match();
+    }
     if (!dance) s_match_live = 0;
     s_was_dance = dance;
     if (s_match_live && !s_pause_held) s_dance_frames++;
@@ -991,9 +1012,20 @@ static void ns_gate_body(struct CPUState* cpu, uint32_t address) {
             s_my_check[slot][2 + i] = (int32_t)psx_mod_read_word(NS_GOODS + 4u * (uint32_t)i);
         }
         s_my_score_bar[slot] = (int16_t)bar;
+        const char* ap2_env = getenv("BAG2JP_NETSYNC_AUTOPLAY");
+        const unsigned ap2_mask = (ap2_env && ap2_env[0]) ? (unsigned)atoi(ap2_env) : 0u;
+        const int ap2_local = (ap2_mask & (1u << (unsigned)local)) != 0;
         const uint32_t cmd = psx_mod_read_half(NS_PLAYER + (uint32_t)local * 0x32 + 0x02);
         (void)psx_mod_call_guest(cpu, NS_FN_CLOSE, address, (uint32_t)local, cmd, 0, 0);
         ns_read(local, &s_mine, bar);
+        if (ap2_local && s_mine.command > 0) {
+            const char* atk_env = getenv("BAG2JP_NETSYNC_ATTACKS");
+            const int force_atk = (atk_env && atk_env[0] == '1') && (bar == 72 || bar == 136);
+            s_mine.state = 0;
+            s_mine.timing = 0;
+            s_mine.cool = 1;
+            s_mine.result = force_atk ? (int16_t)0x6E : s_mine.command;
+        }
         s_mine.score[0] = s_my_scores[slot][0]; s_mine.score[1] = s_my_scores[slot][1];
         memcpy(s_mine.check, s_my_check[slot], sizeof s_mine.check);
         s_step_resend = s_vblanks;
@@ -1065,6 +1097,8 @@ static void ns_hook(struct CPUState* cpu, uint32_t address) {
 }
 
 PSX_MOD_CONSTRUCTOR(bag2jp_register_netsync) {
+    bag2jp_lobby_ui_init("127.0.0.1", 47400, "Player", 0);
+    (void)psx_mod_register_vblank_plugin("bag2jp.lobby", bag2jp_lobby_ui_tick);
     (void)psx_mod_register_activation_plugin("bag2jp.netsync", ns_activate);
     (void)psx_mod_register_vblank_plugin("bag2jp.netsync", ns_vblank);
     (void)psx_mod_register_instruction_plugin("bag2jp.netsync", NS_SITE, NS_WORD, ns_hook);

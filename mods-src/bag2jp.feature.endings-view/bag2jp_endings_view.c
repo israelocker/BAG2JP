@@ -37,15 +37,15 @@
 #define EV_GUEST_DRAW     0x0F000200u   /* 0x0F000100 belongs to MODS */
 #define EV_JAL_DRAW       (0x0C000000u | ((EV_GUEST_DRAW >> 2) & 0x03FFFFFFu))
 
-#define EV_UP_WRAP_A      0x80099F48u   /* addiu v0,zero,4 : wrap 0 -> 5 */
+#define EV_UP_WRAP_A      0x80099F48u   /* addiu v0,zero,4 : wrap 0 -> 6 */
 #define EV_UP_WRAP_B      0x8009A024u
 #define EV_WRAP_OLD       0x24020004u
-#define EV_WRAP_NEW       0x24020005u
+#define EV_WRAP_NEW       0x24020006u
 
-#define EV_DOWN_LIM_A     0x8009A0C0u   /* slti v0,v0,5 : 6 keeps index 5 */
+#define EV_DOWN_LIM_A     0x8009A0C0u   /* slti v0,v0,5 : 7 keeps index 6 */
 #define EV_DOWN_LIM_B     0x8009A1A0u
 #define EV_LIMIT_OLD      0x28420005u
-#define EV_LIMIT_NEW      0x28420006u
+#define EV_LIMIT_NEW      0x28420007u
 
 #define EV_CONFIRM_P1     0x8009A23Cu   /* andi v0,v0,0x820 */
 #define EV_CONFIRM_P2     0x8009A28Cu
@@ -54,6 +54,15 @@
 
 #define EV_CURSOR         0x80192028u
 #define EV_ITEM           4u
+#define EV_ONLINE_ITEM    5u
+#define EV_ONLINE_Y       169u
+
+extern void bag2jp_lobby_ui_open(int open);
+extern int  bag2jp_lobby_ui_is_open(void);
+extern uint32_t bag2jp_lobby_pop_sfx(void);
+extern int bag2jp_lobby_pop_start_2p(void);
+#define EV_SPU_SFX_FN     0x8002E478u
+#define EV_IDLE_TIMER     0x8005D3DCu
 #define EV_MENU_GUARD     0x80099C50u
 #define EV_MENU_GUARD_W   0x3C028019u
 #define EV_DISPATCH       0x80099D30u   /* sltiu v0,v1,5 */
@@ -83,7 +92,7 @@
 #define EV_MODE_DANCE     4u
 
 /* ------------------------------------------------------------------ drawing */
-#define EV_LABEL_Y        167
+#define EV_LABEL_Y        149
 #define EV_DRAW_HEAP      0x80051A88u
 #define EV_DRAW_OT        0x8006D990u
 
@@ -131,12 +140,12 @@ static void ev_patch_menu(void) {
     if (psx_mod_read_word(EV_DRAW_SITE) == EV_DRAW_WORD) {
         psx_mod_write_code_word(EV_DRAW_SITE, EV_JAL_DRAW); changed = 1;
     }
-    /* Make room above OPTIONS without covering the copyright strip. */
+    /* Make room for 7 items above copyright strip: 1P, 2P, PRACTICE, DANCE, ENDING, ONLINE, OPTIONS. */
     static const uint32_t positions[][3] = {
-        {0x8009A894u, 0x24020068u, 0x24020054u},
-        {0x8009A9C4u, 0x2402007Eu, 0x2402006Au},
-        {0x8009AAC4u, 0x240C0094u, 0x240C0080u},
-        {0x8009ABF0u, 0x240200A7u, 0x24020093u},
+        {0x8009A894u, 0x24020068u, 0x2402004Cu},
+        {0x8009A9C4u, 0x2402007Eu, 0x2402005Eu},
+        {0x8009AAC4u, 0x240C0094u, 0x240C0070u},
+        {0x8009ABF0u, 0x240200A7u, 0x24020082u},
     };
     for (unsigned i = 0; i < sizeof positions / sizeof positions[0]; ++i)
         if (psx_mod_read_word(positions[i][0]) == positions[i][1])
@@ -166,7 +175,7 @@ static void ev_label(struct CPUState* cpu, uint32_t sp, uint32_t ra) {
     const unsigned cursor = psx_mod_read_word(EV_CURSOR);
     const unsigned u = packet[5] & 255u, v = ((packet[5] >> 8) - 96u) & 255u;
     uint16_t clut = (uint16_t)(packet[5] >> 16);
-    if (cursor != 5u) clut -= 64u; /* OPTIONS' stock unselected CLUT row */
+    if (cursor != 6u) clut -= 64u; /* OPTIONS' stock unselected CLUT row */
     if (cursor != EV_ITEM) clut += 64u;
     if (s_hd_menu && gpu_hd_textures_replacements_enabled()) {
         /* The HD atlas keeps the five native label cells. ENDING VIEW lives in
@@ -180,6 +189,16 @@ static void ev_label(struct CPUState* cpu, uint32_t sp, uint32_t ra) {
             saved[i] = psx_mod_read_word(sp + 16u + i * 4u);
             psx_mod_write_word(sp + 16u + i * 4u, args[i]);
         }
+        (void)psx_mod_call_guest(cpu, 0x8009B258u, ra, packet[3] & 255u,
+            (packet[3] >> 8) & 255u, (packet[3] >> 16) & 255u, 181u);
+        /* Draw ONLINE MATCH (index 5) before OPTIONS from unused PRACTICE-row UVs (122,48,70,24). */
+        uint16_t on_clut = (uint16_t)(packet[5] >> 16);
+        if (cursor != 6u) on_clut -= 64u;
+        if (cursor != EV_ONLINE_ITEM) on_clut += 64u;
+        const uint32_t on_args[12] = {EV_ONLINE_Y, (u + 122u) & 255u, (v + 48u) & 255u,
+            on_clut, 70u, 24u, 148u, 22u, psx_mod_read_half(0x8009CA36u), 0u, 0u,
+            psx_mod_read_word(EV_DRAW_OT)};
+        for (unsigned i = 0; i < 12; ++i) psx_mod_write_word(sp + 16u + i * 4u, on_args[i]);
         (void)psx_mod_call_guest(cpu, 0x8009B258u, ra, packet[3] & 255u,
             (packet[3] >> 8) & 255u, (packet[3] >> 16) & 255u, 181u);
         for (unsigned i = 0; i < 12; ++i) psx_mod_write_word(sp + 16u + i * 4u, saved[i]);
@@ -222,18 +241,42 @@ static void ev_draw_fn(struct CPUState* cpu, uint32_t address) {
  * dispatch instead of swallowing the confirm button. */
 static void ev_confirm(struct CPUState* cpu, uint32_t address) {
     if (!ev_is_menu()) return;
+    /* Keep main menu attract-mode idle timer at 0 while Online Lobby/Room is open */
+    if (bag2jp_lobby_ui_is_open()) {
+        psx_mod_write_word(EV_IDLE_TIMER, 0u);
+    }
+    /* Drain any queued native PS1 SPU SFX from the Online Lobby/Room UI */
+    uint32_t qsfx = bag2jp_lobby_pop_sfx();
+    if (qsfx != 0u) {
+        (void)psx_mod_call_guest(cpu, EV_SPU_SFX_FN, cpu->gpr[31], qsfx, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu);
+    }
+    /* Auto-redirect straight into 2 player game (index 1) when Lobby match_start fires */
+    if (bag2jp_lobby_pop_start_2p()) {
+        psx_mod_write_word(EV_CURSOR, 1u);
+        cpu->gpr[2] |= EV_CONFIRM_BITS;
+        ev_log("online match_start: auto-redirecting to 2 player game (cursor=1)");
+        return;
+    }
     if (!(cpu->gpr[2] & EV_CONFIRM_BITS)) return;
-    if (psx_mod_read_word(EV_CURSOR) != EV_ITEM) return;
+    const uint32_t cur = psx_mod_read_word(EV_CURSOR);
+    if (cur == EV_ONLINE_ITEM) {
+        cpu->gpr[2] &= ~EV_CONFIRM_BITS;
+        (void)psx_mod_call_guest(cpu, EV_SPU_SFX_FN, cpu->gpr[31], 0x201u, 0xFFFFFFFFu, 0xFFFFFFFFu, 0xFFFFFFFFu);
+        bag2jp_lobby_ui_open(1);
+        ev_log("online match confirmed: native SPU SFX 0x201 + opening lobby UI");
+        return;
+    }
+    if (cur != EV_ITEM) return;
     (void)address;
     s_pending = 1; s_wait = 0;
     ev_log("ending view confirmed: stock sound/fade -> character select");
 }
 
-/* Visual index 5 is stock OPTIONS (dispatch index 4). Never grow its jump table. */
+/* Visual index 6 is stock OPTIONS (dispatch index 4). Never grow its jump table. */
 static void ev_dispatch(struct CPUState* cpu, uint32_t address) {
     (void)address;
     if (!ev_is_menu()) return;
-    if (cpu->gpr[3] == 5) cpu->gpr[3] = 4;
+    if (cpu->gpr[3] == 6) cpu->gpr[3] = 4;
     else if (s_pending && cpu->gpr[3] == EV_ITEM) cpu->gpr[3] = 3;
 }
 
@@ -241,8 +284,8 @@ static void ev_dispatch(struct CPUState* cpu, uint32_t address) {
 static void ev_highlight(struct CPUState* cpu, uint32_t address) {
     (void)address;
     if (!ev_is_menu()) return;
-    if (cpu->gpr[5] == 5) cpu->gpr[5] = 4;
-    else if (cpu->gpr[5] == 4) cpu->gpr[5] = 5;
+    if (cpu->gpr[5] == 6) cpu->gpr[5] = 4;
+    else if (cpu->gpr[5] == 4 || cpu->gpr[5] == 5) cpu->gpr[5] = 5;
 }
 
 /* ------------------------------------------------------------ selector exit */

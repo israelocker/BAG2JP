@@ -4,6 +4,7 @@
  * The package mods/preloaded/packages/bag2jp.enhancement.widescreen enables it. */
 #include "mod_plugins.h"
 #include "cpu_state.h"
+#include <stdlib.h>
 
 static void bag2jp_widescreen_activate(void) {
     /* Native-wide 16:9: the GTE projects more world at the sides; 2D frames
@@ -74,6 +75,8 @@ static int ap_bool_option(const char* id, int fallback) {
 static void ap_read_option(void) {
     ap_active = ap_bool_option("active", ap_active);
     ap_2p_mask = (ap_bool_option("p1_2p", 0) ? 1u : 0u) | (ap_bool_option("p2_2p", 0) ? 2u : 0u);
+    const char* env_2p = getenv("BAG2JP_AUTOPLAY_2P");
+    if (env_2p && env_2p[0]) ap_2p_mask = (unsigned)atoi(env_2p);
 }
 static void bag2jp_autoplay_activate(void) { ap_read_option(); }
 static int bag2jp_autoplay_option_changed(const char* option_id, const char* value) {
@@ -169,7 +172,15 @@ static void bag2jp_autoplay_no_fumble(struct CPUState* cpu, uint32_t address) {
 #define AP2_SETUP_WORD 0x145100B3u
 #define AP2_HUMAN_SITE 0x8009ADC8u
 #define AP2_HUMAN_WORD 0x128200AEu
-static int ap2_on(void) { return ap_2p_mask && (int16_t)psx_mod_read_half(AP_MODE_ADDR) == 2; }
+static int ap2_on(void) {
+    static int s_env_checked = 0;
+    if (!s_env_checked) {
+        s_env_checked = 1;
+        const char* env_2p = getenv("BAG2JP_AUTOPLAY_2P");
+        if (env_2p && env_2p[0]) ap_2p_mask = (unsigned)atoi(env_2p);
+    }
+    return ap_2p_mask && (int16_t)psx_mod_read_half(AP_MODE_ADDR) == 2;
+}
 static void ap2_pad_hook(struct CPUState* cpu, uint32_t address) {
     (void)address;
     if (!ap2_on()) return;
@@ -191,6 +202,8 @@ static void ap2_human_hook(struct CPUState* cpu, uint32_t address) {
 }
 #include "bag2jp_ap2_no_attack.h"
 static void ap2_attack_hook(struct CPUState* cpu, uint32_t address) {
+    const char* allow_atk = getenv("BAG2JP_AUTOPLAY_ATTACKS");
+    if (allow_atk && allow_atk[0] == '1') return;
     if (ap2_on() && ap2_block_attack(cpu, address, ap_2p_mask))
         psx_mod_counter_add("bag2jp.autoplay.attack_blocked", 1);
 }
