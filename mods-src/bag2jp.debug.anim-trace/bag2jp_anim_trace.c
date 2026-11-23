@@ -32,6 +32,7 @@ static FILE* s_log;
 static int s_on = -1;
 static int s_skill = -1;
 static long s_dump_at = -1;
+static uint32_t s_trace_frame;  /* at_vblank trace frame, shared with at_pre_draw */
 static uint32_t s_attack_frame;
 
 static void at_system_error(struct CPUState* cpu, uint32_t address) {
@@ -254,6 +255,7 @@ static void at_vblank(void) {
         }
     }
     ++frame;
+    s_trace_frame = frame;
     {   /* bag2jp_frame.txt: "frame phase a/b/c", every 6 frames, for scripted frame-exact screenshots */
         static FILE* ff;
         if (!ff) { const char* b = SDL_GetBasePath(); char p[1024]; snprintf(p, sizeof p, "%sbag2jp_frame.txt", b ? b : ""); ff = fopen(p, "w"); }
@@ -349,7 +351,55 @@ static void at_vblank(void) {
     for (int i = 0; i < 16; ++i) last[i] = cur[i];
 }
 
+/* FUN_8002c404 (SLPM_862.19) draws the actor in $a0, then copies its local matrices
+ * (+0x2c) over the previous ones (+0x3ec). At entry, on the BAG2JP_RAM_DUMP frame, append
+ * same-entry draw weight + both matrix buffers. Versioned output never mixes with
+ * older pointer-only records. Observe-only; native live validation is pending. */
+#define BAG2_PRE_DRAW_ADDR 0x8002C404u
+#define BAG2_PRE_DRAW_WORD 0x27BDFF68u
+#define BAG2_PRE_DRAW_MAGIC 0x32564850u /* PHV2, little-endian host record */
+#define BAG2_PRE_DRAW_HEADER_WORDS 4u
+#define BAG2_PRE_DRAW_MATRIX_BYTES (30u * 32u)
+#define BAG2_PRE_DRAW_LOCAL_OFFSET 0x2Cu
+#define BAG2_PRE_DRAW_HISTORY_OFFSET 0x3ECu
+#define BAG2_PRE_DRAW_WEIGHT_OFFSET 0x1546u
+static uint32_t s_pre_draw_failed_frame;
+static void at_pre_draw(struct CPUState* cpu, uint32_t address) {
+    (void)address;
+    if (s_dump_at <= 0 || s_trace_frame != (uint32_t)s_dump_at) return;
+    if (s_pre_draw_failed_frame == s_trace_frame) return;
+    const char* b = SDL_GetBasePath(); char p[1024];
+    snprintf(p, sizeof p, "%sbag2jp_prehistory_%u.v2.bin", b ? b : "", s_trace_frame);
+    FILE* f = fopen(p, "ab");
+    if (!f) {
+        s_pre_draw_failed_frame = s_trace_frame;
+        if (s_log) fprintf(s_log, "prehistory capture failed f%06u open\n", s_trace_frame);
+        return;
+    }
+    uint32_t actor = cpu->gpr[4];
+    uint32_t record[BAG2_PRE_DRAW_HEADER_WORDS + 2u * BAG2_PRE_DRAW_MATRIX_BYTES / sizeof(uint32_t)];
+    record[0] = BAG2_PRE_DRAW_MAGIC;
+    record[1] = s_trace_frame;
+    record[2] = actor;
+    record[3] = psx_mod_read_half(actor + BAG2_PRE_DRAW_WEIGHT_OFFSET);
+    for (uint32_t o = 0; o < 2u * BAG2_PRE_DRAW_MATRIX_BYTES; o += sizeof(uint32_t)) {
+        uint32_t base = o < BAG2_PRE_DRAW_MATRIX_BYTES ? BAG2_PRE_DRAW_LOCAL_OFFSET :
+                        BAG2_PRE_DRAW_HISTORY_OFFSET - BAG2_PRE_DRAW_MATRIX_BYTES;
+        record[BAG2_PRE_DRAW_HEADER_WORDS + o / sizeof(uint32_t)] = psx_mod_read_word(actor + base + o);
+    }
+    int failed = fwrite(record, sizeof(record), 1, f) != 1;
+    if (fclose(f) != 0) failed = 1;
+    if (failed) {
+        /* Never append another actor behind a potentially partial record. */
+        s_pre_draw_failed_frame = s_trace_frame;
+        if (s_log) fprintf(s_log, "prehistory capture failed f%06u actor%08x write/close\n",
+                           s_trace_frame, actor);
+    }
+}
+
 PSX_MOD_CONSTRUCTOR(bag2jp_register_anim_trace) {
+    (void)psx_mod_register_instruction_plugin("bag2jp.anim_trace", BAG2_PRE_DRAW_ADDR,
+                                              BAG2_PRE_DRAW_WORD, at_pre_draw);
     (void)psx_mod_register_instruction_plugin("bag2jp.anim_trace", BAG2_SYSTEM_ERROR_PC,
                                             BAG2_SYSTEM_ERROR_OBSERVED, at_system_error);
     (void)psx_mod_register_instruction_plugin("bag2jp.anim_trace", BAG2_ATTACK_INPUT_SITE,
