@@ -8,6 +8,41 @@ from tools.move_viewer import pose
 
 
 class MotionRotationTests(unittest.TestCase):
+    def test_absent_track_preserves_explicit_previous_local_rotation(self):
+        node = SimpleNamespace(rest_angles=(0, 0, 0), translation=(0, 0, 0),
+                               scale=(4096, 4096, 4096), child=-1, sibling=-1)
+        model = SimpleNamespace(nodes=[node], roots=[0], walk=lambda: [0])
+        motion = pose.MotionPose({}, np.zeros(3))
+        previous = pose.rotation((0, 1024, 0))
+        actual = pose.pose_model(model, motion, [15], previous_local_rotations={0: previous})[0]
+        np.testing.assert_array_equal(actual.rotation, previous)
+        self.assertFalse(np.shares_memory(actual.rotation, previous))
+        actual.rotation[0, 0] = 7
+        self.assertNotEqual(previous[0, 0], 7)
+        previous[0, 0] = 8
+        self.assertEqual(actual.rotation[0, 0], 7)
+        with self.assertRaisesRegex(ValueError, 'missing previous local rotation'):
+            pose.pose_model(model, motion, [15], previous_local_rotations={})
+        for bad in (np.eye(4), np.full((3, 3), np.nan)):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                pose.pose_model(model, motion, [15], previous_local_rotations={0: bad})
+        motion.slot_rotations[15] = np.eye(3)
+        np.testing.assert_array_equal(
+            pose.pose_model(model, motion, [15], previous_local_rotations={})[0].rotation,
+            np.eye(3))
+
+    def test_previous_child_rotation_is_local_and_keyed_by_node_not_slot(self):
+        child = SimpleNamespace(rest_angles=(0, 0, 0), translation=(0, 0, 0),
+                                scale=(4096,) * 3, child=-1, sibling=-1)
+        parent = SimpleNamespace(rest_angles=(0, 0, 0), translation=(0, 0, 0),
+                                 scale=(4096,) * 3, child=0, sibling=-1)
+        model = SimpleNamespace(nodes=[child, parent], roots=[1], walk=lambda: [1, 0])
+        parent_rotation, previous_child = pose.rotation((1024, 0, 0)), pose.rotation((0, 1024, 0))
+        motion = pose.MotionPose({}, np.zeros(3), {4: parent_rotation})
+        actual = pose.pose_model(model, motion, [4, 15], previous_local_rotations={0: previous_child})
+        np.testing.assert_allclose(actual[0].rotation, parent_rotation @ previous_child)
+        np.testing.assert_allclose(actual[1].rotation, parent_rotation)
+
     @staticmethod
     def decoded(first: tuple[int, int, int], second: tuple[int, int, int]) -> dict:
         """Make a two-key rotation track with an interior frame."""

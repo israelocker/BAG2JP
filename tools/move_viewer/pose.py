@@ -171,9 +171,20 @@ class NodePose:
 
 def pose_model(model: Model, motion: MotionPose | None = None,
                slot_map: list[int] | None = None,
-               player_scale: int = DEFAULT_PLAYER_SCALE,
-               roots: list[int] | None = None) -> dict[int, NodePose]:
-    """World matrices for every node reachable from ``roots`` (default: first root)."""
+                player_scale: int = DEFAULT_PLAYER_SCALE,
+                roots: list[int] | None = None, *,
+                previous_local_rotations: dict[int, np.ndarray] | None = None
+                ) -> dict[int, NodePose]:
+    """Compose reachable nodes (default: first root).
+
+    Explicit previous local rotations preserve the native destination on missing
+    tracks (80012b9c invalidates source; 80012350 skips it). Keys are model node
+    indices, values unscaled local 3x3 rotations, not world/draw or +3EC history.
+    The caller supplies that semantic identity; only shape/finiteness are checked
+    (native fixed-point rotations are not perfectly orthonormal).
+    When supplied, absent state fails closed; omission retains standalone rest
+    approximation. This does not emulate draw/history blending or capture state.
+    """
     poses: dict[int, NodePose] = {}
     order = model.walk()
     matrix_index = {n: i for i, n in enumerate(order)}
@@ -186,7 +197,15 @@ def pose_model(model: Model, motion: MotionPose | None = None,
             slot = slot_map[i] if i < len(slot_map) else UNMAPPED_SLOT
         angles = motion.slot_angles.get(slot) if slot not in (None, UNMAPPED_SLOT) else None
         matrix = motion.slot_rotations.get(slot) if slot not in (None, UNMAPPED_SLOT) else None
-        r = matrix if matrix is not None else rotation(angles if angles is not None else node.rest_angles)
+        if (motion is not None and angles is None and matrix is None and
+                previous_local_rotations is not None):
+            if n not in previous_local_rotations:
+                raise ValueError(f'missing previous local rotation for node {n}')
+            r = np.array(previous_local_rotations[n], dtype=float, copy=True)
+            if r.shape != (3, 3) or not np.isfinite(r).all():
+                raise ValueError(f'invalid previous local rotation for node {n}')
+        else:
+            r = matrix if matrix is not None else rotation(angles if angles is not None else node.rest_angles)
         if n == model.roots[0] and motion is not None:
             t = motion.root_translation * player_scale / 128     # FUN_80013144: * scale >> 7
         else:

@@ -4,7 +4,7 @@ Evidence (Ghidra, SLPM_862.19):
   FUN_800319fc (player init) fills player[0x7CC..0x7E9] = 0xFF, then calls the character DBI
   init through table 0x800535DC[char_id + side*19] (char 6 / 12 hard-wired to 0x801CF1E8 etc.).
   FUN_8002bc38 passes player+0x7CC to FUN_80012b9c, which, for node i<30, uses track map[i]
-  (0xFF -> node keeps rest pose, flag 0x80000000).
+   (0xFF -> invalid source flag 0x80000000; destination is preserved, not reset).
 The map is hard-coded in each DBI init (sb immediates, branch on costume byte player[6]), so
 the only exact derivation is to execute that init. This file emulates it with capstone.
 """
