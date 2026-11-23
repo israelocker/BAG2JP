@@ -4,6 +4,19 @@ updated: 2026-11-23
 ---
 # Move viewer / editor
 
+## 2026-11-23 — D3 real Chichi duo66 host stress
+
+Direct host render (not live UI) of real `chichi_sally` A/P1: primary slot 66 plus
+`companion_slot` 113, both decoded `frames=264, step=3`, 88 keys 0..261. Synthetic
+identity placements x −100/+100; native placement/history/lighting NOT verified.
+`pose_scene`→`render_scene`→`prepare_frames` at 300×430: 34,056,000 bytes within the
+132,798,728-byte RGB budget, owned/contiguous/non-aliased buffers, no blank frames,
+11.52 s. Evidence: `_work/move-viewer/audit/duo66-host-stress/` (`result.json`, five
+PNG samples, samples-only MP4) and `audit/duo66-host-stress.log`. Scratch-only change
+in `_work/**/record_live.py` (`--synthetic-duo-stress`); Goldfish omitted because no
+executable `tools/**`/`mods-src/**` changed. Not native or UI acceptance; verified duo
+placement remains E.
+
 ## 2026-11-23 — Static snapshot state transport (host candidate)
 
 `pose_snapshot_scene` and `AnimationView.show_native_snapshot` now accept the same
