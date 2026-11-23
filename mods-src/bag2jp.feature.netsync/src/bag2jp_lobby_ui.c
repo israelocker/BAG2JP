@@ -222,6 +222,7 @@ static void profile_save(void) {
 static int key_pressed(int vk) {
     if (vk > 0 && vk < 256 && s_frame_vk[vk]) {
         s_frame_vk[vk] = 0;
+        s_prev_keys[vk & 0xFF] = 1;
         return 1;
     }
 #ifdef _WIN32
