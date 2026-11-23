@@ -105,6 +105,11 @@ Section "Juego" SecGame
   SetCompress auto
   File /r "${PAYLOAD}\*.*"
 
+  ; Auto-ajustar [video] a esta PC solo en la primera instalacion (no pisa cambios manuales)
+  IfFileExists "$INSTDIR\autotune_state.json" +3 0
+    DetailPrint "Optimizando ajustes de video para esta PC..."
+    nsExec::ExecToLog 'powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "$INSTDIR\psx_autotune.ps1" -SoloConfigurar'
+
   DetailPrint "Creando accesos directos..."
   CreateDirectory "$SMPROGRAMS\${APPNAME}"
   CreateShortcut "$SMPROGRAMS\${APPNAME}\${APPNAME}.lnk" "$INSTDIR\BAG2JP.exe" "--no-launcher" "$INSTDIR\BAG2JP.exe" 0
