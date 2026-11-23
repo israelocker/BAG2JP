@@ -84,4 +84,22 @@ Cada lanzamiento de subagente indica su modelo y el informe dice qué modelo hiz
 Prueba GPT principal (owner 2026-11-21): 3–4 tareas midiendo tiempo, retrabajo y errores antes de fijarlo. Si GPT falla (sin tokens, error de conexión), se usa la alternativa automáticamente y el informe lo declara. deepseek-flash dio ECONNREFUSED repetidos el 2026-11-21: queda fuera hasta nueva prueba.
 | Inspección de imágenes/fotogramas | claude-agent/sonnet | nvidia/nemotron-3.5-super-vl |
 
+### Delegación por tipo de tarea (owner 2026-11-23)
+Concreta el reparto fijo anterior por tipo de tarea; si discrepan, prevalece el reparto fijo. IDs comprobados en el catálogo el 2026-11-23: `openai/gpt-6.1-sol` no existe; se usa `openai/gpt-6.2-sol`. Única prueba real hasta ahora: `explore` + `openai/gpt-6.1-terra#low` localizó `DECODED_KINDS` (verificado con grep).
+
+| Tipo de tarea | Principal | Alternativa | Acepta |
+|---|---|---|---|
+| Búsqueda / lectura de código | `explore` · claude-agent/haiku | `explore` · openai/gpt-6.1-terra#low | primario, con grep/lectura puntual |
+| Edición mecánica acotada | `general` · claude-agent/haiku | `local_vibes` (qwen3-coder:30b) | primario: diff + tests |
+| Tests y scaffolding | `general` · claude-agent/sonnet#medium | `general` · openai/gpt-6.1-terra#medium | test rojo sin arreglo, verde con él |
+| Resumen de decompilados/logs grandes | `local_llm` qwen3-coder:30b | `local_llm` qwen3.8:27b | primario contra Ghidra |
+| Nombres de funciones Ghidra en bloque | `local_llm.ghidra_suggest_names` | `explore` · claude-agent/haiku | primario, nombre a nombre |
+| Implementación con especificación conocida | `general` · claude-agent/sonnet#medium | `general` · openai/gpt-6.1-terra#medium | diff + tests + grabación del visor |
+| Ingeniería inversa difícil / diseño | `general` · openai/gpt-6.2-sol#high | primario (Opus) | primario con prueba en Ghidra |
+| Revisión Goldfish | otra familia que el autor: openai/gpt-6.2-sol | claude-agent/sonnet (u opus si autor Sonnet) | primario decide cada hallazgo |
+| Inspección de imágenes/fotogramas (cribado) | `general` · claude-agent/sonnet | nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b | primario revisa los fotogramas señalados |
+| Aceptación, validación visual final, pruebas en juego | primario, nunca delegado | — | owner en flujo de juego |
+
+Reglas: prompt autocontenido con archivos y criterio de aceptación; el prompt nombra los scripts existentes a reutilizar (p. ej. `_work/move-viewer/audit/{audit_all,visual_review,grab_live,record_live}.py`, `tools/workflow/bag2_workflow.py`, `tools/test/bag2_record.py`, `bag2_run.ps1`/`bag2_report.py`, `tools/bag1import/funcmatch.py`) y prohíbe crear uno paralelo salvo que el existente no cubra el caso, declarándolo; el informe declara qué modelo hizo qué; si un modelo falla (tokens, conexión) se usa la alternativa y se declara; un modelo GPU a la vez y ninguno durante pruebas de juego; subagentes sin commit, despliegue ni juego; registro en `notes/tool-evidence/`. Coste OpenAI no consta en el catálogo.
+
 Excluidos: `google/antigravity-*` (Gemini y Claude vía Antigravity) y `deepseek/deepseek-v4-pro` (sin tokens de pago), por decisión del owner; gratuitos `opencode/*-free` y `nvidia/*` solo para tareas no sensibles tras prueba; versiones antiguas de Claude y Fable sin evaluar. Ollama: un modelo GPU a la vez y nunca durante pruebas de juego.

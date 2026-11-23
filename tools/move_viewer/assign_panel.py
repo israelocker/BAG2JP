@@ -23,7 +23,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QListWidget, QListWidgetItem,
                                QPushButton, QVBoxLayout, QWidget)
 
-from .pose import decode_motion
+from .pose import decode_motion, is_empty_motion
 from .swap_mod import (GROWTH_BUDGET, BankSource, CrossBank, copy_growth,
                        require_compatible, split_bank)
 
@@ -34,6 +34,7 @@ def motion_rows(bank: bytes) -> list[str]:
     """One label per motion: hex index, byte size and short content hash."""
     motions, _ = split_bank(bank)
     return [f'0x{i:02X}  {len(m) - 4:6d} B  {hashlib.sha256(m[4:]).hexdigest()[:8]}'
+            + ('  (vacío)' if is_empty_motion(m[4:]) else '')
             for i, m in enumerate(motions)]
 
 

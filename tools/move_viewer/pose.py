@@ -107,9 +107,58 @@ def sample_motion(decoded: dict, frame: float) -> MotionPose:
     return MotionPose(angles, tr[:, 0] * (1 - t) + tr[:, 1] * t, matrices)
 
 
+def native_key_context(first_frame: int, second_frame: int, blend: int,
+                       step: int, frames: int) -> tuple[int, int, int]:
+    """Resolve an interior same-motion blend; endpoint/event paths stay blocked."""
+    if (step <= 1 or frames <= 1 or not 0 <= blend <= FIXED_ONE or
+            not 0 <= first_frame < frames - 1 or
+            not 0 <= second_frame < frames - 1):
+        raise ValueError('unsupported native key context')
+    fixed_frame = first_frame * FIXED_ONE + (second_frame - first_frame) * blend
+    first = fixed_frame // (step * FIXED_ONE)
+    if (first + 1) * step >= frames:
+        raise ValueError('native endpoint sampling requires separate context')
+    weight = (fixed_frame - first * step * FIXED_ONE) // step
+    return first, first + 1, weight
+
+
+def native_root_translation(translation: list[list[int]], first: int,
+                            second: int, weight: int) -> np.ndarray:
+    """Sample signed root keys with the native 12-bit blend arithmetic."""
+    if not 0 <= weight <= FIXED_ONE or first < 0 or second < 0:
+        raise ValueError('invalid native root sampling context')
+    if len(translation) != 3 or any(max(first, second) >= len(axis) for axis in translation):
+        raise ValueError('native root key outside translation track')
+    return np.array([(((axis[first] >> 1) * (FIXED_ONE - weight)) >> 12) +
+                     (((axis[second] >> 1) * weight) >> 12)
+                     for axis in translation], dtype=np.int64)
+
+
+def native_world_root(root: list[int], scale: int, parent: list[int]) -> np.ndarray:
+    """Compose a root under an identity native parent rotation."""
+    if len(root) != 3 or len(parent) != 3 or not 0 < scale <= FIXED_ONE:
+        raise ValueError('invalid native root placement')
+    return np.array([((int(value) * scale) >> 7) + int(offset)
+                     for value, offset in zip(root, parent)], dtype=np.int64)
+
+
+EMPTY_MOTION_BYTES = 8     # stock placeholders are 4 zero bytes; a real header needs > 8
+
+
+class EmptyMotionError(ValueError):
+    """The slot holds a stock placeholder, not an animation."""
+
+
+def is_empty_motion(body: bytes) -> bool:
+    return len(body) <= EMPTY_MOTION_BYTES and not any(body)
+
+
 def decode_motion(bank: bytes, index: int) -> dict:
     """Decode motion ``index`` of a 001.bin bank (motion_codec / animlib layout)."""
-    return motion_codec.decode(animlib.anim_list(bank)[index])
+    body = animlib.anim_list(bank)[index]
+    if is_empty_motion(body):
+        raise EmptyMotionError(f'motion {index} is an empty stock placeholder')
+    return motion_codec.decode(body)
 
 
 @dataclass
