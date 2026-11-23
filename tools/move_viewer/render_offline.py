@@ -3,7 +3,8 @@
 Usage (from the project root):
   py -3.13 -m tools.move_viewer.render_offline --character heat --motion 71 --out _work/move-viewer/s0
 Orthographic camera; model +Y is up (screen rows use -Y). Textured texels are modulated by
-the vertex colour / 128 like the PS1 GPU; semi-transparency and dithering are not emulated.
+the vertex colour / 128 like the PS1 GPU. Semi-transparency uses RGB8 abr equations
+and mean-depth polygon ordering, not native ordering-table/RGB555/dither parity.
 """
 from __future__ import annotations
 
@@ -55,7 +56,7 @@ def triangles(model: Model, world: WorldMesh):
                 base = None if p.base_colors is None else np.array(
                     [world.colors[p.base_colors[i]] if p.base_colors[i] < len(world.colors)
                      else (128, 128, 128) for i in tri], float)
-                yield xyz, rgb, uv, p.texture_slot, p.clut_row, base
+                yield xyz, rgb, uv, p.texture_slot, p.clut_row, base, p.semi_transparency
 
 
 def rotate_view(xyz: np.ndarray, yaw_deg: float) -> np.ndarray:
@@ -79,6 +80,19 @@ def render_scene(actors: list[tuple[Model, WorldMesh, list[Tim]]], size=(360, 52
             for tri in triangles(model, world)]
     if not tris:
         raise ValueError('scene has no drawable triangles')
+    for actor, tri in tris:
+        mode = tri[6] if len(tri) > 6 else 0
+        if mode not in (0, 1, 2, 3, 4):
+            raise ValueError(f'unsupported semi-transparency mode: {mode}')
+        if tri[2] is not None and (tri[3] is None or not 0 <= tri[3] < len(actors[actor][2])):
+            raise ValueError(f'invalid texture slot: {tri[3]}')
+    # Preserve opaque depth ties in original draw order. Only translucent fragments
+    # are sorted; native ordering-table insertion is still not decoded.
+    passes = [(i, False) for i in range(len(tris))]
+    translucent = [i for i, (_, tri) in enumerate(tris) if len(tri) > 6 and tri[6]]
+    translucent.sort(key=lambda i: float(rotate_view(tris[i][1][0], yaw_deg)[:, 2].mean()),
+                     reverse=True)
+    passes.extend((i, True) for i in translucent)
     allp = rotate_view(np.concatenate([tri[0] for _, tri in tris]), yaw_deg)
     if bounds is None:
         lo, hi = allp.min(0), allp.max(0)
@@ -88,8 +102,12 @@ def render_scene(actors: list[tuple[Model, WorldMesh, list[Tim]]], size=(360, 52
     k = w / extent
     img = np.zeros((h, w, 3)) + BACKGROUND
     zbuf = np.full((h, w), np.inf)
+    owners = np.full((h, w), -1, dtype=int)
     palettes = {}
-    for actor, (xyz, rgb, uv, slot, row, base) in tris:
+    for triangle_id, blend_pass in passes:
+        actor, triangle = tris[triangle_id]
+        xyz, rgb, uv, slot, row, base = triangle[:6]
+        mode = triangle[6] if len(triangle) > 6 else 0
         tims = actors[actor][2]
         p = rotate_view(xyz, yaw_deg)
         sx = (p[:, 0] - center[0]) * k + w / 2
@@ -115,7 +133,11 @@ def render_scene(actors: list[tuple[Model, WorldMesh, list[Tim]]], size=(360, 52
         ys, xs = np.nonzero(inside)
         ys, xs = ys + y0, xs + x0
         closer = z < zbuf[ys, xs]
+        if blend_pass and base is not None:
+            closer |= (z == zbuf[ys, xs]) & (owners[ys, xs] == triangle_id)
         col = bc @ rgb
+        blend = np.full(len(col), bool(mode))
+        under = img[ys, xs]
         if uv is not None and slot is not None and slot < len(tims):
             tim = tims[slot]
             key = (actor, slot, row)
@@ -125,16 +147,46 @@ def render_scene(actors: list[tuple[Model, WorldMesh, list[Tim]]], size=(360, 52
             tu = np.clip(tuv[:, 0].astype(int), 0, tim.pixels.shape[1] - 1)
             tv = np.clip(tuv[:, 1].astype(int), 0, tim.pixels.shape[0] - 1)
             tex = palettes[key][tim.pixels[tv, tu]]
+            palette_row = tim.clut[min(row, len(tim.clut) - 1)]
+            blend &= (palette_row[tim.pixels[tv, tu]] & 0x8000) != 0
             opaque = tex[:, 3] > 0
             col = np.clip(tex[:, :3] * col / GPU_NEUTRAL, 0, 255)
             if base is None:
                 closer &= opaque
             else:         # 0x2F: transparent texels show the Gouraud layer drawn first
-                col = np.where(opaque[:, None], col, bc @ base)
+                under = bc @ base
+                col = np.where(opaque[:, None], col, under)
+                blend &= opaque
+        if blend_pass:
+            closer &= blend
+        elif base is None:
+            closer &= ~blend
+        elif mode:
+            col = np.where(blend[:, None], under, col)
         ys, xs, z, col = ys[closer], xs[closer], z[closer], col[closer]
+        blend = blend[closer]
+        if blend_pass and blend.any():
+            col[blend] = blend_colors(under[closer][blend], col[blend], mode)
         zbuf[ys, xs] = z
+        owners[ys, xs] = triangle_id
         img[ys, xs] = col
     return Image.fromarray(np.clip(img, 0, 255).astype(np.uint8))
+
+
+def blend_colors(background: np.ndarray, foreground: np.ndarray, mode: int) -> np.ndarray:
+    """Apply decoded abr+1 in RGB8; this is not a bit-exact RGB555 GPU pipeline."""
+    foreground = np.floor(np.clip(foreground, 0, 255) + 1e-7)
+    if mode == 1:
+        result = np.floor(background / 2) + np.floor(foreground / 2)
+    elif mode == 2:
+        result = background + foreground
+    elif mode == 3:
+        result = background - foreground
+    elif mode == 4:
+        result = background + np.floor(foreground / 4)
+    else:
+        raise ValueError(f'unsupported semi-transparency mode: {mode}')
+    return np.clip(result, 0, 255)
 
 
 def export_obj(model: Model, world: WorldMesh, path: Path) -> int:
