@@ -118,7 +118,7 @@ function Aplicar-Config($ruta, $seccion, $cambios) {
 
 $cambios = [ordered]@{
     window_width            = "$ancho"
-    fullscreen              = "1"
+    fullscreen              = "0"
     render_thread           = $renderThread
     present_thread          = "false"
     frame_generation        = "false"
