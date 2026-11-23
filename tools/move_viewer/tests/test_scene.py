@@ -9,6 +9,74 @@ from tools.move_viewer import scene
 
 
 class SceneLoadingTest(unittest.TestCase):
+    def test_explicit_actor_state_reaches_real_pose_and_lighting_paths(self):
+        from types import SimpleNamespace
+        from tools.move_viewer.pose import MotionPose, rotation
+        from tools.move_viewer.gte_lighting import NodeLighting
+        from tools.move_viewer.model_codec import Primitive
+
+        group = SimpleNamespace(color=(128, 128, 128),
+                                normals=np.array([[2048, 2048, 2048]]), specular=None)
+        mesh = SimpleNamespace(color_base=0, groups=[group],
+                               vertices=np.array([[32, 0, 0], [0, 32, 0], [0, 0, 0]]),
+                               imports=[], exports=[],
+                               primitives=[Primitive(0x2E, False, [0, 1, 2], [0, 0, 0])])
+        node = SimpleNamespace(mesh=mesh, rest_angles=(0, 0, 0),
+                               translation=(0, 0, 0), scale=(4096,) * 3,
+                               child=-1, sibling=-1)
+        model = SimpleNamespace(nodes=[node], roots=[0], walk=lambda: [0])
+        loaded = scene.CharacterScene((model, model), b'bank', [], [15], 'capoeira')
+        identity = ((4096, 0, 0), (0, 4096, 0), (0, 0, 4096))
+        zero = ((0, 0, 0),) * 3
+        lights = ({0: NodeLighting(identity, identity, (0,) * 3, (0,) * 3, 0)},
+                  {0: NodeLighting(zero, zero, (1600, 800, 400), (0,) * 3, 0)})
+        previous = ({0: np.eye(3)}, {0: rotation((0, 0, 1024))})
+        transforms = (np.eye(4), np.eye(4))
+        transforms[1][:3, 3] = [10, 20, 30]
+        with (patch.object(scene.animlib, 'anim_list', return_value=[None] * 118),
+              patch.object(scene, 'decode_motion', return_value={'frames': 2}),
+              patch.object(scene, 'sample_motion', return_value=MotionPose({}, np.zeros(3)))):
+            actors = scene.pose_scene(loaded, 54, (0, 0), transforms,
+                                      previous_local_rotations=previous, lighting=lights)
+        np.testing.assert_allclose(actors[0][1].positions[0][0], [1, 0, 0], atol=1e-12)
+        np.testing.assert_allclose(actors[1][1].positions[0][0], [10, 21, 30], atol=1e-12)
+        np.testing.assert_array_equal(actors[0][1].colors[0], [64, 64, 64])
+        np.testing.assert_array_equal(actors[1][1].colors[0], [50, 25, 12])
+        np.testing.assert_array_equal(previous[0][0], np.eye(3))
+
+        # Real pose -> GTE colours -> shared scene raster -> owned RGB cache.
+        # Synthetic static geometry, not captured placement or native playback.
+        from threading import Event
+        from tools.move_viewer.frame_preparation import prepare_frames
+        from tools.move_viewer.render_offline import render_scene
+
+        keys, seen, progress = list(range(0, 264, 3)), [], []
+        def render_key(key):
+            seen.append(key)
+            return np.asarray(render_scene(actors, size=(64, 64)))
+        budget = len(keys) * 64 * 64 * 3
+        buffers = prepare_frames(keys, render_key, budget, Event(),
+                                 lambda done, total: progress.append((done, total)))
+        self.assertEqual(seen, keys)
+        self.assertEqual(progress[-1], (88, 88))
+        self.assertEqual(sum(frame.nbytes for frame in buffers), budget)
+        self.assertFalse(np.shares_memory(buffers[0], buffers[1]))
+        colours = set(map(tuple, buffers[0].reshape(-1, 3).tolist()))
+        self.assertTrue({(64, 64, 64), (50, 25, 12)} <= colours)
+        with self.assertRaisesRegex(ValueError, 'budget'):
+            prepare_frames(keys, render_key, budget - 1, Event(), lambda *_: None)
+
+    def test_actor_state_count_mismatch_fails_before_decoding(self):
+        loaded = scene.CharacterScene(('first', 'second'), b'bank', [], [], 'capoeira')
+        with (patch.object(scene.animlib, 'anim_list', return_value=[None] * 118),
+              patch.object(scene, 'decode_motion') as decode):
+            for field in ('previous_local_rotations', 'lighting'):
+                for states in (({},), ({}, None)):
+                    with self.subTest(field=field, states=states), self.assertRaises(ValueError):
+                        scene.pose_scene(loaded, 54, (0, 0), (np.eye(4), np.eye(4)),
+                                         **{field: states})
+            decode.assert_not_called()
+
     def test_joint_pose_uses_distinct_slots_and_explicit_transforms(self):
         from tools.move_viewer.pose import NodePose
         loaded = scene.CharacterScene(('primary', 'companion'), b'bank', ['tim'], [7], 'capoeira')

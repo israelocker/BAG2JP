@@ -4,6 +4,39 @@ updated: 2026-11-23
 ---
 # Move viewer / editor
 
+## 2026-11-23 — D2 reader and per-actor C1/C3 host integration
+
+Owner renewed host/viewer work before E; the earlier whole-task stop was premature.
+No new game was launched. `prehistory.parse_prehistory` now reads complete PHV2
+streams, preserves both raw960-byte blocks/call order and rejects ambiguous exact
+frame/actor selection. It establishes no session provenance or pointer validity.
+`scene.pose_scene` transports explicit local rotations and per-node GTE lighting
+separately for each actor; omitted whole subsystems retain the preview defaults,
+but missing/None actor entries fail before decoding.
+
+Goldfish: two cold static reviewers; frozen sources/hashes/spec and verbatim replies
+in `_work/goldfish/viewer-host-state-reader/`. CON HALLAZGOS: mutable/aliasing buffer
+inputs confirmed with three RED failures, fixed by requiring immutable `bytes`.
+Ruling after review: the initial spec's4096 weight ceiling was an unjustified semantic
+restriction. The observer reads an unsigned halfword, so the raw reader preserves
+0..65535 (4097/65535 RED->GREEN), not a normalized blend guarantee. Frozen spec is
+retained as reviewed; it predates that correction. No raw+3EC history is automatically
+treated as prior missing-track local state or blended again into+2C.
+
+Verification: full230tests OK51.130s, `audit/host-state-reader-reviewed-suite.log`.
+Real scene pose/GTE/raster/cache integration retains88keys at exact pixel budget,
+contains both actors' independently expected colours, and rejects one byte less;
+synthetic static triangles, not native Chichi placement. Existing compiled-C observer
+test output was passed through the actual reader: two distinct actors,960-byte blocks,
+frame100 and weight1350 (`audit/d2-reader-producer-check.json`); guest memory/IO mocked.
+The earlier incorrect test vertex field/unit fixtures and a negative test accidentally
+passing on the malformed bank were corrected; RED/green attempts retained in audit/.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Next: expose the same explicit state in the existing **static snapshot** path, not
+as a constant lighting state across inferred playback. Native captures/acceptance
+remain E, including verified duo placement, complete C1 state and Tsutomu96 history.
+
 ## 2026-11-23 — B4 explicit leaf preview: reviewed host candidate
 
 `mesh_selection.select_leaf_meshes(model, replacements)` replaces only mesh payloads

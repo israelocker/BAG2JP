@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
+from .gte_lighting import NodeLighting
 from .model_codec import Model, Tim, load_character, parse_model
 from .pose import (NodePose, WorldMesh, animlib, decode_motion, native_key_context,
                    native_root_translation, native_world_root, pose_model, sample_motion,
@@ -106,12 +107,24 @@ def pose_snapshot_scene(scene: CharacterScene, contexts: tuple[NativeActorContex
 
 
 def pose_scene(scene: CharacterScene, primary_slot: int, frames: tuple[float, ...],
-               placements: tuple[np.ndarray, ...] | None
-               ) -> list[tuple[Model, WorldMesh, list[Tim]]]:
-    """Prepare actor meshes without inferring unavailable native placement."""
+               placements: tuple[np.ndarray, ...] | None, *,
+               previous_local_rotations: tuple[dict[int, np.ndarray], ...] | None = None,
+               lighting: tuple[dict[int, NodeLighting], ...] | None = None
+                ) -> list[tuple[Model, WorldMesh, list[Tim]]]:
+    """Prepare actors with optional explicit local history and per-node GTE state.
+
+    Entries follow scene actor order. History is unscaled local rotation, not the
+    raw actor+3EC blend history. Light matrices must already include each node's
+    final rotation/placement; neither input is inferred from a RAM record.
+    Omitting either input retains that subsystem's approximate preview path.
+    """
     count = len(scene.models)
     if count not in (1, 2):
         raise ValueError('scene requires one or two actors')
+    for states in (previous_local_rotations, lighting):
+        if states is not None and (len(states) != count or
+                                   any(not isinstance(state, dict) for state in states)):
+            raise ValueError('explicit state mappings must match actors')
     if placements is None:
         if count != 1:
             raise ValueError('companion placement requires explicit native context')
@@ -128,14 +141,18 @@ def pose_scene(scene: CharacterScene, primary_slot: int, frames: tuple[float, ..
     if count == 2:
         slots.append(companion_slot(scene.character, primary_slot, len(animlib.anim_list(scene.bank))))
     actors = []
-    for model, slot, frame, transform in zip(scene.models, slots, frames, transforms):
+    for actor_index, (model, slot, frame, transform) in enumerate(
+            zip(scene.models, slots, frames, transforms)):
         motion = decode_motion(scene.bank, slot)
         if frame >= motion['frames']:
             raise ValueError('actor frame outside motion')
-        poses = pose_model(model, sample_motion(motion, frame), scene.slot_map)
+        pose_options = ({} if previous_local_rotations is None else
+                        {'previous_local_rotations': previous_local_rotations[actor_index]})
+        poses = pose_model(model, sample_motion(motion, frame), scene.slot_map, **pose_options)
         rotation, translation = transform[:3, :3], transform[:3, 3]
         transformed = {index: NodePose(rotation @ pose.rotation,
                                       rotation @ pose.translation + translation,
                                       rotation @ pose.draw) for index, pose in poses.items()}
-        actors.append((model, world_meshes(model, transformed), scene.tims))
+        light_options = {} if lighting is None else {'lighting': lighting[actor_index]}
+        actors.append((model, world_meshes(model, transformed, **light_options), scene.tims))
     return actors
