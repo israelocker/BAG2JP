@@ -34,7 +34,8 @@ PRIMITIVE_LAYOUT = ((0x2B, 2, 2), (0x2C, 4, 4), (0x2D, 5, 6), (0x2E, 3, 3), (0x2
                     (0x35, 3, 4), (0x36, 2, 2), (0x37, 4, 5), (0x38, 6, 8), (0x39, 6, 8))
 LAST_COUNT_WORD = 0x3A          # low: 4-word records, high: 0x14-byte records
 # 0x30-0x33/0x38 inferred from Sushi Boy, Comet and Strike records (2026-11-22), not yet from their emitters.
-DECODED_KINDS = {0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x38}
+DECODED_KINDS = {0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x35, 0x38}
+# 0x35 inferred from Comet B records (2026-11-23): 0x2E colour layout plus a trailing mode word.
 
 
 class UnsupportedPrimitive(ValueError):
@@ -171,6 +172,10 @@ def decode_primitive(kind: int, quad: bool, rec: bytes) -> Primitive:
     if kind in (0x2B, 0x33):      # F3 / F4 (0x33: same two-word layout)
         col = _lo(w[1])
         return Primitive(kind, quad, [c, d, b, a] if quad else [a, b, c], [col] * (4 if quad else 3))
+    if kind == 0x35:              # G3 / G4 plus a mode word (always 1 in Comet B; inferred, emitter unread)
+        p = decode_primitive(0x2E, quad, rec)
+        p.kind, p.semi_transparency = kind, _hi(w[2]) if not quad else w[3] & 0xFFFF
+        return p
     if kind == 0x2E:              # G3 / G4
         if quad:
             return Primitive(kind, True, [c, d, b, a], [_lo(w[1]), _hi(w[2]), _hi(w[1]), _lo(w[2])])
