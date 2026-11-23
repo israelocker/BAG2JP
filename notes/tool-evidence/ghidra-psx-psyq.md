@@ -5,11 +5,82 @@ tags: ["tools", "evidence"]
 summary: "Historial de Ghidra MCP y soporte PSX/PsyQ; no certifica identificación automática."
 related: ["notes/assets.md", "AGENTS.md"]
 created: "2026-11-06"
-updated: "2026-11-22"
+updated: "2026-11-23"
 doc_kind: evidence
 ---
 
 # Ghidra / PSX / PsyQ — historial
+
+## 2026-11-23 — B4 draw/root-selection bounded follow-up
+
+- Purpose: avoid drawing alternative roots unconditionally. MCP `get_program_info`
+  confirms JP main SLPM_862.19 SHA256
+  ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe;
+  `decompile_function(FUN_8002c404)` succeeds; `read_memory(80051940,152)`
+  succeeds without gaps. Actor+28 is passed to ordinary draw8008EF3C; callbacks
+  Pander801CF55C/Heat801CFB04 are selected from the table.
+- Independent supplemental Capstone/Python3.13 bounded ranges: historical8MiB RAM
+  SHA256 db917d572839885a41dc54623b710ee11f4ffcce59d5ca97dcd914389ef3a4b3,
+  8008EE5C+224 bytes shows enabled-mesh test+A0, mesh+8C and recursion+94/+98.
+  Extracted P1 DBIs use recorded base801CC084; Pander17319bytes SHA256
+  c6a2fd51bc89a45f96d4a5d48c225608419f8ee798605b8813627e81529a8208;
+  Heat19556bytes SHA2566715937f7c40e29a01e3e779065ed7e09dd350cbd63f681856da31359279c428.
+  Callback/body listings are `audit/b4-*.txt`; no native swap demonstrated.
+- Outcome: useful bounded negative evidence, NOT proof no swap exists. Character
+  overlay instructions are not loaded in main MCP; do not claim their decompilation.
+  No patch/game/database mutation. Time/manual rework/savings unknown.
+- Next: B4 selection semantics remain unresolved; preserve root0 default and
+  missing-native-context acceptance gates rather than inventing extra draws.
+
+### Same-day B4 narrowed follow-up
+
+Report `audit/b4-selector-investigation.md` records successful narrowed Heat and
+Pander DBI selector analysis and main loader child-chain separation. Primary
+independently read main MCP800323B0len48 without gaps (lwroot+9C, nextchild+98,
+storezero+98, repeat), and Capstone Heat801CF1C0..1E3/Pander801CF318..353:
+Heat storechild801CF1D4 plus map+7EA; Pander storechild+C48 and map+7F5.
+Same hashed inputs as above. This supersedes the earlier negative bounded lead,
+not its historical record. Outcome useful: proves explicit leaf alternatives,
+not event production/loader-route coverage or runtime acceptance. Main MCP does
+not contain loaded character overlays. No new game capture; time/savings unknown.
+
+## 2026-11-23 — C1 group-B lighting loop, existing executable only
+
+- Purpose: distinguish group-B lighting from NCDS without starting a game.
+- MCP get_program_info: SLPM_862.19 JP main,
+  SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe.
+- Query: read_memory(address=0x80027EE0,length=256), successful, no gaps.
+- Independent local Capstone on same main file: initial bounded disassembly
+  stopped at unsupported GTE opcode; repeated once with skipdata, preserving raw
+  opcodes. Output `_work/move-viewer/audit/c1-group-b-disasm.txt`.
+- Evidence:80027F18 MVMVA4A4A6412 light/V0/no translation,sf12,lm1;
+  80027F2C SQR4AA80428 repeated using header top byte;80027F40 CDP4B280414.
+  Existing NormalGroup.specular retains that repeat count. GTE colour-output
+  implementation separately read from pinned build runtime gte.cpp.
+- Outcome: useful bounded structural evidence, not numerical/hardware/native
+  acceptance or complete lighting-state capture. No game launched. Time/manual
+  rework and savings unknown. Next: implement/test explicit-state group-B path.
+
+## 2026-11-23 — C1 loaded lighting caller located
+- Read-only delegated investigation; MCP target JP main/hash recorded below. Main decompiles80013144/8002C404/80032F3C and reads800442A4/8002C8F0 establish setters/composition. Undefined80022FF4/80030458 returned FUNCTION_NOT_FOUND; retained as failures, not repeated. MCP8008E780 is uninitialized in main, not claimed as loaded-module code.
+- Reused `_work/strike-8008e780-disasm.txt` and `strike-8008ef3c-disasm.txt`, independently checked loaded JAL against historical RAM `_work/character_import/strike/viewer-run/20261106T055110/bag2jp_ram_6000.bin`, SHA256db917d572839885a41dc54623b710ee11f4ffcce59d5ca97dcd914389ef3a4b3.8008E810 calls80027DC4 immediately after8008E7F4 calls vertex projection80027CF8. No exact main xref was expected.
+- Light controls8–12 setter800442D4 consumes node+4C (actor light multiplied by world rotation); colour16–20 setter80044304 consumes actor+157C at8002C930; background13–15 setter800444A4 gets actor+159C bytes at8002C944, scaled<<4. Far21–23 initialized to zero by80032F3C then fog near/far C48/1060/projection60. Initialization is not proof of invariant runtime state.
+- Group A NCDT/NCDS, group B MVMVA/SQR/CDP; projection leaves mesh-final IR0. Runtime gte.cpp1329–1334/1677–1705 corroborates IR0 clamp formula. Useful new seam, no universal-lighting acceptance. Time/manual rework/savings unknown. Next verify captured per-node state plus fog/projection inputs before lighting integration. No live games touched.
+
+## 2026-11-23 — C3 absent-track propagation, bounded trial
+- Target: MCP `get_program_info`, JP main SLPM_862.19 SHA256ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; no overlay or database modification.
+- Queries: `decompile_function` for FUN_800128b4, FUN_800126f8, FUN_80012b9c, FUN_80013144, FUN_800133cc, FUN_8002bc38 and FUN_80012350, all successful. Initialization clears track pointers, not all angle values; absent track sets local +14 sentinel80000000; matrix blending skips invalid source entries. Child composition uses existing local rotations. Cross-check across initializer, decoder, matrix conversion and blend/copy agrees; custom helper tail flow in decompile is not a complete instruction-level proof.
+- Outcome useful: rejects an unconditional native rest-reset explanation for missing Tsutomu96 tracks15/18. Does not identify yellow accessory or establish predecessor history/live pose. No code changed from inference alone. Measured time/manual rework/savings unknown. Next capture same-frame predecessor/local context safely, retain standalone approximation disclaimer.
+
+## 2026-11-23 — C1 normal lighting read, undefined-function limit
+- MCP `get_program_info` confirmed JP main SLPM_862.19 SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. `decompile_function(FUN_80027dc4)` and `decompile_function_by_address(0x80027DC4)` failed FUNCTION_NOT_FOUND; not counted as successful decompilation.
+- Bounded `read_memory(0x80027DC4,96)` and `(0x80027D40,256)` succeeded. Independent `py -3.13` Capstone MIPS32 little-endian read of canonical SLPM_862.19 at executable file offset address-80010000+800 agrees with MCP bytes; registers6/0–5 loaded, opcode4AF80416 at80027DFC. Low command16=NCDT; scalar directional approximation is incomplete. ReadProcessMemory historical Strike data is a lead, not fresh runtime state.
+- Follow-up `get_xrefs_to(0x80027DC4)` returned none; aligned direct J/JAL/pointer scan of main found none either. Bounded preceding Capstone700bytes showed nearby returns/loops but no exact call. This does not exclude an earlier entry, indirect dispatch or overlay caller; it is not proof that lighting is unused.
+- Useful bounded evidence, no patch or lighting acceptance. Times/manual rework/savings unknown. Next: prove caller GTE setup/depth-cue inputs before implementing a native lighting profile. No function creation/analysis state changes made.
+
+## 2026-11-23 — D2 history-copy ordering recheck
+- Purpose/query: MCP `get_program_info()` confirmed JP main SLPM_862.19 SHA256 ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; `read_memory(address="0x8002CBD8", length=48)` returned mapped bytes starting `e0 4d 00 0c ec 03 45 26`, including `46 15 53 a6` (actor+1546 write after call).
+- Cross-check: prior FUN_8002c404 analysis and actual anim-trace producer agree on history buffers, but producer omits entry draw weight. Useful for ordering only, not live timing/placement acceptance. Measured time/manual savings unknown. Next: capture exact entry weight per actor; never substitute later RAM.
 
 ## 2026-11-22 — additional draw blend in Capoeira12440
 - MCP `get_program_info` confirmed JP SLPM_862.19, PSX LE32, SHA256ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe. Re-read `decompile_function_by_address(0x8002c404)` specifically after new RAM evidence: actor+1546 is passed to native pose composition, distinct from key interpolation+1548; previous matrices are retained by the render path. No Ghidra analysis changed.

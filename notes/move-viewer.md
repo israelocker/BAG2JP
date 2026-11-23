@@ -1,8 +1,319 @@
 ---
 summary: Move viewer/editor (tools/move_viewer) state, motion reassignment and growth packages, evidence and limits.
-updated: 2026-11-22
+updated: 2026-11-23
 ---
 # Move viewer / editor
+
+## 2026-11-23 — B4 explicit leaf preview: reviewed host candidate
+
+`mesh_selection.select_leaf_meshes(model, replacements)` replaces only mesh payloads
+at primary leaf slots. Source pose, graph and draw order remain unchanged. Model,
+node, link and root containers are detached; payloads are shared read-only by contract.
+It neither selects native events nor rewires child links/pose maps, and is not enabled
+automatically in the UI. Heat16->20/21,19->22/23 and Pander18->19 are covered.
+
+Goldfish: two static cold reviewers, frozen inputs/hashes and raw replies under
+`_work/goldfish/viewer-b4-leaf/`. Verdict CON HALLAZGOS. Root-chain cycles/mismatches
+were confirmed with four RED failures and fixed; weak archived import comparisons
+were replaced by a concrete synthetic triangle with independent expected coordinates.
+Final full suite218tests OK56.982s (`audit/b4-leaf-reviewed-suite.log`), source
+checkpoint755d028 (WIP native parity). Frozen tests
+are audit copies, not relocated runnable suites; runs use original repo paths.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Existing `audit/record_live.py --leaf-pair SOURCE:TARGET` was reused for source-launched
+Qt recordings: `rec-b4-0-16-20`, `rec-b4-0-16-21`, `rec-b4-0-19-22`,
+`rec-b4-0-19-23`, `rec-b4-6-18-19`. Ten solo/attack sequences,266 prepared samples,
+all inspected in numbered strips. Heat's alternative hand silhouettes and Pander's
+yellow/red hand accessory are visible with coherent poses and no visible geometry
+explosions. Pander's asymmetric footwear and Heat's orange back patch remain; these
+were not fixed by pretending secondary roots were missing body parts. Samples are
+deterministically advanced and encoded20fps, not real-time or packaged-executable
+acceptance. No game launched. Native event production and pose-map parity remain open.
+
+Remaining evidence gates: no prehistory files exist under `_work/` (bounded glob);
+D2 lacks same-draw history/weight, C1 lacks complete per-node/fog/projection state,
+C3 lacks actual motion96 destination state. D3 primary slot66 is recorded, not the
+verified duo. Do not fabricate those states or mark A–D complete; fresh native capture
+requires the owner's E authorization. Documentary-only updates omit new Goldfish
+because they are outside its executable trigger list; applicable code reviews above
+are retained. The broadly modified `bag2-record.md` is not normalized or staged.
+
+## 2026-11-23 — Owner boundary correction: A–D host/viewer only
+
+The owner clarified that native game validation belongs exclusively to E. Earlier
+D2 calibration runs crossed that boundary; they are rejected evidence and must not
+be repeated under A–D. Latest `viewer-d2-cal-317e` failed after game PID44288
+disappeared; recorder exit5 (window identity changed), runner exit1. Result verifies
+restoration of three configuration files and150saves. No cause of process exit was
+established from stdout/stderr or the bounded Application event query.
+Experimental317E remains deployed with backed-upD506; stable was not touched.
+Plan and active state now reserve all new native capture/comparison for E.
+B4/C1/C3/D2 and real slot66 D3 evidence remain incomplete, not waived or accepted.
+
+C1 host candidate: `tools/move_viewer/gte_lighting.py` provides
+explicit-state group-A NCDS colour arithmetic (sf12,lm1), based on existing runtime
+`gte.cpp` helpers121–189 and1677–1705. Integer MAC44/signed32, intermediate IR
+saturation, BK/FC register units and explicit projection IR0; no default state is
+invented. Flags/FIFO and stage profiles remain outside this candidate;
+default preview lighting remains unchanged. Six vectors passed after missing
+implementation RED; full viewer suite200tests OK50.349s in
+`_work/move-viewer/audit/c1-arithmetic-suite.log`. This is host arithmetic evidence,
+not native parity or C1 completion. Two cold reviewers are examining frozen inputs
+under `_work/goldfish/viewer-c1-arithmetic/`. Both static reviews found no RGB
+arithmetic mismatch with supplied runtime reference; confirmed coverage gaps for
+depth-difference saturation and MAC wrapping. Added discriminating vectors and
+verified both intentional mutants fail, originals restored. BK/FC units clarified.
+Final suite201tests OK53.247s (`c1-arithmetic-reviewed-suite.log`). Review results
+and frozen hashes retained; no full C1/native acceptance follows.
+
+Group-B bounded MCP read at80027EE0 (same verified JP main SHA above) confirms
+MVMVA `4A4A6412` (light matrix/V0/no translation,sf12,lm1), repeated SQR
+`4AA80428` using group header top byte, then CDP `4B280414`; previous colour
+multiply is NOT NCDS. Existing parser already preserves this count as
+`NormalGroup.specular`. Independent Capstone output retained at
+`_work/move-viewer/audit/c1-group-b-disasm.txt`; first pass stopped at GTE opcode,
+second skipdata pass exposed the full bounded loop. No runtime capture was made.
+
+Group B and explicit `NodeLighting` are now implemented: light transformation,
+1–255 saturated SQR iterations, then CDP-equivalent colour/depth arithmetic.
+`world_meshes(..., lighting=...)` requires explicit state for every drawn node;
+normals are already in the light matrix's local coordinate system, not rotated twice.
+Two static cold reviews in `_work/goldfish/viewer-c1-world/` found fractional/bool
+normals silently truncated by the adapter. Both cases reproduced RED; validation
+now admits integral NumPy/Python components without admitting floats/bools.
+Corrected zero-counter documentation (2**32 iterations, not infinite).
+Added nonidentity-pose, missing second-node, intermediate-SQR saturation and
+nondiagonal colour/depth vectors. Final full suite206tests OK55.541s:
+`_work/move-viewer/audit/c1-world-reviewed-suite.log`.
+This is an opt-in host API, not a complete captured lighting profile or C1 acceptance.
+Existing evidence still lacks the complete same-draw per-node/projection state;
+do not substitute arbitrary IR0/fog values or activate it as the default renderer.
+
+D3 real-source viewer trial: existing `record_live.py --primary-source-slot 66
+--indices 14` uses `show_source`, explicitly labelled PRIMARY MODEL ONLY.
+First attempt failed because tree captions include an ID; corrected the scratch
+recorder to use the canonical table name. Successful take:
+`_work/move-viewer/audit/rec-d3-slot66-primary-b/14_primary-source.mp4`,88 distinct
+labels from frame0 to261, source duration264/step3. These are88 prepared keys,
+not264; the earlier264-key synthetic allocation test is a separate stress case.
+Primary reviewed all88 images in `strip-viewport.png`: model and textures visible,
+coherent rotations, no visible geometry explosions. Original strip used stale crop
+coordinates and showed empty UI; retained, corrected against the full screenshot.
+88 RGB frames use34056000 bytes, plus1419000 conversion allowance. Not a measured
+process-RSS bound, real-time playback test, paired-companion or native acceptance.
+Normal character selection remains fail-closed for the unverified pair.
+
+C3 host candidate: `pose_model(previous_local_rotations=...)` consumes explicit
+unscaled local rotations keyed by model node for absent tracks, preserving the
+destination instead of resetting to rest. Missing/nonfinite/non3x3 required state
+fails closed; no-state standalone behavior remains approximate. This is NOT
+the+3EC history blend and does not infer Tsutomu96 prior state. Two cold reviewers
+of `_work/goldfish/viewer-c3-missing-track/` found an input/output array alias;
+RED `c3-history-alias-red.log`, fixed by copying consumed state. Added bidirectional
+mutation isolation and parent/child tests with traversal/slot/node IDs distinct.
+Shape/finiteness are validated; semantic local/world identity belongs to the caller,
+and native fixed rotations are not forced to perfect orthonormality.
+Final full suite208tests OK54.248s (`c3-history-reviewed-suite.log`). Source-map
+documentation corrected: invalid source preserves destination, not a rest reset.
+Tsutomu's node12 yellow accessory geometry remains untouched; C3 native acceptance
+and real motion96 history remain pending.
+
+B4 bounded historical draw walk: Ghidra main8002C404 still dispatches ordinary
+characters to8008EF3C with actor+28. Supplementary verified historical RAM
+db917d57... at8008EE5C checks node+A0==1, draws mesh+8C and recurses+94/+98;
+no unconditional extra-root draw was found. Artifacts `b4-historical-draw-walk.txt`
+and `b4-{pander,heat}-callback*.txt` under audit/. Main callback table80051940
+selects Pander801CF55C and Heat801CFB04; extracted P1 DBI base801CC084 matches
+prologues (hashes c6a2fd51.../6715937f...). Heat callback is no-op; Pander calls
+801CE0C0 event state/scaling, not a demonstrated root swap. Loaded character
+overlays are not present in main Ghidra memory, so these remain supplemental
+leads, not verified native selection semantics. B4 remains unresolved.
+
+B4 follow-up: `_work/move-viewer/audit/b4-selector-investigation.md` identifies
+Heat's extracted-DBI selector801CEFA4: cases1–3 replace node15's child with16/20/21,
+cases4–6 node18's child with19/22/23 (stores+98); init populates these indices from
+801CFC18. This is a concrete alternative-subtree mechanism, not all-root drawing.
+Heat root24/Pander root20 have type4 nodes, not type1mesh drawables. Ghidra main
+800319FC independently distinguishes roots and package preparation of only the
+first two roots; loaded character instructions remain supplemental DBI evidence.
+Initial-link/map+7EA/alternative-sibling handling and Pander selector are under
+bounded investigation; no viewer topology or acceptance has yet been changed.
+
+B4 second follow-up (same report): native main800323B0 disconnects the secondary
+CHILD chain(+98), not siblings(+94). Heat init copies local state00..28 from
+16→20/21 and19→22/23, selector0 restores cases1+4 and updates map+7EA.
+Pander has its own selector801CF28C: ID4 preserves18 as child17; ID641 selects19.
+Event producers/loader route remain unresolved. Implementation is therefore
+limited to an explicit leaf-payload preview in source draw order, preserving
+source pose and imports, not automatic native events, child-map emulation or
+all-root drawing. No character IDs/constants are to be embedded in the engine;
+the verified pairs belong in evidence/tests until event context is available.
+
+D2 observer checkpoint verification:4tests PASS5.663s
+(`d2-v2-checkpoint-tests.log`), current sourceSHA b9f1600d... matches the earlier
+successful native syntax check. Second cold reviewer read the IO-fixed source;
+snapshots/hashes in `_work/goldfish/viewer-d2-prehistory-v2/final-io-fixed/`,
+raw response reviewer-2.md. No further blocker; original IO findings were
+reproduced/fixed. Important limit: sticky failure only contains the current
+process/frame; retained partial files are not repaired or validated across runs.
+E must use fresh protected paths and reject partial/duplicate-session evidence.
+The broader recorder59-test run still has6 fixture-font errors (not a green
+suite); this source checkpoint does not claim recorder or native acceptance.
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Comet B source-Qt follow-up: reused `audit/record_live.py --indices2 --variant b_p1`
+to `audit/rec-comet-b-candidate/`;21solo keys frame0..60 and25attack keys0..72,
+all46 reviewed in `strip-full-viewport-02_{solo,attack}.png`. Black stocking/boot
+silhouettes present and pose sequence coherent, no new visible mesh explosion.
+This closes the previously missing B-costume viewer observation, NOT native
+colour/ABR fidelity or packaged-EXE acceptance. Recording is deterministic20fps.
+Initial sheet failed on changed1441x1100 geometry; proportional oldcrop still
+cut the character. Reviewed window overview then corrected to full viewport;
+do not use the old `strip-viewport-*` sheets as whole-character evidence.
+
+## 2026-11-23 — D2 pre-draw v2 producer: experimental deployment, validation pending
+
+The existing experimental observer now writes versioned1936-byte records:
+`PHV2`, frame, actor, same-entry draw weight at+1546, followed by the960-byte
+local+2C and history+3EC buffers. Output is `bag2jp_prehistory_FRAME.v2.bin`;
+legacy pointer-only output must not be parsed as v2. No guest writes were added.
+The source already contained the uncommitted entry hook; it remains preserved.
+
+Goldfish frozen inputs and verbatim static review:
+`_work/goldfish/viewer-d2-prehistory-v2/`. Verdict required corrections:
+open/close failures were silent and a partial write could be followed by another
+actor. Both reproduced RED, then fixed with diagnostic and sticky same-frame
+failure suppression. The filename/append-mode assertion was also added.
+An incomplete or failed capture is unusable, even if some records are complete;
+failure suppression does not repair or delete the failed output.
+
+- Four actual-C harness tests passed in3.739s:
+  `_work/move-viewer/audit/d2-pre-draw-v2-io-green.log`.
+- Full canonical Windows-target source syntax passed after those fixes:
+  `_work/move-viewer/audit/d2-pre-draw-v2-io-compile/report.json`;
+  source SHA256 `b9f1600d389c3222950a9050d1f5731b8a18753b8a157bf8e30e016e2d0427d5`.
+- Broader recorder regression is NOT green:59tests,6errors, all FinalizeTest
+  cases attempting to copy the absent fixture `host-config/fonts/consola.ttf`.
+  Log: `_work/move-viewer/audit/d2-pre-draw-v2-recorder-regression.log`.
+  Recorder, fixture and recorder tests are unchanged in Git; the fixture explicitly
+  selects that nonexistent relative font. This is a separate host-fixture problem,
+  not evidence that this C observer works in game. No unrelated fixture edits made.
+
+Next required runtime seam: obtain an exclusive task-owned experimental session,
+build/stage the observer without overwriting concurrent work, then record fresh
+same-entry weight/history and independently compare paired placement. Existing
+unrelated game sessions must not be closed. C1 lighting and C3 history-dependent
+fallback likewise remain unaccepted; phase E has NOT been reached.
+
+Follow-up: both unrelated games exited naturally (CIM returned no BAG2JP process).
+Only the observer diff was staged over the verified build-source hash105EDD86;
+source backup and stage hashes: `_work/move-viewer/audit/d2-v2-stage/`.
+Build passed34.962s (`_work/workflow/20261123T150259549381Z-viewer-d2-v2/build.log`).
+Experimental executable replaced under no-active-game guard, previousD506 backed
+up as `d2-v2-stage/BAG2JP.before.exe`; new SHA256
+`317e82ce7a29de152e1f551890233e73c1f0163bb954ef042ee8c760455cba76`,
+matching build artifact. Stable install untouched. Fresh recorded selector calibration
+`viewer-d2-cal-317e` is running; its inherited seed is routing-only, NOT acceptance.
+Deployment/build do not establish hook execution or paired-placement correctness.
+
+## 2026-11-23 — C1/C2/C3 investigation and candidate status
+
+- C1: MCP reconfirmed JP SLPM_862.19 SHA256
+  `ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe`.
+  `0x80027DC4` is not a defined Ghidra function (name and containing-function
+  decompilation both refused); bounded MCP memory read plus independent Capstone
+  on the same executable show RGB loaded into GTE register6, three normals into
+  registers0–5 and instruction `0x4AF80416` at80027DFC (NCDT, not just a
+  scalar Lambert light). Existing historical Strike capture contains actor light
+  direction +155C, colour +157C and ambient +159C, but is not a universal current
+  stage/light state. Keep approximate Heat lighting unchanged until full GTE state
+  including depth-cue inputs and setup path is verified; no speculative brightening.
+  Follow-up located loaded caller8008E810 after projection8008E7F4 (historical RAM
+  independently checked, not main-program MCP memory). Node+4C supplies transformed
+  light matrix; actor+157C/+159C supply colour/background. Group A is NCDT/NCDS,
+  group B MVMVA/SQR/CDP; mesh-final projection IR0 matters. Exact setter/capture
+  provenance and failures are in `notes/tool-evidence/ghidra-psx-psyq.md`.
+- C2 candidate: RGB8 abr equations and raw CLUT STP masking added to shared renderer;
+  GPU source https://psx-spx.consoledev.net/graphicsprocessingunitgpu/ (GP0 E1 ABR,
+  polygon bit25). No native ordering/RGB555/dither parity claimed. Goldfish two
+  static reviewers, frozen spec/hashes/sources and responses under
+  `_work/goldfish/viewer-c2-blending/`, CON HALLAZGOS. Confirmed invalid-mode
+  validation, invalid texture-slot fallback and opaque-depth-tie regression:
+  regression tests RED then corrected. Opaque fragments retain original order;
+  translucent fragments get a separate mean-depth pass. Crossing transparent
+  polygons and floating shared-edge coverage remain approximation limits.
+  Full suite:194 tests OK in62.931s (`_work/move-viewer/audit/c2-review-fixed-tests.log`).
+  Fresh visible source-launched Qt capture: `_work/move-viewer/audit/rec-c2-candidate/`,
+  14 solo/attack sequences for Heat, Strike, Comet A, Tsutomu, Kitty, Hiro and Sushi.
+  All prepared frames reviewed in numbered strips: coherent poses and present textures,
+  no new visible geometry explosions. Existing Tsutomu yellow bars, Heat back patch
+  and tiny Sushi shoe pixels persist. Deterministic advancement/20fps encoding is not
+  real-time performance, packaged-EXE acceptance or native-game fidelity proof.
+- C3 read-only delegated data investigation separates yellow bars from missing
+  hand tracks: node12 (parent8, map255),20vertices/21primitives/no imports or
+  exports; five yellow0x2D primitives2,5,11,13,17, colours473–479 `(247,247,0)`.
+  Geometry is narrow and offset in the model, compatible with an accessory but
+  identity is unverified. Motion96 lacks15/18 mapped to hand-chain nodes18/21,
+  while40/80 include them. All four Tsutomu model hashes match
+  `f8ed9e770c7ce57c68cf494e784157f0cd09ed0440355e4f0dd2445437c0f95d`.
+   These are static findings, not new native validation. Do not remove geometry or
+   invent missing tracks.
+
+### C3 native missing-track semantics (bounded MCP read,2026-11-23)
+
+Same JP main/hash as above. `FUN_800126f8` clears track pointers, then initializes
+angles only for tracks actually present; it does not reset every absent angle.
+`FUN_800128b4` advances only non-null track pointers. `FUN_80012b9c` writes the
+`0x80000000` marker at local-matrix +0x14 for an unmapped/absent track instead of
+constructing a rest rotation. `FUN_80012350` skips a source with this marker;
+`FUN_80013780` likewise copies only valid matrices (earlier D1 evidence).
+Consequently absent-track output can depend on the existing destination/history;
+the viewer's standalone rest-angle fallback is an approximation, not a proved
+native reset. `FUN_800133cc` composes child translations and existing local rotations.
+Do not replace absent Tsutomu96 hand tracks with invented zeros or remove the
+independent yellow geometry. Exact playback needs predecessor/local-history evidence;
+recorded native comparison remains pending. Ghidra's custom matrix-helper decompile
+has nonstandard tail-flow artefacts, so no full fixed-point parity is inferred.
+
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+C2/D3 local experimental checkpoints: `f44a560` (RGB cache) and `d5d4ce4` (ABR/STP).
+Candidate package `_work/move-viewer/dist-audit-c2-d3-20261123/MoveViewer/MoveViewer.exe`:
+5856839 bytes, SHA2569A8BA68C97AA0C0B4DEAD70B7AD36AE5871973E1B5307A56E7F1E9965B310EDF,
+`--smoke` exit0; `_work/move-viewer/audit/c2-d3-package-smoke.json`.
+Packaging/startup only; no deployment, companion acceptance or phase completion implied.
+
+## 2026-11-23 — D3 RGB cache: host verification, acceptance pending
+
+The individual animation view retains RGB buffers instead of a second full QPixmap
+cache; presentation converts only the displayed frame. Keys and timing are unchanged.
+The 264-frame synthetic worker test allocates 102168000 RGB bytes at 300×430;
+the RGB plus conversion estimate is 103587000 bytes, below the configured 128 MiB.
+This is a per-view pixel-buffer allowance, **not** a process RSS or global-cache limit.
+Comparison panels retain their existing half-budget; 264 frames do not fit that allowance.
+
+Goldfish: two static reviewers, frozen inputs/hashes/spec under
+`_work/goldfish/viewer-d3-rgb-cache/`, responses `reviewer-1.md` and `reviewer-2.md`.
+Verdict CON HALLAZGOS: confirmed retained RGB on closing and uncaught conversion
+allocation failures; both reproduced RED then fixed with regression tests.
+Cross-view cache accumulation remains a declared global-budget limitation: the render
+lock serializes rendering, not cache residency. ndarray/Qt metadata, destroyed-receiver
+queued delivery and conversion throughput are not proven by the pixel estimate.
+The synthetic full-resolution worker test supplements, but does not replace, actual
+Chichi slot66 rendering/recording. No native-game or viewer-fidelity acceptance claimed.
+Final host suite: 186 tests OK, 60.876s,
+`_work/move-viewer/audit/d3-rgb-cache-tests-rerun.log`. Earlier failed log retained:
+`d3-rgb-cache-tests-final.log` (test wait timeout, not accepted evidence).
+Veredicto de revisor: no es aprobación del propietario ni permiso de despliegue.
+
+Next: continue C investigation offline while unrelated experimental game sessions
+remain active; finish D2 exact pre-draw weight capture/placement and recorded D3
+slot66 acceptance when exclusive experimental access is safe. Pause before phase E.
+
+## D2 diagnostic follow-up (2026-11-23)
+- `viewer-d2-cal-d506` failed: selector exit1, recorder exit5 (`capture window identity changed`); no accepted capture or companion placement claimed. Run `20261123T141648248233Z-viewer-d2-cal-d506-vs/result.json` reports215.824s and verified restoration of three configurations and150 saves. Game PID55096 disappeared during selector exploration; stdout/stderr show no explicit crash reason, and the bounded Application1000/1001 query returned no BAG2JP event. Preserve the rejected recording and observed edge images; diagnose rather than relaxing capture gates.
+- Ghidra MCP reconfirmed `SLPM_862.19`, SHA256ea5a166863f1b52782107680270f3879a8f069b1c0df6029b1db164087851efe; read48bytes at8002CBD8 confirms the history-copy call and following write to actor+1546. Existing pre-draw producer still omits that entry weight; no post-draw substitution is valid. Next: reuse fresh selector observations only as routing seeds with explicit provenance, complete same-runtime calibration/review, then capture exact per-actor entry context before accepting D2. D3/C remain pending; E is not authorized yet.
 
 ## Native matrix interpolation correction (2026-11-22)
 - Updated candidate built and `Start-Process -Wait --smoke` exited0: `_work/move-viewer/dist-stable-reference-20261122/MoveViewer/MoveViewer.exe`,5853924 bytes,SHA25697130B4D314C5C2211DFE6717C152BF319323D2637BA4521A5E1713096E8D4BC; verification JSON retained. Previous candidate untouched. Static reference refresh files remain untracked as they were before this bounded edit; no indiscriminate checkpoint of their pre-existing contents. Matrix fix alone is protected by ea494bf. No runtime deployment or universal animation acceptance follows from packaging.
