@@ -22,6 +22,7 @@ from pathlib import Path
 import numpy as np
 
 from .model_codec import FIXED_ONE, Mesh, Model
+from .gte_lighting import NodeLighting
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'bag1import'))
 import animlib  # noqa: E402
@@ -224,11 +225,13 @@ LIGHT_DIRECTION = np.array([0.3, 0.6, 0.75])   # +z = character front (toes poin
 AMBIENT = 0.7  # matched to the in-game Heat recording heat-ref-20261122a (white suit)
 
 
-def world_meshes(model: Model, poses: dict[int, NodePose]) -> WorldMesh:
+def world_meshes(model: Model, poses: dict[int, NodePose], *,
+                 lighting: dict[int, NodeLighting] | None = None) -> WorldMesh:
     """Transform vertices, run export/import in draw order and light the normals.
 
-    Lighting is an approximation (one directional light + ambient); the game uses the GTE
-    light/colour matrices (0x80027DC4) whose runtime values were not read.
+    Default lighting retains the reference-calibrated preview approximation.
+    Explicit per-node NodeLighting uses native group-A/B arithmetic and requires
+    complete same-draw state; it never substitutes guessed missing node values.
     """
     globals_xyz: dict[int, np.ndarray] = {}
     positions: dict[int, np.ndarray] = {}
@@ -241,6 +244,8 @@ def world_meshes(model: Model, poses: dict[int, NodePose]) -> WorldMesh:
         mesh: Mesh | None = node.mesh
         if pose is None or mesh is None:
             continue
+        if lighting is not None and n not in lighting:
+            raise ValueError(f'missing native lighting state for node {n}')
         local = (pose.draw @ mesh.vertices.T).T + pose.translation
         slots = max([len(local)] + [s + 1 for _, s in mesh.imports])
         scratch = np.zeros((slots, 3))
@@ -253,6 +258,12 @@ def world_meshes(model: Model, poses: dict[int, NodePose]) -> WorldMesh:
         positions[n] = scratch
         ci = mesh.color_base
         for g in mesh.groups:
+            if lighting is not None:
+                colors[ci:ci + len(g.normals)] = [
+                    lighting[n].shade(tuple(normal),
+                                      tuple(g.color), g.specular) for normal in g.normals]
+                ci += len(g.normals)
+                continue
             nw = (pose.rotation @ (g.normals.T / FIXED_ONE)).T
             lam = np.clip(nw @ light, 0, None)
             colors[ci:ci + len(nw)] = np.array(g.color, float)[None, :] * np.clip(AMBIENT + lam, 0, 2)[:, None]
