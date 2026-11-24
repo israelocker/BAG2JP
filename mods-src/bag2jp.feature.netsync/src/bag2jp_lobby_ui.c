@@ -112,6 +112,25 @@ static int lobby_input_sink(const void* ev_ptr, void* ctx) {
         }
         return 1; /* consume while Lobby/Room is open */
     }
+    if (ev->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN && s_mode != UI_CLOSED) {
+        int vk = 0;
+        switch (ev->gbutton.button) {
+            case SDL_GAMEPAD_BUTTON_DPAD_UP:        vk = VK_UP; break;
+            case SDL_GAMEPAD_BUTTON_DPAD_DOWN:      vk = VK_DOWN; break;
+            case SDL_GAMEPAD_BUTTON_DPAD_LEFT:      vk = VK_LEFT; break;
+            case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:     vk = VK_RIGHT; break;
+            case SDL_GAMEPAD_BUTTON_SOUTH:          vk = VK_RETURN; break;
+            case SDL_GAMEPAD_BUTTON_EAST:           vk = VK_ESCAPE; break;
+            case SDL_GAMEPAD_BUTTON_WEST:           vk = (s_mode == UI_LOBBY) ? 'C' : VK_F5; break;
+            case SDL_GAMEPAD_BUTTON_NORTH:          vk = (s_mode == UI_LOBBY) ? 'R' : VK_F4; break;
+            case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
+            case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: vk = (s_mode == UI_LOBBY) ? 'P' : VK_F4; break;
+            case SDL_GAMEPAD_BUTTON_START:          vk = (s_mode == UI_ROOM && bag2jp_lobby_state()->is_host) ? VK_F6 : VK_F5; break;
+            default: break;
+        }
+        if (vk > 0 && vk < 256) s_sink_vk[vk] = 1;
+        return 1;
+    }
     return 0;
 }
 
