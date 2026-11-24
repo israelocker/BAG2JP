@@ -228,11 +228,11 @@ void bag2jp_netsync_apply_lobby_match(const char* room_code) {
     const char* env_tr = getenv("BAG2JP_LOBBY_TRANSPORT");
     s_transport = (env_tr && strcmp(env_tr, "lan") == 0) ? NS_LAN : NS_INTERNET;
     s_lobby_role = bag2jp_lobby_state()->is_host ? 0 : 1;
+    snprintf(s_code, sizeof s_code, "%s", room_code);
+    s_code_hash = ns_hash(s_code);
     if (s_data == INVALID_SOCKET) {
         ns_net_open();
     }
-    snprintf(s_code, sizeof s_code, "%s", room_code);
-    s_code_hash = ns_hash(s_code);
     ns_log("lobby match applied: transport=%d room='%s' hash=%08x", s_transport, s_code, s_code_hash);
 }
 
@@ -634,7 +634,7 @@ static void ns_mqtt_poll(void) {
 
 static void ns_net_open(void) {
     WSADATA w; if (WSAStartup(MAKEWORD(2, 2), &w) != 0) { ns_log("WSAStartup failed"); return; }
-    ns_read_code();
+    if (s_lobby_role < 0) ns_read_code();
     s_nonce = ((uint64_t)SDL_GetPerformanceCounter() << 16) ^ (uint64_t)SDL_GetTicksNS() ^ (uint64_t)(uintptr_t)&w;
     srand((unsigned)s_nonce);
     u_long nb = 1; BOOL yes = TRUE;
