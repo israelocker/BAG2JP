@@ -121,7 +121,7 @@ static char s_code[64] = "BAG2", s_direct_target[128];
 static uint32_t s_code_hash;
 static uint64_t s_nonce, s_peer_nonce;
 static struct sockaddr_in s_peer, s_cand[2];      /* s_cand: peer's public and local address */
-static int s_linked, s_local = -1, s_lobby_role = -1, s_ch = CH_NONE, s_punch_until;
+static int s_linked, s_local = -1, s_lobby_role = -1, s_left_main_menu = 0, s_ch = CH_NONE, s_punch_until;
 static uint32_t s_last_rx, s_last_hello, s_code_check;
 static struct sockaddr_in s_public;               /* our address seen by STUN */
 static int s_have_public;
@@ -228,6 +228,7 @@ void bag2jp_netsync_apply_lobby_match(const char* room_code) {
     const char* env_tr = getenv("BAG2JP_LOBBY_TRANSPORT");
     s_transport = (env_tr && strcmp(env_tr, "lan") == 0) ? NS_LAN : NS_INTERNET;
     s_lobby_role = bag2jp_lobby_state()->is_host ? 0 : 1;
+    s_left_main_menu = 0;
     snprintf(s_code, sizeof s_code, "%s", room_code);
     s_code_hash = ns_hash(s_code);
     if (s_data == INVALID_SOCKET) {
@@ -971,6 +972,17 @@ static void ns_vblank(void) {
     if (!dance && s_was_dance) {
         if (s_lobby_role >= 0) ns_disconnect_locked("match finished");
         bag2jp_lobby_ui_return_from_match();
+    }
+    if (s_lobby_role >= 0) {
+        const int in_menu = (psx_mod_read_word(0x80099C50u) == 0x3C028019u);
+        if (!in_menu) s_left_main_menu = 1;
+        else if (s_left_main_menu) {
+            s_left_main_menu = 0;
+            ns_disconnect_locked("returned to main menu");
+            bag2jp_lobby_ui_return_from_match();
+            SDL_UnlockMutex(s_mu);
+            return;
+        }
     }
     if (!dance) s_match_live = 0;
     s_was_dance = dance;
