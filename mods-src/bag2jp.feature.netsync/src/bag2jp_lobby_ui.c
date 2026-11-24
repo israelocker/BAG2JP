@@ -15,6 +15,7 @@
 #endif
 
 extern void bag2jp_netsync_apply_lobby_match(const char* room_code);
+extern void bag2jp_netsync_disconnect_lobby(void);
 
 typedef enum {
     UI_CLOSED = 0,
@@ -313,6 +314,7 @@ void bag2jp_lobby_ui_tick(void) {
             if (s_mode == UI_CLOSED) {
                 s_fade_step = 0;
                 psx_host_set_ui_capture(0);
+                if (!s_in_online_match) bag2jp_netsync_disconnect_lobby();
             }
         }
         return;

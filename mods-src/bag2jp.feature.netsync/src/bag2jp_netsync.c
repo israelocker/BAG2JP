@@ -220,6 +220,7 @@ static int ns_read_code(void) {                 /* 1 when the room code changed 
 }
 
 static void ns_net_open(void);
+static void ns_disconnect_locked(const char* why);
 
 void bag2jp_netsync_apply_lobby_match(const char* room_code) {
     if (!room_code || !room_code[0]) return;
@@ -788,9 +789,15 @@ static void ns_pads_frame(void) {
     }
     const int want = s_linked && mode == 2;
     if (want != s_routing) {
+        const int was_routing = s_routing;
         s_routing = want;
         ns_log("v%u pad routing %s (P%d local)", s_vblanks, want ? "on" : "off", s_local + 1);
         s_remote_btn = s_local_btn = 0xFFFF; s_remote_hold = 0;
+        if (was_routing && !want && s_lobby_role >= 0) {
+            ns_disconnect_locked("backed out to menu");
+            bag2jp_lobby_ui_return_from_match();
+            return;
+        }
     }
     if (!s_routing) return;
     if (s_local_btn != s_last_local) {
@@ -962,12 +969,42 @@ static void ns_vblank(void) {
     const int dance = ns_in_dance();
     if (dance && !s_was_dance && s_routing) ns_match_start();
     if (!dance && s_was_dance) {
+        if (s_lobby_role >= 0) ns_disconnect_locked("match finished");
         bag2jp_lobby_ui_return_from_match();
     }
     if (!dance) s_match_live = 0;
     s_was_dance = dance;
     if (s_match_live && !s_pause_held) s_dance_frames++;
     ns_pause_tick();
+    SDL_UnlockMutex(s_mu);
+}
+
+static void ns_disconnect_locked(const char* why) {
+    s_transport = NS_OFF;
+    s_linked = 0;
+    s_routing = 0;
+    s_lobby_role = -1;
+    s_local = -1;
+    s_match_live = 0;
+    s_was_dance = 0;
+    bag2jp_mods_menu_reattach();
+    (void)psx_mod_set_controller_source(1, NULL);
+    (void)psx_mod_set_pad_transform(1, NULL);
+    if (bag2jp_charsel_enabled()) bag2jp_charsel_reattach();
+    if (s_data != INVALID_SOCKET) { closesocket(s_data); s_data = INVALID_SOCKET; }
+    if (s_disc != INVALID_SOCKET) { closesocket(s_disc); s_disc = INVALID_SOCKET; }
+    mq_drop(why);
+    host_osd_set_status("");
+    s_status_shown = -1;
+    ns_log("v%u lobby netsync disconnected (%s)", s_vblanks, why ? why : "");
+}
+
+void bag2jp_netsync_disconnect_lobby(void) {
+    if (!s_mu) return;
+    SDL_LockMutex(s_mu);
+    if (s_transport >= NS_LAN || s_linked) {
+        ns_disconnect_locked("left online match");
+    }
     SDL_UnlockMutex(s_mu);
 }
 
