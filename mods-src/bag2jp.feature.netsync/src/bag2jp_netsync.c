@@ -494,6 +494,11 @@ static void ns_on_packet(const uint8_t* b, int n, const struct sockaddr_in* from
         if (n < 4) return;
         uint32_t first; memcpy(&first, p, 4);
         const int k = (n - 4) / 2;
+        if (first > s_in_seq) {
+            ns_log("v%u pad gap: jumping s_in_seq %u -> %u", s_vblanks, s_in_seq, first);
+            s_in_seq = first;
+            s_in_applied = first;
+        }
         for (int i = 0; i < k; ++i) {
             const uint32_t q = first + (uint32_t)i;
             if (q < s_in_seq) continue;
