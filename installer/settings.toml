@@ -37,7 +37,7 @@ enable1 = true
 enable2 = true
 
 [controller]
-p1_device = "gamepad"
+p1_device = "keyboard"
 p1_mode   = "digital"
 p1_deadzone = 3276
 p2_device = "keyboard"

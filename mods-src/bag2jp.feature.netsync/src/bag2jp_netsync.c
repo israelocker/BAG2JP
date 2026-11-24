@@ -52,6 +52,7 @@
 #include "host_osd.h"
 #include "host_overlay.h"
 #include "bag2jp_lobby_ui.h"
+#include "bag2jp_lobby_client.h"
 
 int bag2jp_mods_menu_pad_filter(const PSXModPadFrame* in, PSXModPadOutput* out);
 void bag2jp_mods_menu_reattach(void);
@@ -120,7 +121,7 @@ static char s_code[64] = "BAG2", s_direct_target[128];
 static uint32_t s_code_hash;
 static uint64_t s_nonce, s_peer_nonce;
 static struct sockaddr_in s_peer, s_cand[2];      /* s_cand: peer's public and local address */
-static int s_linked, s_local = -1, s_ch = CH_NONE, s_punch_until;
+static int s_linked, s_local = -1, s_lobby_role = -1, s_ch = CH_NONE, s_punch_until;
 static uint32_t s_last_rx, s_last_hello, s_code_check;
 static struct sockaddr_in s_public;               /* our address seen by STUN */
 static int s_have_public;
@@ -225,6 +226,7 @@ void bag2jp_netsync_apply_lobby_match(const char* room_code) {
     if (!s_mu) s_mu = SDL_CreateMutex();
     const char* env_tr = getenv("BAG2JP_LOBBY_TRANSPORT");
     s_transport = (env_tr && strcmp(env_tr, "lan") == 0) ? NS_LAN : NS_INTERNET;
+    s_lobby_role = bag2jp_lobby_state()->is_host ? 0 : 1;
     if (s_data == INVALID_SOCKET) {
         ns_net_open();
     }
@@ -445,8 +447,9 @@ static void ns_unlink(const char* why) {
 static void ns_link(uint64_t nonce, int ch, const struct sockaddr_in* udp) {
     s_peer_nonce = nonce; s_linked = 1; s_ch = ch;
     if (udp) s_peer = *udp;
-    s_local = s_transport == NS_DIRECT ? (s_direct_target[0] ? 1 : 0)   /* direct: the host is P1 */
-                                       : (s_nonce > nonce ? 0 : 1);
+    s_local = (s_lobby_role >= 0) ? s_lobby_role
+            : (s_transport == NS_DIRECT ? (s_direct_target[0] ? 1 : 0)   /* direct: the host is P1 */
+                                        : (s_nonce > nonce ? 0 : 1));
     s_in_seq = s_in_applied = 0; s_out_seq = 0; s_match = 0; s_was_dance = 0; s_peer_ready = -1;
     s_last_rx = s_vblanks; s_desync_reported = 0; s_rfocus = 1; s_match_live = 0;
     memset(s_theirs, 0, sizeof s_theirs);
