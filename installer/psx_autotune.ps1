@@ -116,8 +116,15 @@ function Aplicar-Config($ruta, $seccion, $cambios) {
     [System.IO.File]::WriteAllLines($full, $salida, (New-Object System.Text.UTF8Encoding($false)))
 }
 
+$intRes   = @('"720p"', '"1080p"', '"1440p"', '"4k"')[$nivel]
+$texFilt  = if ($nivel -le 1) { '"bilinear"' } else { '"xbr"' }
+$aniso    = @(1, 4, 8, 8)[$nivel]
+
 $cambios = [ordered]@{
     window_width            = "$ancho"
+    internal_resolution     = $intRes
+    texture_filtering       = $texFilt
+    anisotropic_filtering   = "$aniso"
     fullscreen              = "0"
     render_thread           = $renderThread
     present_thread          = "true"
