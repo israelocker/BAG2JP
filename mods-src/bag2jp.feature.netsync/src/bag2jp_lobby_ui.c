@@ -91,6 +91,7 @@ static int sdl_key_to_vk(SDL_Keycode k) {
         case SDLK_F4:        return 0x73;
         case SDLK_F5:        return 0x74;
         case SDLK_F6:        return 0x75;
+        case SDLK_F7:        return 0x76;
         case SDLK_F9:        return 0x78;
         default:             return 0;
     }
