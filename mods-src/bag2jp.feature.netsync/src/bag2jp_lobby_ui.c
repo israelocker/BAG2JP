@@ -798,8 +798,11 @@ static void lobby_draw_cb(int fb_w, int fb_h, void* ctx) {
         draw_box_c(&c, fb_h, 0.09f, 0.135f, 0.82f, 0.060f, 2, 0.68f, 0.85f, 0.96f, 0.08f, 0.08f, 0.10f);
         draw_text_c(&c, fb_h, 0.11f, 0.150f, s_sm, prof, 0.08f, 0.10f, 0.16f, 0, 0, 0, 0);
 
-        /* 2x4 Grid of PS1 rounded-look white tiles with flat grey offset shadow */
+        /* 2x4 Grid of PS1 rounded-look white tiles with automatic pagination (8 per page, up to 32 rooms) */
+        int page = (s_selected_room >= 0) ? (s_selected_room / 8) : 0;
+        int total_pages = (st->room_count > 0) ? ((st->room_count + 7) / 8) : 1;
         for (int i = 0; i < 8; ++i) {
+            int idx = page * 8 + i;
             int col = i % 4;
             int row = i / 4;
             float rx = 0.095f + col * 0.208f;
@@ -810,9 +813,9 @@ static void lobby_draw_cb(int fb_w, int fb_h, void* ctx) {
             /* Flat grey PS1 drop shadow */
             fill_c(&c, fb_h, rx + 0.010f, ry + 0.014f, rw, rh, 0.35f, 0.42f, 0.48f);
 
-            if (i < st->room_count) {
-                const LobbyRoomSummary* rm = &st->rooms[i];
-                int sel = (i == s_selected_room);
+            if (idx < st->room_count) {
+                const LobbyRoomSummary* rm = &st->rooms[idx];
+                int sel = (idx == s_selected_room);
                 int playing = (strcmp(rm->state, "Playing") == 0);
                 if (sel) {
                     draw_box_c(&c, fb_h, rx, ry, rw, rh, 4, 0.98f, 0.98f, 0.99f, 0.86f, 0.06f, 0.28f);
@@ -845,6 +848,8 @@ static void lobby_draw_cb(int fb_w, int fb_h, void* ctx) {
             snprintf(info1, sizeof(info1), "DISCONNECTED: %.48s", st->last_error);
         } else if (st->room_count == 0) {
             snprintf(info1, sizeof(info1), "NO ROOMS YET. PRESS [C] TO CREATE A 1V1 ROOM");
+        } else if (total_pages > 1) {
+            snprintf(info1, sizeof(info1), "ROOMS: %d   PAGE %d/%d   [ENTER] JOIN", st->room_count, page + 1, total_pages);
         } else {
             snprintf(info1, sizeof(info1), "ROOMS: %d   PRESS [ENTER] TO JOIN SELECTED ROOM", st->room_count);
         }
