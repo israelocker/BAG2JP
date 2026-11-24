@@ -62,6 +62,7 @@ int bag2jp_lobby_set_avatar(int avatar_id);
 int bag2jp_lobby_send_chat(const char* text);
 int bag2jp_lobby_start_match(void);
 int bag2jp_lobby_finish_match(void);
+void bag2jp_lobby_kick_disconnected_guest(void);
 
 #ifdef __cplusplus
 }

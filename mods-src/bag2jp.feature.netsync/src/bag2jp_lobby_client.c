@@ -827,3 +827,18 @@ int bag2jp_lobby_finish_match(void) {
     }
     return 0;
 }
+
+void bag2jp_lobby_kick_disconnected_guest(void) {
+    if (!s_state.in_room) return;
+    if (s_state.is_host) {
+        s_state.guest_name[0] = '\0';
+        s_state.guest_avatar = 0;
+        s_state.guest_ready = 0;
+        s_state.match_started = 0;
+        safe_copy(s_state.room_state, sizeof(s_state.room_state), "Waiting");
+        safe_copy(s_state.last_error, sizeof(s_state.last_error), "OPPONENT DISCONNECTED!");
+        if (s_use_mqtt && s_state.connected) mqtt_publish_room_state();
+    } else {
+        safe_copy(s_state.last_error, sizeof(s_state.last_error), "HOST DISCONNECTED!");
+    }
+}

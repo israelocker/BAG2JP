@@ -795,7 +795,9 @@ static void ns_pads_frame(void) {
         ns_log("v%u pad routing %s (P%d local)", s_vblanks, want ? "on" : "off", s_local + 1);
         s_remote_btn = s_local_btn = 0xFFFF; s_remote_hold = 0;
         if (was_routing && !want && s_lobby_role >= 0) {
-            ns_disconnect_locked("backed out to menu");
+            const int lost_link = !s_linked;
+            ns_disconnect_locked(lost_link ? "opponent disconnected" : "backed out to menu");
+            if (lost_link) bag2jp_lobby_kick_disconnected_guest();
             bag2jp_lobby_ui_return_from_match();
             return;
         }
