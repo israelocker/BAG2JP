@@ -331,6 +331,10 @@ static void mqtt_handle_publish(const char* topic, const char* payload, int plen
         json_get_str(payload, "room_code", s_state.match_room_code, sizeof(s_state.match_room_code));
     } else if (strcmp(type, "error") == 0) {
         json_get_str(payload, "msg", s_state.last_error, sizeof(s_state.last_error));
+    } else if (strcmp(type, "kick") == 0 && !s_state.is_host) {
+        s_state.in_room = 0;
+        (void)mqtt_send_unsub(ev_topic);
+        safe_copy(s_state.last_error, sizeof(s_state.last_error), "YOU WERE KICKED BY HOST!");
     } else if (s_state.is_host) {
         if (strcmp(type, "join") == 0) {
             char gname[32] = {0};
@@ -841,4 +845,19 @@ void bag2jp_lobby_kick_disconnected_guest(void) {
     } else {
         safe_copy(s_state.last_error, sizeof(s_state.last_error), "HOST DISCONNECTED!");
     }
+}
+
+int bag2jp_lobby_kick_guest(void) {
+    if (!s_state.in_room || !s_state.is_host || !s_state.guest_name[0]) return -1;
+    if (s_use_mqtt && s_state.connected) {
+        char ev_topic[96], body[128];
+        snprintf(ev_topic, sizeof(ev_topic), "bag2jp/lobby/v1/room/%d/ev", s_state.room_id);
+        snprintf(body, sizeof(body), "{\"type\":\"kick\",\"target\":\"%s\"}", s_state.guest_name);
+        (void)mqtt_send_pub(ev_topic, body, 0);
+    }
+    s_state.guest_name[0] = '\0';
+    s_state.guest_avatar = 0;
+    s_state.guest_ready = 0;
+    if (s_use_mqtt && s_state.connected) mqtt_publish_room_state();
+    return 0;
 }

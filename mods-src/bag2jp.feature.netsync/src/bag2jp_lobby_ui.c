@@ -126,6 +126,7 @@ static int lobby_input_sink(const void* ev_ptr, void* ctx) {
             case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
             case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER: vk = (s_mode == UI_LOBBY) ? 'P' : VK_F4; break;
             case SDL_GAMEPAD_BUTTON_START:          vk = (s_mode == UI_ROOM && bag2jp_lobby_state()->is_host) ? VK_F6 : VK_F5; break;
+            case SDL_GAMEPAD_BUTTON_BACK:           vk = (s_mode == UI_ROOM && bag2jp_lobby_state()->is_host) ? VK_F7 : 0; break;
             default: break;
         }
         if (vk > 0 && vk < 256) s_sink_vk[vk] = 1;
@@ -447,6 +448,10 @@ void bag2jp_lobby_ui_tick(void) {
     } else if (s_mode == UI_ROOM) {
         if (key_pressed(VK_F4) || (pad & 0x0300)) {
             cycle_avatar();
+        } else if (st->is_host && key_pressed(VK_F7) && st->guest_name[0]) {
+            bag2jp_lobby_kick_guest();
+            play_ui_sfx("sfx_cancel.wav");
+            show_banner("GUEST KICKED");
         } else if (st->is_host && (key_pressed(VK_F6) || (pad & 0x0010))) {
             if (!st->guest_name[0] || !st->guest_ready) {
                 play_ui_sfx("sfx_error.wav");
@@ -925,7 +930,7 @@ static void lobby_draw_cb(int fb_w, int fb_h, void* ctx) {
         /* Bottom white PS1 hotkey strip */
         fill_c(&c, fb_h, 0.16f, 0.930f, 0.68f, 0.060f, 0.94f, 0.96f, 0.98f);
         draw_text_c(&c, fb_h, 0.20f, 0.946f, s_sm,
-                    st->is_host ? "[F6] START  [F4] AVATAR  [ESC] LEAVE" : "[F5] READY  [F4] AVATAR  [ESC] LEAVE",
+                    st->is_host ? "[F6] START [F7] KICK [F4] AVATAR [ESC] LEAVE" : "[F5] READY  [F4] AVATAR  [ESC] LEAVE",
                     0.06f, 0.06f, 0.08f, 0, 0, 0, 0);
     }
 
